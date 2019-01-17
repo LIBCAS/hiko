@@ -1,0 +1,15 @@
+.form-group.required label::after {
+  content: '*';
+  color: #f00;
+}
+
+fieldset {
+  border-bottom: 1px solid #e6e6e6;
+  margin-bottom: 16px;
+}
+
+.ss-main {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
