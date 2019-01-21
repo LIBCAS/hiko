@@ -77,6 +77,14 @@ function get_nonempty_value($value)
     return $value !== '';
 }
 
+function get_form_checkbox_val($name, $array)
+{
+    if (array_key_exists($name, $array)) {
+        return $array[$name] == 'on' ? 1 : 0;
+    }
+    return 0;
+}
+
 function user_has_role($role)
 {
     $user = wp_get_current_user();
