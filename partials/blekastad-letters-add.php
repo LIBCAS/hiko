@@ -53,6 +53,7 @@ if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
         'date_month' => test_input($_POST['date_month']),
         'date_day' => test_input($_POST['date_day']),
         'date_marked' => test_input($_POST['date_marked']),
+        'date_uncertain' => get_form_checkbox_val('date_uncertain', $_POST),
         'l_author' => $authors,
         'l_author_marked' => test_input($_POST['l_author_marked']),
         'author_uncertain' => get_form_checkbox_val('author_uncertain', $_POST),
@@ -61,6 +62,7 @@ if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
         'recipient_marked' => test_input($_POST['recipient_marked']),
         'recipient_inferred' => get_form_checkbox_val('recipient_inferred', $_POST),
         'recipient_uncertain' => get_form_checkbox_val('recipient_uncertain', $_POST),
+        'recipient_notes' => test_input($_POST['recipient_notes']),
         'origin' => test_input($_POST['origin']),
         'origin_marked' => test_input($_POST['origin_marked']),
         'origin_inferred' => get_form_checkbox_val('origin_inferred', $_POST),
@@ -230,6 +232,11 @@ if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
                     </label>
                 </div>
             </fieldset>
+
+            <div class="form-group">
+                <label for="recipient_notes">Notes on recipient</label>
+                <textarea name="recipient_notes" class="form-control form-control-sm"></textarea>
+            </div>
 
             <fieldset>
                 <legend>Origin</legend>
