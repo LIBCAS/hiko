@@ -146,3 +146,29 @@ function list_public_bl_letters_single()
 
 add_action('wp_ajax_list_public_bl_letters_single', 'list_public_bl_letters_single');
 add_action('wp_ajax_nopriv_list_public_bl_letters_single', 'list_public_bl_letters_single');
+
+
+
+function delete_bl_letter()
+{
+    if (!array_key_exists('pods_id', $_GET)) {
+        echo '404';
+        wp_die();
+    }
+
+    $user = wp_get_current_user();
+    $role = (array) $user->roles;
+
+    if (!in_array('blekastad_editor', $role) && !in_array('administrator', $role)) {
+        echo '403';
+        wp_die();
+    }
+
+    $pod = pods('bl_letter', $_GET['pods_id']);
+    $result = $pod->delete();
+    echo $result;
+
+    wp_die();
+}
+
+add_action('wp_ajax_delete_bl_letter', 'delete_bl_letter');
