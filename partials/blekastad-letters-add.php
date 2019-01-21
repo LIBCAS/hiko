@@ -6,8 +6,22 @@ $languages = json_decode($languages);
 
 if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
     $people_mentioned = [];
+    $authors = [];
+    $recipients = [];
     $languages = '';
     $keywords = '';
+
+    if (array_key_exists('l_author', $_POST)) {
+        foreach ($_POST['l_author'] as $author) {
+            $authors[] = test_input($author);
+        }
+    }
+
+    if (array_key_exists('recipient', $_POST)) {
+        foreach ($_POST['recipient'] as $recipient) {
+            $recipients[] = test_input($recipient);
+        }
+    }
 
     if (array_key_exists('people_mentioned', $_POST)) {
         foreach ($_POST['people_mentioned'] as $people) {
@@ -39,11 +53,11 @@ if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
         'date_month' => test_input($_POST['date_month']),
         'date_day' => test_input($_POST['date_day']),
         'date_marked' => test_input($_POST['date_marked']),
-        'l_author' =>test_input($_POST['l_author']),
+        'l_author' => $authors,
         'l_author_marked' => test_input($_POST['l_author_marked']),
         'author_uncertain' => $_POST['author_uncertain']  == 'on' ? 1 : 0,
         'author_inferred' => $_POST['author_inferred']  == 'on' ? 1 : 0,
-        'recipient' => test_input($_POST['recipient']),
+        'recipient' => $recipients,
         'recipient_marked' => test_input($_POST['recipient_marked']),
         'recipient_inferred' => $_POST['recipient_inferred'] == 'on' ? 1 : 0,
         'recipient_uncertain' => $_POST['recipient_uncertain'] == 'on' ? 1 : 0,
@@ -146,8 +160,7 @@ if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
                 <legend>Author</legend>
                 <div class="form-group">
                     <label for="author">Author <span class="pointer oi oi-reload pl-1" data-source="persons" @click="regenerateSelectData"></span></label>
-                    <select class="custom-select custom-select-sm slim-select" name="l_author" id="author" v-model="author">
-                        <option selected value="">---</option>
+                    <select multiple class="custom-select custom-select-sm slim-select" name="l_author[]" id="author" v-model="author">
                         <option v-for="person in persons" :value="person.id">
                             {{ person.name }}
                         </option>
@@ -185,8 +198,7 @@ if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
                 <div class="form-group">
                     <label for="author">Recipient <span class="pointer oi oi-reload pl-1" data-source="persons" @click="regenerateSelectData"></span></label>
 
-                    <select class="custom-select custom-select-sm slim-select" name="recipient" id="recipient" v-model="recipient">
-                        <option selected value="">---</option>
+                    <select multiple class="custom-select custom-select-sm slim-select" name="recipient[]" id="recipient" v-model="recipient">
                         <option v-for="person in persons" :value="person.id">
                             {{ person.name }}
                         </option>
