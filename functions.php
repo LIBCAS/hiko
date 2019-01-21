@@ -152,4 +152,6 @@ function parse_json_file($url)
     $file = json_decode($file);
     return $file;
 }
+
+require 'ajax/letters.php';
 require 'ajax/people.php';
