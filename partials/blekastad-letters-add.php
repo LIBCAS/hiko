@@ -8,7 +8,7 @@ if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
     $people_mentioned = [];
     $authors = [];
     $recipients = [];
-    $languages = '';
+    $langs = '';
     $keywords = '';
 
     if (array_key_exists('l_author', $_POST)) {
@@ -31,7 +31,7 @@ if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
 
     if (array_key_exists('languages', $_POST)) {
         foreach ($_POST['languages'] as $lang) {
-            $languages .= test_input($lang) . ';';
+            $langs .= test_input($lang) . ';';
         }
     }
 
@@ -71,7 +71,7 @@ if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
         'dest_marked' => test_input($_POST['dest_marked']),
         'dest_uncertain' => get_form_checkbox_val('dest_uncertain', $_POST),
         'dest_inferred' => get_form_checkbox_val('dest_inferred', $_POST),
-        'languages' => $languages,
+        'languages' => $langs,
         'keywords' => $keywords,
         'abstract' => test_input($_POST['abstract']),
         'incipit' => test_input($_POST['incipit']),
