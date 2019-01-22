@@ -31,9 +31,6 @@ $places_json = json_encode($places_filtered, JSON_UNESCAPED_UNICODE);
                 <a :href="'#edit-' + props.row.id">Upravit</a>
             </li>
             <li>
-                <a :href="'#view-' + props.row.id">Zobrazit</a>
-            </li>
-            <li>
                 <a :href="'#delete-' + props.row.id">Odstranit</a>
             </li>
         </ul>
