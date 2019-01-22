@@ -31,7 +31,7 @@ $places_json = json_encode($places_filtered, JSON_UNESCAPED_UNICODE);
                 <a :href="'<?= home_url('blekastad/places-add/?edit='); ?>' + props.row.id">Upravit</a>
             </li>
             <li>
-                <a :href="'#delete-' + props.row.id">Odstranit</a>
+                <a :href="'#delete-' + props.row.id" @click="deletePlace(props.row.id)">Odstranit</a>
             </li>
         </ul>
     </v-client-table>

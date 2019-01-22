@@ -122,7 +122,15 @@ if (document.getElementById('datatable-places')) {
                 sortable: removeElFromArr('edit', columns),
                 filterable: removeElFromArr('edit', columns),
                 sortIcon: defaultTablesOptions.sortIcon,
-                texts: defaultTablesOptions.texts
+                texts: defaultTablesOptions.texts,
+                rowClassCallback: function(row) {
+                    return 'row-' + row.id;
+                }
+            }
+        },
+        methods: {
+            deletePlace: function(id) {
+                removeItemAjax(id, 'delete_bl_place');
             }
         }
     });

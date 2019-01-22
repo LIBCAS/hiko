@@ -166,3 +166,4 @@ function parse_json_file($url)
 
 require 'ajax/letters.php';
 require 'ajax/people.php';
+require 'ajax/places.php';
