@@ -23,6 +23,11 @@ function list_bl_people_single()
 
     $pod = pods('bl_person', $_GET['pods_id']);
 
+    if (!$pod->exists()) {
+        echo '404';
+        wp_die();
+    }
+
     $results['id'] = $pod->display('id');
     $results['name'] = $pod->field('name');
     $results['surname'] = $pod->field('surname');
