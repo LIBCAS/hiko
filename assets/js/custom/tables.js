@@ -63,40 +63,7 @@ if (document.getElementById('datatable-letters')) {
         },
         methods: {
             deleteLetter: function(id) {
-                Swal.fire({
-                    title: 'Opravdu chcete smazat tento dopis?',
-                    type: 'warning',
-                    buttonsStyling: false,
-                    showCancelButton: true,
-                    confirmButtonText: 'Ano!',
-                    cancelButtonText: 'Zrušit',
-                    confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-                    cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
-                }).then((result) => {
-                    if (result.value) {
-                        axios.get(ajaxUrl + '?action=delete_bl_letter&pods_id=' + id)
-                            .then(function() {
-                                Swal.fire({
-                                    title: 'Odstraněno.',
-                                    type: 'success',
-                                    buttonsStyling: false,
-                                    confirmButtonText: 'OK',
-                                    confirmButtonClass: 'btn btn-primary btn-lg',
-                                });
-                                document.querySelector('#datatable-letters .row-' + id).classList.add('d-none');
-                            })
-                            .catch(function (error) {
-                                Swal.fire({
-                                    title: 'Při odstraňování dopisu došlo k chybě.',
-                                    text: error,
-                                    type: 'error',
-                                    buttonsStyling: false,
-                                    confirmButtonText: 'OK',
-                                    confirmButtonClass: 'btn btn-primary btn-lg',
-                                });
-                            });
-                    }
-                });
+                removeItemAjax(id, 'delete_bl_letter');
             }
         }
     });
@@ -158,4 +125,42 @@ function removeElFromArr(el, array) {
         return value != el;
     });
     return filtered;
+}
+
+
+function removeItemAjax(id, action) {
+    Swal.fire({
+        title: 'Opravdu chcete smazat tuto položku?',
+        type: 'warning',
+        buttonsStyling: false,
+        showCancelButton: true,
+        confirmButtonText: 'Ano!',
+        cancelButtonText: 'Zrušit',
+        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
+    }).then((result) => {
+        if (result.value) {
+            axios.get(ajaxUrl + '?action=' + action + '&pods_id=' + id)
+                .then(function() {
+                    Swal.fire({
+                        title: 'Odstraněno.',
+                        type: 'success',
+                        buttonsStyling: false,
+                        confirmButtonText: 'OK',
+                        confirmButtonClass: 'btn btn-primary btn-lg',
+                    });
+                    document.querySelector('.row-' + id).classList.add('d-none');
+                })
+                .catch(function (error) {
+                    Swal.fire({
+                        title: 'Při odstraňování došlo k chybě.',
+                        text: error,
+                        type: 'error',
+                        buttonsStyling: false,
+                        confirmButtonText: 'OK',
+                        confirmButtonClass: 'btn btn-primary btn-lg',
+                    });
+                });
+        }
+    });
 }
