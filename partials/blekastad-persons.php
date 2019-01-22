@@ -31,7 +31,7 @@ $persons_json = json_encode($persons_filtered, JSON_UNESCAPED_UNICODE);
                 <a :href="'<?= home_url('blekastad/persons-add/?edit='); ?>' + props.row.id">Upravit</a>
             </li>
             <li>
-                <a :href="'#delete-' + props.row.id">Odstranit</a>
+                <a :href="'#delete-' + props.row.id" @click="deletePerson(props.row.id)">Odstranit</a>
             </li>
         </ul>
 
