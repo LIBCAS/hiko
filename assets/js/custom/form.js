@@ -100,6 +100,26 @@ if (document.getElementById('person-name')) {
         methods: {
             capitalize: function(str) {
                 return str.charAt(0).toUpperCase() + str.slice(1);
+            },
+
+            getInitialData: function(id) {
+                let self = this;
+                axios
+                    .get(ajaxUrl + '?action=list_bl_people_single&pods_id=' + id)
+                    .then(function(response) {
+                        self.firstName = response.data.forename;
+                        self.lastName = response.data.surname;
+                    })
+                    .catch(function(error) {
+                        console.log(error);
+                    });
+            }
+        },
+
+        mounted: function() {
+            let url = new URL(window.location.href);
+            if (url.searchParams.get('edit')) {
+                this.getInitialData(url.searchParams.get('edit'));
             }
 
         }
