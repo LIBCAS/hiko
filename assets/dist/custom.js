@@ -147,7 +147,7 @@ function removeSecondParent(el) {
 }
 "use strict";
 
-/* global Vue VueTables */
+/* global Vue VueTables Swal axios ajaxUrl */
 var columns;
 var defaultTablesOptions = {
   skin: 'table table-bordered table-hover table-striped table-sm',
@@ -199,7 +199,46 @@ if (document.getElementById('datatable-letters')) {
         filterable: removeElFromArr('edit', columns),
         sortIcon: defaultTablesOptions.sortIcon,
         texts: defaultTablesOptions.texts,
-        dateColumns: ['date']
+        dateColumns: ['date'],
+        rowClassCallback: function rowClassCallback(row) {
+          return 'row-' + row.id;
+        }
+      }
+    },
+    methods: {
+      deleteLetter: function deleteLetter(id) {
+        Swal.fire({
+          title: 'Opravdu chcete smazat tento dopis?',
+          type: 'warning',
+          buttonsStyling: false,
+          showCancelButton: true,
+          confirmButtonText: 'Ano!',
+          cancelButtonText: 'Zrušit',
+          confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+          cancelButtonClass: 'btn btn-secondary btn-lg ml-1'
+        }).then(function (result) {
+          if (result.value) {
+            axios.get(ajaxUrl + '?action=delete_bl_letter&pods_id=' + id).then(function () {
+              Swal.fire({
+                title: 'Odstraněno.',
+                type: 'success',
+                buttonsStyling: false,
+                confirmButtonText: 'OK',
+                confirmButtonClass: 'btn btn-primary btn-lg'
+              });
+              document.querySelector('.row-' + id).classList.add('d-none');
+            }).catch(function (error) {
+              Swal.fire({
+                title: 'Při odstraňování dopisu došlo k chybě.',
+                text: error,
+                type: 'error',
+                buttonsStyling: false,
+                confirmButtonText: 'OK',
+                confirmButtonClass: 'btn btn-primary btn-lg'
+              });
+            });
+          }
+        });
       }
     }
   });

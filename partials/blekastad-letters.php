@@ -57,10 +57,7 @@ $letters = json_encode($letters, JSON_UNESCAPED_UNICODE);
                 <a :href="'#edit-' + props.row.id">Upravit</a>
             </li>
             <li>
-                <a :href="'#view-' + props.row.id">Zobrazit</a>
-            </li>
-            <li>
-                <a :href="'#delete-' + props.row.id">Odstranit</a>
+                <a :href="'#delete-' + props.row.id" @click="deleteLetter(props.row.id)">Odstranit</a>
             </li>
         </ul>
         <span slot="date" slot-scope="props">
