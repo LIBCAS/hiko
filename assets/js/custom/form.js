@@ -82,6 +82,10 @@ if (document.getElementById('person-name')) {
         data: {
             firstName: '',
             lastName: '',
+            emlo: '',
+            dob: '',
+            dod: '',
+            error: false
         },
 
         computed: {
@@ -107,10 +111,20 @@ if (document.getElementById('person-name')) {
                 axios
                     .get(ajaxUrl + '?action=list_bl_people_single&pods_id=' + id)
                     .then(function(response) {
-                        self.firstName = response.data.forename;
-                        self.lastName = response.data.surname;
+                        if (response.data == '404') {
+                            console.log(response.data);
+                            self.error = true;
+                        } else {
+                            self.firstName = response.data.forename;
+                            self.lastName = response.data.surname;
+                            self.emlo = response.data.emlo;
+                            self.dob = response.data.birth_year;
+                            self.dod = response.data.death_year;
+                        }
+
                     })
                     .catch(function(error) {
+                        self.error = true;
                         console.log(error);
                     });
             }
