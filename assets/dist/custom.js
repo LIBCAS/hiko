@@ -226,7 +226,7 @@ if (document.getElementById('datatable-letters')) {
                 confirmButtonText: 'OK',
                 confirmButtonClass: 'btn btn-primary btn-lg'
               });
-              document.querySelector('.row-' + id).classList.add('d-none');
+              document.querySelector('#datatable-letters .row-' + id).classList.add('d-none');
             }).catch(function (error) {
               Swal.fire({
                 title: 'Při odstraňování dopisu došlo k chybě.',
