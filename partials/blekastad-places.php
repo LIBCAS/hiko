@@ -28,7 +28,7 @@ $places_json = json_encode($places_filtered, JSON_UNESCAPED_UNICODE);
     <v-client-table :data="tableData" :columns="columns" :options="options">
         <ul slot="edit" slot-scope="props" class="list-unstyled">
             <li>
-                <a :href="'#edit-' + props.row.id">Upravit</a>
+                <a :href="'<?= home_url('blekastad/places-add/?edit='); ?>' + props.row.id">Upravit</a>
             </li>
             <li>
                 <a :href="'#delete-' + props.row.id">Odstranit</a>

@@ -54,7 +54,7 @@ $letters = json_encode($letters, JSON_UNESCAPED_UNICODE);
     <v-client-table :data="tableData" :columns="columns" :options="options"  v-if="tableData">
         <ul slot="edit" slot-scope="props" class="list-unstyled">
             <li>
-                <a :href="'#edit-' + props.row.id">Upravit</a>
+                <a :href="'<?= home_url('blekastad/letters-add/?edit='); ?>' + props.row.id">Upravit</a>
             </li>
             <li>
                 <a :href="'#delete-' + props.row.id" @click="deleteLetter(props.row.id)">Odstranit</a>
