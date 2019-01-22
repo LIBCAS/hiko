@@ -81,7 +81,7 @@ if (document.getElementById('person-name')) {
         el: '#person-name',
         data: {
             firstName: '',
-            lastName: ''
+            lastName: '',
         },
 
         computed: {
