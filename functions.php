@@ -40,6 +40,16 @@ function test_input($input)
     return $input;
 }
 
+function test_postdata($associative_array)
+{
+    $results = [];
+    foreach ($associative_array as $key => $value) {
+        $results[$key] = test_input($_POST[$value]);
+    }
+
+    return $results;
+}
+
 function alert($message, $type = 'info')
 {
     ob_start();
