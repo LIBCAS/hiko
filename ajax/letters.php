@@ -81,7 +81,7 @@ function list_public_bl_letters_single()
         echo '404';
         wp_die();
     }
-    
+
     $authors_related = $pod->field('l_author');
     $recipients_related = $pod->field('recipient');
     $people_mentioned_related = $pod->field('people_mentioned');
@@ -94,7 +94,7 @@ function list_public_bl_letters_single()
 
     if (!empty($recipients_related)) {
         foreach ($recipients_related as $rel_recipient) {
-            $recipients[] = $rel_recipient['name'];
+            $recipients[$rel_recipient['id']] = $rel_recipient['name'];
         }
     }
 
