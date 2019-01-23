@@ -236,7 +236,15 @@ if (document.getElementById('datatable-letters')) {
     },
     methods: {
       deleteLetter: function deleteLetter(id) {
-        removeItemAjax(id, 'delete_bl_letter');
+        var self = this;
+        removeItemAjax(id, 'delete_bl_letter', function () {
+          self.deleteRow(id, self.tableData);
+        });
+      },
+      deleteRow: function deleteRow(id, data) {
+        this.tableData = data.filter(function (item) {
+          return item.id !== id;
+        });
       }
     }
   });
@@ -266,7 +274,15 @@ if (document.getElementById('datatable-persons')) {
     },
     methods: {
       deletePerson: function deletePerson(id) {
-        removeItemAjax(id, 'delete_bl_person');
+        var self = this;
+        removeItemAjax(id, 'delete_bl_person', function () {
+          self.deleteRow(id, self.tableData);
+        });
+      },
+      deleteRow: function deleteRow(id, data) {
+        this.tableData = data.filter(function (item) {
+          return item.id !== id;
+        });
       }
     }
   });
@@ -296,7 +312,15 @@ if (document.getElementById('datatable-places')) {
     },
     methods: {
       deletePlace: function deletePlace(id) {
-        removeItemAjax(id, 'delete_bl_place');
+        var self = this;
+        removeItemAjax(id, 'delete_bl_place', function () {
+          self.deleteRow(id, self.tableData);
+        });
+      },
+      deleteRow: function deleteRow(id, data) {
+        this.tableData = data.filter(function (item) {
+          return item.id !== id;
+        });
       }
     }
   });
@@ -309,7 +333,7 @@ function removeElFromArr(el, array) {
   return filtered;
 }
 
-function removeItemAjax(id, action) {
+function removeItemAjax(id, action, callback) {
   Swal.fire({
     title: 'Opravdu chcete smazat tuto položku?',
     type: 'warning',
@@ -329,7 +353,7 @@ function removeItemAjax(id, action) {
           confirmButtonText: 'OK',
           confirmButtonClass: 'btn btn-primary btn-lg'
         });
-        document.querySelector('.row-' + id).classList.add('d-none');
+        callback(); //document.querySelector('.row-' + id).classList.add('d-none');
       }).catch(function (error) {
         Swal.fire({
           title: 'Při odstraňování došlo k chybě.',
