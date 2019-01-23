@@ -5,8 +5,8 @@ if (document.getElementById('letter-form')) {
   new Vue({
     el: '#letter-form',
     data: {
-      author: '',
-      recipient: '',
+      author: [],
+      recipient: [],
       origin: '',
       destination: '',
       day: '',
@@ -18,13 +18,22 @@ if (document.getElementById('letter-form')) {
     },
     methods: {
       getTitle: function getTitle() {
-        var author = getNameById(this.persons, this.author);
-        var recipient = getNameById(this.persons, this.recipient);
+        var authors = [];
+        var recipients = [];
+
+        for (var i = 0; i < this.author.length; i++) {
+          authors.push(getNameById(this.persons, this.author[i]));
+        }
+
+        for (var _i = 0; _i < this.recipient.length; _i++) {
+          recipients.push(getNameById(this.persons, this.recipient[_i]));
+        }
+
         var origin = getNameById(this.places, this.origin);
         var destination = getNameById(this.places, this.destination);
         var date = this.day + '. ' + this.month + '. ' + this.year;
-        var from = author + ' (' + origin + ')';
-        var to = recipient + ' (' + destination + ')';
+        var from = authors.join('; ') + ' (' + origin + ')';
+        var to = recipients + ' (' + destination + ')';
         this.title = date + ' ' + from + ' to ' + to;
         return;
       },
