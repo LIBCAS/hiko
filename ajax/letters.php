@@ -77,13 +77,18 @@ function list_public_bl_letters_single()
         wp_die();
     }
 
+    if (!$pod->exists()) {
+        echo '404';
+        wp_die();
+    }
+    
     $authors_related = $pod->field('l_author');
     $recipients_related = $pod->field('recipient');
     $people_mentioned_related = $pod->field('people_mentioned');
 
     if (!empty($authors_related)) {
         foreach ($authors_related as $rel_author) {
-            $authors[] = $rel_author['name'];
+            $authors[$rel_author['id']] = $rel_author['name'];
         }
     }
 
@@ -95,7 +100,7 @@ function list_public_bl_letters_single()
 
     if (!empty($people_mentioned_related)) {
         foreach ($people_mentioned_related as $rel_pm) {
-            $people_mentioned[] = $rel_pm['name'];
+            $people_mentioned[$rel_pm['id']] = $rel_pm['name'];
         }
     }
 
