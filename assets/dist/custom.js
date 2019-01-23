@@ -59,6 +59,35 @@ if (document.getElementById('letter-form')) {
 }
 
 if (document.getElementById('places-form')) {
+  new Vue({
+    el: '#places-form',
+    data: {
+      place: '',
+      country: ''
+    },
+    methods: {
+      getInitialData: function getInitialData(id) {
+        var self = this;
+        axios.get(ajaxUrl + '?action=list_bl_place_single&pods_id=' + id).then(function (response) {
+          if (response.data == '404') {
+            self.error = true;
+          } else {
+            self.place = response.data.name;
+            self.country = response.data.country;
+          }
+        }).catch(function () {
+          self.error = true;
+        });
+      }
+    },
+    mounted: function mounted() {
+      var url = new URL(window.location.href);
+
+      if (url.searchParams.get('edit')) {
+        this.getInitialData(url.searchParams.get('edit'));
+      }
+    }
+  });
   Array.prototype.forEach.call(document.querySelectorAll('.slim-select'), function (selected) {
     if (selected.id) {
       new SlimSelect({
@@ -101,7 +130,6 @@ if (document.getElementById('person-name')) {
         var self = this;
         axios.get(ajaxUrl + '?action=list_bl_people_single&pods_id=' + id).then(function (response) {
           if (response.data == '404') {
-            console.log(response.data);
             self.error = true;
           } else {
             self.firstName = response.data.forename;

@@ -3,19 +3,36 @@
 $countries = file_get_contents(get_template_directory_uri() . '/assets/data/countries.json');
 $countries = json_decode($countries);
 
+$action = 'new';
+if (array_key_exists('edit', $_GET)) {
+    $action = 'edit';
+}
 
-if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
-    $params = [
-        'pod' => 'bl_place',
-        'data' => [
-            'name' => test_input($_POST['place']),
-            'country' => test_input($_POST['country']),
-        ]
-    ];
+if (array_key_exists('save_post', $_POST)) {
+    $data = test_postdata([
+        'name' => 'place',
+        'country' => 'country',
+    ]);
 
-    $new_place = pods_api()->save_pod_item($params);
+    $new_pod = '';
 
-    if (is_wp_error($new_place)) {
+    if ($action == 'new') {
+        $new_pod = pods_api()->save_pod_item([
+            'pod' => 'bl_place',
+            'data' => $data
+        ]);
+    } elseif ($action == 'edit') {
+        $new_pod = pods_api()->save_pod_item([
+            'pod' => 'bl_place',
+            'data' => $data,
+            'id' => $_GET['edit']
+        ]);
+    }
+
+
+    if ($new_pod == '') {
+        echo alert('Něco se pokazilo', 'warning');
+    } elseif (is_wp_error($new_pod)) {
         echo alert($result->get_error_message(), 'warning');
     } else {
         echo alert('Uloženo', 'success');
@@ -31,14 +48,14 @@ if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
             <fieldset>
                 <div class="form-group required">
                     <label for="place">Primary name</label>
-                    <input type="text" class="form-control form-control-sm" name="place" required>
+                    <input v-model="place" type="text" class="form-control form-control-sm" name="place" required>
                     <small class="form-text text-muted">
                         modern format
                     </small>
                 </div>
                 <div class="form-group">
                     <label for="country">Country</label>
-                    <select class="custom-select custom-select-sm slim-select" id="country" name="country">
+                    <select v-model="country" class="custom-select custom-select-sm slim-select" id="country" name="country">
                         <option disabled selected value>---</option>
                         <?php foreach ($countries as $country) : ?>
                             <option value="<?= $country->name; ?>">
@@ -50,7 +67,11 @@ if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
                 </div>
             </fieldset>
             <div class="form-group">
-                <input type="hidden" name="new_post" value="1">
+                <?php if ($action == 'new') : ?>
+                    <input type="hidden" name="save_post" value="new">
+                <?php else : ?>
+                    <input type="hidden" name="save_post" value="edit">
+                <?php endif; ?>
                 <input class="btn btn-primary" type="submit" value="Uložit">
             </div>
         </form>
