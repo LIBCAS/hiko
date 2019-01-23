@@ -12,7 +12,11 @@ get_header();
     <div class="row justify-content-center" style="min-height: 75vh;">
         <div class="col-lg-6 col-md-8">
             <?php if (user_has_role('administrator') || user_has_role('blekastad_editor')) : ?>
-                <h1>Nový dopis</h1>
+                <?php if (array_key_exists('edit', $_GET)) : ?>
+                    <h1>Editovat dopis</h1>
+                <?php else : ?>
+                    <h1>Nový dopis</h1>
+                <?php endif; ?>
                 <?php require 'partials/blekastad-letters-add.php'; ?>
             <?php else : ?>
                 <div class="alert alert-warning">

@@ -3,8 +3,12 @@
 $languages = file_get_contents(get_template_directory_uri() . '/assets/data/languages.json');
 $languages = json_decode($languages);
 
+$action = 'new';
+if (array_key_exists('edit', $_GET)) {
+    $action = 'edit';
+}
 
-if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
+if (array_key_exists('save_post', $_POST)) {
     $people_mentioned = [];
     $authors = [];
     $recipients = [];
@@ -40,62 +44,71 @@ if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
             $keywords[] = test_input($kw);
         }
     }
-
     $keywords = array_filter(
         $keywords,
         'get_nonempty_value'
     );
-    $keywords = implode(';', $keywords);
 
-    $post_data = [
-        'l_number' => test_input($_POST['l_number']),
-        'date_year' => test_input($_POST['date_year']),
-        'date_month' => test_input($_POST['date_month']),
-        'date_day' => test_input($_POST['date_day']),
-        'date_marked' => test_input($_POST['date_marked']),
-        'date_uncertain' => get_form_checkbox_val('date_uncertain', $_POST),
-        'l_author' => $authors,
-        'l_author_marked' => test_input($_POST['l_author_marked']),
-        'author_uncertain' => get_form_checkbox_val('author_uncertain', $_POST),
-        'author_inferred' => get_form_checkbox_val('author_inferred', $_POST),
-        'recipient' => $recipients,
-        'recipient_marked' => test_input($_POST['recipient_marked']),
-        'recipient_inferred' => get_form_checkbox_val('recipient_inferred', $_POST),
-        'recipient_uncertain' => get_form_checkbox_val('recipient_uncertain', $_POST),
-        'recipient_notes' => test_input($_POST['recipient_notes']),
-        'origin' => test_input($_POST['origin']),
-        'origin_marked' => test_input($_POST['origin_marked']),
-        'origin_inferred' => get_form_checkbox_val('origin_inferred', $_POST),
-        'origin_uncertain' => get_form_checkbox_val('origin_uncertain', $_POST),
-        'dest' => test_input($_POST['dest']),
-        'dest_marked' => test_input($_POST['dest_marked']),
-        'dest_uncertain' => get_form_checkbox_val('dest_uncertain', $_POST),
-        'dest_inferred' => get_form_checkbox_val('dest_inferred', $_POST),
-        'languages' => $langs,
-        'keywords' => $keywords,
-        'abstract' => test_input($_POST['abstract']),
-        'incipit' => test_input($_POST['incipit']),
-        'explicit' => test_input($_POST['explicit']),
-        'people_mentioned' => $people_mentioned,
-        'people_mentioned_notes' => test_input($_POST['people_mentioned_notes']),
-        'notes_public' => test_input($_POST['notes_public']),
-        'notes_private' => test_input($_POST['notes_private']),
-        'rel_rec_name' => test_input($_POST['rel_rec_name']),
-        'rel_rec_url' => test_input($_POST['rel_rec_url']),
-        'ms_manifestation' => test_input($_POST['ms_manifestation']),
-        'repository' => test_input($_POST['repository']),
-        'name' => test_input($_POST['description']),
-        'status' => test_input($_POST['status']),
-    ];
+    $data = test_postdata([
+        'l_number' => 'l_number',
+        'date_year' => 'date_year',
+        'date_month' => 'date_month',
+        'date_day' => 'date_day',
+        'date_marked' => 'date_marked',
+        'l_author_marked' => 'l_author_marked',
+        'recipient_marked' => 'recipient_marked',
+        'recipient_notes' => 'recipient_notes',
+        'origin' => 'origin',
+        'origin_marked' => 'origin_marked',
+        'dest' => 'dest',
+        'dest_marked' => 'dest_marked',
+        'abstract' => 'abstract',
+        'incipit' => 'incipit',
+        'explicit' => 'explicit',
+        'people_mentioned_notes' => 'people_mentioned_notes',
+        'notes_public' => 'notes_public',
+        'notes_private' => 'notes_private',
+        'rel_rec_name' => 'rel_rec_name',
+        'rel_rec_url' => 'rel_rec_url',
+        'ms_manifestation' => 'ms_manifestation',
+        'repository' => 'repository',
+        'name' => 'description',
+        'status' => 'status',
+    ]);
+    $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
+    $data['author_uncertain'] = get_form_checkbox_val('author_uncertain', $_POST);
+    $data['author_inferred'] = get_form_checkbox_val('author_inferred', $_POST);
+    $data['recipient_inferred'] = get_form_checkbox_val('recipient_inferred', $_POST);
+    $data['recipient_uncertain'] = get_form_checkbox_val('recipient_uncertain', $_POST);
+    $data['origin_inferred'] = get_form_checkbox_val('origin_inferred', $_POST);
+    $data['origin_uncertain'] = get_form_checkbox_val('origin_uncertain', $_POST);
+    $data['dest_uncertain'] = get_form_checkbox_val('dest_uncertain', $_POST);
+    $data['dest_inferred'] = get_form_checkbox_val('dest_inferred', $_POST);
+    $data['l_author'] = $authors;
+    $data['recipient'] = $recipients;
+    $data['languages'] = $langs;
+    $data['keywords'] = implode(';', $keywords);
+    $data['people_mentioned'] = $people_mentioned;
 
-    $params = [
-        'pod' => 'bl_letter',
-        'data' => $post_data
-    ];
 
-    $new_letter = pods_api()->save_pod_item($params);
+    $new_pod = '';
 
-    if (is_wp_error($new_letter)) {
+    if ($action == 'new') {
+        $new_pod = pods_api()->save_pod_item([
+            'pod' => 'bl_letter',
+            'data' => $data
+        ]);
+    } elseif ($action == 'edit') {
+        $new_pod = pods_api()->save_pod_item([
+            'pod' => 'bl_letter',
+            'data' => $data,
+            'id' => $_GET['edit']
+        ]);
+    }
+
+    if ($new_pod == '') {
+        echo alert('Něco se pokazilo', 'warning');
+    } elseif (is_wp_error($new_pod)) {
         echo alert($result->get_error_message(), 'warning');
     } else {
         echo alert('Uloženo', 'success');
@@ -455,7 +468,12 @@ if (array_key_exists('new_post', $_POST) && $_POST['new_post'] == 1) {
 
             </fieldset>
 
-            <input type="hidden" name="new_post" value="1">
+            <?php if ($action == 'new') : ?>
+                <input type="hidden" name="save_post" value="new">
+            <?php else : ?>
+                <input type="hidden" name="save_post" value="edit">
+            <?php endif; ?>
+
             <input type="submit" value="Uložit" class="btn btn-primary">
         </form>
     </div>
