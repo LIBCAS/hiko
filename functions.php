@@ -164,6 +164,19 @@ function parse_json_file($url)
     return $file;
 }
 
+function sum_array_length($array)
+{
+    $sum = 0;
+    foreach ($array as $el) {
+        if (is_array($el)) {
+            if (count($el) > 0) {
+                $sum ++;
+            }
+        }
+    }
+    return $sum;
+}
+
 require 'ajax/letters.php';
 require 'ajax/people.php';
 require 'ajax/places.php';

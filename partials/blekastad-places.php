@@ -11,9 +11,12 @@ $places = pods(
 $places_filtered = [];
 $index = 0;
 while ($places->fetch()) {
+    $origin = $places->field('letter_origin');
+    $destination = $places->field('letter_destination');
     $places_filtered[$index]['id'] = $places->display('id');
     $places_filtered[$index]['city'] = $places->display('name');
     $places_filtered[$index]['country'] = $places->field('country');
+    $places_filtered[$index]['relationships'] = sum_array_length([$origin, $destination]);
     $index++;
 }
 $places_json = json_encode($places_filtered, JSON_UNESCAPED_UNICODE);
@@ -31,7 +34,7 @@ $places_json = json_encode($places_filtered, JSON_UNESCAPED_UNICODE);
                 <a :href="'<?= home_url('blekastad/places-add/?edit='); ?>' + props.row.id">Upravit</a>
             </li>
             <li>
-                <a :href="'#delete-' + props.row.id" @click="deletePlace(props.row.id)">Odstranit</a>
+                <a v-if="props.row.relationships == 0" :href="'#delete-' + props.row.id" @click="deletePlace(props.row.id)">Odstranit</a>
             </li>
         </ul>
     </v-client-table>
