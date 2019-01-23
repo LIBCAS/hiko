@@ -72,7 +72,7 @@ function list_public_bl_letters_single()
 
     $pod = pods('bl_letter', $_GET['pods_id']);
 
-    if ($pod->field('status') != 'publish') {
+    if ($pod->field('status') != 'publish' && !is_user_logged_in()) {
         echo '403';
         wp_die();
     }
@@ -143,7 +143,6 @@ function list_public_bl_letters_single()
 
     wp_die();
 }
-
 add_action('wp_ajax_list_public_bl_letters_single', 'list_public_bl_letters_single');
 add_action('wp_ajax_nopriv_list_public_bl_letters_single', 'list_public_bl_letters_single');
 

@@ -37,6 +37,18 @@ if (document.getElementById('letter-form')) {
         this.title = date + ' ' + from + ' to ' + to;
         return;
       },
+      getInitialData: function getInitialData(id) {
+        var self = this;
+        axios.get(ajaxUrl + '?action=list_public_bl_letters_single&pods_id=' + id).then(function (response) {
+          if (response.data == '404') {
+            self.error = true;
+          } else {
+            console.log(response.data);
+          }
+        }).catch(function () {
+          self.error = true;
+        });
+      },
       ajaxToData: function ajaxToData(action, targetData, targetElement) {
         var self = this;
         targetElement.classList.add('rotate');
@@ -57,6 +69,13 @@ if (document.getElementById('letter-form')) {
         } else if (type == 'places') {
           self.ajaxToData('list_bl_places_simple', 'places', event.target);
         }
+      }
+    },
+    mounted: function mounted() {
+      var url = new URL(window.location.href);
+
+      if (url.searchParams.get('edit')) {
+        this.getInitialData(url.searchParams.get('edit'));
       }
     }
   });
