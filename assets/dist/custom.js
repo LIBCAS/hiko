@@ -37,23 +37,25 @@ if (document.getElementById('letter-form')) {
         this.title = date + ' ' + from + ' to ' + to;
         return;
       },
+      ajaxToData: function ajaxToData(action, targetData, targetElement) {
+        var self = this;
+        targetElement.classList.add('rotate');
+        axios.get(ajaxUrl + '?action=' + action).then(function (response) {
+          self[targetData] = response.data;
+        }).catch(function (error) {
+          console.log(error);
+        }).then(function () {
+          targetElement.classList.remove('rotate');
+        });
+      },
       regenerateSelectData: function regenerateSelectData(event) {
         var type = event.target.dataset.source;
-        var vueInstance = this;
+        var self = this;
 
         if (type == 'persons') {
-          event.target.classList.add('rotate');
-          axios.get(ajaxUrl + '?action=list_bl_people_simple').then(function (response) {
-            vueInstance.persons = response.data;
-          }).catch(function (error) {
-            console.log(error);
-          }).then(function () {
-            event.target.classList.remove('rotate');
-          });
+          self.ajaxToData('list_bl_people_simple', 'persons', event.target);
         } else if (type == 'places') {
-          return;
-        } else {
-          return;
+          self.ajaxToData('list_bl_places_simple', 'places', event.target);
         }
       }
     }

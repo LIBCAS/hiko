@@ -15,7 +15,6 @@ function list_bl_places_simple()
     while ($place_pods->fetch()) {
         $places[$index]['id'] = $place_pods->display('id');
         $places[$index]['name'] = $place_pods->display('name');
-        $places[$index]['country'] = $place_pods->display('country');
         $index++;
     }
 
