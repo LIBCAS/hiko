@@ -353,7 +353,7 @@ function removeItemAjax(id, action, callback) {
           confirmButtonText: 'OK',
           confirmButtonClass: 'btn btn-primary btn-lg'
         });
-        callback(); //document.querySelector('.row-' + id).classList.add('d-none');
+        callback();
       }).catch(function (error) {
         Swal.fire({
           title: 'Při odstraňování došlo k chybě.',

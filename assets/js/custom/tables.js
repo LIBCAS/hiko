@@ -190,7 +190,6 @@ function removeItemAjax(id, action, callback) {
                         confirmButtonClass: 'btn btn-primary btn-lg',
                     });
                     callback();
-                    //document.querySelector('.row-' + id).classList.add('d-none');
                 })
                 .catch(function (error) {
                     Swal.fire({
