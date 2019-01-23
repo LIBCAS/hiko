@@ -64,6 +64,8 @@ function list_public_bl_letters_single()
     $authors = [];
     $recipients = [];
     $people_mentioned = [];
+    $origin = [];
+    $destination = [];
 
     if (!array_key_exists('pods_id', $_GET)) {
         echo '404';
@@ -119,11 +121,11 @@ function list_public_bl_letters_single()
     $results['recipient_inferred'] = (bool) $pod->field('recipient_inferred');
     $results['recipient_uncertain'] = (bool) $pod->field('recipient_uncertain');
     $results['recipient_notes'] = $pod->field('recipient_notes');
-    $results['origin'] = $pod->field('origin');
+    $results['origin'][$pod->field('origin')['id']] = $pod->field('origin')['name'];
     $results['origin_marked'] = $pod->field('origin_marked');
     $results['origin_inferred'] = (bool) $pod->field('origin_inferred');
     $results['origin_uncertain'] = (bool) $pod->field('origin_uncertain');
-    $results['dest'] = $pod->field('dest');
+    $results['dest'][$pod->field('dest')['id']] = $pod->field('dest')['name'];
     $results['dest_marked'] = $pod->field('dest_marked');
     $results['dest_uncertain'] = (bool) $pod->field('dest_uncertain');
     $results['dest_inferred'] = (bool) $pod->field('dest_inferred');
