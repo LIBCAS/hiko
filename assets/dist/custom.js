@@ -178,6 +178,7 @@ if (document.querySelector('.keywords input')) {
 function addNewInput(el) {
   var newInput = "<div class=\"input-group input-group-sm mb-1\">\n    <input type=\"text\" name=\"keywords[]\" class=\"form-control form-control-sm\">\n        <div class=\"input-group-append\">\n            <button class=\"btn btn-sm btn-outline-danger btn-remove\" type=\"button\">\n                <span class=\"oi oi-x\"></span>\n            </button>\n        </div>\n    </div>";
   el.insertAdjacentHTML('beforebegin', newInput);
+  el.previousSibling.querySelector('input').focus();
   el.previousSibling.querySelector('.btn-remove').addEventListener('click', function () {
     removeSecondParent(this);
   });

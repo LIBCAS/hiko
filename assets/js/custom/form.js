@@ -203,6 +203,8 @@ function addNewInput(el) {
     </div>`;
     el.insertAdjacentHTML('beforebegin', newInput);
 
+    el.previousSibling.querySelector('input').focus();
+
     el.previousSibling.querySelector('.btn-remove').addEventListener('click', function() {
         removeSecondParent(this);
     });
