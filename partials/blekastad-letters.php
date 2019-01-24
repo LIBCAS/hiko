@@ -57,6 +57,9 @@ $letters = json_encode($letters, JSON_UNESCAPED_UNICODE);
                 <a :href="'<?= home_url('blekastad/letters-add/?edit='); ?>' + props.row.id">Upravit</a>
             </li>
             <li>
+                <a :href="'<?= home_url('blekastad/letters-media/?letter='); ?>' + props.row.id">Obrazové přílohy</a>
+            </li>
+            <li>
                 <a :href="'#delete-' + props.row.id" @click="deleteLetter(props.row.id)">Odstranit</a>
             </li>
         </ul>
