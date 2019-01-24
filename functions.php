@@ -177,6 +177,24 @@ function sum_array_length($array)
     return $sum;
 }
 
+
+function has_user_permission($role)
+{
+    if (!is_user_logged_in()) {
+        return false;
+    }
+
+    $user = wp_get_current_user();
+    $roles = (array) $user->roles;
+
+    if (!in_array($role, $roles) && !in_array('administrator', $roles)) {
+        return false;
+    }
+
+    return true;
+}
+
+
 require 'ajax/letters.php';
 require 'ajax/people.php';
 require 'ajax/places.php';

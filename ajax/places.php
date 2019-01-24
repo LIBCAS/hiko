@@ -66,10 +66,7 @@ function delete_bl_place()
         wp_die();
     }
 
-    $user = wp_get_current_user();
-    $role = (array) $user->roles;
-
-    if (!in_array('blekastad_editor', $role) && !in_array('administrator', $role)) {
+    if (!has_user_permission('blekastad_editor')) {
         echo '403';
         wp_die();
     }
