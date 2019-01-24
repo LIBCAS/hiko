@@ -36,6 +36,14 @@ if (document.getElementById('letter-form')) {
       abstract: '',
       incipit: '',
       explicit: '',
+      people_mentioned_notes: '',
+      notes_public: '',
+      notes_private: '',
+      rel_rec_name: '',
+      rel_rec_url: '',
+      ms_manifestation: '',
+      repository: '',
+      status: '',
       persons: JSON.parse(document.querySelector('#people').innerHTML),
       places: JSON.parse(document.querySelector('#places').innerHTML)
     },
@@ -91,12 +99,21 @@ if (document.getElementById('letter-form')) {
             self.dest_marked = rd.dest_marked;
             self.dest_inferred = rd.dest_inferred;
             self.dest_uncertain = rd.dest_uncertain;
-            self.mentioned = Object.keys(rd.people_mentioned);
             self.languages = rd.languages.length === 0 ? [] : rd.languages.split(';');
             self.keywords = rd.keywords.length === 0 ? [] : rd.keywords.split(';');
             self.abstract = rd.abstract;
             self.incipit = rd.incipit;
             self.explicit = rd.explicit;
+            self.mentioned = Object.keys(rd.people_mentioned);
+            self.people_mentioned_notes = rd.people_mentioned_notes;
+            self.notes_public = rd.notes_public;
+            self.notes_private = rd.notes_private;
+            self.rel_rec_name = rd.rel_rec_name;
+            self.rel_rec_url = rd.rel_rec_url;
+            self.ms_manifestation = rd.ms_manifestation;
+            self.repository = rd.repository;
+            self.title = rd.name;
+            self.status = rd.status;
           }
         }).catch(function () {
           self.error = true;

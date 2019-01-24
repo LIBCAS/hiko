@@ -393,7 +393,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="people_mentioned_notes">Notes on people mentioned</label>
-                        <textarea name="people_mentioned_notes" class="form-control form-control-sm"></textarea>
+                        <textarea v-model="people_mentioned_notes" name="people_mentioned_notes" class="form-control form-control-sm"></textarea>
                         <small class="form-text text-muted">
                             exact words which close the body of the letter, e.g. closing sentence or closing 10 words, but not closing salutation
                         </small>
@@ -401,12 +401,12 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="notes_public">Notes on letter for public display</label>
-                        <textarea name="notes_public" class="form-control form-control-sm"></textarea>
+                        <textarea v-model="notes_public" name="notes_public" class="form-control form-control-sm"></textarea>
                     </div>
 
                     <div class="form-group">
                         <label for="notes_private">Editor' notes </label>
-                        <textarea name="notes_private" class="form-control form-control-sm"></textarea>
+                        <textarea v-model="notes_private" name="notes_private" class="form-control form-control-sm"></textarea>
                         <small class="form-text text-muted">
                             internal, hidden editors' notes for EMLO back-end use only. Preface each note with a ‘q’ followed by the initials of the person the note is intended for, e.g. ‘qml’. End each note with your own initials.
                         </small>
@@ -418,14 +418,14 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Related resource</legend>
                     <div class="form-group">
                         <label for="rel_rec_name">Related resource name</label>
-                        <input type="text" name="rel_rec_name" class="form-control form-control-sm">
+                        <input v-model="rel_rec_name" type="text" name="rel_rec_name" class="form-control form-control-sm">
                         <small class="form-text text-muted">
                             descriptor e.g. 'Printed copy (Tamizey de Larroque) on the Internet Archive'
                         </small>
                     </div>
                     <div class="form-group">
                         <label for="rel_rec_url">Related resource url</label>
-                        <input type="text" name="rel_rec_url" class="form-control form-control-sm">
+                        <input v-model="rel_rec_url" type="text" name="rel_rec_url" class="form-control form-control-sm">
                         <small class="form-text text-muted">
                             permanent/short URL to letter-related online resource
                         </small>
@@ -436,7 +436,7 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Repositories and versions</legend>
                     <div class="form-group">
                         <label for="ms_manifestation">MS manifestation</label>
-                        <select class="custom-select custom-select-sm slim-select" name="ms_manifestation" id="ms_manifestation">
+                        <select v-model="ms_manifestation" class="custom-select custom-select-sm slim-select" name="ms_manifestation" id="ms_manifestation">
                             <option value="ALS">MS Letter</option>
                             <option value="S">MS Copy</option>
                             <option value="D">MS Draft</option>
@@ -447,7 +447,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="repository">Repository</label>
-                        <input type="text" name="repository" class="form-control form-control-sm">
+                        <input v-model="repository" type="text" name="repository" class="form-control form-control-sm">
                     </div>
                 </fieldset>
 
@@ -457,7 +457,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <label for="description">Description
                             <span class="pointer oi oi-transfer pl-1" @click="getTitle"></span>
                         </label>
-                        <textarea name="description" class="form-control form-control-sm" required>{{ title }}</textarea>
+                        <textarea v-model="title" name="description" class="form-control form-control-sm" required>{{ title }}</textarea>
 
                     </div>
                 </fieldset>
@@ -467,14 +467,14 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-check">
                         <label class="form-check-label">
-                            <input type="radio" class="form-check-input" name="status" value="draft" checked>
+                            <input v-model="status" type="radio" class="form-check-input" name="status" value="draft" checked>
                             Private
                         </label>
                     </div>
 
                     <div class="form-check">
                         <label class="form-check-label">
-                            <input type="radio" class="form-check-input" name="status" value="publish">
+                            <input v-model="status" type="radio" class="form-check-input" name="status" value="publish">
                             Public
                         </label>
                     </div>
