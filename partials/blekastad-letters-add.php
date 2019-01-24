@@ -345,19 +345,15 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group keywords">
                         <label for="keywords">Keywords</label>
-                        <div class="input-group input-group-sm mb-1">
-                            <input v-if="keywords.length == 0" type="text" name="keywords[]" class="form-control form-control-sm">
-                            <div v-if="keywords.length > 0" v-for="kw in keywords" class="input-group input-group-sm mb-1">
-                                <input :value="kw" type="text" name="keywords[]"  class="form-control form-control-sm">
-                                <div class="input-group-append">
-                                    <button class="btn btn-sm btn-outline-danger btn-remove" type="button" @click="removeKeyword(kw)">
-                                        <span class="oi oi-x"></span>
-                                    </button>
-                                </div>
+                        <div v-for="kw in keywords" class="input-group input-group-sm mb-1">
+                            <input v-model="kw.value" type="text" name="keywords[]" @keyup.enter="addNewKeyword" class="form-control form-control-sm">
+                            <div class="input-group-append">
+                                <button class="btn btn-sm btn-outline-danger btn-remove" type="button" @click="removeKeyword(kw)">
+                                    <span class="oi oi-x"></span>
+                                </button>
                             </div>
                         </div>
-
-                        <button type="button" class="btn btn-sm btn-outline-info" id="add-new-keyword">
+                        <button type="button" class="btn btn-sm btn-outline-info mt-2" @click="addNewKeyword">
                             <span class="oi oi-plus"></span> Add
                         </button>
                     </div>

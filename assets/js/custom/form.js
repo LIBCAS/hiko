@@ -32,7 +32,7 @@ if (document.getElementById('letter-form')) {
             title: '',
             l_number: '',
             languages: [],
-            keywords: [],
+            keywords: [{value: ''}],
             abstract: '',
             incipit: '',
             explicit: '',
@@ -103,7 +103,7 @@ if (document.getElementById('letter-form')) {
                             self.dest_inferred = rd.dest_inferred;
                             self.dest_uncertain = rd.dest_uncertain;
                             self.languages = (rd.languages.length === 0 ? [] : rd.languages.split(';'));
-                            self.keywords = (rd.keywords.length === 0 ? [] : rd.keywords.split(';'));
+                            self.keywords = self.parseKeywords(rd.keywords);
                             self.abstract = rd.abstract;
                             self.incipit = rd.incipit;
                             self.explicit = rd.explicit;
@@ -165,8 +165,27 @@ if (document.getElementById('letter-form')) {
 
             removeKeyword: function(kw) {
                 this.keywords = this.keywords.filter(function(item) {
-                    return item !== kw;
+                    return item.value !== kw.value;
                 });
+            },
+
+            addNewKeyword: function() {
+                this.keywords.push({ value: ''});
+            },
+
+            parseKeywords: function(keywords) {
+                if (keywords.length === 0) {
+                    return;
+                }
+                let kwArr = keywords.split(';');
+
+                let kwObj = [];
+
+                for (let i = 0; i < kwArr.length; i++) {
+                    kwObj.push({ value: kwArr[i] });
+                }
+
+                return kwObj;
             }
         },
 
@@ -178,8 +197,6 @@ if (document.getElementById('letter-form')) {
                 this.addSlimSelect();
             }
         },
-
-
     });
 }
 
@@ -290,49 +307,6 @@ if (document.getElementById('person-name')) {
     });
 }
 
-if (document.getElementById('add-new-keyword')) {
-    document.querySelector('#add-new-keyword').addEventListener('click', function() {
-        addNewInput(this);
-    });
-}
-
-if (document.querySelector('.keywords input')) {
-    document.querySelector('.keywords input').addEventListener('keyup', function(e) {
-        clickButton(e);
-    });
-}
-
-
-function addNewInput(el) {
-    var newInput = `<div class="input-group input-group-sm mb-1">
-    <input type="text" name="keywords[]" class="form-control form-control-sm">
-        <div class="input-group-append">
-            <button class="btn btn-sm btn-outline-danger btn-remove" type="button">
-                <span class="oi oi-x"></span>
-            </button>
-        </div>
-    </div>`;
-    el.insertAdjacentHTML('beforebegin', newInput);
-
-    el.previousSibling.querySelector('input').focus();
-
-    el.previousSibling.querySelector('.btn-remove').addEventListener('click', function() {
-        removeSecondParent(this);
-    });
-
-    el.previousSibling.querySelector('input').addEventListener('keyup', function(e) {
-        clickButton(e);
-    });
-    return;
-}
-
-function clickButton(e) {
-    e.preventDefault();
-    if (e.keyCode === 13) {
-        document.querySelector('#add-new-keyword').click();
-    }
-}
-
 function getNameById(data, id) {
     var filtered = data.filter(function(line) {
         return line.id == id;
@@ -343,10 +317,4 @@ function getNameById(data, id) {
     }
 
     return filtered[0].name;
-}
-
-function removeSecondParent(el) {
-    console.log(el);
-    el.parentNode.parentNode.parentNode.removeChild(el.parentNode.parentNode);
-    return;
 }
