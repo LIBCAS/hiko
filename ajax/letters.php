@@ -142,11 +142,12 @@ function list_public_bl_letters_single()
     $results['ms_manifestation'] = $pod->field('ms_manifestation');
     $results['repository'] = $pod->field('repository');
     $results['name'] = $pod->field('name');
+    $results['status'] = $pod->field('status');
 
     if (is_user_logged_in()) {
         $results['notes_private'] = $pod->field('notes_private');
     }
-    
+
     echo json_encode(
         $results,
         JSON_UNESCAPED_UNICODE
