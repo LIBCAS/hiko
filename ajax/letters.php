@@ -143,6 +143,10 @@ function list_public_bl_letters_single()
     $results['repository'] = $pod->field('repository');
     $results['name'] = $pod->field('name');
 
+    if (is_user_logged_in()) {
+        $results['notes_private'] = $pod->field('notes_private');
+    }
+    
     echo json_encode(
         $results,
         JSON_UNESCAPED_UNICODE
