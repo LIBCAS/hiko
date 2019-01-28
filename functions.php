@@ -198,3 +198,4 @@ function has_user_permission($role)
 require 'ajax/letters.php';
 require 'ajax/people.php';
 require 'ajax/places.php';
+require 'ajax/images.php';
