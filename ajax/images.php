@@ -4,14 +4,14 @@
 function handle_img_uploads()
 {
     if (!array_key_exists('l_type', $_GET) || !array_key_exists('letter', $_GET)) {
-        wp_die('error');
+        wp_send_json_error('Not found', 404);
     }
 
     $id = $_GET['letter'];
     $type = $_GET['l_type'];
 
     if ($type != 'blekastad') {
-        wp_die('error');
+        wp_send_json_error('Not found', 404);
     }
 
     $f = $_FILES['files'];
@@ -30,14 +30,14 @@ function handle_img_uploads()
     if (!is_dir($new_file_dir)) {
         $nf = mkdir($new_file_dir, 0777, true);
         if (!$nf) {
-            wp_die(error_get_last()['message']);
+            wp_send_json_error(error_get_last()['message'], 501);
         }
     }
 
     if ($file_path) {
         $u = move_uploaded_file($f['tmp_name'][0], $filename);
         if (!$u) {
-            wp_die(error_get_last()['message']);
+            wp_send_json_error(error_get_last()['message'], 501);
         } else {
             $insert = wp_insert_attachment(
                 $attachment,
@@ -45,13 +45,13 @@ function handle_img_uploads()
                 0
             );
             if (is_wp_error($insert)) {
-                wp_die('error');
+                wp_send_json_error('error', 500);
             } else {
-                wp_die('success');
+                wp_send_json_success();
             }
         }
     }
-    wp_die('error');
+    wp_send_json_error('error', 500);
 }
 add_action('wp_ajax_handle_img_uploads', 'handle_img_uploads');
 
