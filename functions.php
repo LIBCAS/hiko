@@ -205,7 +205,7 @@ function verify_upload_img($img)
 
     $img_info = getimagesize($img['tmp_name'][0]);
 
-    if (!array_key_exists($img_info, 'mime') || $img_info['mime'] != 'image/jpeg') {
+    if ($img_info['mime'] != 'image/jpeg') {
         return 'Not valid jpg';
     }
 

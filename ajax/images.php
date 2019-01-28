@@ -7,6 +7,7 @@ function handle_img_uploads()
     $valid = verify_upload_img($f);
 
     if ($valid !== true) {
+        //var_dump($f);
         wp_send_json_error($valid, 400);
     }
 
@@ -24,14 +25,15 @@ function handle_img_uploads()
 
     $upload_dir = wp_upload_dir();
     $new_file_dir = $upload_dir['basedir'] . '/' . $type . '/' . $id;
-    $file_path = sanitize_title($f['name'][0]);
+    $file_path = remove_accents($f['name'][0]);
+
     $filename = $new_file_dir . '/' . $file_path;
     $attachment = [
         'guid' => $upload_dir['url'] . '/'. $type . '/' . $id . '/' . basename($filename),
         'post_mime_type' => wp_check_filetype(basename($filename), null)['type'],
         'post_title' => sanitize_title(preg_replace('/\.[^.]+$/', '', basename($filename))),
         'post_content' => '',
-        'post_status' => 'inherit'
+        'post_status' => 'private'
     ];
 
     if (!is_dir($new_file_dir)) {
