@@ -3,31 +3,21 @@
 
 function handle_img_uploads()
 {
-    $error = false;
-    if (!array_key_exists('l_type', $_GET)) {
-        $error = true;
-    } elseif (!array_key_exists('letter', $_GET)) {
-        $error = true;
+    if (!array_key_exists('l_type', $_GET) || !array_key_exists('letter', $_GET)) {
+        wp_die('error');
     }
 
     $id = $_GET['letter'];
     $type = $_GET['l_type'];
 
     if ($type != 'blekastad') {
-        $error = true;
-    }
-
-    if ($error) {
-        echo 'error';
-        wp_die();
-        return;
+        wp_die('error');
     }
 
     $f = $_FILES['files'];
     $upload_dir = wp_upload_dir();
     $new_file_dir = $upload_dir['basedir'] . '/' . $type . '/' . $id;
     $file_path = $f['name'][0];
-    $tmp_file_name = $f['tmp_name'][0];
     $filename = $new_file_dir . '/' . $file_path;
     $attachment = [
         'guid' => $upload_dir['url'] . '/'. $type . '/' . $id . '/' . basename($filename),
@@ -40,17 +30,14 @@ function handle_img_uploads()
     if (!is_dir($new_file_dir)) {
         $nf = mkdir($new_file_dir, 0777, true);
         if (!$nf) {
-            $error = error_get_last();
-            echo $error['message'];
-            return;
+            wp_die(error_get_last()['message']);
         }
     }
 
     if ($file_path) {
-        $u = move_uploaded_file($tmp_file_name, $filename);
+        $u = move_uploaded_file($f['tmp_name'][0], $filename);
         if (!$u) {
-            $error = error_get_last();
-            echo $error['message'];
+            wp_die(error_get_last()['message']);
         } else {
             $insert = wp_insert_attachment(
                 $attachment,
@@ -58,19 +45,13 @@ function handle_img_uploads()
                 0
             );
             if (is_wp_error($insert)) {
-                echo 'error';
-                wp_die();
+                wp_die('error');
             } else {
-                echo 'success';
-                wp_die();
+                wp_die('success');
             }
         }
-    } else {
-        echo 'error';
-        wp_die();
     }
-
-    wp_die();
+    wp_die('error');
 }
 add_action('wp_ajax_handle_img_uploads', 'handle_img_uploads');
 
