@@ -1,7 +1,10 @@
-/* global Uppy */
-// global Vue axios ajaxUrl Uppy
+/* global Uppy ajaxUrl */
 
 if (document.getElementById('media-handler')) {
+    let urlParams = new URLSearchParams(window.location.search);
+    let letterId = urlParams.get('letter');
+    let letterType = urlParams.get('l_type');
+
     Uppy.Core({
         restrictions: {
             maxFileSize: 1000000,
@@ -19,5 +22,8 @@ if (document.getElementById('media-handler')) {
             ],
             proudlyDisplayPoweredByUppy: false,
             locale: {},
-        });
+        })
+
+        .use(Uppy.XHRUpload, {
+            endpoint: ajaxUrl + '?action=handle_img_uploads&l_type=' + letterType + '&letter=' + letterId});
 }

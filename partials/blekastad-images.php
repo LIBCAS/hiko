@@ -1,7 +1,9 @@
 <?php
 $error = false;
 
-if (!array_key_exists('letter', $_GET)) {
+if (!array_key_exists('l_type', $_GET)) {
+    $error = true;
+} elseif (!array_key_exists('letter', $_GET)) {
     $error = true;
 } else {
     $pod = pods('bl_letter', $_GET['letter']);
@@ -10,7 +12,6 @@ if (!array_key_exists('letter', $_GET)) {
         $error = true;
     }
 }
-
 ?>
 
 
