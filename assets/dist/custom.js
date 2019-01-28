@@ -49,6 +49,15 @@ if (document.getElementById('letter-form')) {
       persons: JSON.parse(document.querySelector('#people').innerHTML),
       places: JSON.parse(document.querySelector('#places').innerHTML)
     },
+    mounted: function mounted() {
+      var url = new URL(window.location.href);
+
+      if (url.searchParams.get('edit')) {
+        this.getInitialData(url.searchParams.get('edit'));
+      } else {
+        this.addSlimSelect();
+      }
+    },
     methods: {
       getTitle: function getTitle() {
         var authors = [];
@@ -179,15 +188,6 @@ if (document.getElementById('letter-form')) {
 
         return kwObj;
       }
-    },
-    mounted: function mounted() {
-      var url = new URL(window.location.href);
-
-      if (url.searchParams.get('edit')) {
-        this.getInitialData(url.searchParams.get('edit'));
-      } else {
-        this.addSlimSelect();
-      }
     }
   });
 }
@@ -198,6 +198,13 @@ if (document.getElementById('places-form')) {
     data: {
       place: '',
       country: ''
+    },
+    mounted: function mounted() {
+      var url = new URL(window.location.href);
+
+      if (url.searchParams.get('edit')) {
+        this.getInitialData(url.searchParams.get('edit'));
+      }
     },
     methods: {
       getInitialData: function getInitialData(id) {
@@ -212,13 +219,6 @@ if (document.getElementById('places-form')) {
         }).catch(function () {
           self.error = true;
         });
-      }
-    },
-    mounted: function mounted() {
-      var url = new URL(window.location.href);
-
-      if (url.searchParams.get('edit')) {
-        this.getInitialData(url.searchParams.get('edit'));
       }
     }
   });
@@ -256,6 +256,13 @@ if (document.getElementById('person-name')) {
         return true;
       }
     },
+    mounted: function mounted() {
+      var url = new URL(window.location.href);
+
+      if (url.searchParams.get('edit')) {
+        this.getInitialData(url.searchParams.get('edit'));
+      }
+    },
     methods: {
       capitalize: function capitalize(str) {
         return str.charAt(0).toUpperCase() + str.slice(1);
@@ -276,13 +283,6 @@ if (document.getElementById('person-name')) {
           self.error = true;
           console.log(error);
         });
-      }
-    },
-    mounted: function mounted() {
-      var url = new URL(window.location.href);
-
-      if (url.searchParams.get('edit')) {
-        this.getInitialData(url.searchParams.get('edit'));
       }
     }
   });
