@@ -19,14 +19,23 @@ function handle_img_uploads()
 
     if ($error) {
         echo 'error';
+        wp_die();
         return;
     }
+
     $f = $_FILES['files'];
     $upload_dir = wp_upload_dir();
     $new_file_dir = $upload_dir['basedir'] . '/' . $type . '/' . $id;
     $file_path = $f['name'][0];
     $tmp_file_name = $f['tmp_name'][0];
     $filename = $new_file_dir . '/' . $file_path;
+    $attachment = [
+        'guid' => $upload_dir['url'] . '/'. $type . '/' . $id . '/' . basename($filename),
+        'post_mime_type' => wp_check_filetype(basename($filename), null)['type'],
+        'post_title' => preg_replace('/\.[^.]+$/', '', basename($filename)),
+        'post_content' => '',
+        'post_status' => 'inherit'
+    ];
 
     if (!is_dir($new_file_dir)) {
         $nf = mkdir($new_file_dir, 0777, true);
@@ -39,18 +48,10 @@ function handle_img_uploads()
 
     if ($file_path) {
         $u = move_uploaded_file($tmp_file_name, $filename);
-
         if (!$u) {
             $error = error_get_last();
             echo $error['message'];
         } else {
-            $attachment = [
-                'guid' => $upload_dir['url'] . '/'. $type . '/' . $id . '/' . basename($filename),
-                'post_mime_type' => wp_check_filetype(basename($filename), null)['type'],
-                'post_title' => preg_replace('/\.[^.]+$/', '', basename($filename)),
-                'post_content' => '',
-                'post_status' => 'inherit'
-            ];
             $insert = wp_insert_attachment(
                 $attachment,
                 $filename,
@@ -58,13 +59,15 @@ function handle_img_uploads()
             );
             if (is_wp_error($insert)) {
                 echo 'error';
+                wp_die();
             } else {
                 echo 'success';
-                return;
+                wp_die();
             }
         }
     } else {
         echo 'error';
+        wp_die();
     }
 
     wp_die();
