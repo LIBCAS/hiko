@@ -301,13 +301,9 @@ function getNameById(data, id) {
 }
 "use strict";
 
-/* global Uppy ajaxUrl */
+/* global Uppy */
+// global Vue axios ajaxUrl Uppy
 if (document.getElementById('media-handler')) {
-  var urlParams = new URLSearchParams(window.location.search);
-  var letterId = urlParams.get('letter');
-  var letterType = urlParams.get('l_type');
-  console.log(letterId);
-  console.log(letterType);
   Uppy.Core({
     restrictions: {
       maxFileSize: 1000000,
@@ -326,8 +322,6 @@ if (document.getElementById('media-handler')) {
     }],
     proudlyDisplayPoweredByUppy: false,
     locale: {}
-  }).use(Uppy.XHRUpload, {
-    endpoint: ajaxUrl + '?action=handle_img_uploads'
   });
 }
 "use strict";
