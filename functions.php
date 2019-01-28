@@ -194,6 +194,23 @@ function has_user_permission($role)
     return true;
 }
 
+function verify_upload_img($img)
+{
+    if (!file_exists($img['tmp_name'][0]) || !is_uploaded_file($img['tmp_name'][0])) {
+        return 'No upload';
+    }
+    if ($img['size'][0] > 1000000) {
+        return 'Exceeded filesize limit.';
+    }
+
+    $img_info = getimagesize($img['tmp_name'][0]);
+
+    if (!array_key_exists($img_info, 'mime') || $img_info['mime'] != 'image/jpeg') {
+        return 'Not valid jpg';
+    }
+
+    return true;
+}
 
 require 'ajax/letters.php';
 require 'ajax/people.php';
