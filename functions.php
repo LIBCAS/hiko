@@ -1,7 +1,5 @@
 <?php
 
-require 'libs/claviska/SimpleImage.php';
-
 function remove_admin_bar()
 {
     if (!current_user_can('administrator') && !is_admin()) {
@@ -213,6 +211,7 @@ function verify_upload_img($img)
 
     return true;
 }
+
 
 require 'ajax/letters.php';
 require 'ajax/people.php';
