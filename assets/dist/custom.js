@@ -301,25 +301,65 @@ function getNameById(data, id) {
 }
 "use strict";
 
-/* global Uppy ajaxUrl */
+/* global Uppy ajaxUrl Vue axios */
 if (document.getElementById('media-handler')) {
-  var urlParams = new URLSearchParams(window.location.search);
-  var letterId = urlParams.get('letter');
-  var letterType = urlParams.get('l_type');
-  Uppy.Core({
-    restrictions: {
-      maxFileSize: 500000,
-      minNumberOfFiles: 1,
-      allowedFileTypes: ['image/jpeg']
+  new Vue({
+    el: '#media-handler',
+    data: {
+      images: [],
+      error: false,
+      title: '',
+      letterType: '',
+      letterId: ''
+    },
+    created: function created() {
+      var self = this;
+      var urlParams = new URLSearchParams(window.location.search);
+      self.letterType = urlParams.get('l_type');
+      self.letterId = urlParams.get('letter');
+
+      if (!self.letterType || !self.letterId) {
+        self.error = true;
+        return;
+      }
+
+      Uppy.Core({
+        restrictions: {
+          maxFileSize: 500000,
+          minNumberOfFiles: 1,
+          allowedFileTypes: ['image/jpeg']
+        }
+      }).use(Uppy.Dashboard, {
+        target: '#drag-drop-area',
+        inline: true,
+        showProgressDetails: true,
+        note: 'Soubory nahrávejte ve formátu .jpg o maximální velikosti 500KB.',
+        proudlyDisplayPoweredByUppy: false
+      }).use(Uppy.XHRUpload, {
+        endpoint: ajaxUrl + '?action=handle_img_uploads&l_type=' + self.letterType + '&letter=' + self.letterId
+      });
+    },
+    mounted: function mounted() {
+      this.getImages();
+    },
+    methods: {
+      getImages: function getImages() {
+        var self = this;
+        axios.get(ajaxUrl, {
+          params: {
+            action: 'list_images',
+            letter: this.letterId,
+            l_type: this.letterType
+          }
+        }).then(function (response) {
+          self.title = response.data.data.name;
+          self.images = response.data.data.images;
+        }).catch(function (error) {
+          self.error = true;
+          console.log(error);
+        });
+      }
     }
-  }).use(Uppy.Dashboard, {
-    target: '#drag-drop-area',
-    inline: true,
-    showProgressDetails: true,
-    note: 'Soubory nahrávejte ve formátu .jpg o maximální velikosti 500KB.',
-    proudlyDisplayPoweredByUppy: false
-  }).use(Uppy.XHRUpload, {
-    endpoint: ajaxUrl + '?action=handle_img_uploads&l_type=' + letterType + '&letter=' + letterId
   });
 }
 "use strict";

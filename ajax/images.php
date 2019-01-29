@@ -73,14 +73,40 @@ function handle_img_uploads()
 add_action('wp_ajax_handle_img_uploads', 'handle_img_uploads');
 
 
-function handle_bl_image()
+function list_images()
 {
-    if (!has_user_permission('blekastad_editor')) {
-        echo '403';
-        wp_die();
+    $result = [];
+
+    if (!array_key_exists('l_type', $_GET) || !array_key_exists('letter', $_GET)) {
+        wp_send_json_error('Not found', 404);
     }
 
-    wp_die();
+    $id = sanitize_text_field($_GET['letter']);
+    $type = sanitize_text_field($_GET['l_type']);
+
+    $pod = pods($type, $id);
+
+    if (!$pod->exists()) {
+        wp_send_json_error('Not found', 404);
+    }
+
+    $images = $pod->field('images');
+
+    $results['name'] = $pod->field('name');
+    $results['images'] = [];
+
+    $i = 0;
+    foreach ($images as $img) {
+        $results['images'][$i]['id'] = $img['ID'];
+        $results['images'][$i]['img']['large'] = $img['guid'];
+        $results['images'][$i]['img']['thumb'] = wp_get_attachment_image_src($img['ID'], 'thumbnail')[0];
+        $results['images'][$i]['caption'] = wp_get_attachment_caption($img['ID']);
+        $results['images'][$i]['post_status'] = $img['post_status'];
+        $i++;
+    }
+
+
+    wp_send_json_success($results);
 }
 
-add_action('wp_ajax_handle_bl_image', 'handle_bl_image');
+add_action('wp_ajax_list_images', 'list_images');
