@@ -310,7 +310,11 @@ if (document.getElementById('media-handler')) {
       error: false,
       title: '',
       letterType: '',
-      letterId: ''
+      letterId: '',
+      modal: {
+        visibility: false,
+        src: false
+      }
     },
     created: function created() {
       var self = this;
@@ -343,6 +347,14 @@ if (document.getElementById('media-handler')) {
       this.getImages();
     },
     methods: {
+      openModal: function openModal(image) {
+        this.modal.visibility = true;
+        this.modal.src = image.img.large;
+      },
+      closeModal: function closeModal() {
+        this.modal.visibility = false;
+        this.modal.src = false;
+      },
       getImages: function getImages() {
         var self = this;
         axios.get(ajaxUrl, {

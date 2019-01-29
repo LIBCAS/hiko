@@ -9,8 +9,11 @@ if (document.getElementById('media-handler')) {
             title: '',
             letterType: '',
             letterId: '',
+            modal: {
+                visibility: false,
+                src: false,
+            },
         },
-
         created: function() {
             let self = this
             let urlParams = new URLSearchParams(window.location.search)
@@ -51,6 +54,16 @@ if (document.getElementById('media-handler')) {
         },
 
         methods: {
+            openModal: function(image) {
+                this.modal.visibility = true
+                this.modal.src = image.img.large
+            },
+
+            closeModal: function() {
+                this.modal.visibility = false
+                this.modal.src = false
+            },
+
             getImages: function() {
                 let self = this
                 axios
