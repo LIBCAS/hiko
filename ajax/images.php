@@ -13,8 +13,14 @@ function handle_img_uploads()
         wp_send_json_error('Not found', 404);
     }
 
-    $id = $_GET['letter'];
-    $type = $_GET['l_type'];
+    $id = sanitize_text_field($_GET['letter']);
+    $type = sanitize_text_field($_GET['l_type']);
+
+    $pod = pods($type, $id);
+
+    if (!$pod->exists()) {
+        wp_send_json_error('Not found', 404);
+    }
 
     if ($type != 'blekastad') {
         wp_send_json_error('Not found', 404);
