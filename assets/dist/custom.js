@@ -301,7 +301,7 @@ function getNameById(data, id) {
 }
 "use strict";
 
-/* global Uppy ajaxUrl Vue axios */
+/* global Uppy ajaxUrl Vue axios Swal */
 if (document.getElementById('media-handler')) {
   new Vue({
     el: '#media-handler',
@@ -355,6 +355,18 @@ if (document.getElementById('media-handler')) {
         this.modal.visibility = false;
         this.modal.src = false;
       },
+      deleteImage: function deleteImage(id) {
+        var self = this;
+        removeImage(self.letterId, self.letterType, id, function () {
+          self.deleteRow(id);
+        });
+      },
+      deleteRow: function deleteRow(id) {
+        var self = this;
+        self.images = self.images.filter(function (item) {
+          return item.id !== id;
+        });
+      },
       getImages: function getImages() {
         var self = this;
         axios.get(ajaxUrl, {
@@ -371,6 +383,48 @@ if (document.getElementById('media-handler')) {
           console.log(error);
         });
       }
+    }
+  });
+}
+
+function removeImage(letterID, letterType, imgID, callback) {
+  Swal.fire({
+    title: 'Opravdu chcete odstranit tento obrázek?',
+    type: 'warning',
+    buttonsStyling: false,
+    showCancelButton: true,
+    confirmButtonText: 'Ano!',
+    cancelButtonText: 'Zrušit',
+    confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+    cancelButtonClass: 'btn btn-secondary btn-lg ml-1'
+  }).then(function (result) {
+    if (result.value) {
+      axios.get(ajaxUrl, {
+        params: {
+          action: 'list_images',
+          letter: letterID,
+          l_type: letterType,
+          img: imgID
+        }
+      }).then(function () {
+        Swal.fire({
+          title: 'Odstraněno.',
+          type: 'success',
+          buttonsStyling: false,
+          confirmButtonText: 'OK',
+          confirmButtonClass: 'btn btn-primary btn-lg'
+        });
+        callback();
+      }).catch(function (error) {
+        Swal.fire({
+          title: 'Při odstraňování došlo k chybě.',
+          text: error,
+          type: 'error',
+          buttonsStyling: false,
+          confirmButtonText: 'OK',
+          confirmButtonClass: 'btn btn-primary btn-lg'
+        });
+      });
     }
   });
 }

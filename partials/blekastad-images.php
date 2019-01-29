@@ -19,7 +19,7 @@
                     <div class="media-body pb-2">
                         <ul class="list-unstyled">
                             <li class="text-info pointer" @click="openModal(image)"><span class="oi oi-eye mr-1"></span>Zobrazit</li>
-                            <li class="text-danger pointer"><span class="oi oi-trash mr-1"></span>Odstranit</li>
+                            <li class="text-danger pointer" @click="deleteImage(image.id)"><span class="oi oi-trash mr-1"></span>Odstranit</li>
                             <li class="text-primary pointer"><span class="oi oi-brush mr-1"></span>Upravit</li>
                         </ul>
                         <form class="mt-3" style="max-width:400px">

@@ -105,8 +105,34 @@ function list_images()
         $i++;
     }
 
-
     wp_send_json_success($results);
 }
-
 add_action('wp_ajax_list_images', 'list_images');
+
+
+
+function delete_image()
+{
+
+    $result = [];
+
+    if (!array_key_exists('l_type', $_GET) || !array_key_exists('letter', $_GET) || !array_key_exists('img', $_GET)) {
+        wp_send_json_error('Not found', 404);
+    }
+
+    $letter_id = sanitize_text_field($_GET['letter']);
+    $type = sanitize_text_field($_GET['l_type']);
+    $img_id = sanitize_text_field($_GET['img']);
+
+    $pod = pods($type, $letter_id);
+
+    if (!$pod->exists()) {
+        wp_send_json_error('Not found', 404);
+    }
+
+    $pod->remove_from('images', $img_id);
+    $pod->save;
+    $delete = wp_delete_attachment($img_id, true);
+    wp_die($delete);
+}
+add_action('wp_ajax_delete_image', 'delete_image');
