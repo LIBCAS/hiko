@@ -1,5 +1,7 @@
 <?php
 
+require 'libs/claviska/SimpleImage.php';
+
 function remove_admin_bar()
 {
     if (!current_user_can('administrator') && !is_admin()) {
