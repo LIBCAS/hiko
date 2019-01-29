@@ -308,7 +308,7 @@ if (document.getElementById('media-handler')) {
   var letterType = urlParams.get('l_type');
   Uppy.Core({
     restrictions: {
-      maxFileSize: 1000000,
+      maxFileSize: 500000,
       minNumberOfFiles: 1,
       allowedFileTypes: ['image/jpeg']
     }
@@ -316,14 +316,8 @@ if (document.getElementById('media-handler')) {
     target: '#drag-drop-area',
     inline: true,
     showProgressDetails: true,
-    note: 'Soubory nahrávejte ve formátu .jpg o maximální velikosti 1MB.',
-    metaFields: [{
-      id: 'caption',
-      name: 'Popisek',
-      placeholder: ''
-    }],
-    proudlyDisplayPoweredByUppy: false,
-    locale: {}
+    note: 'Soubory nahrávejte ve formátu .jpg o maximální velikosti 500KB.',
+    proudlyDisplayPoweredByUppy: false
   }).use(Uppy.XHRUpload, {
     endpoint: ajaxUrl + '?action=handle_img_uploads&l_type=' + letterType + '&letter=' + letterId
   });

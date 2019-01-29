@@ -7,7 +7,7 @@ if (document.getElementById('media-handler')) {
 
     Uppy.Core({
         restrictions: {
-            maxFileSize: 1000000,
+            maxFileSize: 500000,
             minNumberOfFiles: 1,
             allowedFileTypes: ['image/jpeg'],
         },
@@ -17,10 +17,8 @@ if (document.getElementById('media-handler')) {
             inline: true,
             showProgressDetails: true,
             note:
-                'Soubory nahrávejte ve formátu .jpg o maximální velikosti 1MB.',
-            metaFields: [{ id: 'caption', name: 'Popisek', placeholder: '' }],
+                'Soubory nahrávejte ve formátu .jpg o maximální velikosti 500KB.',
             proudlyDisplayPoweredByUppy: false,
-            locale: {},
         })
 
         .use(Uppy.XHRUpload, {
