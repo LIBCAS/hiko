@@ -62,6 +62,8 @@ function handle_img_uploads()
             } else {
                 $thumbs = wp_generate_attachment_metadata($insert, $filename);
                 wp_update_attachment_metadata($insert, $thumbs);
+                $pod->add_to('images', $insert);
+                $pod->save;
                 wp_send_json_success();
             }
         }
