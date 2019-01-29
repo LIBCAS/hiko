@@ -101,7 +101,7 @@ function list_images()
         $results['images'][$i]['img']['large'] = $img['guid'];
         $results['images'][$i]['img']['thumb'] = wp_get_attachment_image_src($img['ID'], 'thumbnail')[0];
         $results['images'][$i]['caption'] = wp_get_attachment_caption($img['ID']);
-        $results['images'][$i]['post_status'] = $img['post_status'];
+        $results['images'][$i]['status'] = $img['post_status'];
         $i++;
     }
 
