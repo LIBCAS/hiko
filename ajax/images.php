@@ -1,13 +1,11 @@
 <?php
 
-
 function handle_img_uploads()
 {
     $f = $_FILES['files'];
     $valid = verify_upload_img($f);
 
     if ($valid !== true) {
-        //var_dump($f);
         wp_send_json_error($valid, 400);
     }
 
@@ -56,6 +54,8 @@ function handle_img_uploads()
             if (is_wp_error($insert)) {
                 wp_send_json_error('error', 500);
             } else {
+                $thumbs = wp_generate_attachment_metadata($insert, $filename);
+                wp_update_attachment_metadata($insert, $thumbs);
                 wp_send_json_success();
             }
         }
