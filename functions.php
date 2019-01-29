@@ -213,6 +213,9 @@ function verify_upload_img($img)
 }
 
 
+add_image_size('xl-thumb', 300);
+
+
 require 'ajax/letters.php';
 require 'ajax/people.php';
 require 'ajax/places.php';
