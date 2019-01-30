@@ -116,7 +116,7 @@ function removeImage(letterID, letterType, imgID, callback) {
             axios
                 .get(ajaxUrl, {
                     params: {
-                        action: 'list_images',
+                        action: 'delete_image',
                         letter: letterID,
                         l_type: letterType,
                         img: imgID,
