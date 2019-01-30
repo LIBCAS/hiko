@@ -76,6 +76,7 @@ if (document.getElementById('media-handler')) {
             },
 
             registerUppy: function() {
+                let self = this
                 Uppy.Core({
                     restrictions: {
                         maxFileSize: 500000,

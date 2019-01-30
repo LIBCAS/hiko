@@ -369,6 +369,7 @@ if (document.getElementById('media-handler')) {
         });
       },
       registerUppy: function registerUppy() {
+        var self = this;
         Uppy.Core({
           restrictions: {
             maxFileSize: 500000,
