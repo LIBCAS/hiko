@@ -33,7 +33,7 @@
                                     <option value="publish">Veřejné</option>
                                 </select>
                             </div>
-                            <button type="button" name="button" class="btn btn-sm btn-primary">Uložit změny</button>
+                            <button @click="editImageMetadata" type="button" name="button" class="btn btn-sm btn-primary">Uložit změny</button>
                         </form>
                     </div>
                 </li>

@@ -136,3 +136,33 @@ function delete_image()
     wp_die($delete);
 }
 add_action('wp_ajax_delete_image', 'delete_image');
+
+
+function change_metadata()
+{
+    $data = key($_POST);
+    $data = json_decode($data);
+    var_dump($data);
+    die();
+    $result = [];
+
+    if (!array_key_exists('l_type', $_POST) || !array_key_exists('letter', $_POST) || !array_key_exists('img', $_POST)) {
+        wp_send_json_error('Not found', 404);
+    }
+
+    $letter_id = sanitize_text_field($_POST['letter']);
+    $type = sanitize_text_field($_POST['l_type']);
+    $img_id = sanitize_text_field($_POST['img']);
+
+    $pod = pods($type, $letter_id);
+
+    if (!$pod->exists()) {
+        wp_send_json_error('Not found', 404);
+    }
+
+    $pod->remove_from('images', $img_id);
+    $pod->save;
+    $delete = wp_delete_attachment($img_id, true);
+    wp_die($delete);
+}
+add_action('wp_ajax_change_metadata', 'change_metadata');

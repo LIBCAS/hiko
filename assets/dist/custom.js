@@ -368,6 +368,13 @@ if (document.getElementById('media-handler')) {
           console.log(error);
         });
       },
+      editImageMetadata: function editImageMetadata(id) {
+        var self = this;
+
+        _editImageMetadata(self.letterId, self.letterType, id, function () {
+          self.getImages();
+        });
+      },
       registerUppy: function registerUppy() {
         var self = this;
         Uppy.Core({
@@ -430,6 +437,72 @@ function removeImage(letterID, letterType, imgID, callback) {
       });
     }
   });
+}
+
+function _editImageMetadata(letterID, letterType, imgID, callback) {
+  axios({
+    method: 'post',
+    url: ajaxUrl + '?action=change_metadata',
+    data: {
+      letter: letterID,
+      l_type: letterType,
+      img: imgID
+    },
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
+  /*
+  console.log(letterID)
+  Swal.fire({
+      title: 'Chcete uložit zadané údaje',
+      type: 'info',
+      buttonsStyling: false,
+      showCancelButton: true,
+      confirmButtonText: 'Ano!',
+      cancelButtonText: 'Zrušit',
+      confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+      cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
+  }).then(result => {
+      if (result.value) {
+          axios({
+              method: 'post',
+              url: ajaxUrl + '?action=change_metadata',
+              data: {
+                  letter: letterID,
+                  l_type: letterType,
+                  img: imgID,
+              },
+              headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                  'Access-Control-Allow-Origin': '*',
+              },
+          })
+              .then(function() {
+                  console.log(letterID)
+                  Swal.fire({
+                      title: 'Data byla úspěšně uložena.',
+                      type: 'success',
+                      buttonsStyling: false,
+                      confirmButtonText: 'OK',
+                      confirmButtonClass: 'btn btn-primary btn-lg',
+                  })
+                  callback()
+              })
+              .catch(function(error) {
+                  Swal.fire({
+                      title: 'Při ukládání došlo k chybě.',
+                      text: error,
+                      type: 'error',
+                      buttonsStyling: false,
+                      confirmButtonText: 'OK',
+                      confirmButtonClass: 'btn btn-primary btn-lg',
+                  })
+              })
+      }
+  })
+  */
 }
 "use strict";
 
