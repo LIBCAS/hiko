@@ -326,25 +326,10 @@ if (document.getElementById('media-handler')) {
         self.error = true;
         return;
       }
-
-      Uppy.Core({
-        restrictions: {
-          maxFileSize: 500000,
-          minNumberOfFiles: 1,
-          allowedFileTypes: ['image/jpeg']
-        }
-      }).use(Uppy.Dashboard, {
-        target: '#drag-drop-area',
-        inline: true,
-        showProgressDetails: true,
-        note: 'Soubory nahrávejte ve formátu .jpg o maximální velikosti 500KB.',
-        proudlyDisplayPoweredByUppy: false
-      }).use(Uppy.XHRUpload, {
-        endpoint: ajaxUrl + '?action=handle_img_uploads&l_type=' + self.letterType + '&letter=' + self.letterId
-      });
     },
     mounted: function mounted() {
       this.getImages();
+      this.registerUppy();
     },
     methods: {
       openModal: function openModal(image) {
@@ -381,6 +366,23 @@ if (document.getElementById('media-handler')) {
         }).catch(function (error) {
           self.error = true;
           console.log(error);
+        });
+      },
+      registerUppy: function registerUppy() {
+        Uppy.Core({
+          restrictions: {
+            maxFileSize: 500000,
+            minNumberOfFiles: 1,
+            allowedFileTypes: ['image/jpeg']
+          }
+        }).use(Uppy.Dashboard, {
+          target: '#drag-drop-area',
+          inline: true,
+          showProgressDetails: true,
+          note: 'Soubory nahrávejte ve formátu .jpg o maximální velikosti 500KB.',
+          proudlyDisplayPoweredByUppy: false
+        }).use(Uppy.XHRUpload, {
+          endpoint: ajaxUrl + '?action=handle_img_uploads&l_type=' + self.letterType + '&letter=' + self.letterId
         });
       }
     }
