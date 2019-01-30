@@ -13,7 +13,7 @@ get_header();
         <div class="col">
             <?php if (user_has_role('administrator') || user_has_role('blekastad_editor')) : ?>
                 <h1 class="mb-3">Obrazové přílohy</h1>
-                <?php require 'partials/blekastad-images.php'; ?>
+                <?php require 'partials/images.php'; ?>
             <?php else : ?>
                 <div class="alert alert-warning">
                     Pro zobrazení nemáte patřičná oprávnění.
