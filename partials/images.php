@@ -14,13 +14,12 @@
             <h4>Upravit nahrané obrazové přílohy</h4>
             <ul id="media-list" class="list-unstyled">
 
-                <li v-for="image in images" class="media p-2 my-3 border border-primary">
+                <li v-for="(image, index) in images" :key="index" class="media p-2 my-3 border border-primary">
                     <img class="mr-3" :src="image.img.thumb" :alt="image.caption">
                     <div class="media-body pb-2">
                         <ul class="list-unstyled">
                             <li class="text-info pointer" @click="openModal(image)"><span class="oi oi-eye mr-1"></span>Zobrazit</li>
                             <li class="text-danger pointer" @click="deleteImage(image.id)"><span class="oi oi-trash mr-1"></span>Odstranit</li>
-                            <li class="text-primary pointer"><span class="oi oi-brush mr-1"></span>Upravit</li>
                         </ul>
                         <form class="mt-3" style="max-width:400px">
                             <div class="form-group mb-2">
@@ -34,7 +33,7 @@
                                     <option value="publish">Veřejné</option>
                                 </select>
                             </div>
-                            <button type="button" name="button" class="btn btn-sm btn-primary">Uložit</button>
+                            <button type="button" name="button" class="btn btn-sm btn-primary">Uložit změny</button>
                         </form>
                     </div>
                 </li>
