@@ -32,6 +32,12 @@ function handle_img_uploads()
     $file_path = remove_accents($f['name'][0]);
 
     $filename = $new_file_dir . '/' . $file_path;
+
+    if (file_exists($upload_dir['basedir'] . '/'. $type . '/' . $id . '/' . basename($filename))) {
+        wp_send_json_error('File already exists', 403);
+        wp_die();
+    }
+
     $attachment = [
         'guid' => $upload_dir['url'] . '/'. $type . '/' . $id . '/' . basename($filename),
         'post_mime_type' => wp_check_filetype(basename($filename), null)['type'],
