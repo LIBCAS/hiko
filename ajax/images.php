@@ -113,6 +113,7 @@ function list_images()
         $results['images'][$i]['img']['large'] = $img['guid'];
         $results['images'][$i]['img']['thumb'] = wp_get_attachment_image_src($img['ID'], 'thumbnail')[0];
         $results['images'][$i]['description'] = get_post_field('post_content', $img['ID']);
+        $results['images'][$i]['order'] = get_post_meta($img['ID'], 'order', true);
         $results['images'][$i]['status'] = $img['post_status'];
         $i++;
     }
