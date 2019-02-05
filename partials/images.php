@@ -18,8 +18,27 @@
         </div>
         <div class="section mb-5">
             <h4>Upravit nahrané obrazové přílohy</h4>
-            <ul id="media-list" class="list-unstyled">
 
+            <div class="text-right" v-if="images.length > 1">
+                <span v-if="!orderMode" class="text-info pointer" @click="orderMode = true">Seřadit</span>
+                <span v-if="orderMode">
+                    <span class="text-warning pointer" @click="orderMode = false; getImages()">Zrušit</span> / <span v-if="orderMode" class="text-info pointer" @click="saveImagesOrder">Uložit</span>
+                </span>
+            </div>
+
+            <draggable v-if="orderMode" v-model="images" :options="{handle:'.handle'}" ref="dnd">
+                <div v-for="(image, index) in images" :key="index" class="media p-2 my-3 border border-primary">
+                    <div class="media-body pb-2 d-flex justify-content-between align-items-center">
+                        <img class="mr-3" :src="image.img.thumb" :alt="image.description" width="64px" height="64px">
+                        <span>
+                            {{ image.description }}
+                        </span>
+                        <span class="oi oi-move display-4 handle" style="line-height:1"></span>
+                    </div>
+                </div>
+            </draggable>
+
+            <ul id="media-list" class="list-unstyled" v-if="!orderMode">
                 <li v-for="(image, index) in images" :key="index" class="media p-2 my-3 border border-primary">
                     <img class="mr-3" :src="image.img.thumb" :alt="image.description">
                     <div class="media-body pb-2">
