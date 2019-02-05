@@ -107,17 +107,23 @@ function list_images()
     $results['images'] = [];
     $results['url'] = $url;
 
+    $images_sorted = [];
     $i = 0;
     foreach ($images as $img) {
-        $results['images'][$i]['id'] = $img['ID'];
-        $results['images'][$i]['img']['large'] = $img['guid'];
-        $results['images'][$i]['img']['thumb'] = wp_get_attachment_image_src($img['ID'], 'thumbnail')[0];
-        $results['images'][$i]['description'] = get_post_field('post_content', $img['ID']);
-        $results['images'][$i]['order'] = intval(get_post_meta($img['ID'], 'order', true));
-        $results['images'][$i]['status'] = $img['post_status'];
+        $images_sorted[$i]['id'] = $img['ID'];
+        $images_sorted[$i]['img']['large'] = $img['guid'];
+        $images_sorted[$i]['img']['thumb'] = wp_get_attachment_image_src($img['ID'], 'thumbnail')[0];
+        $images_sorted[$i]['description'] = get_post_field('post_content', $img['ID']);
+        $images_sorted[$i]['order'] = intval(get_post_meta($img['ID'], 'order', true));
+        $images_sorted[$i]['status'] = $img['post_status'];
         $i++;
     }
 
+    usort($images_sorted, function ($a, $b) {
+        return $a['order'] - $b['order'];
+    });
+
+    $results['images'] = $images_sorted;
     wp_send_json_success($results);
 }
 add_action('wp_ajax_list_images', 'list_images');
