@@ -391,14 +391,22 @@ if (document.getElementById('media-handler')) {
         }).use(Uppy.XHRUpload, {
           endpoint: ajaxUrl + '?action=handle_img_uploads&l_type=' + self.letterType + '&letter=' + self.letterId
         });
-        uppy.on('complete', function () {
-          Swal.fire({
-            title: 'Nahrávání dokončeno',
-            type: 'success',
-            buttonsStyling: false,
-            confirmButtonText: 'OK',
-            confirmButtonClass: 'btn btn-primary btn-lg'
-          });
+        uppy.on('complete', function (result) {
+          if (result.hasOwnProperty('failed')) {
+            var failed = result.failed;
+
+            for (var i = 0; i < failed.length; i++) {
+              Swal.fire({
+                title: 'Při ukládání došlo k chybě.',
+                text: JSON.stringify(failed[i].response),
+                type: 'error',
+                buttonsStyling: false,
+                confirmButtonText: 'OK',
+                confirmButtonClass: 'btn btn-primary btn-lg'
+              });
+            }
+          }
+
           self.getImages();
         });
       }

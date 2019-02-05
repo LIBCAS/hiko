@@ -107,14 +107,20 @@ if (document.getElementById('media-handler')) {
                             '&letter=' +
                             self.letterId,
                     })
-                uppy.on('complete', () => {
-                    Swal.fire({
-                        title: 'Nahrávání dokončeno',
-                        type: 'success',
-                        buttonsStyling: false,
-                        confirmButtonText: 'OK',
-                        confirmButtonClass: 'btn btn-primary btn-lg',
-                    })
+                uppy.on('complete', result => {
+                    if (result.hasOwnProperty('failed')) {
+                        let failed = result.failed
+                        for (let i = 0; i < failed.length; i++) {
+                            Swal.fire({
+                                title: 'Při ukládání došlo k chybě.',
+                                text: JSON.stringify(failed[i].response),
+                                type: 'error',
+                                buttonsStyling: false,
+                                confirmButtonText: 'OK',
+                                confirmButtonClass: 'btn btn-primary btn-lg',
+                            })
+                        }
+                    }
                     self.getImages()
                 })
             },
