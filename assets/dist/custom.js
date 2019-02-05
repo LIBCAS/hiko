@@ -378,7 +378,7 @@ if (document.getElementById('media-handler')) {
       },
       registerUppy: function registerUppy() {
         var self = this;
-        Uppy.Core({
+        var uppy = Uppy.Core({
           restrictions: {
             maxFileSize: 500000,
             minNumberOfFiles: 1,
@@ -392,6 +392,16 @@ if (document.getElementById('media-handler')) {
           proudlyDisplayPoweredByUppy: false
         }).use(Uppy.XHRUpload, {
           endpoint: ajaxUrl + '?action=handle_img_uploads&l_type=' + self.letterType + '&letter=' + self.letterId
+        });
+        uppy.on('complete', function () {
+          Swal.fire({
+            title: 'Nahrávání dokončeno',
+            type: 'success',
+            buttonsStyling: false,
+            confirmButtonText: 'OK',
+            confirmButtonClass: 'btn btn-primary btn-lg'
+          });
+          self.getImages();
         });
       }
     }

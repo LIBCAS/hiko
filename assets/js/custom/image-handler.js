@@ -85,7 +85,7 @@ if (document.getElementById('media-handler')) {
 
             registerUppy: function() {
                 let self = this
-                Uppy.Core({
+                var uppy = Uppy.Core({
                     restrictions: {
                         maxFileSize: 500000,
                         minNumberOfFiles: 1,
@@ -109,6 +109,16 @@ if (document.getElementById('media-handler')) {
                             '&letter=' +
                             self.letterId,
                     })
+                uppy.on('complete', () => {
+                    Swal.fire({
+                        title: 'Nahrávání dokončeno',
+                        type: 'success',
+                        buttonsStyling: false,
+                        confirmButtonText: 'OK',
+                        confirmButtonClass: 'btn btn-primary btn-lg',
+                    })
+                    self.getImages()
+                })
             },
         },
     })
