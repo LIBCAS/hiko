@@ -86,9 +86,26 @@ if (document.getElementById('media-handler')) {
             },
 
             saveImagesOrder: function() {
-                let images = this.$refs.dnd.realList
-                console.log(images)
-                // saveImageOrder(id, order)
+                let self = this
+                Swal.fire({
+                    title: 'Chcete uložit zadané pořadí?',
+                    type: 'info',
+                    buttonsStyling: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'Ano!',
+                    cancelButtonText: 'Zrušit',
+                    confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+                    cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
+                }).then(result => {
+                    if (result.value) {
+                        let ordered = this.$refs.dnd.realList
+                        for (let i = 0; i < ordered.length; i++) {
+                            saveImageOrder(ordered[i].id, i)
+                        }
+                        self.getImages()
+                        self.orderMode = false
+                    }
+                })
             },
 
             registerUppy: function() {
@@ -233,51 +250,30 @@ function editImageMetadata(image, callback) {
     })
 }
 
-function saveImageOrder(image, callback) {
-    Swal.fire({
-        title: 'Chcete uložit zadané pořadí?',
-        type: 'info',
-        buttonsStyling: false,
-        showCancelButton: true,
-        confirmButtonText: 'Ano!',
-        cancelButtonText: 'Zrušit',
-        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
-    }).then(result => {
-        if (result.value) {
-            axios({
-                method: 'post',
-                url: ajaxUrl + '?action=change_image_order',
-                data: {
-                    img_id: image.id,
-                    img_order: image.order,
-                },
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Access-Control-Allow-Origin': '*',
-                },
-            })
-                .then(function() {
-                    Swal.fire({
-                        title: 'Data byla úspěšně uložena.',
-                        type: 'success',
-                        buttonsStyling: false,
-                        confirmButtonText: 'OK',
-                        confirmButtonClass: 'btn btn-primary btn-lg',
-                    })
-                    callback()
-                })
-                .catch(function(error) {
-                    Swal.fire({
-                        title: 'Při ukládání došlo k chybě.',
-                        text: error,
-                        type: 'error',
-                        buttonsStyling: false,
-                        confirmButtonText: 'OK',
-                        confirmButtonClass: 'btn btn-primary btn-lg',
-                    })
-                    callback()
-                })
-        }
+function saveImageOrder(id, order) {
+    axios({
+        method: 'post',
+        url: ajaxUrl + '?action=change_image_order',
+        data: {
+            img_id: id,
+            img_order: order,
+        },
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Access-Control-Allow-Origin': '*',
+        },
     })
+        .then(function() {
+            return true
+        })
+        .catch(function(error) {
+            Swal.fire({
+                title: 'Při ukládání došlo k chybě.',
+                text: error,
+                type: 'error',
+                buttonsStyling: false,
+                confirmButtonText: 'OK',
+                confirmButtonClass: 'btn btn-primary btn-lg',
+            })
+        })
 }
