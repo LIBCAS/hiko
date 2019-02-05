@@ -15,7 +15,7 @@
             <ul id="media-list" class="list-unstyled">
 
                 <li v-for="(image, index) in images" :key="index" class="media p-2 my-3 border border-primary">
-                    <img class="mr-3" :src="image.img.thumb" :alt="image.caption">
+                    <img class="mr-3" :src="image.img.thumb" :alt="image.description">
                     <div class="media-body pb-2">
                         <ul class="list-unstyled">
                             <li class="text-info pointer" @click="openModal(image)"><span class="oi oi-eye mr-1"></span>Zobrazit</li>
@@ -23,17 +23,17 @@
                         </ul>
                         <form class="mt-3" style="max-width:400px">
                             <div class="form-group mb-2">
-                                <label for="caption" class="mb-1">Popisek</label>
-                                <textarea v-model="image.caption" type="text" name="caption" class="form-control form-control-sm"></textarea>
+                                <label for="description" class="mb-1">Popisek</label>
+                                <textarea v-model="image.description" type="text" name="description" class="form-control form-control-sm"></textarea>
                             </div>
                             <div class="form-group mb-2">
                                 <label for="status" class="mb-1">Viditelnost</label>
                                 <select v-model="image.status" class="form-control form-control-sm" name="status">
                                     <option value="private">Soukromé</option>
-                                    <option value="publish">Veřejné</option>
+                                    <option value="inherit">Veřejné</option>
                                 </select>
                             </div>
-                            <button @click="editImageMetadata" type="button" name="button" class="btn btn-sm btn-primary">Uložit změny</button>
+                            <button @click="editImageMetadata(image)" type="button" name="button" class="btn btn-sm btn-primary">Uložit změny</button>
                         </form>
                     </div>
                 </li>

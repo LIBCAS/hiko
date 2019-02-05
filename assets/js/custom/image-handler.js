@@ -75,16 +75,12 @@ if (document.getElementById('media-handler')) {
                     })
             },
 
-            editImageMetadata: function(id) {
+            editImageMetadata: function(image) {
+                console.log(image)
                 let self = this
-                editImageMetadata(
-                    self.letterId,
-                    self.letterType,
-                    id,
-                    function() {
-                        self.getImages()
-                    }
-                )
+                editImageMetadata(image, function() {
+                    self.getImages()
+                })
             },
 
             registerUppy: function() {
@@ -163,24 +159,9 @@ function removeImage(letterID, letterType, imgID, callback) {
     })
 }
 
-function editImageMetadata(letterID, letterType, imgID, callback) {
-    axios({
-        method: 'post',
-        url: ajaxUrl + '?action=change_metadata',
-        data: {
-            letter: letterID,
-            l_type: letterType,
-            img: imgID,
-        },
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Access-Control-Allow-Origin': '*',
-        },
-    })
-    /*
-    console.log(letterID)
+function editImageMetadata(image, callback) {
     Swal.fire({
-        title: 'Chcete uložit zadané údaje',
+        title: 'Chcete uložit zadané údaje?',
         type: 'info',
         buttonsStyling: false,
         showCancelButton: true,
@@ -194,9 +175,9 @@ function editImageMetadata(letterID, letterType, imgID, callback) {
                 method: 'post',
                 url: ajaxUrl + '?action=change_metadata',
                 data: {
-                    letter: letterID,
-                    l_type: letterType,
-                    img: imgID,
+                    img_id: image.id,
+                    img_status: image.status,
+                    img_description: image.description,
                 },
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -204,7 +185,6 @@ function editImageMetadata(letterID, letterType, imgID, callback) {
                 },
             })
                 .then(function() {
-                    console.log(letterID)
                     Swal.fire({
                         title: 'Data byla úspěšně uložena.',
                         type: 'success',
@@ -223,8 +203,8 @@ function editImageMetadata(letterID, letterType, imgID, callback) {
                         confirmButtonText: 'OK',
                         confirmButtonClass: 'btn btn-primary btn-lg',
                     })
+                    callback()
                 })
         }
     })
-    */
 }

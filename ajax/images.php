@@ -100,7 +100,7 @@ function list_images()
         $results['images'][$i]['id'] = $img['ID'];
         $results['images'][$i]['img']['large'] = $img['guid'];
         $results['images'][$i]['img']['thumb'] = wp_get_attachment_image_src($img['ID'], 'thumbnail')[0];
-        $results['images'][$i]['caption'] = wp_get_attachment_caption($img['ID']);
+        $results['images'][$i]['description'] = get_post_field('post_content', $img['ID']);
         $results['images'][$i]['status'] = $img['post_status'];
         $i++;
     }
@@ -142,27 +142,30 @@ function change_metadata()
 {
     $data = key($_POST);
     $data = json_decode($data);
-    var_dump($data);
-    die();
+
     $result = [];
 
-    if (!array_key_exists('l_type', $_POST) || !array_key_exists('letter', $_POST) || !array_key_exists('img', $_POST)) {
+    if (!property_exists($data, 'img_id') || !property_exists($data, 'img_status') || !property_exists($data, 'img_description')) {
         wp_send_json_error('Not found', 404);
     }
 
-    $letter_id = sanitize_text_field($_POST['letter']);
-    $type = sanitize_text_field($_POST['l_type']);
-    $img_id = sanitize_text_field($_POST['img']);
+    $img_id = sanitize_text_field($data->img_id);
+    $status = sanitize_text_field($data->img_status);
+    $description = sanitize_text_field($data->img_description);
 
-    $pod = pods($type, $letter_id);
+    $post = [
+        'ID' => $img_id,
+        'post_status' => $status,
+        'post_content' => $description
+    ];
+    $update = wp_update_post($post);
 
-    if (!$pod->exists()) {
-        wp_send_json_error('Not found', 404);
+    if (is_wp_error($update)) {
+        wp_send_json_error(error_get_last()['message'], 500);
+    } else {
+        wp_send_json_success('saved');
     }
 
-    $pod->remove_from('images', $img_id);
-    $pod->save;
-    $delete = wp_delete_attachment($img_id, true);
-    wp_die($delete);
+    wp_die();
 }
 add_action('wp_ajax_change_metadata', 'change_metadata');
