@@ -6,7 +6,7 @@ get_header();
 
 ?>
 
-<?php require 'partials/blekastad-nav.php'; ?>
+<?php require_once get_template_directory() . '/partials/blekastad-nav.php'; ?>
 
 <div class="container mt-5">
     <div class="row justify-content-center" style="min-height: 75vh;">
@@ -17,7 +17,7 @@ get_header();
                 <?php else : ?>
                     <h1>Nový dopis</h1>
                 <?php endif; ?>
-                <?php require 'partials/blekastad-letters-add.php'; ?>
+                <?php require_once get_template_directory() . '/partials/blekastad-letters-add.php'; ?>
             <?php else : ?>
                 <div class="alert alert-warning">
                     Pro zobrazení nemáte patřičná oprávnění.
