@@ -113,7 +113,7 @@ function list_images()
         $results['images'][$i]['img']['large'] = $img['guid'];
         $results['images'][$i]['img']['thumb'] = wp_get_attachment_image_src($img['ID'], 'thumbnail')[0];
         $results['images'][$i]['description'] = get_post_field('post_content', $img['ID']);
-        $results['images'][$i]['order'] = get_post_meta($img['ID'], 'order', true);
+        $results['images'][$i]['order'] = intval(get_post_meta($img['ID'], 'order', true));
         $results['images'][$i]['status'] = $img['post_status'];
         $i++;
     }
@@ -182,3 +182,31 @@ function change_metadata()
     wp_die();
 }
 add_action('wp_ajax_change_metadata', 'change_metadata');
+
+
+function change_image_order()
+{
+    $data = key($_POST);
+    $data = json_decode($data);
+
+    $result = [];
+
+    if (!property_exists($data, 'img_id') || !property_exists($data, 'img_order')) {
+        wp_send_json_error('Not found', 404);
+    }
+
+    $img_id = sanitize_text_field($data->img_id);
+    $img_order = sanitize_text_field($data->img_order);
+
+
+    $update = update_post_meta($img_id, 'order', $img_order);
+
+    if (is_wp_error($update)) {
+        wp_send_json_error(error_get_last()['message'], 500);
+    } else {
+        wp_send_json_success('saved');
+    }
+
+    wp_die();
+}
+add_action('wp_ajax_change_image_order', 'change_image_order');
