@@ -69,14 +69,12 @@ if (document.getElementById('media-handler')) {
                         self.title = response.data.data.name
                         self.images = response.data.data.images
                     })
-                    .catch(function(error) {
+                    .catch(function() {
                         self.error = true
-                        console.log(error)
                     })
             },
 
             editImageMetadata: function(image) {
-                console.log(image)
                 let self = this
                 editImageMetadata(image, function() {
                     self.getImages()

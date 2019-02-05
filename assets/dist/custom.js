@@ -363,13 +363,11 @@ if (document.getElementById('media-handler')) {
         }).then(function (response) {
           self.title = response.data.data.name;
           self.images = response.data.data.images;
-        }).catch(function (error) {
+        }).catch(function () {
           self.error = true;
-          console.log(error);
         });
       },
       editImageMetadata: function editImageMetadata(image) {
-        console.log(image);
         var self = this;
 
         _editImageMetadata(image, function () {
