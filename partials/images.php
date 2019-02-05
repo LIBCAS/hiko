@@ -5,7 +5,13 @@
     </div>
 
     <div v-if="!error">
-        <h3>Dopis: {{ title }}</h3>
+        <h3>
+            Dopis:
+            <a :href="url" target="_blank">
+                {{ title }}
+            </a>
+
+        </h3>
         <div class="section mb-5">
             <h4>Nahrát obrazové přílohy</h4>
             <div id="drag-drop-area"></div>

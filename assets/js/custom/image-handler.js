@@ -7,6 +7,7 @@ if (document.getElementById('media-handler')) {
             images: [],
             error: false,
             title: '',
+            url: '#',
             letterType: '',
             letterId: '',
             modal: {
@@ -68,6 +69,7 @@ if (document.getElementById('media-handler')) {
                     .then(function(response) {
                         self.title = response.data.data.name
                         self.images = response.data.data.images
+                        self.url = response.data.data.url
                     })
                     .catch(function() {
                         self.error = true

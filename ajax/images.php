@@ -89,6 +89,11 @@ function list_images()
 
     $id = sanitize_text_field($_GET['letter']);
     $type = sanitize_text_field($_GET['l_type']);
+    $url = '';
+
+    if ($type == 'bl_letter') {
+        $url = home_url('/blekastad/letters-add/?edit=' . $id);
+    }
 
     $pod = pods($type, $id);
 
@@ -100,6 +105,7 @@ function list_images()
 
     $results['name'] = $pod->field('name');
     $results['images'] = [];
+    $results['url'] = $url;
 
     $i = 0;
     foreach ($images as $img) {
