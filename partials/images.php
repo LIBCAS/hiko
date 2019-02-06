@@ -39,7 +39,7 @@
             </draggable>
 
             <ul id="media-list" class="list-unstyled" v-if="!orderMode">
-                <li v-for="(image, index) in images" :key="index" class="media p-2 my-3 border border-primary">
+                <li v-for="(image, index) in images" :key="index" class="media p-2 my-3 border border-primary flex-wrap">
                     <img class="mr-3" :src="image.img.thumb" :alt="image.description">
                     <div class="media-body pb-2">
                         <ul class="list-unstyled">
