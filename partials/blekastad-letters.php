@@ -60,6 +60,9 @@ $letters = json_encode($letters, JSON_UNESCAPED_UNICODE);
                 <a :href="'<?= home_url('blekastad/letters-media/?l_type=bl_letter&letter='); ?>' + props.row.id">Obrazové přílohy</a>
             </li>
             <li>
+                <a :href="'<?= home_url('letter-preview/?l_type=bl_letter&letter='); ?>' + props.row.id">Náhled</a>
+            </li>
+            <li>
                 <a :href="'#delete-' + props.row.id" @click="deleteLetter(props.row.id)">Odstranit</a>
             </li>
         </ul>
