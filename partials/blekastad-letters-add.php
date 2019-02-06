@@ -421,7 +421,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                     <div class="form-group">
                         <label for="rel_rec_url">Related resource url</label>
-                        <input v-model="rel_rec_url" type="text" name="rel_rec_url" class="form-control form-control-sm">
+                        <input v-model="rel_rec_url" type="url" name="rel_rec_url" class="form-control form-control-sm">
                         <small class="form-text text-muted">
                             permanent/short URL to letter-related online resource
                         </small>
