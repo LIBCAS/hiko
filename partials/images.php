@@ -26,9 +26,9 @@
                 </span>
             </div>
 
-            <draggable v-if="orderMode" v-model="images" :options="{handle:'.handle'}" ref="dnd">
-                <div v-for="(image, index) in images" :key="index" class="media p-2 my-3 border border-primary">
-                    <div class="media-body pb-2 d-flex justify-content-between align-items-center">
+            <draggable v-if="orderMode" v-model="images" :options="{handle:'.handle', animation: 150, ghostClass: 'bg-light'}" ref="dnd">
+                <div v-for="(image, index) in images" :key="index" class="media my-3 border border-primary">
+                    <div class="media-body p-2 d-flex justify-content-between align-items-center">
                         <img class="mr-3" :src="image.img.thumb" :alt="image.description" width="64px" height="64px">
                         <span>
                             {{ image.description }}
