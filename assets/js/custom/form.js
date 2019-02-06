@@ -1,4 +1,4 @@
-/* global SlimSelect Vue axios ajaxUrl */
+/* global SlimSelect Vue axios ajaxUrl homeUrl */
 
 if (document.getElementById('letter-form')) {
     new Vue({
@@ -45,12 +45,24 @@ if (document.getElementById('letter-form')) {
             status: '',
             persons: JSON.parse(document.querySelector('#people').innerHTML),
             places: JSON.parse(document.querySelector('#places').innerHTML),
+            edit: false,
+            letterID: null,
         },
-
+        computed: {
+            imgUrl: function() {
+                return (
+                    homeUrl +
+                    '/blekastad/letters-media/?l_type=bl_letter&letter=' +
+                    this.letterID
+                )
+            },
+        },
         mounted: function() {
             let url = new URL(window.location.href)
             if (url.searchParams.get('edit')) {
                 this.getInitialData(url.searchParams.get('edit'))
+                this.edit = true
+                this.letterID = url.searchParams.get('edit')
             } else {
                 this.addSlimSelect()
             }

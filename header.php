@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="<?= get_template_directory_uri() . '/assets/dist/main.min.css?ver=' . filemtime(get_template_directory() . '/assets/dist/main.min.css'); ?>">
     <script type="text/javascript">
         var ajaxUrl = '<?= admin_url('admin-ajax.php'); ?>';
+        var homeUrl = '<?= home_url(); ?>';
     </script>
     <?php wp_head(); ?>
 </head>

@@ -484,6 +484,7 @@ if (array_key_exists('save_post', $_POST)) {
                 <?php endif; ?>
 
                 <input type="submit" value="Uložit" class="btn btn-primary">
+                <a v-if="edit" :href="imgUrl" class="btn btn-secondary" target="_blank">Obrazové přílohy</a>
             </form>
         </div>
     </div>
