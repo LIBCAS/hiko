@@ -44,10 +44,16 @@ if (array_key_exists('save_post', $_POST)) {
             $keywords[] = test_input($kw);
         }
     }
-    $keywords = array_filter(
-        $keywords,
-        'get_nonempty_value'
-    );
+
+    if (is_array($keywords)) {
+        $keywords = array_filter(
+            $keywords,
+            'get_nonempty_value'
+        );
+        $keywords = implode(';', $keywords);
+    } else {
+        $keywords = '';
+    }
 
     $data = test_postdata([
         'l_number' => 'l_number',
@@ -87,7 +93,7 @@ if (array_key_exists('save_post', $_POST)) {
     $data['l_author'] = $authors;
     $data['recipient'] = $recipients;
     $data['languages'] = $langs;
-    $data['keywords'] = implode(';', $keywords);
+    $data['keywords'] = $keywords;
     $data['people_mentioned'] = $people_mentioned;
 
 
@@ -463,7 +469,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-check">
                         <label class="form-check-label">
-                            <input v-model="status" type="radio" class="form-check-input" name="status" value="draft" checked>
+                            <input v-model="status" type="radio" class="form-check-input" name="status" value="draft" required checked>
                             Private
                         </label>
                     </div>

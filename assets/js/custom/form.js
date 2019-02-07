@@ -42,7 +42,7 @@ if (document.getElementById('letter-form')) {
             rel_rec_url: '',
             ms_manifestation: '',
             repository: '',
-            status: '',
+            status: 'draft',
             persons: JSON.parse(document.querySelector('#people').innerHTML),
             places: JSON.parse(document.querySelector('#places').innerHTML),
             edit: false,
@@ -105,7 +105,6 @@ if (document.getElementById('letter-form')) {
                             self.error = true
                         } else {
                             let rd = response.data
-                            console.log(rd)
                             self.l_number = rd.l_number
                             self.year = rd.date_year == '0' ? '' : rd.date_year
                             self.month =
@@ -134,7 +133,10 @@ if (document.getElementById('letter-form')) {
                                 rd.languages.length === 0
                                     ? []
                                     : rd.languages.split(';')
-                            self.keywords = self.parseKeywords(rd.keywords)
+                            self.keywords =
+                                rd.keywords.length === 0
+                                    ? [{ value: '' }]
+                                    : self.parseKeywords(rd.keywords)
                             self.abstract = rd.abstract
                             self.incipit = rd.incipit
                             self.explicit = rd.explicit
