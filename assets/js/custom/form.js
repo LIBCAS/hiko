@@ -56,13 +56,21 @@ if (document.getElementById('letter-form')) {
                     this.letterID
                 )
             },
+            previewUrl: function() {
+                return (
+                    homeUrl +
+                    '/letter-preview/?l_type=bl_letter&letter=' +
+                    this.letterID
+                )
+            },
         },
         mounted: function() {
             let url = new URL(window.location.href)
-            if (url.searchParams.get('edit')) {
-                this.getInitialData(url.searchParams.get('edit'))
+            let edit = url.searchParams.get('edit')
+            if (edit) {
+                this.letterID = edit
                 this.edit = true
-                this.letterID = url.searchParams.get('edit')
+                this.getInitialData()
             } else {
                 this.addSlimSelect()
             }
@@ -92,8 +100,9 @@ if (document.getElementById('letter-form')) {
                 return
             },
 
-            getInitialData: function(id) {
+            getInitialData: function() {
                 let self = this
+                let id = self.letterID
                 axios
                     .get(
                         ajaxUrl +

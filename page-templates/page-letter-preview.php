@@ -12,6 +12,7 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
     if ($letter_type == 'bl_letter') {
         $link_dashboard = home_url('/blekastad/letters/');
         $link_letter_edit = home_url('/blekastad/letters-add/?edit=' . $letter_id);
+        $link_letter_img = home_url('/blekastad/letters-media/?l_type=bl_letter&letter=' . $letter_id);
     } else {
         $link_dashboard = '#';
         $link_letter_edit = '#';
@@ -252,19 +253,14 @@ if (!$pod->exists()) {
                                 </figure>
                             </a>
                         </div>
-
-                        <?php /* ?>
-                        <a v-for="i in images" :href="i.img.large" :data-caption="i.description">
-                        <img :src="i.img.thumb" class="figure-img img-thumbnail" :alt="i.description">
-                        </a>
-                        <?php /*/ ?>
                     </div>
-
                 </div>
             </div>
 
             <div class="col-md-3">
                 <a href="<?= $link_letter_edit ?>">Upravit dopis</a>
+                <br>
+                <a href="<?= $link_letter_img ?>">Obrazové přílohy</a>
                 <br>
                 <a href="<?= $link_dashboard ?>">Přehled dopisů</a>
             </div>
