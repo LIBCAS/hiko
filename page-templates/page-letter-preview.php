@@ -243,10 +243,21 @@ if (!$pod->exists()) {
                         </table>
                     </div>
 
-                    <div id="gallery" class="mb-5" v-if="images">
+                    <div id="gallery" class="mb-5 row" v-if="images">
+                        <div class="col" style="width:150px" v-for="i in images" >
+                            <a :href="i.img.large" :data-caption="i.description">
+                                <figure class="figure" >
+                                    <img :src="i.img.thumb" class="figure-img img-thumbnail" :alt="i.description" style="width:150px;max-width:150px">
+                                    <figcaption class="figure-caption">{{ i.description }}</figcaption>
+                                </figure>
+                            </a>
+                        </div>
+
+                        <?php /* ?>
                         <a v-for="i in images" :href="i.img.large" :data-caption="i.description">
-                            <img :src="i.img.thumb" class="figure-img img-thumbnail" :alt="i.description">
+                        <img :src="i.img.thumb" class="figure-img img-thumbnail" :alt="i.description">
                         </a>
+                        <?php /*/ ?>
                     </div>
 
                 </div>
