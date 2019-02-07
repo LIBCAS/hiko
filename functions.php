@@ -220,3 +220,4 @@ require 'ajax/letters.php';
 require 'ajax/people.php';
 require 'ajax/places.php';
 require 'ajax/images.php';
+require 'ajax/export.php';

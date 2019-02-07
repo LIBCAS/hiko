@@ -47,7 +47,7 @@ $letters = json_encode($letters, JSON_UNESCAPED_UNICODE);
 
 <div class="mb-3">
     <a href="<?= home_url('blekastad/letters-add'); ?>" class="btn btn-lg btn-primary">Přidat nový dopis</a>
-    <!--<a href="#" class="btn btn-lg btn-secondary">Exportovat</a>-->
+    <button type="button" class="btn btn-lg btn-secondary" @click="exportLetters('bl_letter')" id="export">Exportovat</button>
 </div>
 
 <div id="datatable-letters">
