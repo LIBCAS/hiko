@@ -159,7 +159,8 @@ add_action('wp_ajax_delete_image', 'delete_image');
 
 function change_metadata()
 {
-    $data = key($_POST);
+    $data = file_get_contents('php://input');
+    $data = mb_convert_encoding($data, 'HTML-ENTITIES', "UTF-8");
     $data = json_decode($data);
 
     $result = [];
@@ -170,7 +171,7 @@ function change_metadata()
 
     $img_id = sanitize_text_field($data->img_id);
     $status = sanitize_text_field($data->img_status);
-    $description = sanitize_text_field($data->img_description);
+    $description = sanitize_text_field(html_entity_decode($data->img_description));
 
     $post = [
         'ID' => $img_id,
