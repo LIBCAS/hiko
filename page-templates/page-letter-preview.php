@@ -150,7 +150,7 @@ if (!$pod->exists()) {
                                         </span>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr v-if="origin_marked">
                                     <td>Počáteční místo uvedené v dopise</td>
                                     <td>
                                         <span> {{ origin_marked }}</span>
@@ -169,7 +169,7 @@ if (!$pod->exists()) {
                                         </span>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr v-if="dest_marked">
                                     <td>Místo určení uvedené v dopise</td>
                                     <td>
                                         <span> {{ dest_marked }}</span>
