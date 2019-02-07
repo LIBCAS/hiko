@@ -68,25 +68,39 @@ function list_public_bl_letters_single()
     $destination = [];
 
     if (!array_key_exists('pods_id', $_GET)) {
-        echo '404';
-        wp_die();
+        wp_send_json_error('Not found', 404);
     }
 
     $pod = pods('bl_letter', $_GET['pods_id']);
 
     if ($pod->field('status') != 'publish' && !is_user_logged_in()) {
-        echo '403';
-        wp_die();
+        wp_send_json_error('Not allowed', 403);
     }
 
     if (!$pod->exists()) {
-        echo '404';
-        wp_die();
+        wp_send_json_error('Not found', 404);
     }
 
     $authors_related = $pod->field('l_author');
     $recipients_related = $pod->field('recipient');
     $people_mentioned_related = $pod->field('people_mentioned');
+    $images = $pod->field('images');
+
+    $images_sorted = [];
+    $i = 0;
+    foreach ($images as $img) {
+        if ($img['post_status'] != 'private') {
+            $images_sorted[$i]['img']['large'] = $img['guid'];
+            $images_sorted[$i]['img']['thumb'] = wp_get_attachment_image_src($img['ID'], 'thumbnail')[0];
+            $images_sorted[$i]['description'] = get_post_field('post_content', $img['ID']);
+            $images_sorted[$i]['order'] = intval(get_post_meta($img['ID'], 'order', true));
+            $i++;
+        }
+    }
+
+    usort($images_sorted, function ($a, $b) {
+        return $a['order'] - $b['order'];
+    });
 
     if (!empty($authors_related)) {
         foreach ($authors_related as $rel_author) {
@@ -143,7 +157,7 @@ function list_public_bl_letters_single()
     $results['repository'] = $pod->field('repository');
     $results['name'] = $pod->field('name');
     $results['status'] = $pod->field('status');
-
+    $results['images'] = $images_sorted;
     if (is_user_logged_in()) {
         $results['notes_private'] = $pod->field('notes_private');
     }
