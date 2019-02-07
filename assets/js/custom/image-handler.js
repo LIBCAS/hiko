@@ -212,6 +212,21 @@ function editImageMetadata(image, callback) {
         cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
     }).then(result => {
         if (result.value) {
+            /*
+            axios({
+                method: 'post',
+                url: ajaxUrl + '?action=change_metadata',
+                data: {
+                    img_id: image.id,
+                    img_status: image.status,
+                    img_description: image.description,
+                },
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Access-Control-Allow-Origin': '*',
+                },
+            })
+            */
             let data = {
                 ['img_id']: image.id,
                 ['img_status']: image.status,
