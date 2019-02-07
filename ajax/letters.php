@@ -90,10 +90,16 @@ function list_public_bl_letters_single()
     $i = 0;
     foreach ($images as $img) {
         if ($img['post_status'] != 'private') {
+            $size = wp_get_attachment_image_src($img['ID'], 'large');
             $images_sorted[$i]['img']['large'] = $img['guid'];
             $images_sorted[$i]['img']['thumb'] = wp_get_attachment_image_src($img['ID'], 'thumbnail')[0];
             $images_sorted[$i]['description'] = get_post_field('post_content', $img['ID']);
             $images_sorted[$i]['order'] = intval(get_post_meta($img['ID'], 'order', true));
+            $images_sorted[$i]['size'] = [
+                'w' => $size[1],
+                'h' => $size[2],
+            ];
+
             $i++;
         }
     }
