@@ -1,4 +1,4 @@
-/* global Vue axios ajaxUrl homeUrl */
+/* global Vue axios ajaxUrl baguetteBox */
 
 if (document.getElementById('letter-preview')) {
     new Vue({
@@ -47,11 +47,16 @@ if (document.getElementById('letter-preview')) {
 
         mounted: function() {
             let url = new URL(window.location.href)
+            let self = this
             if (url.searchParams.get('letter')) {
-                this.getLetter(url.searchParams.get('letter'))
+                self.getLetter(url.searchParams.get('letter'))
             }
         },
-
+        updated: function() {
+            if (this.images.length > 0) {
+                baguetteBox.run('#gallery')
+            }
+        },
         methods: {
             getLetter: function(id) {
                 let self = this
@@ -114,7 +119,6 @@ if (document.getElementById('letter-preview')) {
                             self.repository = rd.repository
 
                             self.images = rd.images
-
                             self.l_number = rd.l_number
                         }
                     })
