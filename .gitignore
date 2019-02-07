@@ -11,7 +11,6 @@ node_modules/
 ##########
 # Ignore all directories called node_modules in current folder and any subfolders.
 vendor/
-/vendor/
 
 # Packages #
 ############
@@ -54,8 +53,9 @@ Thumbs.db
 # Composer #
 ##########
 !assets/js/vendor/
+!assets/vendor/
 wpcs/
-/vendor/
+
 
 # Bower #
 ##########
