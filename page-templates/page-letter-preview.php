@@ -48,7 +48,7 @@ if (!$pod->exists()) {
                     Načítám
                 </div>
                 <div class="letter-single" v-else>
-                    <h3> {{ title }}</h3>
+                    <h3> Náhled: {{ title }}</h3>
                     <div class="my-5">
                         <h5>Data</h5>
                         <table class="table">
