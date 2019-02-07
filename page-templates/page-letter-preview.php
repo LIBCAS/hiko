@@ -44,7 +44,10 @@ if (!$pod->exists()) {
     <div class="container-fluid">
         <div id="letter-preview" class="row main-content my-5">
             <div class="col-md-9">
-                <div class="letter-single">
+                <div class="" v-if="loading">
+                    Načítám
+                </div>
+                <div class="letter-single" v-else>
                     <h3> {{ title }}</h3>
                     <div class="my-5">
                         <h5>Data</h5>

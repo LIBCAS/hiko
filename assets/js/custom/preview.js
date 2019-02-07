@@ -4,6 +4,7 @@ if (document.getElementById('letter-preview')) {
     new Vue({
         el: '#letter-preview',
         data: {
+            loading: true,
             author: [],
             author_as_marked: '',
             author_inferred: '',
@@ -120,9 +121,11 @@ if (document.getElementById('letter-preview')) {
 
                             self.images = rd.images
                             self.l_number = rd.l_number
+                            self.loading = false
                         }
                     })
-                    .catch(function() {
+                    .catch(function(error) {
+                        alert(error)
                         self.error = true
                     })
             },
