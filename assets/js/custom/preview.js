@@ -30,18 +30,16 @@ if (document.getElementById('letter-preview')) {
             title: '',
             l_number: '',
             languages: [],
-            keywords: [{ value: '' }],
+            keywords: [],
             abstract: '',
             incipit: '',
             explicit: '',
             people_mentioned_notes: '',
             notes_public: '',
-            notes_private: '',
             rel_rec_name: '',
-            rel_rec_url: '',
+            rel_rec_url: '#',
             ms_manifestation: '',
             repository: '',
-            status: '',
             edit: false,
             letterID: null,
             images: [],
@@ -50,12 +48,12 @@ if (document.getElementById('letter-preview')) {
         mounted: function() {
             let url = new URL(window.location.href)
             if (url.searchParams.get('letter')) {
-                this.getInitialData(url.searchParams.get('letter'))
+                this.getLetter(url.searchParams.get('letter'))
             }
         },
 
         methods: {
-            getInitialData: function(id) {
+            getLetter: function(id) {
                 let self = this
                 axios
                     .get(
@@ -68,27 +66,27 @@ if (document.getElementById('letter-preview')) {
                             self.error = true
                         } else {
                             let rd = response.data
-                            self.l_number = rd.l_number
+                            self.title = rd.name
                             self.year = rd.date_year == '0' ? '' : rd.date_year
                             self.month =
                                 rd.date_month == '0' ? '' : rd.date_month
                             self.day = rd.date_day == '0' ? '' : rd.date_day
                             self.date_marked = rd.date_marked
                             self.date_uncertain = rd.date_uncertain
-                            self.author = Object.keys(rd.l_author)
+                            self.author = Object.values(rd.l_author)
                             self.author_as_marked = rd.l_author_marked
                             self.author_inferred = rd.author_inferred
                             self.author_uncertain = rd.author_uncertain
-                            self.recipient = Object.keys(rd.recipient)
+                            self.recipient = Object.values(rd.recipient)
                             self.recipient_marked = rd.recipient_marked
                             self.recipient_inferred = rd.recipient_inferred
                             self.recipient_uncertain = rd.recipient_uncertain
                             self.recipient_notes = rd.recipient_notes
-                            self.origin = Object.keys(rd.origin)[0]
+                            self.origin = Object.values(rd.origin)[0]
                             self.origin_marked = rd.origin_marked
                             self.origin_inferred = rd.origin_inferred
                             self.origin_uncertain = rd.origin_uncertain
-                            self.destination = Object.keys(rd.dest)[0]
+                            self.destination = Object.values(rd.dest)[0]
                             self.dest_marked = rd.dest_marked
                             self.dest_inferred = rd.dest_inferred
                             self.dest_uncertain = rd.dest_uncertain
@@ -96,22 +94,28 @@ if (document.getElementById('letter-preview')) {
                                 rd.languages.length === 0
                                     ? []
                                     : rd.languages.split(';')
-                            self.keywords = self.parseKeywords(rd.keywords)
+                            self.keywords =
+                                rd.keywords.length === 0
+                                    ? []
+                                    : rd.keywords.split(';')
                             self.abstract = rd.abstract
                             self.incipit = rd.incipit
                             self.explicit = rd.explicit
-                            self.mentioned = Object.keys(rd.people_mentioned)
+                            self.mentioned = Object.values(rd.people_mentioned)
                             self.people_mentioned_notes =
                                 rd.people_mentioned_notes
                             self.notes_public = rd.notes_public
-                            self.notes_private = rd.notes_private
                             self.rel_rec_name = rd.rel_rec_name
-                            self.rel_rec_url = rd.rel_rec_url
+                            self.rel_rec_url =
+                                rd.rel_rec_url.length === 0
+                                    ? '#'
+                                    : rd.rel_rec_url
                             self.ms_manifestation = rd.ms_manifestation
                             self.repository = rd.repository
-                            self.title = rd.name
-                            self.status = rd.status
+
                             self.images = rd.images
+
+                            self.l_number = rd.l_number
                         }
                     })
                     .catch(function() {
