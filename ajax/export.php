@@ -131,11 +131,9 @@ $index++;
 $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
 
 header('Content-Type: Application/vnd.ms-excel');
-header('Content-Disposition: attachment; filename="' . $filename . '.xlsx"');
-header('Expires: 0');
+header('Content-Disposition: attachment; filename="' . $filename . '-export.xlsx"');
+header('Content-Description: File Transfer');
+header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 $writer->save('php://output');
-
-//$save = $writer->save(wp_upload_dir()['basedir'] . '/hello world.xlsx');
-
 }
 add_action('wp_ajax_export_letters', 'export_letters');
