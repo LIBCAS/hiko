@@ -135,5 +135,6 @@ header('Content-Disposition: attachment; filename="' . $filename . '-export.xlsx
 header('Content-Description: File Transfer');
 header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 $writer->save('php://output');
+wp_die();
 }
 add_action('wp_ajax_export_letters', 'export_letters');
