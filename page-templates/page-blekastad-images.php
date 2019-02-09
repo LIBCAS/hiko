@@ -15,7 +15,7 @@ get_header();
                 <h1 class="mb-3">Obrazové přílohy</h1>
                 <?php require_once get_template_directory() . '/partials/images.php'; ?>
             <?php else : ?>
-                <div class="alert alert-warning">
+                <div class="alert alert-warning mw-400">
                     Pro zobrazení nemáte patřičná oprávnění.
                 </div>
             <?php endif; ?>

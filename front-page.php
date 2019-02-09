@@ -10,7 +10,7 @@ require 'partials/general-nav.php';
     <div class="row" style="min-height: 75vh;">
 
         <div class="col-md">
-            <div class="card mb-3">
+            <div class="card mb-3 mw-400">
                 <h3 class="card-header">Korespondence Milady Blekastad</h3>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">

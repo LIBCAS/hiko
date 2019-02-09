@@ -19,7 +19,7 @@ get_header();
                 <?php endif; ?>
                 <?php require_once get_template_directory() . '/partials/blekastad-letters-add.php'; ?>
             <?php else : ?>
-                <div class="alert alert-warning">
+                <div class="alert alert-warning mw-400">
                     Pro zobrazení nemáte patřičná oprávnění.
                 </div>
             <?php endif; ?>
