@@ -183,20 +183,24 @@ add_action('wp_ajax_nopriv_list_public_bl_letters_single', 'list_public_bl_lette
 function delete_bl_letter()
 {
     if (!array_key_exists('pods_id', $_GET)) {
-        echo '404';
-        wp_die();
+        wp_send_json_error('Not found', 404);
     }
 
     if (!has_user_permission('blekastad_editor')) {
-        echo '403';
-        wp_die();
+        wp_send_json_error('Not allowed', 403);
     }
 
     $pod = pods('bl_letter', $_GET['pods_id']);
-    $result = $pod->delete();
-    echo $result;
 
-    wp_die();
+    $images = $pod->field('images');
+
+    foreach ($images as $img) {
+        wp_delete_attachment($img['ID'], true);
+    }
+
+    $result = $pod->delete();
+
+    wp_send_json_success($result);
 }
 
 add_action('wp_ajax_delete_bl_letter', 'delete_bl_letter');
