@@ -137,10 +137,16 @@ if (document.getElementById('media-handler')) {
                 uppy.on('complete', result => {
                     if (result.hasOwnProperty('failed')) {
                         let failed = result.failed
+                        let err = ''
                         for (let i = 0; i < failed.length; i++) {
+                            if ('body' in failed[i].response) {
+                                err = JSON.stringify(failed[i].response.body)
+                            } else {
+                                err = JSON.stringify(failed[i].response)
+                            }
                             Swal.fire({
                                 title: 'Při ukládání došlo k chybě.',
-                                text: JSON.stringify(failed[i].response),
+                                text: err,
                                 type: 'error',
                                 buttonsStyling: false,
                                 confirmButtonText: 'OK',
