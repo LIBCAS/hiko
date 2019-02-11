@@ -64,8 +64,8 @@ function list_public_bl_letters_single()
     $authors = [];
     $recipients = [];
     $people_mentioned = [];
-    $origin = [];
-    $destination = [];
+    $origins = [];
+    $destinations = [];
 
     if (!array_key_exists('pods_id', $_GET)) {
         wp_send_json_error('Not found', 404);
@@ -84,6 +84,8 @@ function list_public_bl_letters_single()
     $authors_related = $pod->field('l_author');
     $recipients_related = $pod->field('recipient');
     $people_mentioned_related = $pod->field('people_mentioned');
+    $origins_related = $pod->field('origin');
+    $dests_related = $pod->field('dest');
     $images = $pod->field('images');
 
     $images_sorted = [];
@@ -126,6 +128,18 @@ function list_public_bl_letters_single()
         }
     }
 
+    if (!empty($origins_related)) {
+        foreach ($origins_related as $o) {
+            $origins[$o['id']] = $o['name'];
+        }
+    }
+
+    if (!empty($dests_related)) {
+        foreach ($dests_related as $d) {
+            $destinations[$d['id']] = $d['name'];
+        }
+    }
+
     $results['l_number'] = $pod->field('l_number');
     $results['date_year'] = $pod->field('date_year');
     $results['date_month'] = $pod->field('date_month');
@@ -146,11 +160,11 @@ function list_public_bl_letters_single()
     $results['recipient_inferred'] = (bool) $pod->field('recipient_inferred');
     $results['recipient_uncertain'] = (bool) $pod->field('recipient_uncertain');
     $results['recipient_notes'] = $pod->field('recipient_notes');
-    $results['origin'][$pod->field('origin')['id']] = $pod->field('origin')['name'];
+    $results['origin'] = $origins;
     $results['origin_marked'] = $pod->field('origin_marked');
     $results['origin_inferred'] = (bool) $pod->field('origin_inferred');
     $results['origin_uncertain'] = (bool) $pod->field('origin_uncertain');
-    $results['dest'][$pod->field('dest')['id']] = $pod->field('dest')['name'];
+    $results['dest'] = $destinations;
     $results['dest_marked'] = $pod->field('dest_marked');
     $results['dest_uncertain'] = (bool) $pod->field('dest_uncertain');
     $results['dest_inferred'] = (bool) $pod->field('dest_inferred');

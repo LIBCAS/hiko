@@ -15,11 +15,11 @@ if (document.getElementById('letter-form')) {
             recipient_uncertain: '',
             recipient_notes: '',
             mentioned: [],
-            origin: '',
+            origin: [],
             origin_marked: '',
             origin_inferred: '',
             origin_uncertain: '',
-            destination: '',
+            destination: [],
             dest_marked: '',
             dest_inferred: '',
             dest_uncertain: '',
@@ -85,6 +85,9 @@ if (document.getElementById('letter-form')) {
             getTitle: function() {
                 let authors = []
                 let recipients = []
+                let origin = []
+                let destination = []
+
                 for (let i = 0; i < this.author.length; i++) {
                     authors.push(getNameById(this.persons, this.author[i]))
                 }
@@ -94,8 +97,20 @@ if (document.getElementById('letter-form')) {
                     )
                 }
 
-                let origin = getNameById(this.places, this.origin)
-                let destination = getNameById(this.places, this.destination)
+                for (let i = 0; i < this.origin.length; i++) {
+                    origin.push(
+                        getNameById(this.places, this.origin[i])
+                    )
+                }
+
+                for (let i = 0; i < this.destination.length; i++) {
+                    destination.push(
+                        getNameById(this.places, this.destination[i])
+                    )
+                }
+
+                origin = origin.join('; ')
+                destination = destination.join('; ')
 
                 let date = this.day + '. ' + this.month + '. ' + this.year
                 let from = authors.join('; ') + ' (' + origin + ')'
@@ -140,11 +155,11 @@ if (document.getElementById('letter-form')) {
                             self.recipient_inferred = rd.recipient_inferred
                             self.recipient_uncertain = rd.recipient_uncertain
                             self.recipient_notes = rd.recipient_notes
-                            self.origin = Object.keys(rd.origin)[0]
+                            self.origin = Object.keys(rd.origin)
                             self.origin_marked = rd.origin_marked
                             self.origin_inferred = rd.origin_inferred
                             self.origin_uncertain = rd.origin_uncertain
-                            self.destination = Object.keys(rd.dest)[0]
+                            self.destination = Object.keys(rd.dest)
                             self.dest_marked = rd.dest_marked
                             self.dest_inferred = rd.dest_inferred
                             self.dest_uncertain = rd.dest_uncertain

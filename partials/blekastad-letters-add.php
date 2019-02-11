@@ -12,6 +12,8 @@ if (array_key_exists('save_post', $_POST)) {
     $people_mentioned = [];
     $authors = [];
     $recipients = [];
+    $origins = [];
+    $destinations = [];
     $langs = '';
     $keywords = '';
 
@@ -24,6 +26,18 @@ if (array_key_exists('save_post', $_POST)) {
     if (array_key_exists('recipient', $_POST)) {
         foreach ($_POST['recipient'] as $recipient) {
             $recipients[] = test_input($recipient);
+        }
+    }
+
+    if (array_key_exists('origin', $_POST)) {
+        foreach ($_POST['origin'] as $o) {
+            $origins[] = test_input($o);
+        }
+    }
+
+    if (array_key_exists('dest', $_POST)) {
+        foreach ($_POST['dest'] as $d) {
+            $destinations[] = test_input($d);
         }
     }
 
@@ -67,9 +81,7 @@ if (array_key_exists('save_post', $_POST)) {
         'l_author_marked' => 'l_author_marked',
         'recipient_marked' => 'recipient_marked',
         'recipient_notes' => 'recipient_notes',
-        'origin' => 'origin',
         'origin_marked' => 'origin_marked',
-        'dest' => 'dest',
         'dest_marked' => 'dest_marked',
         'abstract' => 'abstract',
         'incipit' => 'incipit',
@@ -100,6 +112,8 @@ if (array_key_exists('save_post', $_POST)) {
     $data['languages'] = $langs;
     $data['keywords'] = $keywords;
     $data['people_mentioned'] = $people_mentioned;
+    $data['dest'] = $destinations;
+    $data['origin'] = $origins;
 
     $new_pod = '';
 
@@ -148,7 +162,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="date_year">Year</label>
-                                <input v-model="year" type="number" name="date_year" class="form-control form-control-sm" min="1500" max="2020">
+                                <input v-model="year" type="number" name="date_year" class="form-control form-control-sm" min="0" max="2020">
                                 <small class="form-text text-muted">
                                     format YYYY, e.g. 1660
                                 </small>
@@ -157,7 +171,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="date_month">Month</label>
-                                <input v-model="month" type="number" name="date_month" class="form-control form-control-sm" min="1" max="12">
+                                <input v-model="month" type="number" name="date_month" class="form-control form-control-sm" min="0" max="12">
                                 <small class="form-text text-muted">
                                     format MM, e.g. 1
                                 </small>
@@ -166,7 +180,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="date_day">Day</label>
-                                <input v-model="day" type="number" name="date_day" class="form-control form-control-sm" min="1" max="31">
+                                <input v-model="day" type="number" name="date_day" class="form-control form-control-sm" min="0" max="31">
                                 <small class="form-text text-muted">
                                     format DD, e.g. 8
                                 </small>
@@ -203,7 +217,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="range_year">Year 2</label>
-                                <input v-model="range_year" type="number" name="range_year" class="form-control form-control-sm" min="1500" max="2020">
+                                <input v-model="range_year" type="number" name="range_year" class="form-control form-control-sm" min="0" max="2020">
                                 <small class="form-text text-muted">
                                     2nd date, if range
                                 </small>
@@ -212,7 +226,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="range_month">Month 2</label>
-                                <input v-model="range_month" type="number" name="range_month" class="form-control form-control-sm" min="1" max="12">
+                                <input v-model="range_month" type="number" name="range_month" class="form-control form-control-sm" min="0" max="12">
                                 <small class="form-text text-muted">
                                     2nd date, if range
                                 </small>
@@ -221,7 +235,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="range_day">Day 2</label>
-                                <input v-model="range_day" type="number" name="range_day" class="form-control form-control-sm" min="1" max="31">
+                                <input v-model="range_day" type="number" name="range_day" class="form-control form-control-sm" min="0" max="31">
                                 <small class="form-text text-muted">
                                     2nd date, if range
                                 </small>
@@ -315,8 +329,7 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Origin</legend>
                     <div class="form-group">
                         <label for="origin">Origin <span class="pointer oi oi-reload pl-1" data-source="places" @click="regenerateSelectData"></span></label>
-                        <select v-model="origin" class="custom-select custom-select-sm slim-select" name="origin" id="origin">
-                            <option selected value="">---</option>
+                        <select multiple v-model="origin" class="custom-select custom-select-sm slim-select" name="origin[]" id="origin">
                             <option v-for="place in places" :value="place.id">
                                 {{ place.name }}
                             </option>
@@ -353,8 +366,7 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Destination</legend>
                     <div class="form-group">
                         <label for="dest">Destination <span class="pointer oi oi-reload pl-1" data-source="places" @click="regenerateSelectData"></span></label>
-                        <select v-model="destination" class="custom-select custom-select-sm slim-select" id="dest" name="dest">
-                            <option selected value="">---</option>
+                        <select multiple v-model="destination" class="custom-select custom-select-sm slim-select" id="dest" name="dest[]">
                             <option v-for="place in places" :value="place.id">
                                 {{ place.name }}
                             </option>
