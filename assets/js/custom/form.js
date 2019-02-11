@@ -72,7 +72,7 @@ if (document.getElementById('letter-form')) {
                 this.edit = true
                 this.getInitialData()
             } else {
-                this.addSlimSelect()
+                addSlimSelect()
             }
         },
 
@@ -166,7 +166,7 @@ if (document.getElementById('letter-form')) {
                         self.error = true
                     })
                     .then(function() {
-                        self.addSlimSelect()
+                        addSlimSelect()
                     })
             },
 
@@ -205,16 +205,7 @@ if (document.getElementById('letter-form')) {
             },
 
             addSlimSelect: function() {
-                Array.prototype.forEach.call(
-                    document.querySelectorAll('.slim-select'),
-                    function(selected) {
-                        if (selected.id) {
-                            new SlimSelect({
-                                select: '#' + selected.id,
-                            })
-                        }
-                    }
-                )
+                addSlimSelect()
             },
 
             removeKeyword: function(kw) {
@@ -274,20 +265,12 @@ if (document.getElementById('places-form')) {
                     .catch(function() {
                         self.error = true
                     })
+                    .then(function() {
+                        addSlimSelect()
+                    })
             },
         },
     })
-
-    Array.prototype.forEach.call(
-        document.querySelectorAll('.slim-select'),
-        function(selected) {
-            if (selected.id) {
-                new SlimSelect({
-                    select: '#' + selected.id,
-                })
-            }
-        }
-    )
 }
 
 if (document.getElementById('person-name')) {
@@ -371,4 +354,17 @@ function getNameById(data, id) {
     }
 
     return filtered[0].name
+}
+
+function addSlimSelect() {
+    Array.prototype.forEach.call(
+        document.querySelectorAll('.slim-select'),
+        function(selected) {
+            if (selected.id) {
+                new SlimSelect({
+                    select: '#' + selected.id,
+                })
+            }
+        }
+    )
 }
