@@ -213,6 +213,31 @@ function verify_upload_img($img)
 }
 
 
+function bulk_add_persons($file)
+{
+    $file_content = file_get_contents($file);
+    $splited_content = explode("\n", $file_content);
+    foreach ($splited_content as $person) {
+        $bits = explode("\t", $person);
+
+        $data = [
+            'name' => $bits[0],
+            'surname' => $bits[1],
+            'forename' => $bits[2],
+            'birth_year' => 0,
+            'death_year' => 0,
+        ];
+
+        $new_pod = pods_api()->save_pod_item([
+            'pod' => 'bl_person',
+            'data' => $data
+        ]);
+
+        var_dump($new_pod);
+    }
+}
+
+
 add_image_size('xl-thumb', 300);
 
 
