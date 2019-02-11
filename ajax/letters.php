@@ -131,7 +131,12 @@ function list_public_bl_letters_single()
     $results['date_month'] = $pod->field('date_month');
     $results['date_day'] = $pod->field('date_day');
     $results['date_marked'] = $pod->field('date_marked');
+    $results['range_year'] = $pod->field('range_year');
+    $results['range_month'] = $pod->field('range_month');
+    $results['range_day'] = $pod->field('range_day');
     $results['date_uncertain'] = (bool) $pod->field('date_uncertain');
+    $results['date_approximate'] = (bool) $pod->field('date_approximate');
+    $results['date_is_range'] = (bool) $pod->field('date_is_range');
     $results['l_author'] = $authors;
     $results['l_author_marked'] = $pod->field('l_author_marked');
     $results['author_uncertain'] = (bool) $pod->field('author_uncertain');

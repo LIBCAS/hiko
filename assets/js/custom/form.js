@@ -28,6 +28,11 @@ if (document.getElementById('letter-form')) {
             year: '',
             date_marked: '',
             date_uncertain: '',
+            date_approximate: '',
+            date_is_range: '',
+            range_year: '',
+            range_month: '',
+            range_day: '',
             title: '',
             l_number: '',
             languages: [],
@@ -121,6 +126,11 @@ if (document.getElementById('letter-form')) {
                             self.day = rd.date_day == '0' ? '' : rd.date_day
                             self.date_marked = rd.date_marked
                             self.date_uncertain = rd.date_uncertain
+                            self.date_approximate = rd.date_approximate
+                            self.date_is_range = rd.date_approximate
+                            self.range_year = rd.range_year
+                            self.range_month = rd.range_month
+                            self.range_day = rd.range_day
                             self.author = Object.keys(rd.l_author)
                             self.author_as_marked = rd.l_author_marked
                             self.author_inferred = rd.author_inferred

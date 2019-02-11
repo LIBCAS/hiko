@@ -60,6 +60,9 @@ if (array_key_exists('save_post', $_POST)) {
         'date_year' => 'date_year',
         'date_month' => 'date_month',
         'date_day' => 'date_day',
+        'range_year' => 'range_year',
+        'range_month' => 'range_month',
+        'range_day' => 'range_day',
         'date_marked' => 'date_marked',
         'l_author_marked' => 'l_author_marked',
         'recipient_marked' => 'recipient_marked',
@@ -82,6 +85,8 @@ if (array_key_exists('save_post', $_POST)) {
         'status' => 'status',
     ]);
     $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
+    $data['date_approximate'] = get_form_checkbox_val('date_approximate', $_POST);
+    $data['date_is_range'] = get_form_checkbox_val('date_is_range', $_POST);
     $data['author_uncertain'] = get_form_checkbox_val('author_uncertain', $_POST);
     $data['author_inferred'] = get_form_checkbox_val('author_inferred', $_POST);
     $data['recipient_inferred'] = get_form_checkbox_val('recipient_inferred', $_POST);
@@ -95,7 +100,6 @@ if (array_key_exists('save_post', $_POST)) {
     $data['languages'] = $langs;
     $data['keywords'] = $keywords;
     $data['people_mentioned'] = $people_mentioned;
-
 
     $new_pod = '';
 
@@ -180,6 +184,51 @@ if (array_key_exists('save_post', $_POST)) {
                             Date uncertain
                         </label>
                     </div>
+
+                    <div class="form-check mb-3">
+                        <input v-model="date_approximate" class="form-check-input" type="checkbox" id="date_approximate" name="date_approximate">
+                        <label class="form-check-label" for="date_approximate">
+                            Date approximate
+                        </label>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input v-model="date_is_range" class="form-check-input" type="checkbox" id="date_is_range" name="date_is_range">
+                        <label class="form-check-label" for="date_is_range">
+                            Date is range
+                        </label>
+                    </div>
+
+                    <div class="row" v-if="date_is_range">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="range_year">Year 2</label>
+                                <input v-model="range_year" type="number" name="range_year" class="form-control form-control-sm" min="1500" max="2020">
+                                <small class="form-text text-muted">
+                                    2nd date, if range
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="range_month">Month 2</label>
+                                <input v-model="range_month" type="number" name="range_month" class="form-control form-control-sm" min="1" max="12">
+                                <small class="form-text text-muted">
+                                    2nd date, if range
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="range_day">Day 2</label>
+                                <input v-model="range_day" type="number" name="range_day" class="form-control form-control-sm" min="1" max="31">
+                                <small class="form-text text-muted">
+                                    2nd date, if range
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
                 </fieldset>
 
                 <fieldset>
