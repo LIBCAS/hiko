@@ -12,6 +12,7 @@ if (array_key_exists('save_post', $_POST)) {
     $data = test_postdata([
         'name' => 'place',
         'country' => 'country',
+        'note' => 'note',
     ]);
 
     $new_pod = '';
@@ -64,6 +65,10 @@ if (array_key_exists('save_post', $_POST)) {
                         <?php endforeach; ?>
 
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="note">Note on place</label>
+                    <textarea v-model="note" class="form-control form-control-sm" id="note" name="note"></textarea>
                 </div>
             </fieldset>
             <div class="form-group">

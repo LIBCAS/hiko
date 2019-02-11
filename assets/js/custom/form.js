@@ -242,6 +242,7 @@ if (document.getElementById('places-form')) {
         data: {
             place: '',
             country: '',
+            note: ''
         },
         mounted: function() {
             let url = new URL(window.location.href)
@@ -260,6 +261,7 @@ if (document.getElementById('places-form')) {
                         } else {
                             self.place = response.data.name
                             self.country = response.data.country
+                            self.note = response.data.note
                         }
                     })
                     .catch(function() {

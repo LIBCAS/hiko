@@ -47,6 +47,7 @@ function list_bl_place_single()
     $results['id'] = $pod->display('id');
     $results['name'] = $pod->field('name');
     $results['country'] = $pod->field('country');
+    $results['note'] = $pod->display('note');
 
     echo json_encode(
         $results,
