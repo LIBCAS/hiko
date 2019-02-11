@@ -15,6 +15,7 @@
         var homeUrl = '<?= home_url(); ?>';
     </script>
     <?php wp_head(); ?>
+    <?php require_once 'partials/favicon.php'; ?>
 </head>
 
 <body>
