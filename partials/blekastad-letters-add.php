@@ -95,6 +95,10 @@ if (array_key_exists('save_post', $_POST)) {
         'repository' => 'repository',
         'name' => 'description',
         'status' => 'status',
+        'date_note' => 'date_note',
+        'origin_note' => 'origin_note',
+        'dest_note' => 'dest_note',
+        'author_note' => 'author_note',
     ]);
     $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
     $data['date_approximate'] = get_form_checkbox_val('date_approximate', $_POST);
@@ -243,6 +247,11 @@ if (array_key_exists('save_post', $_POST)) {
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="date_note">Notes on date</label>
+                        <textarea v-model="date_note" name="date_note" class="form-control form-control-sm"></textarea>
+                    </div>
+
                 </fieldset>
 
                 <fieldset>
@@ -280,6 +289,12 @@ if (array_key_exists('save_post', $_POST)) {
                             Author uncertain
                         </label>
                     </div>
+
+                    <div class="form-group">
+                        <label for="author_note">Notes on author</label>
+                        <textarea v-model="author_note" name="author_note" class="form-control form-control-sm"></textarea>
+                    </div>
+
                 </fieldset>
 
                 <fieldset>
@@ -360,6 +375,12 @@ if (array_key_exists('save_post', $_POST)) {
                             Origin uncertain
                         </label>
                     </div>
+
+                    <div class="form-group">
+                        <label for="origin_note">Notes on origin</label>
+                        <textarea v-model="origin_note" name="origin_note" class="form-control form-control-sm"></textarea>
+                    </div>
+
                 </fieldset>
 
                 <fieldset>
@@ -397,6 +418,12 @@ if (array_key_exists('save_post', $_POST)) {
                             Destination uncertain
                         </label>
                     </div>
+
+                    <div class="form-group">
+                        <label for="dest_note">Notes on destination</label>
+                        <textarea v-model="dest_note" name="dest_note" class="form-control form-control-sm"></textarea>
+                    </div>
+
                 </fieldset>
 
                 <fieldset>

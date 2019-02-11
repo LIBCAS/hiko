@@ -151,10 +151,12 @@ function list_public_bl_letters_single()
     $results['date_uncertain'] = (bool) $pod->field('date_uncertain');
     $results['date_approximate'] = (bool) $pod->field('date_approximate');
     $results['date_is_range'] = (bool) $pod->field('date_is_range');
+    $results['date_note'] = $pod->field('date_note');
     $results['l_author'] = $authors;
     $results['l_author_marked'] = $pod->field('l_author_marked');
     $results['author_uncertain'] = (bool) $pod->field('author_uncertain');
     $results['author_inferred'] = (bool) $pod->field('author_inferred');
+    $results['author_note'] = $pod->field('author_note');
     $results['recipient'] = $recipients;
     $results['recipient_marked'] = $pod->field('recipient_marked');
     $results['recipient_inferred'] = (bool) $pod->field('recipient_inferred');
@@ -164,10 +166,12 @@ function list_public_bl_letters_single()
     $results['origin_marked'] = $pod->field('origin_marked');
     $results['origin_inferred'] = (bool) $pod->field('origin_inferred');
     $results['origin_uncertain'] = (bool) $pod->field('origin_uncertain');
+    $results['origin_note'] = $pod->field('origin_note');
     $results['dest'] = $destinations;
     $results['dest_marked'] = $pod->field('dest_marked');
     $results['dest_uncertain'] = (bool) $pod->field('dest_uncertain');
     $results['dest_inferred'] = (bool) $pod->field('dest_inferred');
+    $results['dest_note'] = $pod->field('dest_note');
     $results['languages'] = $pod->field('languages');
     $results['keywords'] = $pod->field('keywords');
     $results['abstract'] = $pod->field('abstract');

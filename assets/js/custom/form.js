@@ -9,6 +9,7 @@ if (document.getElementById('letter-form')) {
             author_as_marked: '',
             author_inferred: '',
             author_uncertain: '',
+            author_note: '',
             recipient: [],
             recipient_marked: '',
             recipient_inferred: '',
@@ -16,6 +17,7 @@ if (document.getElementById('letter-form')) {
             recipient_notes: '',
             mentioned: [],
             origin: [],
+            origin_note: '',
             origin_marked: '',
             origin_inferred: '',
             origin_uncertain: '',
@@ -23,6 +25,7 @@ if (document.getElementById('letter-form')) {
             dest_marked: '',
             dest_inferred: '',
             dest_uncertain: '',
+            dest_note: '',
             day: '',
             month: '',
             year: '',
@@ -30,6 +33,7 @@ if (document.getElementById('letter-form')) {
             date_uncertain: '',
             date_approximate: '',
             date_is_range: '',
+            date_note: '',
             range_year: '',
             range_month: '',
             range_day: '',
@@ -143,6 +147,7 @@ if (document.getElementById('letter-form')) {
                             self.date_uncertain = rd.date_uncertain
                             self.date_approximate = rd.date_approximate
                             self.date_is_range = rd.date_approximate
+                            self.date_note = rd.date_note
                             self.range_year = rd.range_year
                             self.range_month = rd.range_month
                             self.range_day = rd.range_day
@@ -150,6 +155,7 @@ if (document.getElementById('letter-form')) {
                             self.author_as_marked = rd.l_author_marked
                             self.author_inferred = rd.author_inferred
                             self.author_uncertain = rd.author_uncertain
+                            self.author_note = rd.author_note
                             self.recipient = Object.keys(rd.recipient)
                             self.recipient_marked = rd.recipient_marked
                             self.recipient_inferred = rd.recipient_inferred
@@ -159,10 +165,12 @@ if (document.getElementById('letter-form')) {
                             self.origin_marked = rd.origin_marked
                             self.origin_inferred = rd.origin_inferred
                             self.origin_uncertain = rd.origin_uncertain
+                            self.origin_note = rd.origin_note
                             self.destination = Object.keys(rd.dest)
                             self.dest_marked = rd.dest_marked
                             self.dest_inferred = rd.dest_inferred
                             self.dest_uncertain = rd.dest_uncertain
+                            self.dest_note = rd.dest_note
                             self.languages =
                                 rd.languages.length === 0
                                     ? []
