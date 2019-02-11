@@ -35,6 +35,7 @@ function list_bl_people_single()
     $results['birth_year'] = $pod->field('birth_year');
     $results['death_year'] = $pod->field('death_year');
     $results['emlo'] = $pod->field('emlo');
+    $results['note'] = $pod->field('note');
 
     echo json_encode(
         $results,

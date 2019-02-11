@@ -14,7 +14,8 @@ if (array_key_exists('save_post', $_POST)) {
         'forename' => 'forename',
         'birth_year' => 'birth_year',
         'death_year' => 'death_year',
-        'emlo' => 'emlo'
+        'emlo' => 'emlo',
+        'note' => 'note'
     ]);
 
     $new_pod = '';
@@ -58,9 +59,9 @@ if (array_key_exists('save_post', $_POST)) {
                         <label for="last_name">Surname</label>
                         <input v-model="lastName" type="text" class="form-control form-control-sm" name="surname" required>
                     </div>
-                    <div class="form-group required">
+                    <div class="form-group">
                         <label for="first_name">Forename</label>
-                        <input v-model="firstName" type="text" class="form-control form-control-sm" name="forename" required>
+                        <input v-model="firstName" type="text" class="form-control form-control-sm" name="forename">
                     </div>
                 </fieldset>
 
@@ -91,6 +92,13 @@ if (array_key_exists('save_post', $_POST)) {
                     <div class="form-group">
                         <label for="emlo">Emlo ID</label>
                         <input v-model="emlo" type="text" class="form-control form-control-sm" name="emlo">
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <div class="form-group">
+                        <label for="note">Note on person</label>
+                        <textarea v-model="note" type="text" class="form-control form-control-sm" name="note"></textarea>
                     </div>
                 </fieldset>
 

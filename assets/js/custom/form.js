@@ -284,23 +284,30 @@ if (document.getElementById('person-name')) {
             emlo: '',
             dob: '',
             dod: '',
+            note: '',
             error: false,
         },
 
         computed: {
             fullName: function() {
                 let fullName
-                fullName =
-                    this.capitalize(this.lastName).trim() +
-                    ', ' +
-                    this.capitalize(this.firstName).trim()
+                if (this.firstName.length > 0) {
+                    fullName =
+                        this.capitalize(this.lastName).trim() +
+                        ', ' +
+                        this.capitalize(this.firstName).trim()
+                } else {
+                    fullName =
+                        this.capitalize(this.lastName).trim()
+
+                }
+
                 return fullName.trim()
             },
             personsFormValidated: function() {
                 if (
-                    this.firstName == '' ||
                     this.lastName == '' ||
-                    this.fullName.length < 8
+                    this.fullName.length < 3
                 ) {
                     return false
                 }
@@ -335,6 +342,7 @@ if (document.getElementById('person-name')) {
                             self.emlo = response.data.emlo
                             self.dob = response.data.birth_year
                             self.dod = response.data.death_year
+                            self.note = response.data.note
                         }
                     })
                     .catch(function(error) {
