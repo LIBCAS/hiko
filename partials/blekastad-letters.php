@@ -13,8 +13,13 @@ $index = 0;
 while ($letters_pods->fetch()) {
     $authors = [];
     $recipients = [];
+    $origins = [];
+    $destinations = [];
+
     $authors_related = $letters_pods->field('l_author');
     $recipients_related = $letters_pods->field('recipient');
+    $origins_related = $letters_pods->field('origin');
+    $destinations_related = $letters_pods->field('dest');
 
     if (!empty($authors_related)) {
         foreach ($authors_related as $rel_author) {
@@ -28,6 +33,18 @@ while ($letters_pods->fetch()) {
         }
     }
 
+    if (!empty($origins_related)) {
+        foreach ($origins_related as $o) {
+            $origins[] = $o['name'];
+        }
+    }
+
+    if (!empty($destinations_related)) {
+        foreach ($destinations_related as $d) {
+            $destinations[] = $d['name'];
+        }
+    }
+
     $letters[$index]['id'] = $letters_pods->display('id');
     $letters[$index]['number'] = $letters_pods->field('l_number');
     $letters[$index]['day'] = $letters_pods->field('date_day');
@@ -35,8 +52,8 @@ while ($letters_pods->fetch()) {
     $letters[$index]['year'] = $letters_pods->field('date_year');
     $letters[$index]['author'] = $authors;
     $letters[$index]['recipient'] = $recipients;
-    $letters[$index]['origin'] = get_array_name($letters_pods->field('origin'));
-    $letters[$index]['dest'] = get_array_name($letters_pods->field('dest'));
+    $letters[$index]['origin'] = $origins;
+    $letters[$index]['dest'] = $destinations;
     $letters[$index]['status'] = $letters_pods->field('status');
     $index++;
 }
@@ -79,6 +96,18 @@ $letters = json_encode($letters, JSON_UNESCAPED_UNICODE);
                  <li v-for="recipient in props.row.recipient"> {{ recipient }}</li>
               </ul>
            </span>
+
+           <span slot="origin" slot-scope="props">
+               <ul class="list-unstyled">
+                  <li v-for="o in props.row.origin"> {{ o }}</li>
+               </ul>
+            </span>
+
+            <span slot="dest" slot-scope="props">
+                <ul class="list-unstyled">
+                   <li v-for="d in props.row.dest"> {{ d }}</li>
+                </ul>
+             </span>
     </v-client-table>
 </div>
 
