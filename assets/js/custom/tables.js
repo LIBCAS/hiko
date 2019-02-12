@@ -28,14 +28,6 @@ var defaultTablesOptions = {
 }
 
 if (document.getElementById('datatable-letters')) {
-    let tabledata
-    if (document.querySelector('#letters-data') !== null) {
-        tabledata = JSON.parse(
-            document.querySelector('#letters-data').innerHTML
-        )
-    } else {
-        tabledata = null
-    }
     Vue.use(VueTables.ClientTable, false, false, 'bootstrap4')
     columns = [
         'edit',
@@ -52,7 +44,7 @@ if (document.getElementById('datatable-letters')) {
         el: '#datatable-letters',
         data: {
             columns: columns,
-            tableData: tabledata,
+            tableData: [],
             options: {
                 headings: {
                     edit: 'Akce',
@@ -69,6 +61,9 @@ if (document.getElementById('datatable-letters')) {
                 },
             },
         },
+        mounted: function () {
+            this.getData();
+        },
         methods: {
             deleteLetter: function(id) {
                 let self = this
@@ -81,6 +76,20 @@ if (document.getElementById('datatable-letters')) {
                     return item.id !== id
                 })
             },
+            getData: function() {
+                let self = this;
+                axios
+                    .get(
+                        ajaxUrl +
+                            '?action=list_to_datatable'
+                    )
+                    .then(function(response) {
+                        self.tableData = response.data
+                    })
+                    .catch(function(error) {
+                        console.log(error);
+                    })
+            }
         },
     })
 }
