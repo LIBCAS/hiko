@@ -1,8 +1,15 @@
 <?php
 
+$fields = [
+    't.id'
+];
+
+$fields = implode(', ', $fields);
+
 $letters_pods = pods(
     'bl_letter',
     [
+        'select' => $fields,
         'orderby'=> 't.created DESC',
         'limit' => -1
     ]
