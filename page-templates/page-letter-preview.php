@@ -2,7 +2,7 @@
 
 /* Template Name: Náhled dopisu */
 
-if (!has_user_permission('bl_editor')) {
+if (!has_user_permission('blekastad_editor')) {
     die('Nemáte oprávnění zobrazit tuto stránku');
 }
 if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
