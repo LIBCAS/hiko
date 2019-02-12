@@ -113,7 +113,7 @@ if (document.getElementById('letter-preview')) {
                             self.notes_public = rd.notes_public
                             self.rel_rec_name = rd.rel_rec_name
                             self.rel_rec_url =
-                                rd.rel_rec_url.length === 0
+                                (rd.rel_rec_url && rd.rel_rec_url.length === 0)
                                     ? '#'
                                     : rd.rel_rec_url
                             self.ms_manifestation = rd.ms_manifestation
