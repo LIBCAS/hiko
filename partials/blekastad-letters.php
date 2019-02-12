@@ -1,7 +1,13 @@
 <?php
 
 $fields = [
-    't.id'
+    't.id AS id',
+    't.l_number AS number',
+    't.date_day AS day',
+    't.date_month AS month',
+    't.date_year AS year',
+    't.status AS state',
+    't.created',
 ];
 
 $fields = implode(', ', $fields);
@@ -52,16 +58,16 @@ while ($letters_pods->fetch()) {
         }
     }
 
-    $letters[$index]['id'] = $letters_pods->display('id');
-    $letters[$index]['number'] = $letters_pods->field('l_number');
-    $letters[$index]['day'] = $letters_pods->field('date_day');
-    $letters[$index]['month'] = $letters_pods->field('date_month');
-    $letters[$index]['year'] = $letters_pods->field('date_year');
+    $letters[$index]['id'] = $letters_pods->field('id');
+    $letters[$index]['number'] = $letters_pods->field('number');
+    $letters[$index]['day'] = $letters_pods->field('day');
+    $letters[$index]['month'] = $letters_pods->field('month');
+    $letters[$index]['year'] = $letters_pods->field('year');
     $letters[$index]['author'] = $authors;
     $letters[$index]['recipient'] = $recipients;
     $letters[$index]['origin'] = $origins;
     $letters[$index]['dest'] = $destinations;
-    $letters[$index]['status'] = $letters_pods->field('status');
+    $letters[$index]['status'] = $letters_pods->field('state');
     $index++;
 }
 
@@ -115,6 +121,11 @@ $letters = json_encode($letters, JSON_UNESCAPED_UNICODE);
                    <li v-for="d in props.row.dest"> {{ d }}</li>
                 </ul>
              </span>
+
+             <span slot="status" slot-scope="props">
+                 <span v-if="props.row.status"> {{ props.row.status }}</span>
+                 <span v-else class="text-danger">Ke kontrole</span>
+              </span>
     </v-client-table>
 </div>
 
