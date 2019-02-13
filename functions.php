@@ -378,7 +378,15 @@ function get_duplicities_by_id($objet) {
     return array_unique(array_diff_assoc($ids, $unique));
 }
 
-
+function get_all_objects_by_id ($object, $v)
+{
+    $found = [];
+    foreach($object as $o) {
+        if ($o->id == $v) {
+            $found[] = $o;
+        }
+    }
+}
 
 add_image_size('xl-thumb', 300);
 
