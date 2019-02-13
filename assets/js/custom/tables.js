@@ -61,6 +61,8 @@ if (document.getElementById('datatable-letters')) {
                     return 'row-' + row.id
                 },
             },
+            error: false,
+            loading: true
         },
         mounted: function() {
             this.getData()
@@ -85,7 +87,10 @@ if (document.getElementById('datatable-letters')) {
                         self.tableData = result.data;
                     })
                     .catch(function(error) {
-                        console.log(error);
+                        self.error = error;
+                    })
+                    .then(function () {
+                        self.loading = false
                     })
             }
         },

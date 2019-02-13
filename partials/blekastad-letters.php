@@ -4,7 +4,15 @@
 </div>
 
 <div id="datatable-letters">
-    <v-client-table :data="tableData" :columns="columns" :options="options"  v-if="tableData">
+
+    <div v-if="loading" class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 65%">
+        </div>
+    </div>
+    <div v-if="error" class="alert alert-warning">
+        {{ error }}
+    </div>
+    <v-client-table :data="tableData" :columns="columns" :options="options" v-if="tableData.length > 0">
         <ul slot="edit" slot-scope="props" class="list-unstyled">
             <li>
                 <a :href="'<?= home_url('blekastad/letters-add/?edit='); ?>' + props.row.id">Upravit</a>
