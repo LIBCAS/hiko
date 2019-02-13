@@ -378,7 +378,7 @@ function get_duplicities_by_id($objet) {
     return array_unique(array_diff_assoc($ids, $unique));
 }
 
-function get_all_objects_by_id ($object, $v)
+function get_all_objects_by_id($object, $v)
 {
     $found = [];
     foreach($object as $o) {
