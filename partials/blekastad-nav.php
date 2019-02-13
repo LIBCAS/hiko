@@ -22,6 +22,11 @@
                         Místa
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= home_url('/location/') ?>">
+                        Uložení
+                    </a>
+                </li>
             </ul>
             <?php require 'menu-login.php'; ?>
         </div>
