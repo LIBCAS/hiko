@@ -386,6 +386,7 @@ function get_all_objects_by_id($object, $v)
             $found[] = $o;
         }
     }
+    return $found;
 }
 
 add_image_size('xl-thumb', 300);
