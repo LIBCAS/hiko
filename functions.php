@@ -337,10 +337,10 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type)
         't.date_year',
         't.status',
         't.created',
-        'l_author.name',
-        'recipient.name',
-        'origin.name',
-        'dest.name'
+        'l_author.name AS author',
+        'recipient.name AS recipient',
+        'origin.name AS origin',
+        'dest.name AS dest'
     ];
 
     $fields = implode(', ', $fields);
