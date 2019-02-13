@@ -461,7 +461,7 @@ function get_letters_basic_meta_filtered($letter_type, $person_type, $place_type
         $q_results_filtered[] = $l;
     }
 
-    return $q_results_filtered;
+    return array_values($q_results_filtered);
 }
 
 

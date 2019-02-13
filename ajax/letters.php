@@ -7,7 +7,7 @@ function list_public_bl_letters_short()
     if not logged filter private
     */
     echo json_encode(
-        [$letters],
+        $letters,
         JSON_UNESCAPED_UNICODE
     );
     wp_die();
