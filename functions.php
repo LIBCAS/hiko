@@ -371,6 +371,15 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type)
     return $wpdb->get_results($query);
 }
 
+
+function get_duplicities_by_id($objet) {
+    $ids = array_map(create_function('$o', 'return $o->id;'), $objet);
+    $unique = array_unique($ids);
+    return array_unique(array_diff_assoc($ids, $unique));
+}
+
+
+
 add_image_size('xl-thumb', 300);
 
 
