@@ -19,35 +19,42 @@
                 <a :href="'#delete-' + props.row.id" @click="deleteLetter(props.row.id)">Odstranit</a>
             </li>
         </ul>
+
         <span slot="date" slot-scope="props">
-            {{ props.row.year + '/' + props.row.month  + '/' + props.row.day }}
-         </span>
-         <span slot="author" slot-scope="props">
-             <ul class="list-unstyled">
+            {{ props.row.date_year + '/' + props.row.date_month  + '/' + props.row.date_day }}
+        </span>
+
+        <span slot="author" slot-scope="props">
+            <span v-if="!Array.isArray(props.row.author)">{{ props.row.author }}</span>
+            <ul v-else class="list-unstyled">
                 <li v-for="author in props.row.author"> {{ author }}</li>
-             </ul>
-          </span>
-          <span slot="recipient" slot-scope="props">
-              <ul class="list-unstyled">
-                 <li v-for="recipient in props.row.recipient"> {{ recipient }}</li>
-              </ul>
-           </span>
+            </ul>
+        </span>
 
-           <span slot="origin" slot-scope="props">
-               <ul class="list-unstyled">
-                  <li v-for="o in props.row.origin"> {{ o }}</li>
-               </ul>
-            </span>
+        <span slot="recipient" slot-scope="props">
+            <span v-if="!Array.isArray(props.row.recipient)">{{ props.row.recipient }}</span>
+            <ul v-else class="list-unstyled">
+                <li v-for="recipient in props.row.recipient"> {{ recipient }}</li>
+            </ul>
+        </span>
 
-            <span slot="dest" slot-scope="props">
-                <ul class="list-unstyled">
-                   <li v-for="d in props.row.dest"> {{ d }}</li>
-                </ul>
-             </span>
+        <span slot="origin" slot-scope="props">
+            <span v-if="!Array.isArray(props.row.origin)">{{ props.row.origin }}</span>
+            <ul v-else class="list-unstyled">
+                <li v-for="o in props.row.origin"> {{ o }}</li>
+            </ul>
+        </span>
 
-             <span slot="status" slot-scope="props">
-                 <span v-if="props.row.status"> {{ props.row.status }}</span>
-                 <span v-else class="text-danger">Ke kontrole</span>
-              </span>
+        <span slot="dest" slot-scope="props">
+            <span v-if="!Array.isArray(props.row.dest)">{{ props.row.dest }}</span>
+            <ul v-else class="list-unstyled">
+                <li v-for="d in props.row.dest"> {{ d }}</li>
+            </ul>
+        </span>
+
+        <span slot="status" slot-scope="props">
+            <span v-if="props.row.status"> {{ props.row.status }}</span>
+            <span v-else class="text-danger">Ke kontrole</span>
+        </span>
     </v-client-table>
 </div>
