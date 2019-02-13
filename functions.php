@@ -372,7 +372,8 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type)
 }
 
 
-function get_duplicities_by_id($objet) {
+function get_duplicities_by_id($objet)
+{
     $ids = array_map(create_function('$o', 'return $o->id;'), $objet);
     $unique = array_unique($ids);
     return array_unique(array_diff_assoc($ids, $unique));
@@ -444,6 +445,24 @@ function flatten_duplicate_letters($duplicate_ids, $data)
 }
 
 
+function get_letters_basic_meta_filtered($letter_type, $person_type, $place_type)
+{
+    $q_results = get_letters_basic_meta($letter_type, $person_type, $place_type);
+
+    $letters_duplicate_ids = get_duplicities_by_id($q_results);
+
+    $new_flat_letters = flatten_duplicate_letters($letters_duplicate_ids, $q_results);
+
+    $q_results_filtered = array_filter($q_results, function ($r) use ($letters_duplicate_ids) {
+        return !in_array($r->id, $letters_duplicate_ids);
+    }, ARRAY_FILTER_USE_BOTH);
+
+    foreach ($new_flat_letters as $l) {
+        $q_results_filtered[] = $l;
+    }
+
+    return $q_results_filtered;
+}
 
 
 add_image_size('xl-thumb', 300);
