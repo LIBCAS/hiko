@@ -381,13 +381,70 @@ function get_duplicities_by_id($objet) {
 function get_all_objects_by_id($object, $v)
 {
     $found = [];
-    foreach($object as $o) {
+    foreach ($object as $o) {
         if ($o->id == $v) {
             $found[] = $o;
         }
     }
     return $found;
 }
+
+
+function flatten_duplicate_letters($duplicate_ids, $data)
+{
+    $flattened = [];
+
+    foreach ($duplicate_ids as $ld) {
+        $duplicite_objects = get_all_objects_by_id($data, $ld);
+
+        $single_letter = [
+            'id' => '',
+            'l_number' => '',
+            'date_day' => '',
+            'date_month' => '',
+            'date_year' => '',
+            'status' => '',
+            'created' => '',
+            'author' => [],
+            'recipient' => [],
+            'origin' => [],
+            'dest' => [],
+        ];
+
+        $auth = [];
+        $rec = [];
+        $origins = [];
+        $dests = [];
+
+        for ($i = 0; $i < count($duplicite_objects); $i++) {
+            if ($i == 0) {
+                $single_letter['id'] = $duplicite_objects[$i]->id;
+                $single_letter['l_number'] = $duplicite_objects[$i]->l_number;
+                $single_letter['date_day'] = $duplicite_objects[$i]->date_day;
+                $single_letter['date_month'] = $duplicite_objects[$i]->date_month;
+                $single_letter['date_year'] = $duplicite_objects[$i]->date_year;
+                $single_letter['status'] = $duplicite_objects[$i]->status;
+                $single_letter['created'] = $duplicite_objects[$i]->created;
+            }
+            $auth[] = $duplicite_objects[$i]->author;
+            $rec[] = $duplicite_objects[$i]->recipient;
+            $origins[] = $duplicite_objects[$i]->origin;
+            $dests[] = $duplicite_objects[$i]->dest;
+        }
+
+        $single_letter['author'] = array_unique($auth);
+        $single_letter['recipient'] = array_unique($rec);
+        $single_letter['origin'] = array_unique($origins);
+        $single_letter['dest'] = array_unique($dests);
+
+        $flattened[] = (object) $single_letter;
+    }
+
+    return $flattened;
+}
+
+
+
 
 add_image_size('xl-thumb', 300);
 
