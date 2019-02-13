@@ -433,10 +433,10 @@ function flatten_duplicate_letters($duplicate_ids, $data)
             $dests[] = $duplicite_objects[$i]->dest;
         }
 
-        $single_letter['author'] = array_unique($auth);
-        $single_letter['recipient'] = array_unique($rec);
-        $single_letter['origin'] = array_unique($origins);
-        $single_letter['dest'] = array_unique($dests);
+        $single_letter['author'] = array_values(array_unique($auth));
+        $single_letter['recipient'] = array_values(array_unique($rec));
+        $single_letter['origin'] = array_values(array_unique($origins));
+        $single_letter['dest'] = array_values(array_unique($dests));
 
         $flattened[] = (object) $single_letter;
     }
