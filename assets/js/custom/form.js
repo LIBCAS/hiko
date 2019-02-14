@@ -135,6 +135,15 @@ if (document.getElementById('letter-form')) {
             } else {
                 addSlimSelect()
             }
+
+            this.persons = JSON.parse(
+                document.querySelector('#people').innerHTML
+            )
+            this.places = JSON.parse(
+                document.querySelector('#places').innerHTML
+            )
+
+            this.getLocationData()
         },
 
         methods: {
@@ -267,15 +276,6 @@ if (document.getElementById('letter-form')) {
                         self.error = true
                     })
                     .then(function() {
-                        self.persons = JSON.parse(
-                            document.querySelector('#people').innerHTML
-                        )
-                        self.places = JSON.parse(
-                            document.querySelector('#places').innerHTML
-                        )
-
-                        self.getLocationData()
-
                         addSlimSelect()
                     })
             },
