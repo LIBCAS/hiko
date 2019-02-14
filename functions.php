@@ -500,6 +500,11 @@ function get_hiko_post_types($type)
         $data['place'] = 'bl_place';
         $data['person'] = 'bl_person';
         $data['editor'] = 'blekastad_editor';
+    } elseif ($type == 'demo') {
+        $data['letter'] = 'demo_letter';
+        $data['place'] = 'demo_place';
+        $data['person'] = 'demo_person';
+        $data['editor'] = 'demo_editor';
     }
 
     return $data;
