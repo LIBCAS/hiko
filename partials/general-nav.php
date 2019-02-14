@@ -17,6 +17,16 @@
                         <a class="dropdown-item" href="<?= home_url('/blekastad/places/') ?>">Místa</a>
                     </div>
                 </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="demo-dd" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Zkušební DB
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="demo-dd">
+                        <a class="dropdown-item" href="<?= home_url('/demo/letters/') ?>">Dopisy</a>
+                        <a class="dropdown-item" href="<?= home_url('/demo/persons/') ?>">Lidé</a>
+                        <a class="dropdown-item" href="<?= home_url('/demo/places/') ?>">Místa</a>
+                    </div>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= home_url('/location/') ?>">
                         Uložení

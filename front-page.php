@@ -26,6 +26,23 @@ require 'partials/general-nav.php';
             </div>
         </div>
 
+        <div class="col-md">
+            <div class="card mb-3 mw-400">
+                <h3 class="card-header">Zkušební DB</h3>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <a href="<?= home_url('/demo/letters/') ?>" class="card-link">Dopisy</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="<?= home_url('/demo/persons/') ?>" class="card-link">Lidé</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="<?= home_url('/demo/places/') ?>" class="card-link">Místa</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
     </div>
 </div>
 
