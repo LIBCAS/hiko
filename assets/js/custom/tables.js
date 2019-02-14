@@ -138,7 +138,7 @@ if (document.getElementById('datatable-persons')) {
                     return 'row-' + row.id
                 },
             },
-            letterType: '',
+            path: '',
         },
         mounted: function() {
             let letterTypes = getLetterType()
@@ -149,13 +149,13 @@ if (document.getElementById('datatable-persons')) {
                 self.error = letterTypes
                 return
             } else {
-                this.letterType = letterTypes['letter']
+                this.path = letterTypes['path']
             }
         },
         methods: {
             deletePerson: function(id) {
                 let self = this
-                removeItemAjax(id, self.letterType, function() {
+                removeItemAjax(id, 'delete_person', self.path, function() {
                     self.deleteRow(id, self.tableData)
                 })
             },

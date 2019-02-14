@@ -1,31 +1,31 @@
 <?php
 
-function list_bl_people_simple()
+function list_people_simple()
 {
+    $type = test_input($_GET['type']);
     echo json_encode(
-        get_persons_names('bl_person'),
+        get_persons_names($type),
         JSON_UNESCAPED_UNICODE
     );
     wp_die();
 }
-add_action('wp_ajax_list_bl_people_simple', 'list_bl_people_simple');
+add_action('wp_ajax_list_people_simple', 'list_people_simple');
 
 
 
-function list_bl_people_single()
+function list_people_single()
 {
     $results = [];
 
     if (!array_key_exists('pods_id', $_GET)) {
-        echo '404';
-        wp_die();
+        wp_send_json_error('Not found', 404);
     }
-
-    $pod = pods('bl_person', $_GET['pods_id']);
+    $type = test_input($_GET['type']);
+    $id = test_input($_GET['pods_id']);
+    $pod = pods($type, $id);
 
     if (!$pod->exists()) {
-        echo '404';
-        wp_die();
+        wp_send_json_error('Not found', 404);
     }
 
     $results['id'] = $pod->display('id');
@@ -45,26 +45,28 @@ function list_bl_people_single()
     wp_die();
 }
 
-add_action('wp_ajax_list_bl_people_single', 'list_bl_people_single');
+add_action('wp_ajax_list_people_single', 'list_people_single');
 
 
-function delete_bl_person()
+function delete_person()
 {
     if (!array_key_exists('pods_id', $_GET)) {
-        echo '404';
-        wp_die();
+        wp_send_json_error('Not found', 404);
     }
 
-    if (!has_user_permission('blekastad_editor')) {
-        echo '403';
-        wp_die();
+    $id = test_input($_GET['pods_id']);
+    $type = test_input($_GET['type']);
+    $types = get_hiko_post_types($type);
+
+    if (!has_user_permission($types['editor'])) {
+        wp_send_json_error('Not allowed', 403);
     }
 
-    $pod = pods('bl_person', $_GET['pods_id']);
+    $pod = pods($types['person'], $id);
+
     $result = $pod->delete();
-    echo $result;
 
-    wp_die();
+    wp_send_json_success($result);
 }
 
-add_action('wp_ajax_delete_bl_person', 'delete_bl_person');
+add_action('wp_ajax_delete_person', 'delete_person');

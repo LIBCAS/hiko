@@ -235,11 +235,11 @@ if (document.getElementById('letter-form')) {
                     })
             },
 
-            ajaxToData: function(action, targetData, targetElement) {
+            ajaxToData: function(action, targetData, postType, targetElement) {
                 let self = this
                 targetElement.classList.add('rotate')
                 axios
-                    .get(ajaxUrl + '?action=' + action)
+                    .get(ajaxUrl + '?action=' + action + '&type=' + postType)
                     .then(function(response) {
                         self[targetData] = response.data
                     })
@@ -256,8 +256,9 @@ if (document.getElementById('letter-form')) {
                 let self = this
                 if (type == 'persons') {
                     self.ajaxToData(
-                        'list_bl_people_simple',
+                        'list_people_simple',
                         'persons',
+                        self.personType,
                         event.target
                     )
                 } else if (type == 'places') {
@@ -351,6 +352,7 @@ if (document.getElementById('person-name')) {
             dod: '',
             note: '',
             error: false,
+            personType: '',
         },
 
         computed: {
@@ -376,6 +378,16 @@ if (document.getElementById('person-name')) {
         },
 
         mounted: function() {
+            let letterTypes = getLetterType()
+            if (
+                typeof letterTypes === 'string' ||
+                letterTypes instanceof String
+            ) {
+                self.error = letterTypes
+                return
+            } else {
+                this.personType = letterTypes['personType']
+            }
             let url = new URL(window.location.href)
             if (url.searchParams.get('edit')) {
                 this.getInitialData(url.searchParams.get('edit'))
@@ -391,7 +403,11 @@ if (document.getElementById('person-name')) {
                 let self = this
                 axios
                     .get(
-                        ajaxUrl + '?action=list_bl_people_single&pods_id=' + id
+                        ajaxUrl +
+                            '?action=list_people_single&pods_id=' +
+                            id +
+                            '&type=' +
+                            self.personType
                     )
                     .then(function(response) {
                         if (response.data == '404') {
