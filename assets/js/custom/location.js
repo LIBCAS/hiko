@@ -6,7 +6,7 @@ if (document.getElementById('repository')) {
         data: {},
         methods: {
             addRepository: function() {
-                addNewLocationItem('repository', 'Nový repozitář')
+                insertLocationItem('repository', 'Nový repozitář', 'add')
             },
             deleteRepository: function(id) {
                 console.log(id)
@@ -15,7 +15,7 @@ if (document.getElementById('repository')) {
     })
 }
 
-function addNewLocationItem(type, title) {
+function insertLocationItem(type, title, action) {
     Swal.fire({
         title: title,
         type: 'question',
@@ -35,10 +35,11 @@ function addNewLocationItem(type, title) {
         preConfirm: function(value) {
             return axios
                 .post(
-                    ajaxUrl + '?action=add_new_location_data',
+                    ajaxUrl + '?action=insert_location_data',
                     {
                         ['type']: type,
                         ['item']: value,
+                        ['action']: action,
                     },
                     {
                         headers: {
