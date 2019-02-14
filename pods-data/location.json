@@ -1,0 +1,89 @@
+{
+    "meta": { "version": "2.7.12", "build": 1550152191 },
+    "pods": {
+        "216": {
+            "id": 216,
+            "name": "location",
+            "label": "Locations",
+            "description": "",
+            "type": "pod",
+            "storage": "table",
+            "object": "",
+            "alias": "",
+            "fields": {
+                "name": {
+                    "id": 217,
+                    "name": "name",
+                    "label": "Name",
+                    "description": "",
+                    "help": "",
+                    "class": "",
+                    "type": "text",
+                    "weight": 0,
+                    "pick_object": "",
+                    "pick_val": "",
+                    "sister_id": "",
+                    "required": "1",
+                    "unique": "0",
+                    "text_repeatable": "0",
+                    "text_allowed_html_tags": "strong em a ul ol li b i",
+                    "text_max_length": "255",
+                    "text_allow_shortcode": "0",
+                    "text_allow_html": "0",
+                    "pick_post_status": ["publish"],
+                    "admin_only": "0",
+                    "restrict_role": "1",
+                    "restrict_capability": "0",
+                    "hidden": "0",
+                    "read_only": "0",
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor",
+                        "demo_editor"
+                    ],
+                    "text_placeholder": ""
+                },
+                "loc_type": {
+                    "id": 222,
+                    "name": "loc_type",
+                    "label": "Location type",
+                    "description": "",
+                    "help": "",
+                    "class": "",
+                    "type": "text",
+                    "weight": 1,
+                    "pick_object": "",
+                    "pick_val": "",
+                    "sister_id": "",
+                    "required": "1",
+                    "unique": "0",
+                    "text_allow_shortcode": "0",
+                    "text_allow_html": "0",
+                    "text_allowed_html_tags": "strong em a ul ol li b i",
+                    "text_max_length": "255",
+                    "pick_post_status": ["publish"],
+                    "admin_only": "0",
+                    "restrict_role": "1",
+                    "restrict_capability": "0",
+                    "hidden": "0",
+                    "read_only": "0",
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor",
+                        "demo_editor"
+                    ],
+                    "text_repeatable": 0,
+                    "text_placeholder": ""
+                }
+            },
+            "show_in_menu": "1",
+            "label_singular": "Location",
+            "pod_index": "name",
+            "hierarchical": "0",
+            "ui_style": "post_type",
+            "ui_actions_enabled": ["add", "edit", "duplicate", "delete"],
+            "ui_reorder_field": "menu_order",
+            "ui_fields_manage": { "0": "name", "2": "modified" }
+        }
+    }
+}
