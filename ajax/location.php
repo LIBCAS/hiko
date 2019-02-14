@@ -7,9 +7,7 @@ function insert_location_data()
     }
 
     $data = file_get_contents('php://input');
-    $data = mb_convert_encoding($data, 'HTML-ENTITIES', "UTF-8");
-    $data = htmlspecialchars_decode($data);
-
+    $data = mb_convert_encoding($data, 'UTF-8');
     $data = json_decode($data);
 
     $type = $data->type;

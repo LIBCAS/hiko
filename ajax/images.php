@@ -160,7 +160,7 @@ add_action('wp_ajax_delete_image', 'delete_image');
 function change_metadata()
 {
     $data = file_get_contents('php://input');
-    $data = mb_convert_encoding($data, 'HTML-ENTITIES', "UTF-8");
+    $data = mb_convert_encoding($data, 'UTF-8');
     $data = json_decode($data);
 
     $result = [];
