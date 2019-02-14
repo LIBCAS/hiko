@@ -208,7 +208,7 @@ if (document.getElementById('datatable-places')) {
         methods: {
             deletePlace: function(id) {
                 let self = this
-                removeItemAjax(id, 'delete_bl_place', function() {
+                removeItemAjax(id, 'delete_place', self.path, function() {
                     self.deleteRow(id, self.tableData)
                 })
             },

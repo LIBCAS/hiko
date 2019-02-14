@@ -263,8 +263,9 @@ if (document.getElementById('letter-form')) {
                     )
                 } else if (type == 'places') {
                     self.ajaxToData(
-                        'list_bl_places_simple',
+                        'list_places_simple',
                         'places',
+                        self.placeType,
                         event.target
                     )
                 }
@@ -309,8 +310,20 @@ if (document.getElementById('places-form')) {
             place: '',
             country: '',
             note: '',
+            lat: '',
+            long: '',
         },
         mounted: function() {
+            let letterTypes = getLetterType()
+            if (
+                typeof letterTypes === 'string' ||
+                letterTypes instanceof String
+            ) {
+                self.error = letterTypes
+                return
+            } else {
+                this.placeType = letterTypes['placeType']
+            }
             let url = new URL(window.location.href)
             if (url.searchParams.get('edit')) {
                 this.getInitialData(url.searchParams.get('edit'))
@@ -320,15 +333,19 @@ if (document.getElementById('places-form')) {
             getInitialData: function(id) {
                 let self = this
                 axios
-                    .get(ajaxUrl + '?action=list_bl_place_single&pods_id=' + id)
+                    .get(
+                        ajaxUrl +
+                            '?action=list_place_single&pods_id=' +
+                            id +
+                            '&type=' +
+                            self.placeType
+                    )
                     .then(function(response) {
-                        if (response.data == '404') {
-                            self.error = true
-                        } else {
-                            self.place = response.data.name
-                            self.country = response.data.country
-                            self.note = response.data.note
-                        }
+                        self.place = response.data.name
+                        self.country = response.data.country
+                        self.note = response.data.note
+                        self.lat = response.data.latitude
+                        self.note = response.data.longitude
                     })
                     .catch(function() {
                         self.error = true
@@ -467,6 +484,13 @@ function getLetterType() {
             personType: 'bl_person',
             placeType: 'bl_place',
             path: 'blekastad',
+        }
+    } else if (stringContains(url.pathname, 'zkusebni-db')) {
+        return {
+            letterType: 'demo_letter',
+            personType: 'demo_person',
+            placeType: 'demo_place',
+            path: 'zkusebni-db',
         }
     } else {
         return 'Neplatný typ dopisu'

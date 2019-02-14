@@ -1,9 +1,10 @@
 <?php
 
-function list_bl_places_simple()
+function list_places_simple()
 {
+    $type = test_input($_GET['type']);
     $place_pods = pods(
-        'bl_place',
+        $type,
         [
             'orderby'=> 't.name ASC',
             'limit' => -1
@@ -24,30 +25,33 @@ function list_bl_places_simple()
     );
     wp_die();
 }
-add_action('wp_ajax_list_bl_places_simple', 'list_bl_places_simple');
+add_action('wp_ajax_list_places_simple', 'list_places_simple');
 
 
 
-function list_bl_place_single()
+function list_place_single()
 {
     $results = [];
 
     if (!array_key_exists('pods_id', $_GET)) {
-        echo '404';
-        wp_die();
+        wp_send_json_error('Not found', 404);
     }
 
-    $pod = pods('bl_place', $_GET['pods_id']);
+    $id = test_input($_GET['pods_id']);
+    $type = test_input($_GET['type']);
+
+    $pod = pods($type, $id);
 
     if (!$pod->exists()) {
-        echo '404';
-        wp_die();
+        wp_send_json_error('Not found', 404);
     }
 
     $results['id'] = $pod->display('id');
     $results['name'] = $pod->field('name');
     $results['country'] = $pod->field('country');
     $results['note'] = $pod->display('note');
+    $results['latitude'] = $pod->display('latitude');
+    $results['longitude'] = $pod->display('longitude');
 
     echo json_encode(
         $results,
@@ -56,27 +60,27 @@ function list_bl_place_single()
 
     wp_die();
 }
+add_action('wp_ajax_list_place_single', 'list_place_single');
 
-add_action('wp_ajax_list_bl_place_single', 'list_bl_place_single');
 
-
-function delete_bl_place()
+function delete_place()
 {
     if (!array_key_exists('pods_id', $_GET)) {
-        echo '404';
-        wp_die();
+        wp_send_json_error('Not found', 404);
     }
 
-    if (!has_user_permission('blekastad_editor')) {
-        echo '403';
-        wp_die();
+    $id = test_input($_GET['pods_id']);
+    $type = test_input($_GET['type']);
+    $types = get_hiko_post_types($type);
+
+    if (!has_user_permission($types['editor'])) {
+        wp_send_json_error('Not allowed', 404);
     }
 
-    $pod = pods('bl_place', $_GET['pods_id']);
+    $pod = pods($types['place'], $id);
     $result = $pod->delete();
-    echo $result;
 
-    wp_die();
+    wp_die($result);
 }
 
-add_action('wp_ajax_delete_bl_place', 'delete_bl_place');
+add_action('wp_ajax_delete_place', 'delete_place');
