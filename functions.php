@@ -194,6 +194,27 @@ function has_user_permission($role)
     return true;
 }
 
+function is_in_editor_role()
+{
+    if (!is_user_logged_in()) {
+        return false;
+    }
+
+    $user = wp_get_current_user();
+    $roles = (array) $user->roles;
+
+    $editor_roles = ['administrator', 'blekastad_editor', 'demo_editor'];
+
+    $result = array_intersect($roles, $editor_roles);
+
+    if (count($result) > 0) {
+        return true;
+    }
+
+    return false;
+}
+
+
 function verify_upload_img($img)
 {
     if (!file_exists($img['tmp_name'][0]) || !is_uploaded_file($img['tmp_name'][0])) {
@@ -473,3 +494,4 @@ require 'ajax/people.php';
 require 'ajax/places.php';
 require 'ajax/images.php';
 require 'ajax/export.php';
+require 'ajax/location.php';
