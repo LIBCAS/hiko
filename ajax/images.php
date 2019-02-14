@@ -22,7 +22,7 @@ function handle_img_uploads()
         wp_send_json_error('Not found', 404);
     }
 
-    if ($type != 'bl_letter') {
+    if ($type != 'bl_letter' && $type != 'demo_letter') {
         wp_send_json_error('Not found', 404);
     }
 

@@ -2,27 +2,33 @@
 
 /* Template Name: Náhled dopisu */
 
-if (!has_user_permission('blekastad_editor')) {
+if (!is_in_editor_role()) {
     die('Nemáte oprávnění zobrazit tuto stránku');
 }
 if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
     $letter_id = sanitize_text_field($_GET['letter']);
     $letter_type = sanitize_text_field($_GET['l_type']);
     $pod = pods($letter_type, $letter_id);
-    if ($letter_type == 'bl_letter') {
-        $link_dashboard = home_url('/blekastad/letters/');
-        $link_letter_edit = home_url('/blekastad/letters-add/?edit=' . $letter_id);
-        $link_letter_img = home_url('/blekastad/letters-media/?l_type=bl_letter&letter=' . $letter_id);
-    } else {
-        $link_dashboard = '#';
-        $link_letter_edit = '#';
+
+    if (!$pod->exists()) {
+        die('Nepodařilo se načíst požadovaný dopis');
     }
+
+    if ($letter_type == 'bl_letter') {
+        $letter_path = 'blekastad';
+    } elseif ($letter_type == 'demo_letter') {
+        $letter_path = 'demo';
+    } else {
+      die('Nenalezeno');
+    }
+
+    $link_dashboard = home_url("/{$letter_path}/letters/");
+    $link_letter_edit = home_url("/{$letter_path}/letters-add/?edit=$letter_id");
+    $link_letter_img = home_url("/{$letter_path}/letters-media/?l_type=bl_letter&letter={$letter_id}");
 } else {
     die('Nepodařilo se načíst požadovaný dopis');
 }
-if (!$pod->exists()) {
-    die('Nepodařilo se načíst požadovaný dopis');
-}
+
 
 
 ?>
