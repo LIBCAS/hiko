@@ -12,8 +12,25 @@ if (document.getElementById('repository')) {
             repositories: function() {
                 let self = this
                 let result = self.data.filter(function(loc) {
-                    console.log(loc)
                     if (loc.type == 'repository') {
+                        return true
+                    }
+                })
+                return result
+            },
+            collections: function() {
+                let self = this
+                let result = self.data.filter(function(loc) {
+                    if (loc.type == 'collection') {
+                        return true
+                    }
+                })
+                return result
+            },
+            archives: function() {
+                let self = this
+                let result = self.data.filter(function(loc) {
+                    if (loc.type == 'archive') {
                         return true
                     }
                 })
@@ -85,7 +102,6 @@ function insertLocationItem(type, title, action, callback) {
                     }
                 )
                 .then(function(response) {
-                    console.log(response.data)
                     return response.data
                 })
                 .catch(function(error) {
