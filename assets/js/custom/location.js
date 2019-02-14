@@ -2,20 +2,57 @@
 
 if (document.getElementById('repository')) {
     new Vue({
-        el: '#repository',
-        data: {},
-        methods: {
-            addRepository: function() {
-                insertLocationItem('repository', 'Nový repozitář', 'add')
+        el: '#location',
+        data: {
+            data: [],
+            loading: true,
+            error: false,
+        },
+        computed: {
+            repositories: function() {
+                let self = this
+                let result = self.data.filter(function(loc) {
+                    console.log(loc)
+                    if (loc.type == 'repository') {
+                        return true
+                    }
+                })
+                return result
             },
-            deleteRepository: function(id) {
+        },
+        mounted: function() {
+            this.getData()
+        },
+        methods: {
+            addItem: function(type, title, action) {
+                let self = this
+                insertLocationItem(type, title, action, function() {
+                    self.getData()
+                })
+            },
+            deleteItem: function(id) {
                 console.log(id)
+            },
+            getData: function() {
+                let self = this
+                self.loading = true
+                axios
+                    .get(ajaxUrl + '?action=list_locations')
+                    .then(function(response) {
+                        self.data = response.data.data
+                    })
+                    .catch(function(error) {
+                        self.error = error
+                    })
+                    .then(function() {
+                        self.loading = false
+                    })
             },
         },
     })
 }
 
-function insertLocationItem(type, title, action) {
+function insertLocationItem(type, title, action, callback) {
     Swal.fire({
         title: title,
         type: 'question',
@@ -67,6 +104,7 @@ function insertLocationItem(type, title, action) {
                 confirmButtonText: 'OK',
                 confirmButtonClass: 'btn btn-primary btn-lg',
             })
+            callback()
         }
     })
 }
