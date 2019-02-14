@@ -486,6 +486,26 @@ function get_letters_basic_meta_filtered($letter_type, $person_type, $place_type
 }
 
 
+function get_hiko_post_types($type)
+{
+    $data = [
+        'letter' => '',
+        'place' => '',
+        'person' => '',
+        'editor' => ''
+    ];
+
+    if ($type == 'blekastad') {
+        $data['letter'] = 'bl_letter';
+        $data['place'] = 'bl_place';
+        $data['person'] = 'bl_person';
+        $data['editor'] = 'blekastad_editor';
+    }
+
+    return $data;
+}
+
+
 add_image_size('xl-thumb', 300);
 
 
