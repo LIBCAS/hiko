@@ -26,7 +26,7 @@
                                 <span @click="insertItem('repository', 'Upravit: ' + rep.name, 'edit', rep.id)" class="text-success pointer py-1">Upravit</span>
                             </li>
                             <li>
-                                <span class="text-success pointer py-1">Smazat</span>
+                                <span @click="deleteItem(rep.name, rep.id)" class="text-success pointer py-1">Smazat</span>
                             </li>
                         </ul>
                     </td>
@@ -58,7 +58,7 @@
                                 <span @click="insertItem('collection', 'Upravit: ' + coll.name, 'edit', coll.id)" class="text-success pointer py-1">Upravit</span>
                             </li>
                             <li>
-                                <span class="text-success pointer py-1">Smazat</span>
+                                <span @click="deleteItem(coll.name, coll.id)" class="text-success pointer py-1">Smazat</span>
                             </li>
                         </ul>
                     </td>
@@ -90,7 +90,7 @@
                                 <span @click="insertItem('archive', 'Upravit: ' + a.name, 'edit', a.id)" class="text-success pointer py-1">Upravit</span>
                             </li>
                             <li>
-                                <span class="text-success pointer py-1">Smazat</span>
+                                <span @click="deleteItem(a.name, a.id)" class="text-success pointer py-1">Smazat</span>
                             </li>
                         </ul>
                     </td>

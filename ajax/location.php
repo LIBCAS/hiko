@@ -33,7 +33,7 @@ function insert_location_data()
             'data' => $data,
             'id' => $id
         ]);
-        
+
         wp_send_json_success();
     }
 
@@ -41,6 +41,24 @@ function insert_location_data()
 }
 add_action('wp_ajax_insert_location_data', 'insert_location_data');
 
+
+function delete_location_data()
+{
+    if (!is_in_editor_role()) {
+        wp_send_json_error('Not allowed', 403);
+    }
+
+    $data = file_get_contents('php://input');
+    $data = mb_convert_encoding($data, 'UTF-8');
+    $data = json_decode($data);
+
+    $id = $data->id;
+
+    $pod = pods('location', $id);
+    $result = $pod->delete();
+    wp_send_json_success($result);
+}
+add_action('wp_ajax_delete_location_data', 'delete_location_data');
 
 
 function list_locations()

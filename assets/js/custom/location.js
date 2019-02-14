@@ -47,8 +47,13 @@ if (document.getElementById('repository')) {
                     self.getData()
                 })
             },
-            deleteItem: function(id) {
-                console.log(id)
+            deleteItem: function(name, id) {
+                let self = this
+                deleteLocationItem(name, id, function() {
+                    self.data = self.data.filter(function(item) {
+                        return item.id !== id
+                    })
+                })
             },
             getData: function() {
                 let self = this
@@ -122,6 +127,50 @@ function insertLocationItem(type, title, action, id, callback) {
                 confirmButtonClass: 'btn btn-primary btn-lg',
             })
             callback()
+        }
+    })
+}
+
+function deleteLocationItem(name, id, callback) {
+    Swal.fire({
+        title: 'Opravdu chcete odstranit tuto položku?',
+        text: name,
+        type: 'warning',
+        buttonsStyling: false,
+        showCancelButton: true,
+        confirmButtonText: 'Ano',
+        cancelButtonText: 'Zrušit',
+        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
+    }).then(result => {
+        if (result.value) {
+            axios
+                .post(
+                    ajaxUrl + '?action=delete_location_data',
+                    {
+                        ['id']: id,
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json;charset=utf-8',
+                        },
+                    }
+                )
+                .then(function() {
+                    Swal.fire({
+                        title: 'Položka byla úspěšně odstraněna',
+                        type: 'success',
+                        buttonsStyling: false,
+                        confirmButtonText: 'OK',
+                        confirmButtonClass: 'btn btn-primary btn-lg',
+                    })
+                    callback()
+                })
+                .catch(function(error) {
+                    Swal.showValidationMessage(
+                        `Při odstraňování došlo k chybě: ${error}`
+                    )
+                })
         }
     })
 }
