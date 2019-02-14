@@ -59,6 +59,9 @@ if (document.getElementById('letter-form')) {
             persons: [],
             places: [],
             locations: [],
+            collection: '',
+            archive: '',
+            signature: '',
             edit: false,
             letterID: null,
         },
@@ -82,6 +85,30 @@ if (document.getElementById('letter-form')) {
                     '&letter=' +
                     this.letterID
                 )
+            },
+            repositories: function() {
+                let self = this
+                return self.locations.filter(function(loc) {
+                    if (loc.type == 'repository') {
+                        return true
+                    }
+                })
+            },
+            collections: function() {
+                let self = this
+                return self.locations.filter(function(loc) {
+                    if (loc.type == 'collection') {
+                        return true
+                    }
+                })
+            },
+            archives: function() {
+                let self = this
+                return self.locations.filter(function(loc) {
+                    if (loc.type == 'archive') {
+                        return true
+                    }
+                })
             },
         },
         mounted: function() {
@@ -147,14 +174,20 @@ if (document.getElementById('letter-form')) {
                 return
             },
 
+            getLocationData: function() {
+                let self = this
+                axios
+                    .get(ajaxUrl + '?action=list_locations')
+                    .then(function(response) {
+                        self.locations = response.data.data
+                    })
+                    .catch(function(error) {
+                        self.error = error
+                    })
+            },
+
             getInitialData: function() {
                 let self = this
-                self.persons = JSON.parse(
-                    document.querySelector('#people').innerHTML
-                )
-                self.places = JSON.parse(
-                    document.querySelector('#places').innerHTML
-                )
 
                 let id = self.letterID
                 axios
@@ -225,12 +258,24 @@ if (document.getElementById('letter-form')) {
                             self.repository = rd.repository
                             self.title = rd.name
                             self.status = rd.status
+                            self.collection = rd.collection
+                            self.archive = rd.archive
+                            self.signature = rd.signature
                         }
                     })
                     .catch(function() {
                         self.error = true
                     })
                     .then(function() {
+                        self.persons = JSON.parse(
+                            document.querySelector('#people').innerHTML
+                        )
+                        self.places = JSON.parse(
+                            document.querySelector('#places').innerHTML
+                        )
+
+                        self.getLocationData()
+
                         addSlimSelect()
                     })
             },

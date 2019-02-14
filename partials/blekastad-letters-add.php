@@ -99,6 +99,9 @@ if (array_key_exists('save_post', $_POST)) {
         'origin_note' => 'origin_note',
         'dest_note' => 'dest_note',
         'author_note' => 'author_note',
+        'archive' => 'archive',
+        'collection' => 'collection',
+        'signature' => 'signature',
     ]);
     $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
     $data['date_approximate'] = get_form_checkbox_val('date_approximate', $_POST);
@@ -537,7 +540,31 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="repository">Repository</label>
-                        <input v-model="repository" type="text" name="repository" class="form-control form-control-sm">
+                        <input v-model="repository" list="repositories" type="text" name="repository" class="form-control form-control-sm">
+                        <datalist id="repositories">
+                            <option v-for="rep in repositories"> {{ rep.name }} </option>
+                        </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="archive">Archive</label>
+                        <input v-model="archive" list="archives" type="text" name="archive" class="form-control form-control-sm">
+                        <datalist id="archives">
+                            <option v-for="a in archives"> {{ a.name }} </option>
+                        </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="collection">Collection</label>
+                        <input v-model="collection" list="collections" type="text" name="collection" class="form-control form-control-sm">
+                        <datalist id="collections">
+                            <option v-for="c in collections"> {{ c.name }} </option>
+                        </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signature">Signature</label>
+                        <input v-model="signature" type="text" name="signature" class="form-control form-control-sm">
                     </div>
                 </fieldset>
 

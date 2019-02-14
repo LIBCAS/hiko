@@ -147,6 +147,11 @@ function list_public_letters_single()
     $results['repository'] = $pod->field('repository');
     $results['name'] = $pod->field('name');
     $results['status'] = $pod->field('status');
+
+    $results['archive'] = $pod->field('archive');
+    $results['collection'] = $pod->field('collection');
+    $results['signature'] = $pod->field('signature');
+
     $results['images'] = $images_sorted;
     if (is_user_logged_in()) {
         $results['notes_private'] = $pod->field('notes_private');
