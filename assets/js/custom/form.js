@@ -530,12 +530,12 @@ function getLetterType() {
             placeType: 'bl_place',
             path: 'blekastad',
         }
-    } else if (stringContains(url.pathname, 'zkusebni-db')) {
+    } else if (stringContains(url.pathname, 'demo')) {
         return {
             letterType: 'demo_letter',
             personType: 'demo_person',
             placeType: 'demo_place',
-            path: 'zkusebni-db',
+            path: 'demo',
         }
     } else {
         return 'Neplatný typ dopisu'
