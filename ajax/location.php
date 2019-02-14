@@ -13,6 +13,7 @@ function insert_location_data()
     $type = $data->type;
     $item = $data->item;
     $action = $data->action;
+    $id = $data->id;
 
     $data = [
         'name' => test_input($item),
@@ -26,7 +27,17 @@ function insert_location_data()
         ]);
 
         wp_send_json_success();
+    } elseif ($action == 'edit') {
+        $new_pod = pods_api()->save_pod_item([
+            'pod' => 'location',
+            'data' => $data,
+            'id' => $id
+        ]);
+        
+        wp_send_json_success();
     }
+
+    wp_send_json_error();
 }
 add_action('wp_ajax_insert_location_data', 'insert_location_data');
 

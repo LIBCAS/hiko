@@ -41,9 +41,9 @@ if (document.getElementById('repository')) {
             this.getData()
         },
         methods: {
-            addItem: function(type, title, action) {
+            insertItem: function(type, title, action, id) {
                 let self = this
-                insertLocationItem(type, title, action, function() {
+                insertLocationItem(type, title, action, id, function() {
                     self.getData()
                 })
             },
@@ -69,7 +69,7 @@ if (document.getElementById('repository')) {
     })
 }
 
-function insertLocationItem(type, title, action, callback) {
+function insertLocationItem(type, title, action, id, callback) {
     Swal.fire({
         title: title,
         type: 'question',
@@ -94,6 +94,7 @@ function insertLocationItem(type, title, action, callback) {
                         ['type']: type,
                         ['item']: value,
                         ['action']: action,
+                        ['id']: id,
                     },
                     {
                         headers: {

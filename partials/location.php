@@ -9,7 +9,7 @@
 
         <h3>Instituce / repozitáře</h3>
 
-        <button @click="addItem('repository', 'Nový repozitář', 'add')" type="button" class="btn btn-primary btn-sm my-2">Přidat novou instituci</button>
+        <button @click="insertItem('repository', 'Nový repozitář', 'add', null)" type="button" class="btn btn-primary btn-sm my-2">Přidat novou instituci</button>
 
         <table class="table-sm table-bordered table-hover table-striped mt-3">
             <thead>
@@ -23,7 +23,7 @@
                     <td>
                         <ul class="list-unstyled mb-0">
                             <li>
-                                <span class="text-success pointer py-1">Upravit</span>
+                                <span @click="insertItem('repository', 'Upravit: ' + rep.name, 'edit', rep.id)" class="text-success pointer py-1">Upravit</span>
                             </li>
                             <li>
                                 <span class="text-success pointer py-1">Smazat</span>
@@ -41,7 +41,7 @@
 
         <h3>Sbírky / fondy</h3>
 
-        <button @click="addItem('collection', 'Nová sbírka', 'add')" type="button" class="btn btn-primary btn-sm my-2">Přidat novou instituci</button>
+        <button @click="insertItem('collection', 'Nová sbírka', 'add', null)" type="button" class="btn btn-primary btn-sm my-2">Přidat novou instituci</button>
 
         <table class="table-sm table-bordered table-hover table-striped mt-3">
             <thead>
@@ -55,7 +55,7 @@
                     <td>
                         <ul class="list-unstyled mb-0">
                             <li>
-                                <span class="text-success pointer py-1">Upravit</span>
+                                <span @click="insertItem('collection', 'Upravit: ' + coll.name, 'edit', coll.id)" class="text-success pointer py-1">Upravit</span>
                             </li>
                             <li>
                                 <span class="text-success pointer py-1">Smazat</span>
@@ -73,7 +73,7 @@
 
         <h3>Archivy</h3>
 
-        <button @click="addItem('archive', 'Nový archiv', 'add')" type="button" class="btn btn-primary btn-sm my-2">Přidat novou instituci</button>
+        <button @click="insertItem('archive', 'Nový archiv', 'add', null)" type="button" class="btn btn-primary btn-sm my-2">Přidat novou instituci</button>
 
         <table class="table-sm table-bordered table-hover table-striped mt-3">
             <thead>
@@ -87,7 +87,7 @@
                     <td>
                         <ul class="list-unstyled mb-0">
                             <li>
-                                <span class="text-success pointer py-1">Upravit</span>
+                                <span @click="insertItem('archive', 'Upravit: ' + a.name, 'edit', a.id)" class="text-success pointer py-1">Upravit</span>
                             </li>
                             <li>
                                 <span class="text-success pointer py-1">Smazat</span>
