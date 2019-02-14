@@ -62,15 +62,27 @@ if (document.getElementById('datatable-letters')) {
                 },
             },
             error: false,
-            loading: true
+            loading: true,
+            path: '',
         },
         mounted: function() {
+            let letterTypes = getLetterType()
+            if (
+                typeof letterTypes === 'string' ||
+                letterTypes instanceof String
+            ) {
+                self.error = letterTypes
+                return
+            } else {
+                this.path = letterTypes['path']
+            }
+
             this.getData()
         },
         methods: {
             deleteLetter: function(id) {
                 let self = this
-                removeItemAjax(id, 'delete_bl_letter', function() {
+                removeItemAjax(id, 'delete_letter', self.path, function() {
                     self.deleteRow(id, self.tableData)
                 })
             },
@@ -80,19 +92,23 @@ if (document.getElementById('datatable-letters')) {
                 })
             },
             getData: function() {
-                let self = this;
+                let self = this
                 axios
-                    .get(ajaxUrl + '?action=list_public_bl_letters_short')
+                    .get(
+                        ajaxUrl +
+                            '?action=list_public_letters_short&type=' +
+                            self.path
+                    )
                     .then(function(result) {
-                        self.tableData = result.data;
+                        self.tableData = result.data
                     })
                     .catch(function(error) {
-                        self.error = error;
+                        self.error = error
                     })
-                    .then(function () {
+                    .then(function() {
                         self.loading = false
                     })
-            }
+            },
         },
     })
 }
@@ -122,11 +138,24 @@ if (document.getElementById('datatable-persons')) {
                     return 'row-' + row.id
                 },
             },
+            letterType: '',
+        },
+        mounted: function() {
+            let letterTypes = getLetterType()
+            if (
+                typeof letterTypes === 'string' ||
+                letterTypes instanceof String
+            ) {
+                self.error = letterTypes
+                return
+            } else {
+                this.letterType = letterTypes['letter']
+            }
         },
         methods: {
             deletePerson: function(id) {
                 let self = this
-                removeItemAjax(id, 'delete_bl_person', function() {
+                removeItemAjax(id, self.letterType, function() {
                     self.deleteRow(id, self.tableData)
                 })
             },
@@ -162,6 +191,19 @@ if (document.getElementById('datatable-places')) {
                     return 'row-' + row.id
                 },
             },
+            path: '',
+        },
+        mounted: function() {
+            let letterTypes = getLetterType()
+            if (
+                typeof letterTypes === 'string' ||
+                letterTypes instanceof String
+            ) {
+                self.error = letterTypes
+                return
+            } else {
+                this.path = letterTypes['path']
+            }
         },
         methods: {
             deletePlace: function(id) {
@@ -186,7 +228,7 @@ function removeElFromArr(el, array) {
     return filtered
 }
 
-function removeItemAjax(id, action, callback) {
+function removeItemAjax(id, action, type, callback) {
     Swal.fire({
         title: 'Opravdu chcete smazat tuto položku?',
         type: 'warning',
@@ -199,7 +241,15 @@ function removeItemAjax(id, action, callback) {
     }).then(result => {
         if (result.value) {
             axios
-                .get(ajaxUrl + '?action=' + action + '&pods_id=' + id)
+                .get(
+                    ajaxUrl +
+                        '?action=' +
+                        action +
+                        '&pods_id=' +
+                        id +
+                        '&type=' +
+                        type
+                )
                 .then(function() {
                     Swal.fire({
                         title: 'Odstraněno.',

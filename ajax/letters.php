@@ -1,8 +1,10 @@
 <?php
 
-function list_public_bl_letters_short()
+function list_public_letters_short()
 {
-    $letters = get_letters_basic_meta_filtered('bl_letter', 'bl_person', 'bl_place');
+    $type = test_input($_GET['type']);
+    $types = get_hiko_post_types($type);
+    $letters = get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place']);
     /*
     if not logged filter private
     */
@@ -12,11 +14,11 @@ function list_public_bl_letters_short()
     );
     wp_die();
 }
-add_action('wp_ajax_list_public_bl_letters_short', 'list_public_bl_letters_short');
-add_action('wp_ajax_nopriv_list_public_bl_letters_short', 'list_public_bl_letters_short');
+add_action('wp_ajax_list_public_letters_short', 'list_public_letters_short');
+add_action('wp_ajax_nopriv_list_public_letters_short', 'list_public_letters_short');
 
 
-function list_public_bl_letters_single()
+function list_public_letters_single()
 {
     $results = [];
     $authors = [];
@@ -24,12 +26,13 @@ function list_public_bl_letters_single()
     $people_mentioned = [];
     $origins = [];
     $destinations = [];
+    $l_type = test_input($_GET['l_type']);
 
     if (!array_key_exists('pods_id', $_GET)) {
         wp_send_json_error('Not found', 404);
     }
 
-    $pod = pods('bl_letter', $_GET['pods_id']);
+    $pod = pods($l_type, $_GET['pods_id']);
 
     if ($pod->field('status') != 'publish' && !is_user_logged_in()) {
         wp_send_json_error('Not allowed', 403);
@@ -156,22 +159,27 @@ function list_public_bl_letters_single()
 
     wp_die();
 }
-add_action('wp_ajax_list_public_bl_letters_single', 'list_public_bl_letters_single');
-add_action('wp_ajax_nopriv_list_public_bl_letters_single', 'list_public_bl_letters_single');
+add_action('wp_ajax_list_public_letters_single', 'list_public_letters_single');
+add_action('wp_ajax_nopriv_list_public_letters_single', 'list_public_letters_single');
 
 
 
-function delete_bl_letter()
+function delete_letter()
 {
     if (!array_key_exists('pods_id', $_GET)) {
         wp_send_json_error('Not found', 404);
     }
 
-    if (!has_user_permission('blekastad_editor')) {
+    $id = test_input($_GET['pods_id']);
+    $type = test_input($_GET['type']);
+    $types = get_hiko_post_types($type);
+
+
+    if (!has_user_permission($types['editor'])) {
         wp_send_json_error('Not allowed', 403);
     }
 
-    $pod = pods('bl_letter', $_GET['pods_id']);
+    $pod = pods($types['letter'], $id);
 
     $images = $pod->field('images');
 
@@ -184,4 +192,4 @@ function delete_bl_letter()
     wp_send_json_success($result);
 }
 
-add_action('wp_ajax_delete_bl_letter', 'delete_bl_letter');
+add_action('wp_ajax_delete_letter', 'delete_letter');

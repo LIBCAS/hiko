@@ -5,34 +5,38 @@ if (document.getElementById('letter-form')) {
         el: '#letter-add-form',
         data: {
             error: false,
+            letterType: '',
+            personType: '',
+            placeType: '',
+            path: '',
             author: [],
             author_as_marked: '',
-            author_inferred: '',
-            author_uncertain: '',
+            author_inferred: false,
+            author_uncertain: false,
             author_note: '',
             recipient: [],
             recipient_marked: '',
-            recipient_inferred: '',
-            recipient_uncertain: '',
+            recipient_inferred: false,
+            recipient_uncertain: false,
             recipient_notes: '',
             mentioned: [],
             origin: [],
             origin_note: '',
             origin_marked: '',
-            origin_inferred: '',
-            origin_uncertain: '',
+            origin_inferred: false,
+            origin_uncertain: false,
             destination: [],
             dest_marked: '',
-            dest_inferred: '',
-            dest_uncertain: '',
+            dest_inferred: false,
+            dest_uncertain: false,
             dest_note: '',
             day: '',
             month: '',
             year: '',
             date_marked: '',
-            date_uncertain: '',
-            date_approximate: '',
-            date_is_range: '',
+            date_uncertain: false,
+            date_approximate: false,
+            date_is_range: false,
             date_note: '',
             range_year: '',
             range_month: '',
@@ -52,8 +56,9 @@ if (document.getElementById('letter-form')) {
             ms_manifestation: '',
             repository: '',
             status: 'draft',
-            persons: JSON.parse(document.querySelector('#people').innerHTML),
-            places: JSON.parse(document.querySelector('#places').innerHTML),
+            persons: [],
+            places: [],
+            locations: [],
             edit: false,
             letterID: null,
         },
@@ -61,20 +66,40 @@ if (document.getElementById('letter-form')) {
             imgUrl: function() {
                 return (
                     homeUrl +
-                    '/blekastad/letters-media/?l_type=bl_letter&letter=' +
+                    '/' +
+                    this.path +
+                    '/letters-media/?l_type=' +
+                    this.letterType +
+                    '&letter=' +
                     this.letterID
                 )
             },
             previewUrl: function() {
                 return (
                     homeUrl +
-                    '/letter-preview/?l_type=bl_letter&letter=' +
+                    '/letter-preview/?l_type=' +
+                    this.letterType +
+                    '&letter=' +
                     this.letterID
                 )
             },
         },
         mounted: function() {
             let url = new URL(window.location.href)
+            let letterTypes = getLetterType()
+            if (
+                typeof letterTypes === 'string' ||
+                letterTypes instanceof String
+            ) {
+                self.error = letterTypes
+                return
+            } else {
+                this.letterType = letterTypes['letterType']
+                this.personType = letterTypes['personType']
+                this.placeType = letterTypes['placeType']
+                this.path = letterTypes['path']
+            }
+
             let edit = url.searchParams.get('edit')
             if (edit) {
                 this.letterID = edit
@@ -102,9 +127,7 @@ if (document.getElementById('letter-form')) {
                 }
 
                 for (let i = 0; i < this.origin.length; i++) {
-                    origin.push(
-                        getNameById(this.places, this.origin[i])
-                    )
+                    origin.push(getNameById(this.places, this.origin[i]))
                 }
 
                 for (let i = 0; i < this.destination.length; i++) {
@@ -126,12 +149,21 @@ if (document.getElementById('letter-form')) {
 
             getInitialData: function() {
                 let self = this
+                self.persons = JSON.parse(
+                    document.querySelector('#people').innerHTML
+                )
+                self.places = JSON.parse(
+                    document.querySelector('#places').innerHTML
+                )
+
                 let id = self.letterID
                 axios
                     .get(
                         ajaxUrl +
-                            '?action=list_public_bl_letters_single&pods_id=' +
-                            id
+                            '?action=list_public_letters_single&pods_id=' +
+                            id +
+                            '&l_type=' +
+                            self.letterType
                     )
                     .then(function(response) {
                         if (response.data == '404') {
@@ -275,7 +307,7 @@ if (document.getElementById('places-form')) {
         data: {
             place: '',
             country: '',
-            note: ''
+            note: '',
         },
         mounted: function() {
             let url = new URL(window.location.href)
@@ -330,18 +362,13 @@ if (document.getElementById('person-name')) {
                         ', ' +
                         this.capitalize(this.firstName).trim()
                 } else {
-                    fullName =
-                        this.capitalize(this.lastName).trim()
-
+                    fullName = this.capitalize(this.lastName).trim()
                 }
 
                 return fullName.trim()
             },
             personsFormValidated: function() {
-                if (
-                    this.lastName == '' ||
-                    this.fullName.length < 3
-                ) {
+                if (this.lastName == '' || this.fullName.length < 3) {
                     return false
                 }
                 return true
@@ -410,4 +437,22 @@ function addSlimSelect() {
             }
         }
     )
+}
+
+function stringContains(str, substr) {
+    return str.indexOf(substr) !== -1
+}
+
+function getLetterType() {
+    let url = new URL(window.location.href)
+    if (stringContains(url.pathname, 'blekastad')) {
+        return {
+            letterType: 'bl_letter',
+            personType: 'bl_person',
+            placeType: 'bl_place',
+            path: 'blekastad',
+        }
+    } else {
+        return 'Neplatný typ dopisu'
+    }
 }

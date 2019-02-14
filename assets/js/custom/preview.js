@@ -44,14 +44,14 @@ if (document.getElementById('letter-preview')) {
             edit: false,
             letterID: null,
             images: [],
+            letterType: '',
         },
 
         mounted: function() {
             let url = new URL(window.location.href)
-            let self = this
-            if (url.searchParams.get('letter')) {
-                self.getLetter(url.searchParams.get('letter'))
-            }
+            this.letterID = url.searchParams.get('letter')
+            this.letterType = url.searchParams.get('l_type')
+            this.getLetter(this.letterID)
         },
         updated: function() {
             if (this.images.length > 0) {
@@ -64,8 +64,10 @@ if (document.getElementById('letter-preview')) {
                 axios
                     .get(
                         ajaxUrl +
-                            '?action=list_public_bl_letters_single&pods_id=' +
-                            id
+                            '?action=list_public_letters_single&pods_id=' +
+                            id +
+                            '&l_type=' +
+                            self.letterType
                     )
                     .then(function(response) {
                         if (response.data == '404') {
@@ -113,7 +115,7 @@ if (document.getElementById('letter-preview')) {
                             self.notes_public = rd.notes_public
                             self.rel_rec_name = rd.rel_rec_name
                             self.rel_rec_url =
-                                (rd.rel_rec_url && rd.rel_rec_url.length === 0)
+                                rd.rel_rec_url && rd.rel_rec_url.length === 0
                                     ? '#'
                                     : rd.rel_rec_url
                             self.ms_manifestation = rd.ms_manifestation
