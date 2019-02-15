@@ -24,7 +24,7 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
 
     $link_dashboard = home_url("/{$letter_path}/letters/");
     $link_letter_edit = home_url("/{$letter_path}/letters-add/?edit=$letter_id");
-    $link_letter_img = home_url("/{$letter_path}/letters-media/?l_type=bl_letter&letter={$letter_id}");
+    $link_letter_img = home_url("/{$letter_path}/letters-media/?l_type={$letter_type}&letter={$letter_id}");
 } else {
     die('Nepodařilo se načíst požadovaný dopis');
 }

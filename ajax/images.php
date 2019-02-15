@@ -93,6 +93,8 @@ function list_images()
 
     if ($type == 'bl_letter') {
         $url = home_url('/blekastad/letters-add/?edit=' . $id);
+    } else if ($type == 'demo_letter') {
+        $url = home_url('/demo/letters-add/?edit=' . $id);
     }
 
     $pod = pods($type, $id);
