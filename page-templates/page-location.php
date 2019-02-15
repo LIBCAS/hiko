@@ -13,7 +13,7 @@ get_header();
         <div class="col">
             <h1>Údaje o uložení</h1>
 
-            <?php if (user_has_role('administrator') || user_has_role('blekastad_editor')) : ?>
+            <?php if (is_in_editor_role()) : ?>
                 <?php require_once get_template_directory() . '/partials/location.php'; ?>
             <?php else : ?>
                 <div class="alert alert-warning mw-400">
