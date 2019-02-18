@@ -13,6 +13,8 @@ if (array_key_exists('save_post', $_POST)) {
         'name' => 'place',
         'country' => 'country',
         'note' => 'note',
+        'latitude' => 'latitude',
+        'longitude' => 'longitude',
     ]);
 
     $new_pod = '';
@@ -44,8 +46,8 @@ if (array_key_exists('save_post', $_POST)) {
 ?>
 
 <div class="card bg-light">
-    <div class="card-body">
-        <form name="places" id="places-form" method="post" onkeypress="return event.keyCode!=13">
+    <div class="card-body" id="places-form">
+        <form name="places" method="post" onkeypress="return event.keyCode!=13">
             <fieldset>
                 <div class="form-group required">
                     <label for="place">Primary name</label>
@@ -69,6 +71,23 @@ if (array_key_exists('save_post', $_POST)) {
                 <div class="form-group">
                     <label for="note">Note on place</label>
                     <textarea v-model="note" class="form-control form-control-sm" id="note" name="note"></textarea>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>Coordinates <span class="oi oi-map ml-1 pointer" @click="getCoord" id="coordinates" title="Vyhledat souřadnice"></span></legend>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="latitude">Latitude</label>
+                            <input v-model="lat" type="text" name="latitude" class="form-control form-control-sm">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="longitude">Longitude</label>
+                            <input v-model="long" name="longitude" class="form-control form-control-sm">
+                        </div>
+                    </div>
                 </div>
             </fieldset>
             <div class="form-group">

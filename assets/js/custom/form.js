@@ -1,4 +1,4 @@
-/* global SlimSelect Vue axios ajaxUrl homeUrl */
+/* global SlimSelect Vue axios ajaxUrl homeUrl Swal */
 
 if (document.getElementById('letter-form')) {
     new Vue({
@@ -375,6 +375,14 @@ if (document.getElementById('places-form')) {
             }
         },
         methods: {
+            getCoord: function() {
+                let self = this
+                getGeoCoord(function(latlng) {
+                    let coord = latlng.value.split(',')
+                    self.lat = coord[0]
+                    self.long = coord[1]
+                })
+            },
             getInitialData: function(id) {
                 let self = this
                 axios
@@ -390,7 +398,7 @@ if (document.getElementById('places-form')) {
                         self.country = response.data.country
                         self.note = response.data.note
                         self.lat = response.data.latitude
-                        self.note = response.data.longitude
+                        self.long = response.data.longitude
                     })
                     .catch(function() {
                         self.error = true
@@ -540,4 +548,69 @@ function getLetterType() {
     } else {
         return 'Neplatný typ dopisu'
     }
+}
+
+function getGeoCoord(callback) {
+    Swal.fire({
+        title: 'Zadejte název místa',
+        type: 'question',
+        input: 'text',
+        inputValidator: value => {
+            if (value.length < 3) {
+                return 'Zadejte název místa'
+            }
+        },
+        buttonsStyling: false,
+        showCancelButton: true,
+        confirmButtonText: 'Vyhledat',
+        cancelButtonText: 'Zrušit',
+        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
+        showLoaderOnConfirm: true,
+        preConfirm: function(value) {
+            return axios
+                .get(ajaxUrl + '?action=get_geocities_latlng&query=' + value)
+                .then(function(response) {
+                    return response.data.data
+                })
+                .catch(function(error) {
+                    Swal.showValidationMessage(
+                        `Při vyhledávání došlo k chybě: ${error}`
+                    )
+                })
+        },
+        allowOutsideClick: () => !Swal.isLoading(),
+    }).then(result => {
+        if (result.value) {
+            Swal.fire({
+                title: 'Vyberte místo',
+                type: 'question',
+                buttonsStyling: false,
+                showCancelButton: true,
+                confirmButtonText: 'Potvrdit',
+                cancelButtonText: 'Zrušit',
+                confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+                cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
+                input: 'select',
+                inputOptions: geoDataToSelect(result.value),
+            }).then(result => {
+                callback(result)
+            })
+        }
+    })
+}
+
+function geoDataToSelect(geoData) {
+    let output = {}
+    for (let i = 0; i < geoData.length; i++) {
+        let latlng = geoData[i].lat + ',' + geoData[i].lng
+        output[latlng] =
+            geoData[i].name +
+            ' (' +
+            geoData[i].adminName +
+            ' – ' +
+            geoData[i].country +
+            ')'
+    }
+    return output
 }
