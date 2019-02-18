@@ -1,6 +1,15 @@
 <div class="mb-3">
     <a href="<?= home_url('demo/letters-add'); ?>" class="btn btn-lg btn-primary">Přidat nový dopis</a>
-    <button type="button" class="btn btn-lg btn-secondary d-none" @click="exportLetters('demo_letter')" id="export">Exportovat</button>
+
+    <div class="dropdown d-inline-block" id="export">
+        <button @click="openDD = !openDD" class="btn btn-secondary btn-lg dropdown-toggle" type="button">
+            Exportovat
+        </button>
+        <div :class="{ 'd-block': openDD }" class="dropdown-menu">
+            <a v-for="action in actions" class="dropdown-item" :href="action.url">{{action.title}}</a>
+        </div>
+    </div>
+    
 </div>
 
 <div id="datatable-letters">
