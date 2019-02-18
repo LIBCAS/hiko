@@ -83,11 +83,11 @@ function export_letters()
             'status',
         ]);
     while ($pod->fetch()) {
-        $authors = '';
-        $recipients = '';
-        $origins = '';
-        $destinations = '';
-        $people_mentioned = '';
+        $authors = implode(';', get_related_name($pod->field('l_author')));
+        $recipients = implode(';', get_related_name($pod->field('recipient')));
+        $origins = implode(';', get_related_name($pod->field('origin')));
+        $destinations = implode(';', get_related_name($pod->field('dest')));
+        $people_mentioned = implode(';', get_related_name($pod->field('people_mentioned')));
         $row = [
             (string) $pod->field('l_number'),
             (string) $pod->field('date_year'),
