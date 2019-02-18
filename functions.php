@@ -96,6 +96,21 @@ function get_form_checkbox_val($name, $array)
     return 0;
 }
 
+function get_related_name($related_field)
+{
+    $names = [];
+
+    if (empty($related_field)) {
+        return [];
+    }
+
+    foreach ($related_field as $field) {
+        $names[] = $field['name'];
+    }
+
+    return $names;
+}
+
 function user_has_role($role)
 {
     $user = wp_get_current_user();
