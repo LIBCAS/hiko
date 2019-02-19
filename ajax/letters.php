@@ -166,35 +166,3 @@ function list_public_letters_single()
 }
 add_action('wp_ajax_list_public_letters_single', 'list_public_letters_single');
 add_action('wp_ajax_nopriv_list_public_letters_single', 'list_public_letters_single');
-
-
-
-function delete_letter()
-{
-    if (!array_key_exists('pods_id', $_GET)) {
-        wp_send_json_error('Not found', 404);
-    }
-
-    $id = test_input($_GET['pods_id']);
-    $type = test_input($_GET['type']);
-    $types = get_hiko_post_types($type);
-
-
-    if (!has_user_permission($types['editor'])) {
-        wp_send_json_error('Not allowed', 403);
-    }
-
-    $pod = pods($types['letter'], $id);
-
-    $images = $pod->field('images');
-
-    foreach ($images as $img) {
-        wp_delete_attachment($img['ID'], true);
-    }
-
-    $result = $pod->delete();
-
-    wp_send_json_success($result);
-}
-
-add_action('wp_ajax_delete_letter', 'delete_letter');

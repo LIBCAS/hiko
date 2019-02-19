@@ -528,7 +528,7 @@ function get_hiko_post_types($type)
 
 add_image_size('xl-thumb', 300);
 
-
+require 'ajax/common.php';
 require 'ajax/letters.php';
 require 'ajax/people.php';
 require 'ajax/places.php';

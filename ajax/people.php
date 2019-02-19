@@ -46,27 +46,3 @@ function list_people_single()
 }
 
 add_action('wp_ajax_list_people_single', 'list_people_single');
-
-
-function delete_person()
-{
-    if (!array_key_exists('pods_id', $_GET)) {
-        wp_send_json_error('Not found', 404);
-    }
-
-    $id = test_input($_GET['pods_id']);
-    $type = test_input($_GET['type']);
-    $types = get_hiko_post_types($type);
-
-    if (!has_user_permission($types['editor'])) {
-        wp_send_json_error('Not allowed', 403);
-    }
-
-    $pod = pods($types['person'], $id);
-
-    $result = $pod->delete();
-
-    wp_send_json_success($result);
-}
-
-add_action('wp_ajax_delete_person', 'delete_person');

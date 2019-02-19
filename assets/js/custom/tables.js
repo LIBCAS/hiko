@@ -82,7 +82,7 @@ if (document.getElementById('datatable-letters')) {
         methods: {
             deleteLetter: function(id) {
                 let self = this
-                removeItemAjax(id, 'delete_letter', self.path, function() {
+                removeItemAjax(id, 'letter', self.path, function() {
                     self.deleteRow(id, self.tableData)
                 })
             },
@@ -155,7 +155,7 @@ if (document.getElementById('datatable-persons')) {
         methods: {
             deletePerson: function(id) {
                 let self = this
-                removeItemAjax(id, 'delete_person', self.path, function() {
+                removeItemAjax(id, 'person', self.path, function() {
                     self.deleteRow(id, self.tableData)
                 })
             },
@@ -208,7 +208,7 @@ if (document.getElementById('datatable-places')) {
         methods: {
             deletePlace: function(id) {
                 let self = this
-                removeItemAjax(id, 'delete_place', self.path, function() {
+                removeItemAjax(id, 'place', self.path, function() {
                     self.deleteRow(id, self.tableData)
                 })
             },
@@ -228,7 +228,7 @@ function removeElFromArr(el, array) {
     return filtered
 }
 
-function removeItemAjax(id, action, type, callback) {
+function removeItemAjax(id, podType, podName, callback) {
     Swal.fire({
         title: 'Opravdu chcete smazat tuto položku?',
         type: 'warning',
@@ -241,14 +241,18 @@ function removeItemAjax(id, action, type, callback) {
     }).then(result => {
         if (result.value) {
             axios
-                .get(
-                    ajaxUrl +
-                        '?action=' +
-                        action +
-                        '&pods_id=' +
-                        id +
-                        '&type=' +
-                        type
+                .post(
+                    ajaxUrl + '?action=delete_hiko_pod',
+                    {
+                        ['pod_type']: podType,
+                        ['pod_name']: podName,
+                        ['id']: id,
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json;charset=utf-8',
+                        },
+                    }
                 )
                 .then(function() {
                     Swal.fire({
