@@ -145,7 +145,6 @@ if (document.getElementById('letter-form')) {
 
             this.getLocationData()
         },
-
         methods: {
             getTitle: function() {
                 let authors = []
@@ -321,8 +320,9 @@ if (document.getElementById('letter-form')) {
             },
 
             removeKeyword: function(kw) {
-                this.keywords = this.keywords.filter(function(item) {
-                    return item.value !== kw.value
+                let kwIndex = this.keywords.indexOf(kw)
+                this.keywords = this.keywords.filter(function(item, index) {
+                    return index !== kwIndex
                 })
             },
 
