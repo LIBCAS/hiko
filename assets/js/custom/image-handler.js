@@ -174,14 +174,20 @@ function removeImage(letterID, letterType, imgID, callback) {
     }).then(result => {
         if (result.value) {
             axios
-                .get(ajaxUrl, {
-                    params: {
-                        action: 'delete_image',
-                        letter: letterID,
-                        l_type: letterType,
-                        img: imgID,
+                .post(
+                    ajaxUrl + '?action=delete_hiko_image',
+                    {
+                        ['letter']: letterID,
+                        ['l_type']: letterType,
+                        ['img']: imgID,
                     },
-                })
+                    {
+                        headers: {
+                            'Content-Type': 'application/json;charset=utf-8',
+                        },
+                    }
+                )
+
                 .then(function() {
                     Swal.fire({
                         title: 'Odstraněno.',
