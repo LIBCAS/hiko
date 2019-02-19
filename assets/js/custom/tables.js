@@ -1,4 +1,4 @@
-/* global Vue VueTables Swal axios ajaxUrl */
+/* global Vue VueTables Swal axios ajaxUrl getLetterType */
 
 var columns
 
@@ -25,6 +25,11 @@ var defaultTablesOptions = {
         defaultOption: 'Vybrat {column}',
         columns: 'Columns',
     },
+    pagination: {
+        edge: true,
+    },
+    perPage: 10,
+    perPageValues: [10, 25, 50, 100],
 }
 
 if (document.getElementById('datatable-letters')) {
@@ -56,10 +61,10 @@ if (document.getElementById('datatable-letters')) {
                 filterable: removeElFromArr('edit', columns),
                 sortIcon: defaultTablesOptions.sortIcon,
                 texts: defaultTablesOptions.texts,
+                pagination: defaultTablesOptions.pagination,
+                perPage: defaultTablesOptions.perPage,
+                perPageValues: defaultTablesOptions.perPageValues,
                 dateColumns: ['date'],
-                rowClassCallback: function(row) {
-                    return 'row-' + row.id
-                },
             },
             error: false,
             loading: true,
@@ -134,9 +139,9 @@ if (document.getElementById('datatable-persons')) {
                 filterable: removeElFromArr('edit', columns),
                 sortIcon: defaultTablesOptions.sortIcon,
                 texts: defaultTablesOptions.texts,
-                rowClassCallback: function(row) {
-                    return 'row-' + row.id
-                },
+                pagination: defaultTablesOptions.pagination,
+                perPage: defaultTablesOptions.perPage,
+                perPageValues: defaultTablesOptions.perPageValues,
             },
             path: '',
         },
@@ -187,9 +192,9 @@ if (document.getElementById('datatable-places')) {
                 filterable: removeElFromArr('edit', columns),
                 sortIcon: defaultTablesOptions.sortIcon,
                 texts: defaultTablesOptions.texts,
-                rowClassCallback: function(row) {
-                    return 'row-' + row.id
-                },
+                pagination: defaultTablesOptions.pagination,
+                perPage: defaultTablesOptions.perPage,
+                perPageValues: defaultTablesOptions.perPageValues,
             },
             path: '',
         },
