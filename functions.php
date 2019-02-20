@@ -36,7 +36,7 @@ function test_input($input)
 {
     $input = trim($input);
     $input = stripslashes($input);
-    $input = htmlspecialchars($input);
+    $input = htmlspecialchars($input, ENT_NOQUOTES);
     return $input;
 }
 
