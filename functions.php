@@ -384,25 +384,25 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type)
 
     $query = "
     SELECT
-      {$fields}
+    {$fields}
     FROM
-      $l_prefix AS t
-      LEFT JOIN {$r_prefix} AS rel_l_author ON rel_l_author.field_id = {$author_field_id}
-      AND rel_l_author.item_id = t.id
-      LEFT JOIN {$pe_prefix} AS l_author ON l_author.id = rel_l_author.related_item_id
-      LEFT JOIN {$r_prefix} AS rel_recipient ON rel_recipient.field_id = {$recipient_field_id}
-      AND rel_recipient.item_id = t.id
-      LEFT JOIN {$pe_prefix} AS recipient ON recipient.id = rel_recipient.related_item_id
-      LEFT JOIN {$r_prefix} AS rel_origin ON rel_origin.field_id = {$origin_field_id}
-      AND rel_origin.item_id = t.id
-      LEFT JOIN {$pl_prefix} AS origin ON origin.id = rel_origin.related_item_id
-      LEFT JOIN {$r_prefix} AS rel_dest ON rel_dest.field_id = {$dest_field_id}
-      AND rel_dest.item_id = t.id
-      LEFT JOIN {$pl_prefix} AS dest ON dest.id = rel_dest.related_item_id
+    $l_prefix AS t
+    LEFT JOIN {$r_prefix} AS rel_l_author ON rel_l_author.field_id = {$author_field_id}
+    AND rel_l_author.item_id = t.id
+    LEFT JOIN {$pe_prefix} AS l_author ON l_author.id = rel_l_author.related_item_id
+    LEFT JOIN {$r_prefix} AS rel_recipient ON rel_recipient.field_id = {$recipient_field_id}
+    AND rel_recipient.item_id = t.id
+    LEFT JOIN {$pe_prefix} AS recipient ON recipient.id = rel_recipient.related_item_id
+    LEFT JOIN {$r_prefix} AS rel_origin ON rel_origin.field_id = {$origin_field_id}
+    AND rel_origin.item_id = t.id
+    LEFT JOIN {$pl_prefix} AS origin ON origin.id = rel_origin.related_item_id
+    LEFT JOIN {$r_prefix} AS rel_dest ON rel_dest.field_id = {$dest_field_id}
+    AND rel_dest.item_id = t.id
+    LEFT JOIN {$pl_prefix} AS dest ON dest.id = rel_dest.related_item_id
     ORDER BY
-      t.created DESC,
-      t.name,
-      t.id
+    t.created DESC,
+    t.name,
+    t.id
     ";
 
     return $wpdb->get_results($query);
@@ -508,7 +508,8 @@ function get_hiko_post_types($type)
         'letter' => '',
         'place' => '',
         'person' => '',
-        'editor' => ''
+        'editor' => '',
+        'path' => ''
     ];
 
     if ($type == 'blekastad') {
@@ -516,16 +517,202 @@ function get_hiko_post_types($type)
         $data['place'] = 'bl_place';
         $data['person'] = 'bl_person';
         $data['editor'] = 'blekastad_editor';
+        $data['path'] = 'blekastad';
     } elseif ($type == 'demo') {
         $data['letter'] = 'demo_letter';
         $data['place'] = 'demo_place';
         $data['person'] = 'demo_person';
         $data['editor'] = 'demo_editor';
+        $data['path'] = 'demo';
     }
 
     return $data;
 }
 
+function get_hiko_post_types_by_url()
+{
+    $req = $_SERVER['REQUEST_URI'];
+    if (strpos($req, 'blekastad') !== false) {
+        return get_hiko_post_types('blekastad');
+    } elseif (strpos($req, 'demo') !== false) {
+        return get_hiko_post_types('demo');
+    }
+    return get_hiko_post_types('');
+}
+
+
+function save_hiko_letter($letter_type, $action)
+{
+    $people_mentioned = [];
+    $authors = [];
+    $recipients = [];
+    $origins = [];
+    $destinations = [];
+    $langs = '';
+    $keywords = '';
+
+    if (array_key_exists('l_author', $_POST)) {
+        foreach ($_POST['l_author'] as $author) {
+            $authors[] = test_input($author);
+        }
+    }
+
+    if (array_key_exists('recipient', $_POST)) {
+        foreach ($_POST['recipient'] as $recipient) {
+            $recipients[] = test_input($recipient);
+        }
+    }
+
+    if (array_key_exists('origin', $_POST)) {
+        foreach ($_POST['origin'] as $o) {
+            $origins[] = test_input($o);
+        }
+    }
+
+    if (array_key_exists('dest', $_POST)) {
+        foreach ($_POST['dest'] as $d) {
+            $destinations[] = test_input($d);
+        }
+    }
+
+    if (array_key_exists('people_mentioned', $_POST)) {
+        foreach ($_POST['people_mentioned'] as $people) {
+            $people_mentioned[] = test_input($people);
+        }
+    }
+
+    if (array_key_exists('languages', $_POST)) {
+        foreach ($_POST['languages'] as $lang) {
+            $langs .= test_input($lang) . ';';
+        }
+    }
+
+    if (array_key_exists('keywords', $_POST)) {
+        foreach ($_POST['keywords'] as $kw) {
+            $keywords[] = test_input($kw);
+        }
+    }
+
+    if (is_array($keywords)) {
+        $keywords = array_filter(
+            $keywords,
+            'get_nonempty_value'
+        );
+        $keywords = implode(';', $keywords);
+    } else {
+        $keywords = '';
+    }
+
+    $data = test_postdata([
+        'l_number' => 'l_number',
+        'date_year' => 'date_year',
+        'date_month' => 'date_month',
+        'date_day' => 'date_day',
+        'range_year' => 'range_year',
+        'range_month' => 'range_month',
+        'range_day' => 'range_day',
+        'date_marked' => 'date_marked',
+        'l_author_marked' => 'l_author_marked',
+        'recipient_marked' => 'recipient_marked',
+        'recipient_notes' => 'recipient_notes',
+        'origin_marked' => 'origin_marked',
+        'dest_marked' => 'dest_marked',
+        'abstract' => 'abstract',
+        'incipit' => 'incipit',
+        'explicit' => 'explicit',
+        'people_mentioned_notes' => 'people_mentioned_notes',
+        'notes_public' => 'notes_public',
+        'notes_private' => 'notes_private',
+        'rel_rec_name' => 'rel_rec_name',
+        'rel_rec_url' => 'rel_rec_url',
+        'ms_manifestation' => 'ms_manifestation',
+        'repository' => 'repository',
+        'name' => 'description',
+        'status' => 'status',
+        'date_note' => 'date_note',
+        'origin_note' => 'origin_note',
+        'dest_note' => 'dest_note',
+        'author_note' => 'author_note',
+        'archive' => 'archive',
+        'collection' => 'collection',
+        'signature' => 'signature',
+    ]);
+    $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
+    $data['date_approximate'] = get_form_checkbox_val('date_approximate', $_POST);
+    $data['date_is_range'] = get_form_checkbox_val('date_is_range', $_POST);
+    $data['author_uncertain'] = get_form_checkbox_val('author_uncertain', $_POST);
+    $data['author_inferred'] = get_form_checkbox_val('author_inferred', $_POST);
+    $data['recipient_inferred'] = get_form_checkbox_val('recipient_inferred', $_POST);
+    $data['recipient_uncertain'] = get_form_checkbox_val('recipient_uncertain', $_POST);
+    $data['origin_inferred'] = get_form_checkbox_val('origin_inferred', $_POST);
+    $data['origin_uncertain'] = get_form_checkbox_val('origin_uncertain', $_POST);
+    $data['dest_uncertain'] = get_form_checkbox_val('dest_uncertain', $_POST);
+    $data['dest_inferred'] = get_form_checkbox_val('dest_inferred', $_POST);
+    $data['l_author'] = $authors;
+    $data['recipient'] = $recipients;
+    $data['languages'] = $langs;
+    $data['keywords'] = $keywords;
+    $data['people_mentioned'] = $people_mentioned;
+    $data['dest'] = $destinations;
+    $data['origin'] = $origins;
+
+    $new_pod = '';
+
+    if ($action == 'new') {
+        $new_pod = pods_api()->save_pod_item([
+            'pod' => $letter_type,
+            'data' => $data
+        ]);
+    } elseif ($action == 'edit') {
+        $new_pod = pods_api()->save_pod_item([
+            'pod' => $letter_type,
+            'data' => $data,
+            'id' => $_GET['edit']
+        ]);
+    }
+
+    if ($new_pod == '') {
+        return alert('Něco se pokazilo', 'warning');
+    } elseif (is_wp_error($new_pod)) {
+        return alert($result->get_error_message(), 'warning');
+    } else {
+        return alert('Uloženo', 'success');
+        frontend_refresh();
+    }
+}
+
+
+function get_languages()
+{
+    $languages = file_get_contents(get_template_directory_uri() . '/assets/data/languages.json');
+    return json_decode($languages);
+}
+
+function display_persons_and_places($person_type, $place_type)
+{
+    $persons = json_encode(
+        get_persons_names($person_type),
+        JSON_UNESCAPED_UNICODE
+    );
+    $places = json_encode(
+        get_places_names($place_type),
+        JSON_UNESCAPED_UNICODE
+    );
+
+    ob_start();
+    ?>
+
+    <script id="people" type="application/json">
+        <?= $persons; ?>
+    </script>
+
+    <script id="places" type="application/json">
+        <?= $places; ?>
+    </script>
+
+    <?php
+    return ob_get_clean();
+}
 
 add_image_size('xl-thumb', 300);
 
