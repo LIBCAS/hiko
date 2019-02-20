@@ -37,6 +37,7 @@ function test_input($input)
     $input = trim($input);
     $input = stripslashes($input);
     $input = htmlspecialchars($input, ENT_NOQUOTES);
+    $input = sanitize_text_field($input);
     return $input;
 }
 
