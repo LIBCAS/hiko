@@ -375,6 +375,7 @@ if (document.getElementById('places-form')) {
                 return
             } else {
                 this.placeType = letterTypes['placeType']
+                addSlimSelect()
             }
             let url = new URL(window.location.href)
             if (url.searchParams.get('edit')) {
