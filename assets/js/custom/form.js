@@ -10,59 +10,61 @@ if (document.getElementById('letter-form')) {
             personType: '',
             placeType: '',
             path: '',
-            author: [],
-            author_as_marked: '',
-            author_inferred: false,
-            author_uncertain: false,
-            author_note: '',
-            recipient: [],
-            recipient_marked: '',
-            recipient_inferred: false,
-            recipient_uncertain: false,
-            recipient_notes: '',
-            mentioned: [],
-            origin: [],
-            origin_note: '',
-            origin_marked: '',
-            origin_inferred: false,
-            origin_uncertain: false,
-            destination: [],
-            dest_marked: '',
-            dest_inferred: false,
-            dest_uncertain: false,
-            dest_note: '',
-            day: '',
-            month: '',
-            year: '',
-            date_marked: '',
-            date_uncertain: false,
-            date_approximate: false,
-            date_is_range: false,
-            date_note: '',
-            range_year: '',
-            range_month: '',
-            range_day: '',
-            title: '',
-            l_number: '',
-            languages: [],
-            keywords: [{ value: '' }],
-            abstract: '',
-            incipit: '',
-            explicit: '',
-            people_mentioned_notes: '',
-            notes_public: '',
-            notes_private: '',
-            rel_rec_name: '',
-            rel_rec_url: '',
-            ms_manifestation: '',
-            repository: '',
-            status: 'draft',
+            letter: {
+                author: [],
+                author_as_marked: '',
+                author_inferred: false,
+                author_uncertain: false,
+                author_note: '',
+                recipient: [],
+                recipient_marked: '',
+                recipient_inferred: false,
+                recipient_uncertain: false,
+                recipient_notes: '',
+                mentioned: [],
+                origin: [],
+                origin_note: '',
+                origin_marked: '',
+                origin_inferred: false,
+                origin_uncertain: false,
+                destination: [],
+                dest_marked: '',
+                dest_inferred: false,
+                dest_uncertain: false,
+                dest_note: '',
+                day: '',
+                month: '',
+                year: '',
+                date_marked: '',
+                date_uncertain: false,
+                date_approximate: false,
+                date_is_range: false,
+                date_note: '',
+                range_year: '',
+                range_month: '',
+                range_day: '',
+                title: '',
+                l_number: '',
+                languages: [],
+                keywords: [{ value: '' }],
+                abstract: '',
+                incipit: '',
+                explicit: '',
+                people_mentioned_notes: '',
+                notes_public: '',
+                notes_private: '',
+                rel_rec_name: '',
+                rel_rec_url: '',
+                ms_manifestation: '',
+                repository: '',
+                status: 'draft',
+                collection: '',
+                archive: '',
+                signature: '',
+            },
             persons: [],
             places: [],
             locations: [],
-            collection: '',
-            archive: '',
-            signature: '',
             edit: false,
             letterID: null,
         },
@@ -166,34 +168,35 @@ if (document.getElementById('letter-form')) {
                 let recipients = []
                 let origin = []
                 let destination = []
-
-                for (let i = 0; i < this.author.length; i++) {
-                    authors.push(getNameById(this.persons, this.author[i]))
+                let letter = this.letter
+                let self = this
+                for (let i = 0; i < letter.author.length; i++) {
+                    authors.push(getNameById(self.persons, letter.author[i]))
                 }
-                for (let i = 0; i < this.recipient.length; i++) {
+                for (let i = 0; i < letter.recipient.length; i++) {
                     recipients.push(
-                        getNameById(this.persons, this.recipient[i])
+                        getNameById(self.persons, letter.recipient[i])
                     )
                 }
 
-                for (let i = 0; i < this.origin.length; i++) {
-                    origin.push(getNameById(this.places, this.origin[i]))
+                for (let i = 0; i < letter.origin.length; i++) {
+                    origin.push(getNameById(self.places, letter.origin[i]))
                 }
 
-                for (let i = 0; i < this.destination.length; i++) {
+                for (let i = 0; i < letter.destination.length; i++) {
                     destination.push(
-                        getNameById(this.places, this.destination[i])
+                        getNameById(self.places, letter.destination[i])
                     )
                 }
 
                 origin = origin.join('; ')
                 destination = destination.join('; ')
 
-                let date = this.day + '. ' + this.month + '. ' + this.year
+                let date = letter.day + '. ' + letter.month + '. ' + letter.year
                 let from = authors.join('; ') + ' (' + origin + ')'
                 let to = recipients + ' (' + destination + ')'
 
-                this.title = date + ' ' + from + ' to ' + to
+                letter.title = date + ' ' + from + ' to ' + to
                 return
             },
 
@@ -229,64 +232,30 @@ if (document.getElementById('letter-form')) {
                             self.error = true
                         } else {
                             let rd = response.data
-                            self.l_number = rd.l_number
-                            self.year = rd.date_year == '0' ? '' : rd.date_year
-                            self.month =
+                            self.letter = rd
+                            self.letter.year =
+                                rd.date_year == '0' ? '' : rd.date_year
+                            self.letter.month =
                                 rd.date_month == '0' ? '' : rd.date_month
-                            self.day = rd.date_day == '0' ? '' : rd.date_day
-                            self.date_marked = rd.date_marked
-                            self.date_uncertain = rd.date_uncertain
-                            self.date_approximate = rd.date_approximate
-                            self.date_is_range = rd.date_approximate
-                            self.date_note = rd.date_note
-                            self.range_year = rd.range_year
-                            self.range_month = rd.range_month
-                            self.range_day = rd.range_day
-                            self.author = Object.keys(rd.l_author)
-                            self.author_as_marked = rd.l_author_marked
-                            self.author_inferred = rd.author_inferred
-                            self.author_uncertain = rd.author_uncertain
-                            self.author_note = rd.author_note
-                            self.recipient = Object.keys(rd.recipient)
-                            self.recipient_marked = rd.recipient_marked
-                            self.recipient_inferred = rd.recipient_inferred
-                            self.recipient_uncertain = rd.recipient_uncertain
-                            self.recipient_notes = rd.recipient_notes
-                            self.origin = Object.keys(rd.origin)
-                            self.origin_marked = rd.origin_marked
-                            self.origin_inferred = rd.origin_inferred
-                            self.origin_uncertain = rd.origin_uncertain
-                            self.origin_note = rd.origin_note
-                            self.destination = Object.keys(rd.dest)
-                            self.dest_marked = rd.dest_marked
-                            self.dest_inferred = rd.dest_inferred
-                            self.dest_uncertain = rd.dest_uncertain
-                            self.dest_note = rd.dest_note
-                            self.languages =
+                            self.letter.day =
+                                rd.date_day == '0' ? '' : rd.date_day
+                            self.letter.author = Object.keys(rd.l_author)
+                            self.letter.author_as_marked = rd.l_author_marked
+                            self.letter.recipient = Object.keys(rd.recipient)
+                            self.letter.origin = Object.keys(rd.origin)
+                            self.letter.destination = Object.keys(rd.dest)
+                            self.letter.languages =
                                 rd.languages.length === 0
                                     ? []
                                     : rd.languages.split(';')
-                            self.keywords =
+                            self.letter.keywords =
                                 rd.keywords.length === 0
                                     ? [{ value: '' }]
                                     : self.parseKeywords(rd.keywords)
-                            self.abstract = rd.abstract
-                            self.incipit = rd.incipit
-                            self.explicit = rd.explicit
-                            self.mentioned = Object.keys(rd.people_mentioned)
-                            self.people_mentioned_notes =
-                                rd.people_mentioned_notes
-                            self.notes_public = rd.notes_public
-                            self.notes_private = rd.notes_private
-                            self.rel_rec_name = rd.rel_rec_name
-                            self.rel_rec_url = rd.rel_rec_url
-                            self.ms_manifestation = rd.ms_manifestation
-                            self.repository = rd.repository
-                            self.title = rd.name
-                            self.status = rd.status
-                            self.collection = rd.collection
-                            self.archive = rd.archive
-                            self.signature = rd.signature
+                            self.letter.mentioned = Object.keys(
+                                rd.people_mentioned
+                            )
+                            self.letter.title = rd.name
                         }
                     })
                     .catch(function() {
@@ -343,16 +312,19 @@ if (document.getElementById('letter-form')) {
             },
 
             removeKeyword: function(kw) {
-                let kwIndex = this.keywords.indexOf(kw)
-                this.keywords = this.keywords.filter(function(item, index) {
+                let kwIndex = this.letter.keywords.indexOf(kw)
+                this.letter.keywords = this.letter.keywords.filter(function(
+                    item,
+                    index
+                ) {
                     return index !== kwIndex
                 })
             },
 
             addNewKeyword: function() {
-                this.keywords.push({ value: '' })
+                this.letter.keywords.push({ value: '' })
 
-                let index = this.keywords.length
+                let index = this.letter.keywords.length
                 setTimeout(function() {
                     let inputs = document.querySelectorAll('.keywords input')
                     let last = inputs[index - 1]
