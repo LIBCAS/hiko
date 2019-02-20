@@ -5,6 +5,7 @@ if (document.getElementById('letter-form')) {
         el: '#letter-add-form',
         data: {
             error: false,
+            loading: true,
             letterType: '',
             personType: '',
             placeType: '',
@@ -110,8 +111,20 @@ if (document.getElementById('letter-form')) {
                     }
                 })
             },
+            formVisible: function() {
+                let self = this
+                if (
+                    self.error ||
+                    typeof self.error === 'string' ||
+                    self.loading
+                ) {
+                    return false
+                }
+                return true
+            },
         },
         mounted: function() {
+            let self = this
             let url = new URL(window.location.href)
             let letterTypes = getLetterType()
             if (
@@ -119,20 +132,22 @@ if (document.getElementById('letter-form')) {
                 letterTypes instanceof String
             ) {
                 self.error = letterTypes
+                self.loading = false
                 return
             } else {
-                this.letterType = letterTypes['letterType']
-                this.personType = letterTypes['personType']
-                this.placeType = letterTypes['placeType']
-                this.path = letterTypes['path']
+                self.letterType = letterTypes['letterType']
+                self.personType = letterTypes['personType']
+                self.placeType = letterTypes['placeType']
+                self.path = letterTypes['path']
             }
 
             let edit = url.searchParams.get('edit')
             if (edit) {
-                this.letterID = edit
-                this.edit = true
-                this.getInitialData()
+                self.letterID = edit
+                self.edit = true
+                self.getInitialData()
             } else {
+                self.loading = false
                 addSlimSelect()
             }
 
@@ -278,6 +293,7 @@ if (document.getElementById('letter-form')) {
                         self.error = true
                     })
                     .then(function() {
+                        self.loading = false
                         addSlimSelect()
                     })
             },

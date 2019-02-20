@@ -150,11 +150,16 @@ if (array_key_exists('save_post', $_POST)) {
 ?>
 <div id="letter-add-form">
 
-    <div class="alert alert-warning" :class="{ 'd-none' : error == false }">
+    <div v-if="loading" class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 65%">
+        </div>
+    </div>
+
+    <div class="alert alert-warning d-none" :class="{ 'd-block' : error != false }">
         Požadovaná položka nebyla nalezena. Pro vytvoření nového dopisu použijte <a href="?">tento odkaz</a>.
     </div>
 
-    <div class="card bg-light" :class="{ 'd-none' : error == true }">
+    <div class="card bg-light d-none" :class="{ 'd-block' : formVisible }">
         <div class="card-body">
             <form method="post" id="letter-form" onkeypress="return event.keyCode!=13">
                 <fieldset>
