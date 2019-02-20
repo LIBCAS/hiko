@@ -351,6 +351,15 @@ if (document.getElementById('letter-form')) {
 
             addNewKeyword: function() {
                 this.keywords.push({ value: '' })
+
+                let index = this.keywords.length
+                setTimeout(function() {
+                    let inputs = document.querySelectorAll('.keywords input')
+                    let last = inputs[index - 1]
+                    if (last) {
+                        last.select()
+                    }
+                }, 50)
             },
 
             parseKeywords: function(keywords) {
