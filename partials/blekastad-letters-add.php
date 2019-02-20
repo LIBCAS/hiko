@@ -260,7 +260,7 @@ if (array_key_exists('save_post', $_POST)) {
                 <fieldset>
                     <legend>Author</legend>
                     <div class="form-group">
-                        <label for="author">Author <span class="pointer oi oi-reload pl-1" data-source="persons" @click="regenerateSelectData"></span></label>
+                        <label for="author">Author <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)"></span></label>
                         <select multiple class="custom-select custom-select-sm slim-select" name="l_author[]" id="author" v-model="author">
                             <option v-for="person in persons" :value="person.id">
                                 {{ person.name }}
@@ -303,7 +303,7 @@ if (array_key_exists('save_post', $_POST)) {
                 <fieldset>
                     <legend>Recipient</legend>
                     <div class="form-group">
-                        <label for="author">Recipient <span class="pointer oi oi-reload pl-1" data-source="persons" @click="regenerateSelectData"></span></label>
+                        <label for="author">Recipient <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)"></span></label>
 
                         <select multiple class="custom-select custom-select-sm slim-select" name="recipient[]" id="recipient" v-model="recipient">
                             <option v-for="person in persons" :value="person.id">
@@ -346,7 +346,7 @@ if (array_key_exists('save_post', $_POST)) {
                 <fieldset>
                     <legend>Origin</legend>
                     <div class="form-group">
-                        <label for="origin">Origin <span class="pointer oi oi-reload pl-1" data-source="places" @click="regenerateSelectData"></span></label>
+                        <label for="origin">Origin <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)"></span></label>
                         <select multiple v-model="origin" class="custom-select custom-select-sm slim-select" name="origin[]" id="origin">
                             <option v-for="place in places" :value="place.id">
                                 {{ place.name }}
@@ -389,7 +389,7 @@ if (array_key_exists('save_post', $_POST)) {
                 <fieldset>
                     <legend>Destination</legend>
                     <div class="form-group">
-                        <label for="dest">Destination <span class="pointer oi oi-reload pl-1" data-source="places" @click="regenerateSelectData"></span></label>
+                        <label for="dest">Destination <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)"></span></label>
                         <select multiple v-model="destination" class="custom-select custom-select-sm slim-select" id="dest" name="dest[]">
                             <option v-for="place in places" :value="place.id">
                                 {{ place.name }}
@@ -476,7 +476,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                     <div class="form-group">
-                        <label for="people_mentioned">People mentioned <span class="pointer oi oi-reload pl-1" data-source="persons" @click="regenerateSelectData"></span></label>
+                        <label for="people_mentioned">People mentioned <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)"></span></label>
                         <select v-model="mentioned" multiple class="custom-select custom-select-sm slim-select" name="people_mentioned[]" id="people_mentioned">
                             <option v-for="person in persons" :value="person.id">
                                 {{ person.name }}
@@ -539,7 +539,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                     <div class="form-group">
-                        <label for="repository">Repository</label>
+                        <label for="repository">Repository <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('locations', $event)"></span></label>
                         <input v-model="repository" list="repositories" type="text" name="repository" class="form-control form-control-sm">
                         <datalist id="repositories">
                             <option v-for="rep in repositories"> {{ rep.name }} </option>

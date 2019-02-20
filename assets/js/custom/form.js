@@ -182,12 +182,15 @@ if (document.getElementById('letter-form')) {
                 return
             },
 
-            getLocationData: function() {
+            getLocationData: function(callback) {
                 let self = this
                 axios
                     .get(ajaxUrl + '?action=list_locations')
                     .then(function(response) {
                         self.locations = response.data.data
+                        if (callback) {
+                            callback()
+                        }
                     })
                     .catch(function(error) {
                         self.error = error
@@ -295,8 +298,7 @@ if (document.getElementById('letter-form')) {
                     })
             },
 
-            regenerateSelectData: function(event) {
-                let type = event.target.dataset.source
+            regenerateSelectData: function(type, event) {
                 let self = this
                 if (type == 'persons') {
                     self.ajaxToData(
@@ -312,6 +314,11 @@ if (document.getElementById('letter-form')) {
                         self.placeType,
                         event.target
                     )
+                } else if (type == 'locations') {
+                    event.target.classList.add('rotate')
+                    self.getLocationData(function() {
+                        event.target.classList.remove('rotate')
+                    })
                 }
             },
 
