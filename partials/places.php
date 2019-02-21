@@ -1,7 +1,11 @@
 <?php
 
+$pods_types = get_hiko_post_types_by_url();
+$place_type = $pods_types['place'];
+$path = $pods_types['path'];
+
 $places = pods(
-    'bl_place',
+    $place_type,
     [
         'orderby'=> 't.name ASC',
         'limit' => -1
@@ -23,7 +27,7 @@ $places_json = json_encode($places_filtered, JSON_UNESCAPED_UNICODE);
 ?>
 
 <div class="mb-3">
-    <a href="<?= home_url('blekastad/places-add'); ?>" class="btn btn-lg btn-primary">Přidat nové místo</a>
+    <a href="<?= home_url($path . '/places-add'); ?>" class="btn btn-lg btn-primary">Přidat nové místo</a>
 </div>
 
 <div id="datatable-places">
@@ -31,7 +35,7 @@ $places_json = json_encode($places_filtered, JSON_UNESCAPED_UNICODE);
     <v-client-table :data="tableData" :columns="columns" :options="options">
         <ul slot="edit" slot-scope="props" class="list-unstyled">
             <li>
-                <a :href="'<?= home_url('blekastad/places-add/?edit='); ?>' + props.row.id">Upravit</a>
+                <a :href="'<?= home_url($path . '/places-add/?edit='); ?>' + props.row.id">Upravit</a>
             </li>
             <li>
                 <a v-if="props.row.relationships == 0" :href="'#delete-' + props.row.id" @click="deletePlace(props.row.id)">Odstranit</a>
