@@ -676,8 +676,46 @@ function save_hiko_letter($letter_type, $action)
     } elseif (is_wp_error($new_pod)) {
         return alert($result->get_error_message(), 'warning');
     } else {
-        return alert('Uloženo', 'success');
         frontend_refresh();
+        return alert('Uloženo', 'success');
+    }
+}
+
+
+function save_hiko_person($person_type, $action)
+{
+    $data = test_postdata([
+        'name' => 'fullname',
+        'surname' => 'surname',
+        'forename' => 'forename',
+        'birth_year' => 'birth_year',
+        'death_year' => 'death_year',
+        'emlo' => 'emlo',
+        'note' => 'note'
+    ]);
+
+    $new_pod = '';
+
+    if ($action == 'new') {
+        $new_pod = pods_api()->save_pod_item([
+            'pod' => $person_type,
+            'data' => $data
+        ]);
+    } elseif ($action == 'edit') {
+        $new_pod = pods_api()->save_pod_item([
+            'pod' => $person_type,
+            'data' => $data,
+            'id' => $_GET['edit']
+        ]);
+    }
+
+    if ($new_pod == '') {
+        return alert('Něco se pokazilo', 'warning');
+    } elseif (is_wp_error($new_pod)) {
+        return alert($result->get_error_message(), 'warning');
+    } else {
+        frontend_refresh();
+        return alert('Uloženo', 'success');
     }
 }
 

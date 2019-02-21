@@ -1,22 +1,26 @@
 <?php
 
-/* Template Name: Demo - osoby, přidání */
+/* Template Name: Osoby, přidání */
 
 get_header();
 
-require_once get_template_directory() . '/partials/demo-nav.php'; ?>
+$pods_types = get_hiko_post_types_by_url();
+$path = $pods_types['path'];
+$editor = $pods_types['editor'];
+
+require_once get_template_directory() . '/partials/' . $path . '-nav.php'; ?>
 
 <div class="container mt-5">
     <div class="row justify-content-center" style="min-height: 75vh;">
 
         <div class="col-lg-6 col-md-8">
-            <?php if (user_has_role('administrator') || user_has_role('demo_editor')) : ?>
+            <?php if (has_user_permission($editor)) : ?>
                 <?php if (array_key_exists('edit', $_GET)) : ?>
                     <h1>Editovat osobu</h1>
                 <?php else : ?>
                     <h1>Nová osoba</h1>
                 <?php endif; ?>
-                <?php require_once get_template_directory() . '/partials/demo-persons-add.php'; ?>
+                <?php require_once get_template_directory() . '/partials/persons-add.php'; ?>
             <?php else : ?>
                 <div class="alert alert-warning mw-400">
                     Pro zobrazení nemáte patřičná oprávnění.

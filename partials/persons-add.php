@@ -1,47 +1,14 @@
 <?php
 
+$pods_types = get_hiko_post_types_by_url();
+$person_type = $pods_types['person'];
 $action = 'new';
-
 if (array_key_exists('edit', $_GET)) {
     $action = 'edit';
 }
 
-
 if (array_key_exists('save_post', $_POST)) {
-    $data = test_postdata([
-        'name' => 'fullname',
-        'surname' => 'surname',
-        'forename' => 'forename',
-        'birth_year' => 'birth_year',
-        'death_year' => 'death_year',
-        'emlo' => 'emlo',
-        'note' => 'note'
-    ]);
-
-    $new_pod = '';
-
-    if ($action == 'new') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => 'demo_person',
-            'data' => $data
-        ]);
-    } elseif ($action == 'edit') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => 'demo_person',
-            'data' => $data,
-            'id' => $_GET['edit']
-        ]);
-    }
-
-
-    if ($new_pod == '') {
-        echo alert('Něco se pokazilo', 'warning');
-    } elseif (is_wp_error($new_pod)) {
-        echo alert($result->get_error_message(), 'warning');
-    } else {
-        echo alert('Uloženo', 'success');
-        frontend_refresh();
-    }
+    echo save_hiko_person($person_type, $action);
 }
 
 ?>
