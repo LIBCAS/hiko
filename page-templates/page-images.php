@@ -1,17 +1,20 @@
 <?php
 
-/* Template Name: Demo - obrázky */
+/* Template Name: Obrázky */
 
 get_header();
 
-?>
+$pods_types = get_hiko_post_types_by_url();
+$path = $pods_types['path'];
+$editor = $pods_types['editor'];
 
-<?php require_once get_template_directory() . '/partials/demo-nav.php'; ?>
+require_once get_template_directory() . '/partials/' . $path . '-nav.php';
+?>
 
 <div class="container mt-5">
     <div class="row justify-content-center" style="min-height: 75vh;">
         <div class="col">
-            <?php if (user_has_role('administrator') || user_has_role('demo_editor')) : ?>
+            <?php if (has_user_permission($editor)) : ?>
                 <h1 class="mb-3">Obrazové přílohy</h1>
                 <?php require_once get_template_directory() . '/partials/images.php'; ?>
             <?php else : ?>
