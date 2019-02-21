@@ -1,46 +1,17 @@
 <?php
 
-$countries = file_get_contents(get_template_directory_uri() . '/assets/data/countries.json');
-$countries = json_decode($countries);
-
+$countries = json_decode(
+    file_get_contents(get_template_directory_uri() . '/assets/data/countries.json')
+);
+$pods_types = get_hiko_post_types_by_url();
+$place_type = $pods_types['place'];
 $action = 'new';
 if (array_key_exists('edit', $_GET)) {
     $action = 'edit';
 }
 
 if (array_key_exists('save_post', $_POST)) {
-    $data = test_postdata([
-        'name' => 'place',
-        'country' => 'country',
-        'note' => 'note',
-        'latitude' => 'latitude',
-        'longitude' => 'longitude',
-    ]);
-
-    $new_pod = '';
-
-    if ($action == 'new') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => 'demo_place',
-            'data' => $data
-        ]);
-    } elseif ($action == 'edit') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => 'demo_place',
-            'data' => $data,
-            'id' => $_GET['edit']
-        ]);
-    }
-
-
-    if ($new_pod == '') {
-        echo alert('Něco se pokazilo', 'warning');
-    } elseif (is_wp_error($new_pod)) {
-        echo alert($result->get_error_message(), 'warning');
-    } else {
-        echo alert('Uloženo', 'success');
-        frontend_refresh();
-    }
+    save_hiko_place($place_type, $action);
 }
 
 ?>

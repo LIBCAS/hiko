@@ -720,6 +720,41 @@ function save_hiko_person($person_type, $action)
 }
 
 
+function save_hiko_place($place_type, $action)
+{
+    $data = test_postdata([
+        'name' => 'place',
+        'country' => 'country',
+        'note' => 'note',
+        'latitude' => 'latitude',
+        'longitude' => 'longitude',
+    ]);
+
+    $new_pod = '';
+
+    if ($action == 'new') {
+        $new_pod = pods_api()->save_pod_item([
+            'pod' => $place_type,
+            'data' => $data
+        ]);
+    } elseif ($action == 'edit') {
+        $new_pod = pods_api()->save_pod_item([
+            'pod' => $place_type,
+            'data' => $data,
+            'id' => $_GET['edit']
+        ]);
+    }
+
+    if ($new_pod == '') {
+        return alert('Něco se pokazilo', 'warning');
+    } elseif (is_wp_error($new_pod)) {
+        return alert($result->get_error_message(), 'warning');
+    } else {
+        frontend_refresh();
+        return alert('Uloženo', 'success');
+    }
+}
+
 function get_languages()
 {
     $languages = file_get_contents(get_template_directory_uri() . '/assets/data/languages.json');
