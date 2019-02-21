@@ -509,7 +509,8 @@ function get_hiko_post_types($type)
         'place' => '',
         'person' => '',
         'editor' => '',
-        'path' => ''
+        'path' => '',
+        'title' => '',
     ];
 
     if ($type == 'blekastad') {
@@ -518,12 +519,14 @@ function get_hiko_post_types($type)
         $data['person'] = 'bl_person';
         $data['editor'] = 'blekastad_editor';
         $data['path'] = 'blekastad';
+        $data['title'] = 'Milada Blekastad';
     } elseif ($type == 'demo') {
         $data['letter'] = 'demo_letter';
         $data['place'] = 'demo_place';
         $data['person'] = 'demo_person';
         $data['editor'] = 'demo_editor';
         $data['path'] = 'demo';
+        $data['title'] = 'Zkušební DB';
     }
 
     return $data;
