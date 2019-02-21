@@ -128,48 +128,28 @@ function get_shortened_name()
     return $user_data['first_name'][0]  . ' ' . mb_substr($user_data['last_name'][0], 0, 1) . '.';
 }
 
-
-function get_persons_names($type)
+function get_pods_name_and_id($type)
 {
-    $persons_pods = pods(
+    $fields = [
+        't.id',
+        't.name',
+    ];
+
+    $fields = implode(', ', $fields);
+
+    $pod = pods(
         $type,
         [
-            'orderby'=> 't.surname ASC',
-            'limit' => -1
-        ]
-    );
-
-    $persons = [];
-    $index = 0;
-    while ($persons_pods->fetch()) {
-        $persons[$index]['id'] = $persons_pods->display('id');
-        $persons[$index]['name'] = $persons_pods->display('name');
-        $index++;
-    }
-
-    return $persons;
-}
-
-
-function get_places_names($type)
-{
-    $places_pods = pods(
-        $type,
-        [
+            'select' => $fields,
             'orderby'=> 't.name ASC',
             'limit' => -1
         ]
     );
 
-    $places = [];
-    $index = 0;
-    while ($places_pods->fetch()) {
-        $places[$index]['id'] = $places_pods->display('id');
-        $places[$index]['name'] = $places_pods->display('name');
-        $index++;
-    }
-
-    return $places;
+    /* convert to array of arrays instead objects */
+    $result = json_encode($pod->data());
+    $result = json_decode($result, true);
+    return $result;
 }
 
 
@@ -768,11 +748,11 @@ function get_languages()
 function display_persons_and_places($person_type, $place_type)
 {
     $persons = json_encode(
-        get_persons_names($person_type),
+        get_pods_name_and_id($person_type),
         JSON_UNESCAPED_UNICODE
     );
     $places = json_encode(
-        get_places_names($place_type),
+        get_pods_name_and_id($place_type),
         JSON_UNESCAPED_UNICODE
     );
 
@@ -830,7 +810,8 @@ function delete_hiko_cache($name)
 }
 
 
-function read_hiko_cache($name) {
+function read_hiko_cache($name)
+{
     $file = WP_CONTENT_DIR . '/hiko-cache' . '/' . md5($name) . '.json';
     return file_get_contents($file);
 }
