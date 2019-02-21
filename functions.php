@@ -790,6 +790,51 @@ function display_persons_and_places($person_type, $place_type)
     return ob_get_clean();
 }
 
+
+function create_hiko_json_cache($name, $json_data)
+{
+    $cache_folder = WP_CONTENT_DIR . '/hiko-cache';
+    $filename = md5($name) . '.json';
+
+
+    if (!file_exists($cache_folder)) {
+        wp_mkdir_p($cache_folder);
+    }
+    $save = file_put_contents($cache_folder . '/' . $filename, $json_data);
+
+    return $save;
+}
+
+
+function hiko_cache_exists($name)
+{
+    $cache_folder = WP_CONTENT_DIR . '/hiko-cache';
+    $file = md5($name) . '.json';
+
+    if (file_exists($cache_folder . '/' . $file)) {
+        return true;
+    }
+    return false;
+}
+
+
+function delete_hiko_cache($name)
+{
+    $file = WP_CONTENT_DIR . '/hiko-cache' . '/' . md5($name) . '.json';
+
+    if (file_exists($file)) {
+        unlink($file);
+    }
+    return false;
+}
+
+
+function read_hiko_cache($name) {
+    $file = WP_CONTENT_DIR . '/hiko-cache' . '/' . md5($name) . '.json';
+    return file_get_contents($file);
+}
+
+
 add_image_size('xl-thumb', 300);
 
 require 'ajax/common.php';
