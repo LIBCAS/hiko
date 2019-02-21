@@ -101,7 +101,7 @@ if (document.getElementById('datatable-letters')) {
                 axios
                     .get(
                         ajaxUrl +
-                            '?action=list_public_letters_short&type=' +
+                            '?action=list_all_letters_short&type=' +
                             self.path
                     )
                     .then(function(result) {

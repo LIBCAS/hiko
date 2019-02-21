@@ -3,6 +3,7 @@ $pods_types = get_hiko_post_types_by_url();
 $letter_type = $pods_types['letter'];
 $person_type = $pods_types['person'];
 $place_type = $pods_types['place'];
+$path = $pods_types['path'];
 $languages = get_languages();
 
 $action = 'new';
@@ -11,7 +12,7 @@ if (array_key_exists('edit', $_GET)) {
 }
 
 if (array_key_exists('save_post', $_POST)) {
-    echo save_hiko_letter($letter_type, $action);
+    echo save_hiko_letter($letter_type, $action, $path);
 }
 
 ?>

@@ -1,21 +1,28 @@
 <?php
 
-function list_public_letters_short()
+function list_all_letters_short()
 {
     $type = test_input($_GET['type']);
     $types = get_hiko_post_types($type);
+
+    if (hiko_cache_exists('list_' . $types['path'])) {
+        echo read_hiko_cache('list_' . $types['path']);
+        wp_die();
+    }
+
     $letters = get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place']);
-    /*
-    if not logged filter private
-    */
-    echo json_encode(
+
+    $json_letters = json_encode(
         $letters,
         JSON_UNESCAPED_UNICODE
     );
+
+    echo $json_letters;
+
+    create_hiko_json_cache('list_' . $types['path'], $json_letters);
     wp_die();
 }
-add_action('wp_ajax_list_public_letters_short', 'list_public_letters_short');
-add_action('wp_ajax_nopriv_list_public_letters_short', 'list_public_letters_short');
+add_action('wp_ajax_list_all_letters_short', 'list_all_letters_short');
 
 
 function list_public_letters_single()

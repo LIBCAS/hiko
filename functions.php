@@ -544,7 +544,7 @@ function get_hiko_post_types_by_url()
 }
 
 
-function save_hiko_letter($letter_type, $action)
+function save_hiko_letter($letter_type, $action, $path)
 {
     $people_mentioned = [];
     $authors = [];
@@ -679,6 +679,7 @@ function save_hiko_letter($letter_type, $action)
     } elseif (is_wp_error($new_pod)) {
         return alert($result->get_error_message(), 'warning');
     } else {
+        delete_hiko_cache('list_' . $path);
         frontend_refresh();
         return alert('Uloženo', 'success');
     }
