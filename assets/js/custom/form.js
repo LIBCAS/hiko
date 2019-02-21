@@ -32,9 +32,9 @@ if (document.getElementById('letter-form')) {
                 dest_inferred: false,
                 dest_uncertain: false,
                 dest_note: '',
-                day: '',
-                month: '',
-                year: '',
+                date_day: '',
+                date_month: '',
+                date_year: '',
                 date_marked: '',
                 date_uncertain: false,
                 date_approximate: false,
@@ -43,7 +43,6 @@ if (document.getElementById('letter-form')) {
                 range_year: '',
                 range_month: '',
                 range_day: '',
-                title: '',
                 l_number: '',
                 languages: [],
                 keywords: [{ value: '' }],
@@ -67,6 +66,7 @@ if (document.getElementById('letter-form')) {
             locations: [],
             edit: false,
             letterID: null,
+            title: '',
         },
         computed: {
             imgUrl: function() {
@@ -192,12 +192,18 @@ if (document.getElementById('letter-form')) {
                 origin = origin.join('; ')
                 destination = destination.join('; ')
 
-                let date = letter.day + '. ' + letter.month + '. ' + letter.year
+                let date =
+                    letter.date_day +
+                    '. ' +
+                    letter.date_month +
+                    '. ' +
+                    letter.date_year
                 let from = authors.join('; ') + ' (' + origin + ')'
                 let to = recipients + ' (' + destination + ')'
 
-                letter.title = date + ' ' + from + ' to ' + to
-                return
+                let result = date + ' ' + from + ' to ' + to
+                self.title = result
+                return result
             },
 
             getLocationData: function(callback) {
@@ -233,12 +239,18 @@ if (document.getElementById('letter-form')) {
                         } else {
                             let rd = response.data
                             self.letter = rd
-                            self.letter.year =
+                            self.letter.date_year =
                                 rd.date_year == '0' ? '' : rd.date_year
-                            self.letter.month =
+                            self.letter.date_month =
                                 rd.date_month == '0' ? '' : rd.date_month
-                            self.letter.day =
+                            self.letter.date_day =
                                 rd.date_day == '0' ? '' : rd.date_day
+                            self.letter.range_year =
+                                rd.range_year == '0' ? '' : rd.range_year
+                            self.letter.range_month =
+                                rd.range_month == '0' ? '' : rd.range_month
+                            self.letter.range_day =
+                                rd.range_day == '0' ? '' : rd.range_day
                             self.letter.author = Object.keys(rd.l_author)
                             self.letter.author_as_marked = rd.l_author_marked
                             self.letter.recipient = Object.keys(rd.recipient)
@@ -255,7 +267,7 @@ if (document.getElementById('letter-form')) {
                             self.letter.mentioned = Object.keys(
                                 rd.people_mentioned
                             )
-                            self.letter.title = rd.name
+                            self.title = rd.name
                         }
                     })
                     .catch(function() {

@@ -41,7 +41,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="date_year">Year</label>
-                                <input v-model="letter.year" type="number" name="date_year" class="form-control form-control-sm" min="0" max="2020">
+                                <input v-model="letter.date_year" type="number" name="date_year" class="form-control form-control-sm" min="0" max="2020">
                                 <small class="form-text text-muted">
                                     format YYYY, e.g. 1660
                                 </small>
@@ -50,7 +50,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="date_month">Month</label>
-                                <input v-model="letter.month" type="number" name="date_month" class="form-control form-control-sm" min="0" max="12">
+                                <input v-model="letter.date_month" type="number" name="date_month" class="form-control form-control-sm" min="0" max="12">
                                 <small class="form-text text-muted">
                                     format MM, e.g. 1
                                 </small>
@@ -59,7 +59,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="date_day">Day</label>
-                                <input v-model="letter.day" type="number" name="date_day" class="form-control form-control-sm" min="0" max="31">
+                                <input v-model="letter.date_day" type="number" name="date_day" class="form-control form-control-sm" min="0" max="31">
                                 <small class="form-text text-muted">
                                     format DD, e.g. 8
                                 </small>
@@ -402,6 +402,7 @@ if (array_key_exists('save_post', $_POST)) {
                     <div class="form-group">
                         <label for="ms_manifestation">MS manifestation</label>
                         <select v-model="letter.ms_manifestation" class="custom-select custom-select-sm slim-select" name="ms_manifestation" id="ms_manifestation">
+                            <option value="">---</option>
                             <option value="ALS">MS Letter</option>
                             <option value="S">MS Copy</option>
                             <option value="D">MS Draft</option>
@@ -446,8 +447,8 @@ if (array_key_exists('save_post', $_POST)) {
                         <label for="description">Description
                             <span class="pointer oi oi-transfer pl-1" @click="getTitle"></span>
                         </label>
-                        <textarea v-model="letter.title" name="description" class="form-control form-control-sm" required>{{ letter.title }}</textarea>
-
+                        <textarea v-model="title" name="description" class="form-control form-control-sm" required>{{ title }}</textarea>
+                        {{ letter.title }}
                     </div>
                 </fieldset>
 
