@@ -1,5 +1,13 @@
+<?php
+
+$pods_types = get_hiko_post_types_by_url();
+$letter_type = $pods_types['letter'];
+$path = $pods_types['path'];
+
+?>
+
 <div class="mb-3">
-    <a href="<?= home_url('demo/letters-add'); ?>" class="btn btn-lg btn-primary">Přidat nový dopis</a>
+    <a href="<?= home_url($path . '/letters-add'); ?>" class="btn btn-lg btn-primary">Přidat nový dopis</a>
 
     <div class="dropdown d-inline-block" id="export">
         <button @click="openDD = !openDD" class="btn btn-secondary btn-lg dropdown-toggle" type="button">
@@ -9,7 +17,7 @@
             <a v-for="action in actions" class="dropdown-item" :href="action.url">{{action.title}}</a>
         </div>
     </div>
-    
+
 </div>
 
 <div id="datatable-letters">
@@ -24,13 +32,13 @@
     <v-client-table :data="tableData" :columns="columns" :options="options" v-if="tableData.length > 0">
         <ul slot="edit" slot-scope="props" class="list-unstyled">
             <li>
-                <a :href="'<?= home_url('demo/letters-add/?edit='); ?>' + props.row.id">Upravit</a>
+                <a :href="'<?= home_url($path . '/letters-add/?edit='); ?>' + props.row.id">Upravit</a>
             </li>
             <li>
-                <a :href="'<?= home_url('demo/letters-media/?l_type=demo_letter&letter='); ?>' + props.row.id">Obrazové přílohy</a>
+                <a :href="'<?= home_url($path . '/letters-media/?l_type=' . $letter_type . '&letter='); ?>' + props.row.id">Obrazové přílohy</a>
             </li>
             <li>
-                <a :href="'<?= home_url('letter-preview/?l_type=demo_letter&letter='); ?>' + props.row.id">Náhled</a>
+                <a :href="'<?= home_url('letter-preview/?l_type=' . $letter_type . '&letter='); ?>' + props.row.id">Náhled</a>
             </li>
             <li>
                 <a :href="'#delete-' + props.row.id" @click="deleteLetter(props.row.id)">Odstranit</a>
