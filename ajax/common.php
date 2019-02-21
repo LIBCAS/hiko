@@ -26,6 +26,7 @@ function delete_hiko_pod()
         foreach ($images as $img) {
             wp_delete_attachment($img['ID'], true);
         }
+        delete_hiko_cache('list_' . $types['path']);
     }
 
     $result = $pod->delete();
