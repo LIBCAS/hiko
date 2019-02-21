@@ -92,7 +92,7 @@ if (array_key_exists('save_post', $_POST)) {
                         </label>
                     </div>
 
-                    <div class="row" v-if="letter.date_is_range">
+                    <div class="row" v-show="letter.date_is_range">
                         <div class="col">
                             <div class="form-group">
                                 <label for="range_year">Year 2</label>
