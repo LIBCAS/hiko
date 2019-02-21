@@ -4,7 +4,7 @@ function list_people_simple()
 {
     $type = test_input($_GET['type']);
     echo json_encode(
-        get_persons_names($type),
+        get_pods_name_and_id($type),
         JSON_UNESCAPED_UNICODE
     );
     wp_die();

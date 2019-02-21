@@ -3,24 +3,9 @@
 function list_places_simple()
 {
     $type = test_input($_GET['type']);
-    $place_pods = pods(
-        $type,
-        [
-            'orderby'=> 't.name ASC',
-            'limit' => -1
-        ]
-    );
-    $places = [];
-    $index = 0;
-
-    while ($place_pods->fetch()) {
-        $places[$index]['id'] = $place_pods->display('id');
-        $places[$index]['name'] = $place_pods->display('name');
-        $index++;
-    }
 
     echo json_encode(
-        $places,
+        get_pods_name_and_id($type),
         JSON_UNESCAPED_UNICODE
     );
     wp_die();
