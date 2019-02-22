@@ -29,7 +29,33 @@ remove_action('admin_print_scripts', 'print_emoji_detection_script');
 remove_action('wp_print_styles', 'print_emoji_styles');
 remove_action('admin_print_styles', 'print_emoji_styles');
 remove_action('wp_head', 'wp_resource_hints', 2);
+remove_action('welcome_panel', 'wp_welcome_panel');
 
+function wps_deregister_styles()
+{
+    wp_dequeue_style('wp-block-library');
+}
+add_action('wp_print_styles', 'wps_deregister_styles', 100);
+
+
+function remove_dashboard_widgets()
+{
+    remove_meta_box('dashboard_recent_comments', 'dashboard', 'normal');
+    remove_meta_box('dashboard_incoming_links', 'dashboard', 'normal');
+    remove_meta_box('dashboard_quick_press', 'dashboard', 'side');
+    remove_meta_box('dashboard_recent_drafts', 'dashboard', 'side');
+    remove_meta_box('dashboard_primary', 'dashboard', 'side');
+    remove_meta_box('dashboard_secondary', 'dashboard', 'side');
+}
+add_action('wp_dashboard_setup', 'remove_dashboard_widgets');
+
+
+function custom_menu_page_removing()
+{
+    remove_menu_page('edit-comments.php');
+    remove_menu_page('edit.php');
+}
+add_action('admin_menu', 'custom_menu_page_removing');
 
 
 function test_input($input)
@@ -760,11 +786,11 @@ function display_persons_and_places($person_type, $place_type)
     ?>
 
     <script id="people" type="application/json">
-        <?= $persons; ?>
+    <?= $persons; ?>
     </script>
 
     <script id="places" type="application/json">
-        <?= $places; ?>
+    <?= $places; ?>
     </script>
 
     <?php
