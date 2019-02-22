@@ -155,7 +155,7 @@ function get_shortened_name()
 }
 
 
-function list_places_with_relationships($place_type)
+function get_places_table_data($place_type)
 {
     $fields = [
         't.id',

@@ -5,7 +5,7 @@ $place_type = $pods_types['place'];
 $path = $pods_types['path'];
 
 $places_json = json_encode(
-    list_places_with_relationships($place_type),
+    get_places_table_data($place_type),
     JSON_UNESCAPED_UNICODE
 );
 ?>
