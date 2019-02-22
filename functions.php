@@ -154,6 +154,42 @@ function get_shortened_name()
     return $user_data['first_name'][0]  . ' ' . mb_substr($user_data['last_name'][0], 0, 1) . '.';
 }
 
+
+function list_places_with_relationships($place_type)
+{
+    $fields = [
+        't.id',
+        't.name AS city',
+        't.country',
+        'letter_origin.id AS letter_id',
+        'letter_destination.id AS dest_id'
+    ];
+
+    $fields = implode(', ', $fields);
+
+    $places = pods(
+        $place_type,
+        [
+            'select' => $fields,
+            'orderby'=> 't.name ASC',
+            'limit' => -1
+        ]
+    );
+
+    $places_filtered = [];
+    $index = 0;
+    while ($places->fetch()) {
+        $places_filtered[$index]['id'] = $places->display('id');
+        $places_filtered[$index]['city'] = $places->display('city');
+        $places_filtered[$index]['country'] = $places->display('country');
+        $places_filtered[$index]['relationships'] = !is_null($places->display('letter_id')) || !is_null($places->display('dest_id'));
+        $index++;
+    }
+
+    return $places_filtered;
+}
+
+
 function get_pods_name_and_id($type)
 {
     $fields = [

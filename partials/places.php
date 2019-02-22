@@ -4,26 +4,10 @@ $pods_types = get_hiko_post_types_by_url();
 $place_type = $pods_types['place'];
 $path = $pods_types['path'];
 
-$places = pods(
-    $place_type,
-    [
-        'orderby'=> 't.name ASC',
-        'limit' => -1
-    ]
+$places_json = json_encode(
+    list_places_with_relationships($place_type),
+    JSON_UNESCAPED_UNICODE
 );
-
-$places_filtered = [];
-$index = 0;
-while ($places->fetch()) {
-    $origin = $places->field('letter_origin');
-    $destination = $places->field('letter_destination');
-    $places_filtered[$index]['id'] = $places->display('id');
-    $places_filtered[$index]['city'] = $places->display('name');
-    $places_filtered[$index]['country'] = $places->field('country');
-    $places_filtered[$index]['relationships'] = sum_array_length([$origin, $destination]);
-    $index++;
-}
-$places_json = json_encode($places_filtered, JSON_UNESCAPED_UNICODE);
 ?>
 
 <div class="mb-3">
@@ -38,7 +22,7 @@ $places_json = json_encode($places_filtered, JSON_UNESCAPED_UNICODE);
                 <a :href="'<?= home_url($path . '/places-add/?edit='); ?>' + props.row.id">Upravit</a>
             </li>
             <li>
-                <a v-if="props.row.relationships == 0" :href="'#delete-' + props.row.id" @click="deletePlace(props.row.id)">Odstranit</a>
+                <a v-if="!props.row.relationships" :href="'#delete-' + props.row.id" @click="deletePlace(props.row.id)">Odstranit</a>
             </li>
         </ul>
     </v-client-table>
