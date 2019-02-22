@@ -573,7 +573,7 @@ function getGeoCoord(callback) {
         type: 'question',
         input: 'text',
         inputValidator: value => {
-            if (value.length < 3) {
+            if (value.length < 2) {
                 return 'Zadejte název místa'
             }
         },
