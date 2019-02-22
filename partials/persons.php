@@ -4,28 +4,10 @@ $pods_types = get_hiko_post_types_by_url();
 $person_type = $pods_types['person'];
 $path = $pods_types['path'];
 
-$persons = pods(
-    $person_type,
-    [
-        'orderby'=> 't.surname ASC',
-        'limit' => -1
-    ]
-);
-
-$persons_filtered = [];
-$index = 0;
-while ($persons->fetch()) {
-    $authors = $persons->field('letter_author');
-    $recipients = $persons->field('letter_recipient');
-    $mentioned = $persons->field('letter_people_mentioned');
-    $persons_filtered[$index]['id'] = $persons->display('id');
-    $persons_filtered[$index]['name'] = $persons->display('name');
-    $persons_filtered[$index]['birth'] = $persons->field('birth_year');
-    $persons_filtered[$index]['death'] = $persons->field('death_year');
-    $persons_filtered[$index]['relationships'] = sum_array_length([$authors, $recipients, $mentioned]);
-    $index++;
-}
-$persons_json = json_encode($persons_filtered, JSON_UNESCAPED_UNICODE);
+$persons_json = json_encode(
+    get_persons_table_data($person_type),
+    JSON_UNESCAPED_UNICODE
+)
 ?>
 
 <div class="mb-3">

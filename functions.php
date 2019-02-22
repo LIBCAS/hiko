@@ -154,6 +154,42 @@ function get_shortened_name()
     return $user_data['first_name'][0]  . ' ' . mb_substr($user_data['last_name'][0], 0, 1) . '.';
 }
 
+function get_persons_table_data($person_type)
+{
+    $fields = [
+        't.id',
+        't.name',
+        't.birth_year',
+        't.death_year',
+        'letter_author.id AS au',
+        'letter_recipient.id AS re',
+        'letter_people_mentioned.id AS pm'
+    ];
+
+    $fields = implode(', ', $fields);
+
+    $persons = pods(
+        $person_type,
+        [
+            'select' => $fields,
+            'orderby'=> 't.name ASC',
+            'limit' => -1
+        ]
+    );
+
+    $persons_filtered = [];
+    $index = 0;
+    while ($persons->fetch()) {
+        $persons_filtered[$index]['id'] = $persons->display('id');
+        $persons_filtered[$index]['name'] = $persons->display('name');
+        $persons_filtered[$index]['birth'] = $persons->display('birth_year');
+        $persons_filtered[$index]['death'] = $persons->display('death_year');
+        $persons_filtered[$index]['relationships'] = !is_null($persons->display('au')) || !is_null($persons->display('re')) || !is_null($persons->display('pm'));
+
+        $index++;
+    }
+    return $persons_filtered;
+}
 
 function get_places_table_data($place_type)
 {
