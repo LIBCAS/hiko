@@ -65,6 +65,15 @@ if (document.getElementById('datatable-letters')) {
                 perPage: defaultTablesOptions.perPage,
                 perPageValues: defaultTablesOptions.perPageValues,
                 dateColumns: ['date'],
+                customSorting: getCustomSorting([
+                    'l_number',
+                    'date',
+                    'author',
+                    'recipient',
+                    'origin',
+                    'dest',
+                    'status',
+                ]),
             },
             error: false,
             loading: true,
@@ -142,6 +151,7 @@ if (document.getElementById('datatable-persons')) {
                 pagination: defaultTablesOptions.pagination,
                 perPage: defaultTablesOptions.perPage,
                 perPageValues: defaultTablesOptions.perPageValues,
+                customSorting: getCustomSorting(['name']),
             },
             path: '',
         },
@@ -195,6 +205,7 @@ if (document.getElementById('datatable-places')) {
                 pagination: defaultTablesOptions.pagination,
                 perPage: defaultTablesOptions.perPage,
                 perPageValues: defaultTablesOptions.perPageValues,
+                customSorting: getCustomSorting(['city', 'country']),
             },
             path: '',
         },
@@ -231,6 +242,38 @@ function removeElFromArr(el, array) {
         return value != el
     })
     return filtered
+}
+
+function getCustomSorting(columns) {
+    let sorting = {}
+    for (let i = 0; i < columns.length; i++) {
+        sorting[columns[i]] = function(ascending) {
+            return function(a, b) {
+                if (a[columns[i]] == null) {
+                    a = ''
+                } else if (Array.isArray(a[columns[i]])) {
+                    a = a[columns[i]].toString()
+                } else {
+                    a = a[columns[i]].toLowerCase()
+                }
+
+                if (b[columns[i]] == null) {
+                    b = ''
+                } else if (Array.isArray(b[columns[i]])) {
+                    b = b[columns[i]].toString()
+                } else {
+                    b = b[columns[i]].toLowerCase()
+                }
+
+                if (ascending) {
+                    return b.localeCompare(a)
+                }
+                return a.localeCompare(b)
+            }
+        }
+    }
+
+    return sorting
 }
 
 function removeItemAjax(id, podType, podName, callback) {
