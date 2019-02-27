@@ -31,12 +31,6 @@ if (array_key_exists('save_post', $_POST)) {
         <div class="card-body">
             <form method="post" id="letter-form" onkeypress="return event.keyCode!=13">
                 <fieldset>
-                    <div class="form-group required">
-                        <label for="number">Letter number</label>
-                        <input v-model="letter.l_number" type="text" class="form-control form-control-sm" id="l_number" name="l_number" required>
-                    </div>
-                </fieldset>
-                <fieldset>
                     <legend>Dates of letter</legend>
                     <div class="row">
                         <div class="col">
@@ -399,6 +393,10 @@ if (array_key_exists('save_post', $_POST)) {
                 </fieldset>
 
                 <fieldset>
+                    <div class="form-group">
+                        <label for="number">Letter number</label>
+                        <input v-model="letter.l_number" type="text" class="form-control form-control-sm" id="l_number" name="l_number">
+                    </div>
                     <legend>Repositories and versions</legend>
                     <div class="form-group">
                         <label for="ms_manifestation">MS manifestation</label>

@@ -159,7 +159,7 @@
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
-                    "required": "1",
+                    "required": "0",
                     "unique": "0",
                     "text_allow_shortcode": "0",
                     "text_allow_html": "0",
