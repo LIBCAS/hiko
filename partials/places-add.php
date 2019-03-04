@@ -1,7 +1,7 @@
 <?php
 
 $countries = json_decode(
-    file_get_contents(get_template_directory_uri() . '/assets/data/countries.json')
+    get_ssl_file(get_template_directory_uri() . '/assets/data/countries.json')
 );
 $pods_types = get_hiko_post_types_by_url();
 $place_type = $pods_types['place'];

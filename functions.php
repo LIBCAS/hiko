@@ -839,7 +839,7 @@ function save_hiko_place($place_type, $action)
 
 function get_languages()
 {
-    $languages = file_get_contents(get_template_directory_uri() . '/assets/data/languages.json');
+    $languages = get_ssl_file(get_template_directory_uri() . '/assets/data/languages.json');
     return json_decode($languages);
 }
 
@@ -912,6 +912,19 @@ function read_hiko_cache($name)
 {
     $file = WP_CONTENT_DIR . '/hiko-cache' . '/' . md5($name) . '.json';
     return file_get_contents($file);
+}
+
+function get_ssl_file($url)
+{
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_HEADER, false);
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $result = curl_exec($ch);
+    curl_close($ch);
+    return $result;
 }
 
 
