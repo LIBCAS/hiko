@@ -1,11 +1,22 @@
 .mw-400 {
-  max-width: 400px;
+    max-width: 400px;
 }
 
 .not-allowed {
-  cursor: not-allowed;
+    cursor: not-allowed;
 }
 
 .pointer {
-  cursor: pointer;
+    cursor: pointer;
+}
+
+.is-link {
+    color: $link-color;
+    cursor: pointer;
+    text-decoration: $link-decoration;
+}
+
+.is-link:hover {
+    color: $link-hover-color;
+    text-decoration: $link-hover-decoration;
 }
