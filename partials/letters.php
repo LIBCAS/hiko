@@ -41,13 +41,15 @@ $path = $pods_types['path'];
                 <a :href="'<?= home_url('letter-preview/?l_type=' . $letter_type . '&letter='); ?>' + props.row.id">Náhled</a>
             </li>
             <li>
-                <a href="#" @click="showHistory(props.row.id)">
+                <span @click="showHistory(props.row.id, $event)" class="is-link py-1">
                     <span class="spinner spinner-border spinner-border-sm d-none"></span>
                     Historie úprav
-                </a>
+                </span>
             </li>
             <li>
-                <a :href="'#delete-' + props.row.id" @click="deleteLetter(props.row.id)">Odstranit</a>
+                <span @click="deleteLetter(props.row.id)" class="is-link py-1">
+                    Odstranit
+                </span>
             </li>
         </ul>
 

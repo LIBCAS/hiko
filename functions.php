@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('Europe/Prague');
+
 function remove_admin_bar()
 {
     if (!current_user_can('administrator') && !is_admin()) {
@@ -152,6 +154,13 @@ function get_shortened_name()
 {
     $user_data = get_user_meta(get_current_user_id());
     return $user_data['first_name'][0]  . ' ' . mb_substr($user_data['last_name'][0], 0, 1) . '.';
+}
+
+
+function get_full_name()
+{
+    $user_data = get_user_meta(get_current_user_id());
+    return $user_data['first_name'][0]  . ' ' . $user_data['last_name'][0];
 }
 
 function get_persons_table_data($person_type)
@@ -622,6 +631,69 @@ function get_hiko_post_types_by_url()
 }
 
 
+function get_letter_single_field($type, $id, $field_name)
+{
+    $fields = [
+        "t.{$field_name}",
+        't.ID'
+    ];
+
+    $fields = implode(', ', $fields);
+
+    $pod = pods(
+        $type,
+        [
+            'where' => "t.id = '{$id}'",
+            'select' => $fields
+        ]
+    );
+
+
+    while ($pod->fetch()) {
+        if (!$pod->exists()) {
+            return false;
+        }
+        return $pod->display($field_name);
+    }
+}
+
+function get_letter_history($type, $id)
+{
+    return get_letter_single_field($type, $id, 'history');
+}
+
+function get_letter_created($type, $id)
+{
+    $author = '';
+    $fields = [
+        "t.created AS time",
+        't.ID',
+        'author.id AS author'
+    ];
+
+    $fields = implode(', ', $fields);
+
+    $pod = pods(
+        $type,
+        [
+            'where' => "t.id = '{$id}'",
+            'select' => $fields
+        ]
+    );
+
+
+    while ($pod->fetch()) {
+        if (!$pod->exists()) {
+            return false;
+        }
+        $author = get_user_meta($pod->display('author'));
+        return [
+            'date' => $pod->display('time'),
+            'author' => $author['first_name'][0]  . ' ' . $author['last_name'][0],
+        ];
+    }
+}
+
 function save_hiko_letter($letter_type, $action, $path)
 {
     $people_mentioned = [];
@@ -684,6 +756,17 @@ function save_hiko_letter($letter_type, $action, $path)
         $keywords = '';
     }
 
+    if ($action == 'new') {
+        $history = date('Y-m-d H:i:s') . ' – ' . get_full_name() . "\n";
+    } elseif ($action == 'edit') {
+        $history = get_letter_history($letter_type, $_GET['edit']);
+        if ($history == '') {
+            $created = get_letter_created($letter_type, $_GET['edit']);
+            $history = $created['date'] . ' – ' . $created['author'] . "\n";
+        }
+        $history .= "\n" . date('Y-m-d H:i:s') . ' – ' . get_full_name() . "\n";
+    }
+
     $data = test_postdata([
         'l_number' => 'l_number',
         'date_year' => 'date_year',
@@ -736,6 +819,7 @@ function save_hiko_letter($letter_type, $action, $path)
     $data['people_mentioned'] = $people_mentioned;
     $data['dest'] = $destinations;
     $data['origin'] = $origins;
+    $data['history'] = $history;
 
     $new_pod = '';
 

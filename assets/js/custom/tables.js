@@ -94,6 +94,45 @@ if (document.getElementById('datatable-letters')) {
             this.getData()
         },
         methods: {
+            showHistory: function(id, event) {
+                let self = this
+                let spinner = event.target.querySelector('.spinner')
+                spinner.classList.remove('d-none')
+                axios
+                    .get(
+                        ajaxUrl +
+                            '?action=list_letter_history&l_id=' +
+                            id +
+                            '&l_type=' +
+                            self.path
+                    )
+                    .then(function(result) {
+                        spinner.classList.add('d-none')
+                        let r = result.data.data
+                        r = r.replace(/\n/g, '<br>')
+                        Swal.fire({
+                            title: 'Historie úprav',
+                            html: r,
+                            buttonsStyling: false,
+                            confirmButtonText: 'Zavřít',
+                            confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+                        })
+                    })
+                    .catch(function(error) {
+                        Swal.fire({
+                            title:
+                                'Historii úprav se nepodařilo načíst nebo nebo neexistuje',
+                            text: error,
+                            type: 'error',
+                            buttonsStyling: false,
+                            confirmButtonText: 'Zavřít',
+                            confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+                        })
+                    })
+                    .then(function() {
+                        spinner.classList.add('d-none')
+                    })
+            },
             deleteLetter: function(id) {
                 let self = this
                 removeItemAjax(id, 'letter', self.path, function() {

@@ -1,5 +1,25 @@
 <?php
 
+function list_letter_history()
+{
+    $l_type = test_input($_GET['l_type']);
+    $l_id = test_input($_GET['l_id']);
+    $types = get_hiko_post_types($l_type);
+
+    if (!has_user_permission($types['editor'])) {
+        wp_send_json_error('Not allowed', 403);
+    }
+    $history = get_letter_history($types['letter'], $l_id);
+
+    if (!$history) {
+        wp_send_json_error('Not found', 404);
+    } else {
+        wp_send_json_success($history);
+    }
+}
+add_action('wp_ajax_list_letter_history', 'list_letter_history');
+
+
 function list_all_letters_short()
 {
     $type = test_input($_GET['type']);
