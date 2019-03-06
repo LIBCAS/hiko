@@ -448,6 +448,10 @@ if (array_key_exists('save_post', $_POST)) {
                         </label>
                         <textarea v-model="title" name="description" class="form-control form-control-sm" required>{{ title }}</textarea>
                         {{ letter.title }}
+
+                        <small class="form-text text-muted">
+                            "DD. MM. YYYY Author (Origin) to Recipient (Destination)", vygenerovat pomocí ikonky
+                        </small>
                     </div>
                 </fieldset>
 
