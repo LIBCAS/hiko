@@ -16,6 +16,21 @@ if (array_key_exists('save_post', $_POST)) {
 }
 
 ?>
+
+<div class="list-group list-group-sm mw-200 sticky-content">
+    <a class="list-group-item list-group-item-action" href="#a-dates">Dates</a>
+    <a class="list-group-item list-group-item-action" href="#a-author">Author</a>
+    <a class="list-group-item list-group-item-action" href="#a-recipient">Recipient</a>
+    <a class="list-group-item list-group-item-action" href="#a-origin">Origin</a>
+    <a class="list-group-item list-group-item-action" href="#a-destination">Destination</a>
+    <a class="list-group-item list-group-item-action" href="#a-content">Content</a>
+    <a class="list-group-item list-group-item-action" href="#a-related-resource">Related resource</a>
+    <a class="list-group-item list-group-item-action" href="#a-repositories-and-versions">Repositories and versions</a>
+    <a class="list-group-item list-group-item-action" href="#a-description">Description</a>
+    <a class="list-group-item list-group-item-action" href="#a-status">Status</a>
+</div>
+
+
 <div id="letter-add-form">
 
     <div v-if="loading" class="progress">
@@ -30,7 +45,7 @@ if (array_key_exists('save_post', $_POST)) {
     <div class="card bg-light d-none" :class="{ 'd-block' : formVisible }">
         <div class="card-body">
             <form method="post" id="letter-form" onkeypress="return event.keyCode!=13">
-                <fieldset>
+                <fieldset id="a-dates">
                     <legend>Dates of letter</legend>
                     <div class="row">
                         <div class="col">
@@ -124,7 +139,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                 </fieldset>
 
-                <fieldset>
+                <fieldset id="a-author">
                     <legend>Author</legend>
                     <div class="form-group">
                         <label for="author">Author <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)"></span></label>
@@ -167,7 +182,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                 </fieldset>
 
-                <fieldset>
+                <fieldset id="a-recipient">
                     <legend>Recipient</legend>
                     <div class="form-group">
                         <label for="author">Recipient <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)"></span></label>
@@ -203,14 +218,14 @@ if (array_key_exists('save_post', $_POST)) {
                             Recipient uncertain
                         </label>
                     </div>
+
+                    <div class="form-group">
+                        <label for="recipient_notes">Notes on recipient</label>
+                        <textarea v-model="letter.recipient_notes" name="recipient_notes" class="form-control form-control-sm"></textarea>
+                    </div>
                 </fieldset>
 
-                <div class="form-group">
-                    <label for="recipient_notes">Notes on recipient</label>
-                    <textarea v-model="letter.recipient_notes" name="recipient_notes" class="form-control form-control-sm"></textarea>
-                </div>
-
-                <fieldset>
+                <fieldset id="a-origin">
                     <legend>Origin</legend>
                     <div class="form-group">
                         <label for="origin">Origin <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)"></span></label>
@@ -253,7 +268,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                 </fieldset>
 
-                <fieldset>
+                <fieldset id="a-destination">
                     <legend>Destination</legend>
                     <div class="form-group">
                         <label for="dest">Destination <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)"></span></label>
@@ -296,7 +311,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                 </fieldset>
 
-                <fieldset>
+                <fieldset id="a-content">
                     <legend>Content</legend>
                     <div class="form-group">
                         <label for="languages">Languages</label>
@@ -374,7 +389,7 @@ if (array_key_exists('save_post', $_POST)) {
                 </fieldset>
 
 
-                <fieldset>
+                <fieldset id="a-related-resource">
                     <legend>Related resource</legend>
                     <div class="form-group">
                         <label for="rel_rec_name">Related resource name</label>
@@ -392,7 +407,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                 </fieldset>
 
-                <fieldset>
+                <fieldset id="a-repositories-and-versions">
                     <div class="form-group">
                         <label for="number">Letter number</label>
                         <input v-model="letter.l_number" type="text" class="form-control form-control-sm" id="l_number" name="l_number">
@@ -440,7 +455,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                 </fieldset>
 
-                <fieldset>
+                <fieldset id="a-description">
                     <legend>Description</legend>
                     <div class="form-group required">
                         <label for="description">Description
@@ -455,7 +470,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                 </fieldset>
 
-                <fieldset class="form-group">
+                <fieldset id="a-status" class="form-group">
                     <legend>Status</legend>
 
                     <div class="form-check">
