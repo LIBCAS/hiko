@@ -40,9 +40,6 @@ Icon?
 Thumbs.db
 ._*
 
-# Vim generated files #
-######################
-*.un~
 
 # SASS #
 ##########
@@ -55,23 +52,10 @@ Thumbs.db
 !assets/js/vendor/
 !assets/vendor/
 wpcs/
-
-
-# Bower #
-##########
-assets/bower_components/*
-
-# Codekit #
-##########
-/codekit-config.json
-*.codekit
-**.codekit-cache/*
+!assets/css/bootstrap/scss/vendor/
 
 # Compiled Files and Build Dirs #
 ##########
 /README.html
 
-# PhpStrom Project Files #
-.idea/
-library/vendors/composer
-assets/img/.DS_Store
+wpgulp.config.js
