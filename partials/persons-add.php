@@ -57,6 +57,17 @@ if (array_key_exists('save_post', $_POST)) {
 
                 <fieldset>
                     <div class="form-group">
+                        <label for="profession">Profession</label>
+                        <input v-model="profession" type="text" class="form-control form-control-sm" name="profession">
+                    </div>
+                    <div class="form-group">
+                        <label for="nationality">Nationality</label>
+                        <input v-model="nationality" type="text" class="form-control form-control-sm" name="nationality">
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <div class="form-group">
                         <label for="emlo">Emlo ID</label>
                         <input v-model="emlo" type="text" class="form-control form-control-sm" name="emlo">
                     </div>

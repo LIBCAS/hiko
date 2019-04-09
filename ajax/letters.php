@@ -178,6 +178,7 @@ function list_public_letters_single()
     $results['archive'] = $pod->field('archive');
     $results['collection'] = $pod->field('collection');
     $results['signature'] = $pod->field('signature');
+    $results['location_note'] = $pod->field('location_note');
 
     $results['images'] = $images_sorted;
     if (is_user_logged_in()) {

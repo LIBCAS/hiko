@@ -1,5 +1,8 @@
 {
-    "meta": { "version": "2.7.12", "build": 1550152724 },
+    "meta": {
+        "version": "2.7.12",
+        "build": 1554814458
+    },
     "pods": {
         "49": {
             "id": 49,
@@ -30,13 +33,18 @@
                     "text_max_length": "255",
                     "text_allow_shortcode": "0",
                     "text_allow_html": "0",
-                    "pick_post_status": ["publish"],
+                    "pick_post_status": [
+                        "publish"
+                    ],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor"
+                    ],
                     "text_placeholder": ""
                 },
                 "created": {
@@ -111,13 +119,18 @@
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
-                    "pick_post_status": ["publish"],
+                    "pick_post_status": [
+                        "publish"
+                    ],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor"
+                    ],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -139,13 +152,18 @@
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
-                    "pick_post_status": ["publish"],
+                    "pick_post_status": [
+                        "publish"
+                    ],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor"
+                    ],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -171,13 +189,18 @@
                     "number_min": "0",
                     "number_max": "100",
                     "number_max_length": "4",
-                    "pick_post_status": ["publish"],
+                    "pick_post_status": [
+                        "publish"
+                    ],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor"
+                    ],
                     "number_repeatable": "0",
                     "number_placeholder": ""
                 },
@@ -203,13 +226,18 @@
                     "number_min": "0",
                     "number_max": "100",
                     "number_max_length": "4",
-                    "pick_post_status": ["publish"],
+                    "pick_post_status": [
+                        "publish"
+                    ],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor"
+                    ],
                     "number_repeatable": "0",
                     "number_placeholder": ""
                 },
@@ -231,13 +259,18 @@
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
-                    "pick_post_status": ["publish"],
+                    "pick_post_status": [
+                        "publish"
+                    ],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor"
+                    ],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -265,13 +298,21 @@
                     "pick_show_view_link": "1",
                     "pick_limit": "0",
                     "pick_user_role": [],
-                    "pick_post_status": ["publish"],
+                    "pick_post_status": [
+                        "publish"
+                    ],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor"
+                    ],
+                    "oembed_enabled_providers_funnyordiecom": "0",
+                    "oembed_enabled_providers_photobucketcom": "0",
+                    "oembed_enabled_providers_polldaddycom": "0",
                     "pick_select_text": "",
                     "pick_table_id": "",
                     "pick_table_index": "",
@@ -304,13 +345,21 @@
                     "pick_show_view_link": "1",
                     "pick_limit": "0",
                     "pick_user_role": [],
-                    "pick_post_status": ["publish"],
+                    "pick_post_status": [
+                        "publish"
+                    ],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor"
+                    ],
+                    "oembed_enabled_providers_funnyordiecom": "0",
+                    "oembed_enabled_providers_photobucketcom": "0",
+                    "oembed_enabled_providers_polldaddycom": "0",
                     "pick_select_text": "",
                     "pick_table_id": "",
                     "pick_table_index": "",
@@ -343,13 +392,21 @@
                     "pick_show_view_link": "1",
                     "pick_limit": "0",
                     "pick_user_role": [],
-                    "pick_post_status": ["publish"],
+                    "pick_post_status": [
+                        "publish"
+                    ],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor"
+                    ],
+                    "oembed_enabled_providers_funnyordiecom": "0",
+                    "oembed_enabled_providers_photobucketcom": "0",
+                    "oembed_enabled_providers_polldaddycom": "0",
                     "pick_select_text": "",
                     "pick_table_id": "",
                     "pick_table_index": "",
@@ -380,15 +437,86 @@
                     "paragraph_allow_shortcode": "0",
                     "paragraph_allowed_html_tags": "strong em a ul ol li b i",
                     "paragraph_max_length": "0",
-                    "pick_post_status": ["publish"],
+                    "pick_post_status": [
+                        "publish"
+                    ],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor"
+                    ],
                     "paragraph_repeatable": "0",
                     "paragraph_placeholder": ""
+                },
+                "profession": {
+                    "id": 400,
+                    "name": "profession",
+                    "label": "Profession",
+                    "description": "",
+                    "help": "",
+                    "class": "",
+                    "type": "text",
+                    "weight": 12,
+                    "pick_object": "",
+                    "pick_val": "",
+                    "sister_id": "",
+                    "required": "0",
+                    "unique": "0",
+                    "text_allow_shortcode": "0",
+                    "text_allow_html": "0",
+                    "text_allowed_html_tags": "strong em a ul ol li b i",
+                    "text_max_length": "255",
+                    "pick_post_status": [
+                        "publish"
+                    ],
+                    "admin_only": "0",
+                    "restrict_role": "1",
+                    "restrict_capability": "0",
+                    "hidden": "0",
+                    "read_only": "0",
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor"
+                    ],
+                    "text_repeatable": 0,
+                    "text_placeholder": ""
+                },
+                "nationality": {
+                    "id": 401,
+                    "name": "nationality",
+                    "label": "Nationality",
+                    "description": "",
+                    "help": "",
+                    "class": "",
+                    "type": "text",
+                    "weight": 13,
+                    "pick_object": "",
+                    "pick_val": "",
+                    "sister_id": "",
+                    "required": "0",
+                    "unique": "0",
+                    "text_allow_shortcode": "0",
+                    "text_allow_html": "0",
+                    "text_allowed_html_tags": "strong em a ul ol li b i",
+                    "text_max_length": "255",
+                    "pick_post_status": [
+                        "publish"
+                    ],
+                    "admin_only": "0",
+                    "restrict_role": "1",
+                    "restrict_capability": "0",
+                    "hidden": "0",
+                    "read_only": "0",
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor"
+                    ],
+                    "text_repeatable": 0,
+                    "text_placeholder": ""
                 }
             },
             "show_in_menu": "1",
@@ -396,10 +524,17 @@
             "pod_index": "name",
             "hierarchical": "0",
             "ui_style": "post_type",
-            "ui_actions_enabled": ["add", "edit", "duplicate", "delete"],
+            "ui_actions_enabled": [
+                "add",
+                "edit",
+                "duplicate",
+                "delete"
+            ],
             "ui_reorder_field": "menu_order",
-            "ui_fields_manage": { "0": "name", "2": "modified" },
-            "sister_id": "66"
+            "ui_fields_manage": {
+                "0": "name",
+                "2": "modified"
+            }
         }
     }
 }

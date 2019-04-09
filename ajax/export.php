@@ -79,6 +79,7 @@ function export_letters()
             'archive',
             'collection',
             'signature',
+            'location_note',
             'description',
             'status',
         ]);
@@ -136,6 +137,7 @@ function export_letters()
             (string) $pod->field('archive'),
             (string) $pod->field('collection'),
             (string) $pod->field('signature'),
+            (string) $pod->field('location_note'),
             (string) $pod->field('name'),
             (string) (is_string($pod->field('status'))) ? $pod->field('status') : '',
         ];

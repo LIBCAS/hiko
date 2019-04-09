@@ -741,6 +741,7 @@ function save_hiko_letter($letter_type, $action, $path)
     }
 
     if (array_key_exists('keywords', $_POST)) {
+        $keywords = [];
         foreach ($_POST['keywords'] as $kw) {
             $keywords[] = test_input($kw);
         }
@@ -800,6 +801,8 @@ function save_hiko_letter($letter_type, $action, $path)
         'archive' => 'archive',
         'collection' => 'collection',
         'signature' => 'signature',
+        'location_note' => 'location_note',
+        'authors_meta' => 'authors_meta'
     ]);
     $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
     $data['date_approximate'] = get_form_checkbox_val('date_approximate', $_POST);
@@ -839,7 +842,7 @@ function save_hiko_letter($letter_type, $action, $path)
     if ($new_pod == '') {
         return alert('Něco se pokazilo', 'warning');
     } elseif (is_wp_error($new_pod)) {
-        return alert($result->get_error_message(), 'warning');
+        return alert($new_pod->get_error_message(), 'warning');
     } else {
         delete_hiko_cache('list_' . $path);
         frontend_refresh();
@@ -857,7 +860,9 @@ function save_hiko_person($person_type, $action)
         'birth_year' => 'birth_year',
         'death_year' => 'death_year',
         'emlo' => 'emlo',
-        'note' => 'note'
+        'note' => 'note',
+        'profession' => 'profession',
+        'nationality' => 'nationality'
     ]);
 
     $new_pod = '';
@@ -878,7 +883,7 @@ function save_hiko_person($person_type, $action)
     if ($new_pod == '') {
         return alert('Něco se pokazilo', 'warning');
     } elseif (is_wp_error($new_pod)) {
-        return alert($result->get_error_message(), 'warning');
+        return alert($new_pod->get_error_message(), 'warning');
     } else {
         frontend_refresh();
         return alert('Uloženo', 'success');
@@ -914,7 +919,7 @@ function save_hiko_place($place_type, $action)
     if ($new_pod == '') {
         return alert('Něco se pokazilo', 'warning');
     } elseif (is_wp_error($new_pod)) {
-        return alert($result->get_error_message(), 'warning');
+        return alert($new_pod->get_error_message(), 'warning');
     } else {
         frontend_refresh();
         return alert('Uloženo', 'success');

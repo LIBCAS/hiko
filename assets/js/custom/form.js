@@ -60,6 +60,7 @@ if (document.getElementById('letter-form')) {
                 collection: '',
                 archive: '',
                 signature: '',
+                location_note: '',
             },
             persons: [],
             places: [],
@@ -67,6 +68,7 @@ if (document.getElementById('letter-form')) {
             edit: false,
             letterID: null,
             title: '',
+            location_note: '',
         },
         computed: {
             imgUrl: function() {
@@ -268,6 +270,7 @@ if (document.getElementById('letter-form')) {
                                 rd.people_mentioned
                             )
                             self.title = rd.name
+                            self.location_note = rd.location_note
                         }
                     })
                     .catch(function() {
@@ -440,6 +443,8 @@ if (document.getElementById('person-name')) {
             note: '',
             error: false,
             personType: '',
+            nationality: '',
+            profession: '',
         },
 
         computed: {
@@ -506,6 +511,8 @@ if (document.getElementById('person-name')) {
                             self.dob = response.data.birth_year
                             self.dod = response.data.death_year
                             self.note = response.data.note
+                            self.nationality = response.data.nationality
+                            self.profession = response.data.profession
                         }
                     })
                     .catch(function(error) {

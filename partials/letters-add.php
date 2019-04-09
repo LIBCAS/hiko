@@ -179,7 +179,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <label for="author_note">Notes on author</label>
                         <textarea v-model="letter.author_note" name="author_note" class="form-control form-control-sm"></textarea>
                     </div>
-
+                    <input type="hidden" value="" name="authors_meta">
                 </fieldset>
 
                 <fieldset id="a-recipient">
@@ -452,6 +452,12 @@ if (array_key_exists('save_post', $_POST)) {
                     <div class="form-group">
                         <label for="signature">Signature</label>
                         <input v-model="letter.signature" type="text" name="signature" class="form-control form-control-sm">
+                    </div>
+
+                    <div class="form-group">
+                    <label for="location_note">Notes on location</label>
+                        <textarea v-model="location_note" name="location_note" class="form-control form-control-sm">{{ location_note }}</textarea>
+
                     </div>
                 </fieldset>
 
