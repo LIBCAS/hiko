@@ -694,6 +694,26 @@ function get_letter_created($type, $id)
     }
 }
 
+function sanitize_slashed_json($data)
+{
+    $result = [];
+
+    $data = json_decode(stripslashes($data));
+
+    foreach ($data as $key => $value) {
+        $temp = [];
+
+        foreach ($value as $sec_key => $sec_val) {
+            if ($sec_key != 'key') {
+                $temp[test_input($sec_key)] = test_input($sec_val);
+            }
+        }
+        $result[] = $temp;
+    }
+
+    return json_encode($result, JSON_UNESCAPED_UNICODE);
+}
+
 function save_hiko_letter($letter_type, $action, $path)
 {
     $people_mentioned = [];
@@ -768,6 +788,8 @@ function save_hiko_letter($letter_type, $action, $path)
         $history .= "\n" . date('Y-m-d H:i:s') . ' – ' . get_full_name() . "\n";
     }
 
+    $participant_meta = sanitize_slashed_json($_POST['authors_meta']);
+
     $data = test_postdata([
         'l_number' => 'l_number',
         'date_year' => 'date_year',
@@ -777,8 +799,6 @@ function save_hiko_letter($letter_type, $action, $path)
         'range_month' => 'range_month',
         'range_day' => 'range_day',
         'date_marked' => 'date_marked',
-        'l_author_marked' => 'l_author_marked',
-        'recipient_marked' => 'recipient_marked',
         'recipient_notes' => 'recipient_notes',
         'origin_marked' => 'origin_marked',
         'dest_marked' => 'dest_marked',
@@ -801,9 +821,9 @@ function save_hiko_letter($letter_type, $action, $path)
         'archive' => 'archive',
         'collection' => 'collection',
         'signature' => 'signature',
-        'location_note' => 'location_note',
-        'authors_meta' => 'authors_meta'
+        'location_note' => 'location_note'
     ]);
+
     $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
     $data['date_approximate'] = get_form_checkbox_val('date_approximate', $_POST);
     $data['date_is_range'] = get_form_checkbox_val('date_is_range', $_POST);
@@ -823,6 +843,7 @@ function save_hiko_letter($letter_type, $action, $path)
     $data['dest'] = $destinations;
     $data['origin'] = $origins;
     $data['history'] = $history;
+    $data['authors_meta'] = $participant_meta;
 
     $new_pod = '';
 

@@ -12,7 +12,6 @@ if (document.getElementById('letter-form')) {
             path: '',
             letter: {
                 author: [],
-                author_as_marked: '',
                 author_inferred: false,
                 author_uncertain: false,
                 author_note: '',
@@ -71,6 +70,24 @@ if (document.getElementById('letter-form')) {
             location_note: '',
         },
         computed: {
+            participantsMeta() {
+                let authorsMeta = JSON.parse(JSON.stringify(this.letter.author)) // copy without vue getters and setters
+                let recipientsMeta = JSON.parse(
+                    JSON.stringify(this.letter.recipient)
+                )
+
+                let merged = []
+
+                authorsMeta.forEach(item => {
+                    merged.push(item)
+                })
+
+                recipientsMeta.forEach(item => {
+                    merged.push(item)
+                })
+
+                return JSON.stringify(merged)
+            },
             imgUrl: function() {
                 return (
                     homeUrl +
@@ -254,7 +271,6 @@ if (document.getElementById('letter-form')) {
                             self.letter.range_day =
                                 rd.range_day == '0' ? '' : rd.range_day
                             self.letter.author = Object.keys(rd.l_author)
-                            self.letter.author_as_marked = rd.l_author_marked
                             self.letter.recipient = Object.keys(rd.recipient)
                             self.letter.origin = Object.keys(rd.origin)
                             self.letter.destination = Object.keys(rd.dest)
@@ -362,6 +378,34 @@ if (document.getElementById('letter-form')) {
                 }
 
                 return kwObj
+            },
+
+            removePersonMeta: function(personIndex, type) {
+                this.letter[type] = this.letter[type].filter(function(
+                    item,
+                    index
+                ) {
+                    return index !== personIndex
+                })
+            },
+
+            addPersonMeta: function(type) {
+                let self = this
+                self.letter[type].push({
+                    id: '',
+                    marked: '',
+                    salutation: '',
+                    key:
+                        type +
+                        Math.random()
+                            .toString(36)
+                            .substring(7),
+                    // random key for forcing Vue to update list while removing PersonMeta
+                })
+
+                setTimeout(function() {
+                    self.addSlimSelect()
+                }, 50)
             },
         },
     })

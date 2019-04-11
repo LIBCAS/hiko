@@ -38,6 +38,7 @@ function list_people_single()
     $results['note'] = $pod->field('note');
     $results['profession'] = $pod->field('profession');
     $results['nationality'] = $pod->field('nationality');
+    $results['persons_meta'] = $pod->field('persons_meta');
 
     echo json_encode(
         $results,

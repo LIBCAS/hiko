@@ -141,22 +141,32 @@ if (array_key_exists('save_post', $_POST)) {
 
                 <fieldset id="a-author">
                     <legend>Author</legend>
-                    <div class="form-group">
-                        <label for="author">Author <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)"></span></label>
-                        <select multiple v-model="letter.author" class="custom-select custom-select-sm slim-select" name="l_author[]" id="author">
-                            <option v-for="person in persons" :value="person.id">
-                                {{ person.name }}
-                            </option>
-                        </select>
+                    <div v-for="(a, index) in letter.author" :data-key="a.id != '' ? 'a-' + a.id : a.key" :key="a.id != '' ? 'a-' + a.id : a.key" class="border rounded my-2 py-3 px-2">
+                        <button @click="removePersonMeta(index, 'author')" type="button" class="close text-danger" aria-label="Remove author">
+                            <span title="Remove author">&times;</span>
+                        </button>
+                        <div class="form-group required">
+                            <label :for="'author-' + index">Author</label>
+                            <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
+                            <select v-model="a.id" class="custom-select custom-select-sm slim-select" name="l_author[]" :id="'author-' + index" required>
+                                <option v-for="person in persons" :value="person.id">
+                                    {{ person.name }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group required">
+                            <label for="marked">Author as marked</label>
+                            <input v-model="a.marked" type="text" class="form-control form-control-sm" required>
+                            <small class="form-text text-muted">
+                                author's name as written in letter
+                            </small>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="author_as_marked">Author as marked</label>
-                        <input v-model="letter.author_as_marked" type="text" name="l_author_marked" class="form-control form-control-sm">
-                        <small class="form-text text-muted">
-                            author's name as written in letter
-                        </small>
-                    </div>
+                    <button type="button" @click="addPersonMeta('author')" class="btn btn-sm btn-outline-info my-2">
+                        <span class="oi oi-plus"></span>
+                        Add author
+                    </button>
 
                     <div class="form-check mb-3">
                         <input v-model="letter.author_inferred" class="form-check-input" type="checkbox" id="author_inferred" name="author_inferred">
@@ -179,28 +189,41 @@ if (array_key_exists('save_post', $_POST)) {
                         <label for="author_note">Notes on author</label>
                         <textarea v-model="letter.author_note" name="author_note" class="form-control form-control-sm"></textarea>
                     </div>
-                    <input type="hidden" value="" name="authors_meta">
                 </fieldset>
 
                 <fieldset id="a-recipient">
                     <legend>Recipient</legend>
-                    <div class="form-group">
-                        <label for="author">Recipient <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)"></span></label>
+                    <div v-for="(r, index) in letter.recipient" :data-key="r.id != '' ? 'r-' + r.id : r.key" :key="r.id != '' ? 'r-' + r.id : r.key" class="border rounded my-2 py-3 px-2">
+                    <button @click="removePersonMeta(index, 'recipient')" type="button" class="close text-danger" aria-label="Remove author">
+                            <span title="Remove recipient">&times;</span>
+                        </button>
+                        <div class="form-group required">
+                            <label :for="'recipient-' + index">Recipient</label>
+                            <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
+                            <select v-model="r.id" class="custom-select custom-select-sm slim-select" name="recipient[]" :id="'recipient-' + index" required>
+                                <option v-for="person in persons" :value="person.id">
+                                    {{ person.name }}
+                                </option>
+                            </select>
+                        </div>
 
-                        <select v-model="letter.recipient" multiple class="custom-select custom-select-sm slim-select" name="recipient[]" id="recipient">
-                            <option v-for="person in persons" :value="person.id">
-                                {{ person.name }}
-                            </option>
-                        </select>
-                    </div>
+                        <div class="form-group required">
+                            <label for="recipient_as_marked">Recipient as marked</label>
+                            <input v-model="r.marked" type="text" class="form-control form-control-sm" required>
+                            <small class="form-text text-muted">
+                                recipient's name as written in letter
+                            </small>
+                        </div>
 
-                    <div class="form-group">
-                        <label for="recipient_as_marked">Recipient as marked</label>
-                        <input v-model="letter.recipient_marked" type="text" name="recipient_marked" class="form-control form-control-sm">
-                        <small class="form-text text-muted">
-                            recipient's name as written in letter
-                        </small>
+                        <div class="form-group">
+                            <label for="salutation">Salutation</label>
+                            <input v-model="r.salutation" type="text" class="form-control form-control-sm">
+                        </div>
                     </div>
+                    <button type="button" @click="addPersonMeta('recipient')" class="btn btn-sm btn-outline-info my-2">
+                        <span class="oi oi-plus"></span>
+                        Add recipient
+                    </button>
 
                     <div class="form-check mb-3">
                         <input v-model="letter.recipient_inferred" class="form-check-input" type="checkbox" id="recipient_inferred" name="recipient_inferred">
@@ -455,7 +478,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                     <div class="form-group">
-                    <label for="location_note">Notes on location</label>
+                        <label for="location_note">Notes on location</label>
                         <textarea v-model="location_note" name="location_note" class="form-control form-control-sm">{{ location_note }}</textarea>
 
                     </div>
@@ -464,9 +487,8 @@ if (array_key_exists('save_post', $_POST)) {
                 <fieldset id="a-description">
                     <legend>Description</legend>
                     <div class="form-group required">
-                        <label for="description">Description
-                            <span class="pointer oi oi-transfer pl-1" @click="getTitle"></span>
-                        </label>
+                        <label for="description">Description</label>
+                        <span class="pointer oi oi-transfer pl-1" @click="getTitle"></span>
                         <textarea v-model="title" name="description" class="form-control form-control-sm" required>{{ title }}</textarea>
                         {{ letter.title }}
 
@@ -494,6 +516,8 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                 </fieldset>
+
+                <input type="hidden" :value="participantsMeta" name="authors_meta">
 
                 <?php if ($action == 'new') : ?>
                     <input type="hidden" name="save_post" value="new">
