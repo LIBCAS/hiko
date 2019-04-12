@@ -16,7 +16,6 @@ if (document.getElementById('letter-form')) {
                 author_uncertain: false,
                 author_note: '',
                 recipient: [],
-                recipient_marked: '',
                 recipient_inferred: false,
                 recipient_uncertain: false,
                 recipient_notes: '',
@@ -270,8 +269,14 @@ if (document.getElementById('letter-form')) {
                                 rd.range_month == '0' ? '' : rd.range_month
                             self.letter.range_day =
                                 rd.range_day == '0' ? '' : rd.range_day
-                            self.letter.author = Object.keys(rd.l_author)
-                            self.letter.recipient = Object.keys(rd.recipient)
+                            self.letter.author = self.getPersonMeta(
+                                Object.keys(rd.l_author),
+                                rd.authors_meta
+                            )
+                            self.letter.recipient = self.getPersonMeta(
+                                Object.keys(rd.recipient),
+                                rd.authors_meta
+                            )
                             self.letter.origin = Object.keys(rd.origin)
                             self.letter.destination = Object.keys(rd.dest)
                             self.letter.languages =
@@ -406,6 +411,21 @@ if (document.getElementById('letter-form')) {
                 setTimeout(function() {
                     self.addSlimSelect()
                 }, 50)
+            },
+
+            getPersonMeta: function(ids, allMeta) {
+                let metaJSON = JSON.parse(allMeta)
+                let results = []
+
+                for (let index = 0; index < ids.length; index++) {
+                    let personID = ids[index][0]
+                    let find = metaJSON.filter(obj => {
+                        return obj.id === personID
+                    })
+                    results.push(find[0])
+                }
+
+                return results
             },
         },
     })

@@ -6,11 +6,9 @@ if (document.getElementById('letter-preview')) {
         data: {
             loading: true,
             author: [],
-            author_as_marked: '',
             author_inferred: '',
             author_uncertain: '',
             recipient: [],
-            recipient_marked: '',
             recipient_inferred: '',
             recipient_uncertain: '',
             recipient_notes: '',
@@ -59,6 +57,20 @@ if (document.getElementById('letter-preview')) {
             }
         },
         methods: {
+            getPersonMeta: function(ids, allMeta) {
+                let metaJSON = JSON.parse(allMeta)
+                let results = []
+
+                for (let index = 0; index < ids.length; index++) {
+                    let personID = ids[index][0]
+                    let find = metaJSON.filter(obj => {
+                        return obj.id === personID
+                    })
+                    results.push(find[0])
+                }
+
+                return results
+            },
             getLetter: function(id) {
                 let self = this
                 axios
@@ -81,12 +93,16 @@ if (document.getElementById('letter-preview')) {
                             self.day = rd.date_day == '0' ? '' : rd.date_day
                             self.date_marked = rd.date_marked
                             self.date_uncertain = rd.date_uncertain
-                            self.author = Object.values(rd.l_author)
-                            self.author_as_marked = rd.l_author_marked
+                            self.author = self.getPersonMeta(
+                                Object.keys(rd.l_author),
+                                rd.authors_meta
+                            )
                             self.author_inferred = rd.author_inferred
                             self.author_uncertain = rd.author_uncertain
-                            self.recipient = Object.values(rd.recipient)
-                            self.recipient_marked = rd.recipient_marked
+                            self.recipient = self.getPersonMeta(
+                                Object.keys(rd.recipient),
+                                rd.authors_meta
+                            )
                             self.recipient_inferred = rd.recipient_inferred
                             self.recipient_uncertain = rd.recipient_uncertain
                             self.recipient_notes = rd.recipient_notes

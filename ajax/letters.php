@@ -141,12 +141,10 @@ function list_public_letters_single()
     $results['date_is_range'] = (bool) $pod->field('date_is_range');
     $results['date_note'] = $pod->field('date_note');
     $results['l_author'] = $authors;
-    $results['l_author_marked'] = $pod->field('l_author_marked');
     $results['author_uncertain'] = (bool) $pod->field('author_uncertain');
     $results['author_inferred'] = (bool) $pod->field('author_inferred');
     $results['author_note'] = $pod->field('author_note');
     $results['recipient'] = $recipients;
-    $results['recipient_marked'] = $pod->field('recipient_marked');
     $results['recipient_inferred'] = (bool) $pod->field('recipient_inferred');
     $results['recipient_uncertain'] = (bool) $pod->field('recipient_uncertain');
     $results['recipient_notes'] = $pod->field('recipient_notes');

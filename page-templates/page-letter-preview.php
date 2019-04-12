@@ -19,7 +19,7 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
     } elseif ($letter_type == 'demo_letter') {
         $letter_path = 'demo';
     } else {
-      die('Nenalezeno');
+        die('Nenalezeno');
     }
 
     $link_dashboard = home_url("/{$letter_path}/letters/");
@@ -29,12 +29,11 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
     die('Nepodařilo se načíst požadovaný dopis');
 }
 
-
-
 ?>
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -43,10 +42,11 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/baguettebox.js@1.11.0/dist/baguetteBox.min.css">
     <link rel="stylesheet" href="<?= get_template_directory_uri() ?>/assets/css/preview.css">
     <script type="text/javascript">
-    var ajaxUrl = '<?= admin_url('admin-ajax.php'); ?>';
-    var homeUrl = '<?= home_url(); ?>';
+        var ajaxUrl = '<?= admin_url('admin-ajax.php'); ?>';
+        var homeUrl = '<?= home_url(); ?>';
     </script>
 </head>
+
 <body>
     <div class="container-fluid">
         <div id="letter-preview" class="row main-content my-5">
@@ -91,28 +91,23 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
                                 <tr>
                                     <td style="width: 20%;">Autor</td>
                                     <td>
-                                        <span v-for="a in author" class="d-block"> {{ a }}</span>
+                                        <span v-for="a in author" class="d-block"> {{ a.marked }}</span>
+
                                         <span v-if="author_uncertain" class="d-block">
-                                            <small>(Nejistý autor)</small>
+                                            <small>(Autor nejistý)</small>
                                         </span>
+
                                         <span v-if="author_inferred" class="d-block">
                                             <small>(Autor vyvozený z obsahu dopisu)</small>
                                         </span>
-                                    </td>
-                                </tr>
-                                <tr v-if="author_as_marked">
-                                    <td style="width: 20%;">
-                                        Autor uvedený v dopise
-                                    </td>
-                                    <td>
-                                        {{ author_as_marked }}
                                     </td>
                                 </tr>
 
                                 <tr>
                                     <td style="width: 20%;">Příjemce</td>
                                     <td>
-                                        <span v-for="r in recipient" class="d-block"> {{ r }}</span>
+                                        <span v-for="r in recipient" class="d-block"> {{ r.marked }}</span>
+
                                         <span v-if="recipient_uncertain" class="d-block">
                                             <small>(Nejistý příjemce)</small>
                                         </span>
@@ -121,14 +116,7 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
                                         </span>
                                     </td>
                                 </tr>
-                                <tr v-if="recipient_marked">
-                                    <td style="width: 20%;">
-                                        Příjemce uvedený v dopise
-                                    </td>
-                                    <td>
-                                        {{ recipient_marked }}
-                                    </td>
-                                </tr>
+
                                 <tr v-if="recipient_notes">
                                     <td style="width: 20%;">
                                         Poznámky o příjemci
@@ -251,9 +239,9 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
                     </div>
 
                     <div id="gallery" class="mb-5 row" v-if="images">
-                        <div class="col" style="width:150px" v-for="i in images" >
+                        <div class="col" style="width:150px" v-for="i in images">
                             <a :href="i.img.large" :data-caption="i.description">
-                                <figure class="figure" >
+                                <figure class="figure">
                                     <img :src="i.img.thumb" class="figure-img img-thumbnail" :alt="i.description" style="width:150px;max-width:150px">
                                     <figcaption class="figure-caption">{{ i.description }}</figcaption>
                                 </figure>
@@ -277,4 +265,5 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
     <script src="https://cdn.jsdelivr.net/npm/baguettebox.js@1.11.0/dist/baguetteBox.min.js"></script>
     <script src="<?= get_template_directory_uri(); ?>/assets/dist/custom.min.js?v=<?= filemtime(get_template_directory() . '/assets/dist/custom.min.js'); ?>"></script>
 </body>
+
 </html>
