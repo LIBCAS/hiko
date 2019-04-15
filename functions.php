@@ -362,6 +362,53 @@ function bulk_add_persons($file)
 }
 
 
+function save_name_alternatives($persons_string, $letter_id, $letter_type)
+{
+    if ($letter_type == 'bl_letter') {
+        $person_type = 'bl_person';
+    } elseif ($letter_type == 'demo_letter') {
+        $person_type = 'demo_person';
+    } else {
+        return false;
+    }
+
+    $persons = json_decode(stripslashes($persons_string));
+    foreach ($persons as $person) {
+
+        $person_meta = pods_field($person_type, $person->id, 'persons_meta');
+
+        $data = false;
+
+        if ($person_meta == null) {
+            $data = [
+                'names' => [$person->marked]
+            ];
+        } else {
+            $old_data = json_decode($person_meta);
+            $data = [
+                'names' => merge_unique($old_data->names, [$person->marked])
+            ];
+        }
+
+        if ($data) {
+            $save = pods_api()->save_pod_item([
+                'pod' => $person_type,
+                'data' => [
+                    'persons_meta' => json_encode($data, JSON_UNESCAPED_UNICODE)
+                ],
+                'id' => $person->id
+            ]);
+        }
+    }
+}
+
+
+function merge_unique($array1, $array2)
+{
+    return array_unique(array_merge($array1, $array2));
+}
+
+
 function import_letters_from_file($file)
 {
     $file_content = file_get_contents($file);
@@ -736,6 +783,7 @@ function save_hiko_letter($letter_type, $action, $path)
         }
     }
 
+
     if (array_key_exists('origin', $_POST)) {
         foreach ($_POST['origin'] as $o) {
             $origins[] = test_input($o);
@@ -789,6 +837,7 @@ function save_hiko_letter($letter_type, $action, $path)
     }
 
     $participant_meta = sanitize_slashed_json($_POST['authors_meta']);
+
 
     $data = test_postdata([
         'l_number' => 'l_number',
@@ -866,6 +915,7 @@ function save_hiko_letter($letter_type, $action, $path)
         return alert($new_pod->get_error_message(), 'warning');
     } else {
         delete_hiko_cache('list_' . $path);
+        save_name_alternatives($participant_meta, $new_pod, $letter_type);
         frontend_refresh();
         return alert('Uloženo', 'success');
     }
