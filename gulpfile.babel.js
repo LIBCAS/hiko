@@ -85,7 +85,7 @@ gulp.task('styles', () => {
         .pipe(
             sass({
                 errLogToConsole: true,
-                outputStyle: 'compact',
+                outputStyle: 'compressed',
                 precision: 10,
             })
         )
