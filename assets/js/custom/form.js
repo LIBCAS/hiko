@@ -256,7 +256,13 @@ if (document.getElementById('letter-form')) {
                             self.error = true
                         } else {
                             let rd = response.data
+                            let authors = Object.keys(rd.l_author)
+                            let recipients = Object.keys(rd.recipient)
                             self.letter = rd
+
+                            self.$set(self.letter, 'recipient', []) // must set reactive data again
+                            self.$set(self.letter, 'author', [])
+
                             self.letter.date_year =
                                 rd.date_year == '0' ? '' : rd.date_year
                             self.letter.date_month =
@@ -269,14 +275,17 @@ if (document.getElementById('letter-form')) {
                                 rd.range_month == '0' ? '' : rd.range_month
                             self.letter.range_day =
                                 rd.range_day == '0' ? '' : rd.range_day
+
                             self.letter.author = self.getPersonMeta(
-                                Object.keys(rd.l_author),
+                                authors,
                                 rd.authors_meta
                             )
+
                             self.letter.recipient = self.getPersonMeta(
-                                Object.keys(rd.recipient),
+                                recipients,
                                 rd.authors_meta
                             )
+
                             self.letter.origin = Object.keys(rd.origin)
                             self.letter.destination = Object.keys(rd.dest)
                             self.letter.languages =
