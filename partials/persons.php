@@ -24,8 +24,12 @@ $persons_json = json_encode(
                 <a v-if="props.row.relationships == 0" :href="'#delete-' + props.row.id" @click="deletePerson(props.row.id)">Odstranit</a>
             </li>
         </ul>
-
-        <span slot="dates" slot-scope="props"> {{ props.row.birth + '–' + props.row.death  }}</span>
+        <span slot="name" slot-scope="props">
+            <strong>{{ props.row.name }}</strong> ({{ props.row.birth + '–' + props.row.death  }})
+        </span>
+        <ul slot="alternatives" slot-scope="props" class="list-unstyled">
+            <li v-for="(name, index) in props.row.alternatives" :key="index">{{name}}</li>
+        </ul>
 
     </v-client-table>
 </div>

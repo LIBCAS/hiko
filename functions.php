@@ -170,6 +170,7 @@ function get_persons_table_data($person_type)
         't.name',
         't.birth_year',
         't.death_year',
+        't.persons_meta',
         'letter_author.id AS au',
         'letter_recipient.id AS re',
         'letter_people_mentioned.id AS pm'
@@ -189,10 +190,19 @@ function get_persons_table_data($person_type)
     $persons_filtered = [];
     $index = 0;
     while ($persons->fetch()) {
+        $alternative_names = json_decode($persons->display('persons_meta'));
+
+        if ($alternative_names && array_key_exists('names', $alternative_names)) {
+            $alternative_names = $alternative_names->names;
+        } else {
+            $alternative_names = [];
+        }
+
         $persons_filtered[$index]['id'] = $persons->display('id');
         $persons_filtered[$index]['name'] = $persons->display('name');
         $persons_filtered[$index]['birth'] = $persons->display('birth_year');
         $persons_filtered[$index]['death'] = $persons->display('death_year');
+        $persons_filtered[$index]['alternatives'] = $alternative_names;
         $persons_filtered[$index]['relationships'] = !is_null($persons->display('au')) || !is_null($persons->display('re')) || !is_null($persons->display('pm'));
 
         $index++;
@@ -374,7 +384,6 @@ function save_name_alternatives($persons_string, $letter_id, $letter_type)
 
     $persons = json_decode(stripslashes($persons_string));
     foreach ($persons as $person) {
-
         $person_meta = pods_field($person_type, $person->id, 'persons_meta');
 
         $data = false;

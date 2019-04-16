@@ -169,7 +169,7 @@ if (document.getElementById('datatable-letters')) {
 if (document.getElementById('datatable-persons')) {
     Vue.use(VueTables.ClientTable, false, false, 'bootstrap4')
 
-    columns = ['edit', 'name', 'dates']
+    columns = ['edit', 'name', 'alternatives']
 
     new Vue({
         el: '#datatable-persons',
@@ -180,10 +180,11 @@ if (document.getElementById('datatable-persons')) {
             ),
             options: {
                 headings: {
-                    edit: 'Akce',
+                    edit: '',
+                    alternatives: 'Name as marked',
                 },
                 skin: defaultTablesOptions.skin,
-                sortable: removeElFromArr('edit', columns),
+                sortable: ['name'],
                 filterable: removeElFromArr('edit', columns),
                 sortIcon: defaultTablesOptions.sortIcon,
                 texts: defaultTablesOptions.texts,
@@ -196,6 +197,7 @@ if (document.getElementById('datatable-persons')) {
         },
         mounted: function() {
             let letterTypes = getLetterType()
+
             if (
                 typeof letterTypes === 'string' ||
                 letterTypes instanceof String
