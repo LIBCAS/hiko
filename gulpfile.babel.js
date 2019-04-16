@@ -34,9 +34,7 @@ const paths = {
 const gulp = require('gulp')
 
 const sass = require('gulp-sass')
-const minifycss = require('gulp-uglifycss')
 const autoprefixer = require('gulp-autoprefixer')
-const mmq = require('gulp-merge-media-queries')
 
 const concat = require('gulp-concat')
 const uglify = require('gulp-uglify')
@@ -46,7 +44,6 @@ const imagemin = require('gulp-imagemin')
 
 const rename = require('gulp-rename')
 const lineec = require('gulp-line-ending-corrector')
-const filter = require('gulp-filter')
 const sourcemaps = require('gulp-sourcemaps')
 const notify = require('gulp-notify')
 const browserSync = require('browser-sync').create()
@@ -90,20 +87,10 @@ gulp.task('styles', () => {
             })
         )
         .on('error', sass.logError)
-        .pipe(sourcemaps.write({ includeContent: false }))
-        .pipe(sourcemaps.init({ loadMaps: true }))
         .pipe(autoprefixer(BROWSERS_LIST))
         .pipe(sourcemaps.write('./'))
-        .pipe(lineec())
         .pipe(gulp.dest(paths.styleDestination))
-        .pipe(filter('**/*.css'))
-        .pipe(mmq({ log: true }))
-        .pipe(browserSync.stream())
-        .pipe(rename({ suffix: '.min' }))
-        .pipe(minifycss({ maxLineLen: 10 }))
-        .pipe(lineec())
-        .pipe(gulp.dest(paths.styleDestination))
-        .pipe(filter('**/*.css'))
+
         .pipe(browserSync.stream())
         .pipe(
             notify({
@@ -205,10 +192,9 @@ gulp.task('translate', () => {
 
 gulp.task(
     'default',
-    gulp.parallel('styles', 'customJS', 'images', browsersync, () => {
+    gulp.parallel('styles', 'customJS', browsersync, () => {
         gulp.watch(paths.watchPhp, reload) // Reload on PHP file changes.
         gulp.watch(paths.watchStyles, gulp.parallel('styles')) // Reload on SCSS file changes.
         gulp.watch(paths.watchJsCustom, gulp.series('customJS', reload)) // Reload on customJS file changes.
-        gulp.watch(paths.imgSRC, gulp.series('images', reload)) // Reload on customJS file changes.
     })
 )
