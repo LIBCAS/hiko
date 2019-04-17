@@ -220,6 +220,50 @@ if (document.getElementById('datatable-persons')) {
                     return item.id !== id
                 })
             },
+
+            removeEmptyNameAlternatives: function(personID) {
+                let self = this
+
+                let spinner = event.target.querySelector('.spinner')
+                spinner.classList.remove('d-none')
+
+                axios
+                    .get(
+                        ajaxUrl +
+                            '?action=count_alternate_name&id=' +
+                            personID +
+                            '&l_type=' +
+                            self.path
+                    )
+                    .then(function(result) {
+                        let r = result.data.data
+
+                        // remove empty values from actual tableData to avoid new ajax call
+                        if (r.hasOwnProperty('deleted')) {
+                            let rowData = self.tableData.filter(obj => {
+                                return obj.id === personID
+                            })
+
+                            let index = self.tableData.indexOf(rowData[0])
+
+                            rowData = JSON.parse(JSON.stringify(rowData[0]))
+
+                            let updated = rowData.alternatives.filter(
+                                el => !r.deleted.includes(el)
+                            )
+
+                            rowData.alternatives = updated
+
+                            self.$set(self.tableData, index, rowData)
+                        }
+                    })
+                    .catch(function(error) {
+                        console.log(error)
+                    })
+                    .then(function() {
+                        spinner.classList.add('d-none')
+                    })
+            },
         },
     })
 }

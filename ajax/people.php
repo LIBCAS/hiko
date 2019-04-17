@@ -28,6 +28,14 @@ function list_people_single()
         wp_send_json_error('Not found', 404);
     }
 
+    $alternative_names = json_decode($pod->display('persons_meta'));
+
+    if ($alternative_names && array_key_exists('names', $alternative_names)) {
+        $alternative_names = $alternative_names->names;
+    } else {
+        $alternative_names = [];
+    }
+
     $results['id'] = $pod->display('id');
     $results['name'] = $pod->field('name');
     $results['surname'] = $pod->field('surname');
@@ -38,7 +46,7 @@ function list_people_single()
     $results['note'] = $pod->field('note');
     $results['profession'] = $pod->field('profession');
     $results['nationality'] = $pod->field('nationality');
-    $results['persons_meta'] = $pod->field('persons_meta');
+    $results['names'] = $alternative_names;
 
     echo json_encode(
         $results,
@@ -47,5 +55,67 @@ function list_people_single()
 
     wp_die();
 }
-
 add_action('wp_ajax_list_people_single', 'list_people_single');
+
+
+function count_alternate_name()
+{
+    global $wpdb;
+
+    $results = [];
+
+    $l_type = test_input($_GET['l_type']);
+    $person_id = test_input($_GET['id']);
+    $types = get_hiko_post_types($l_type);
+
+    if (!has_user_permission($types['editor'])) {
+        wp_send_json_error('Not allowed', 403);
+    }
+
+    $person_meta = pods_field($types['person'], $person_id, 'persons_meta');
+
+    if (!$person_meta) {
+        wp_send_json_success([
+            'deleted' => [],
+        ]);
+    }
+
+    $person_meta = json_decode($person_meta);
+
+    if ($person_meta && array_key_exists('names', $person_meta)) {
+            $alternative_names = $person_meta->names;
+    } else {
+        wp_send_json_success([
+            'deleted' => [],
+        ]);
+    }
+    ;
+    $table = $wpdb->prefix . 'pods_' . $types['letter'];
+
+    $person_meta->names = [];
+
+    foreach ($alternative_names as $name) {
+        $count = $wpdb->get_var(
+            "SELECT COUNT(id) FROM {$table} WHERE authors_meta LIKE '%\"{$name}\"%'"
+        );
+
+        if ((int) $count === 0) {
+            $results['deleted'][] = $name;
+        } else {
+            $person_meta->names[] = $name;
+        }
+    }
+
+    $save = pods_api()->save_pod_item([
+        'pod' => $types['person'],
+        'data' => [
+            'persons_meta' => json_encode($person_meta, JSON_UNESCAPED_UNICODE)
+        ],
+        'id' => $person_id
+    ]);
+
+    $results['save'] = $save;
+
+    wp_send_json_success($results);
+}
+add_action('wp_ajax_count_alternate_name', 'count_alternate_name');

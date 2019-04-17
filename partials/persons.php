@@ -20,8 +20,10 @@ $persons_json = json_encode(
             <li>
                 <a :href="'<?= home_url($path . '/persons-add/?edit='); ?>' + props.row.id">Upravit</a>
             </li>
-            <li>
-                <a v-if="props.row.relationships == 0" :href="'#delete-' + props.row.id" @click="deletePerson(props.row.id)">Odstranit</a>
+            <li v-if="props.row.relationships == 0" >
+                <span class="is-link py-1" @click="deletePerson(props.row.id)">
+                    Odstranit
+                </span>
             </li>
         </ul>
         <span slot="name" slot-scope="props">
@@ -29,6 +31,13 @@ $persons_json = json_encode(
         </span>
         <ul slot="alternatives" slot-scope="props" class="list-unstyled">
             <li v-for="(name, index) in props.row.alternatives" :key="index">{{name}}</li>
+
+            <li v-if="props.row.alternatives.length > 0" >
+                <span class="is-link py-1" @click="removeEmptyNameAlternatives(props.row.id)">
+                <span class="spinner spinner-border spinner-border-sm d-none"></span>
+                    Odstranit nepoužité varianty jména
+                </span>
+            </li>
         </ul>
 
     </v-client-table>

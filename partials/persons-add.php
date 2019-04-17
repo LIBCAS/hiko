@@ -80,6 +80,13 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                 </fieldset>
 
+                <strong v-if="alternativeNames.length">Name as marked</strong>
+                <ul class="list-unstyled">
+                    <li v-for="(name, index) in alternativeNames" :key="index">
+                        {{ name }}
+                    </li>
+                </ul>
+
                 <div class="form-group">
                     <?php if ($action == 'new') : ?>
                         <input type="hidden" name="save_post" value="new">

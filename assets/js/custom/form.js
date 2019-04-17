@@ -518,6 +518,7 @@ if (document.getElementById('person-name')) {
             personType: '',
             nationality: '',
             profession: '',
+            alternativeNames: [],
         },
 
         computed: {
@@ -586,6 +587,7 @@ if (document.getElementById('person-name')) {
                             self.note = response.data.note
                             self.nationality = response.data.nationality
                             self.profession = response.data.profession
+                            self.alternativeNames = response.data.names
                         }
                     })
                     .catch(function(error) {
