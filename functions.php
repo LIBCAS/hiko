@@ -245,12 +245,17 @@ function get_places_table_data($place_type)
 }
 
 
-function get_pods_name_and_id($type)
+function get_pods_name_and_id($type, $dates = false)
 {
     $fields = [
         't.id',
         't.name',
     ];
+
+    if ($dates) {
+        $fields[] = 't.birth_year';
+        $fields[] = 't.death_year';
+    }
 
     $fields = implode(', ', $fields);
 
@@ -1015,7 +1020,7 @@ function get_languages()
 function display_persons_and_places($person_type, $place_type)
 {
     $persons = json_encode(
-        get_pods_name_and_id($person_type),
+        get_pods_name_and_id($person_type, true),
         JSON_UNESCAPED_UNICODE
     );
     $places = json_encode(

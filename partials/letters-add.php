@@ -150,7 +150,7 @@ if (array_key_exists('save_post', $_POST)) {
                             <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
                             <select v-model="a.id" class="custom-select custom-select-sm slim-select" name="l_author[]" :id="'author-' + index" required>
                                 <option v-for="person in persons" :value="person.id">
-                                    {{ person.name }}
+                                    {{ person.name }} ({{ person.birth_year + '–' + person.death_year }})
                                 </option>
                             </select>
                         </div>
@@ -202,7 +202,7 @@ if (array_key_exists('save_post', $_POST)) {
                             <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
                             <select v-model="r.id" class="custom-select custom-select-sm slim-select" name="recipient[]" :id="'recipient-' + index" required>
                                 <option v-for="person in persons" :value="person.id">
-                                    {{ person.name }}
+                                    {{ person.name }} ({{ person.birth_year + '–' + person.death_year }})
                                 </option>
                             </select>
                         </div>
@@ -384,7 +384,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <label for="people_mentioned">People mentioned <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)"></span></label>
                         <select v-model="letter.mentioned" multiple class="custom-select custom-select-sm slim-select" name="people_mentioned[]" id="people_mentioned">
                             <option v-for="person in persons" :value="person.id">
-                                {{ person.name }}
+                                {{ person.name }} ({{ person.birth_year + '–' + person.death_year }})
                             </option>
                         </select>
                     </div>
