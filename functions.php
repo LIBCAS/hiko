@@ -936,6 +936,18 @@ function save_hiko_letter($letter_type, $action, $path)
 }
 
 
+function get_gmdate($filepath = false)
+{
+    if ($filepath) {
+        $timestamp = filemtime($filepath);
+    } else {
+        $timestamp = time();
+    }
+
+    return gmdate('D, d M Y H:i:s ', $timestamp) . 'GMT';
+}
+
+
 function save_hiko_person($person_type, $action)
 {
     $data = test_postdata([
@@ -1084,9 +1096,16 @@ function delete_hiko_cache($name)
 
 function read_hiko_cache($name)
 {
-    $file = WP_CONTENT_DIR . '/hiko-cache' . '/' . md5($name) . '.json';
+    $file = get_hiko_cache_file($name);
     return file_get_contents($file);
 }
+
+
+function get_hiko_cache_file($name)
+{
+    return WP_CONTENT_DIR . '/hiko-cache' . '/' . md5($name) . '.json';
+}
+
 
 function get_ssl_file($url)
 {

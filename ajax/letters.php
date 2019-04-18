@@ -25,18 +25,23 @@ function list_all_letters_short()
     $type = test_input($_GET['type']);
     $types = get_hiko_post_types($type);
 
+    header('Content-Type: application/json');
+
     if (hiko_cache_exists('list_' . $types['path'])) {
+        header('Last-Modified: ' . get_gmdate(get_hiko_cache_file('list_' . $types['path'])));
         echo read_hiko_cache('list_' . $types['path']);
         wp_die();
     }
 
     $letters = get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place']);
 
+
     $json_letters = json_encode(
         $letters,
         JSON_UNESCAPED_UNICODE
     );
 
+    header('Last-Modified: ' . get_gmdate());
     echo $json_letters;
 
     create_hiko_json_cache('list_' . $types['path'], $json_letters);
