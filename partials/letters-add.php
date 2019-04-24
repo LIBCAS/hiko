@@ -4,7 +4,6 @@ $letter_type = $pods_types['letter'];
 $person_type = $pods_types['person'];
 $place_type = $pods_types['place'];
 $path = $pods_types['path'];
-$languages = get_languages();
 
 $action = 'new';
 if (array_key_exists('edit', $_GET)) {
@@ -148,11 +147,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="form-group required">
                             <label :for="'author-' + index">Author</label>
                             <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
-                            <select v-model="a.id" class="custom-select custom-select-sm slim-select" name="l_author[]" :id="'author-' + index" required>
-                                <option v-for="person in persons" :value="person.id">
-                                    {{ person.name }} ({{ person.birth_year + '–' + person.death_year }})
-                                </option>
-                            </select>
+                            <slim-select :data="personsData" v-model="a.id" name="l_author[]" :id="'author-' + index" :required="true" class="custom-select custom-select-sm slim-select"></slim-select>
                         </div>
                         <div class="form-group required">
                             <label for="marked">Author as marked</label>
@@ -200,11 +195,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="form-group required">
                             <label :for="'recipient-' + index">Recipient</label>
                             <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
-                            <select v-model="r.id" class="custom-select custom-select-sm slim-select" name="recipient[]" :id="'recipient-' + index" required>
-                                <option v-for="person in persons" :value="person.id">
-                                    {{ person.name }} ({{ person.birth_year + '–' + person.death_year }})
-                                </option>
-                            </select>
+                            <slim-select :data="personsData" v-model="r.id" name="recipient[]" :id="'recipient-' + index" :required="true" class="custom-select custom-select-sm slim-select"></slim-select>
                         </div>
 
                         <div class="form-group required">
@@ -252,11 +243,7 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Origin</legend>
                     <div class="form-group">
                         <label for="origin">Origin <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)"></span></label>
-                        <select multiple v-model="letter.origin" class="custom-select custom-select-sm slim-select" name="origin[]" id="origin">
-                            <option v-for="place in places" :value="place.id">
-                                {{ place.name }}
-                            </option>
-                        </select>
+                        <slim-select :data="placesData" :multiple="true" v-model="letter.origin" name="origin[]" id="origin" class="custom-select custom-select-sm slim-select"></slim-select>
                     </div>
 
                     <div class="form-group">
@@ -295,11 +282,7 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Destination</legend>
                     <div class="form-group">
                         <label for="dest">Destination <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)"></span></label>
-                        <select multiple v-model="letter.destination" class="custom-select custom-select-sm slim-select" id="dest" name="dest[]">
-                            <option v-for="place in places" :value="place.id">
-                                {{ place.name }}
-                            </option>
-                        </select>
+                        <slim-select :data="placesData" :multiple="true" v-model="letter.destination" name="dest[]" id="dest" class="custom-select custom-select-sm slim-select"></slim-select>
                     </div>
 
                     <div class="form-group">
@@ -338,11 +321,7 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Content</legend>
                     <div class="form-group">
                         <label for="languages">Languages</label>
-                        <select v-model="letter.languages" multiple class="custom-select custom-select-sm slim-select" id="languages" name="languages[]">
-                            <?php foreach ($languages as $lang) : ?>
-                                <option value="<?= strtolower($lang->name); ?>"><?= strtolower($lang->name); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <slim-select :data="languages" v-model="letter.languages" name="languages[]" :id="'languages'" :multiple="true" class="custom-select custom-select-sm slim-select"></slim-select>
                     </div>
 
                     <div class="form-group keywords">
@@ -382,11 +361,9 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="people_mentioned">People mentioned <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)"></span></label>
-                        <select v-model="letter.mentioned" multiple class="custom-select custom-select-sm slim-select" name="people_mentioned[]" id="people_mentioned">
-                            <option v-for="person in persons" :value="person.id">
-                                {{ person.name }} ({{ person.birth_year + '–' + person.death_year }})
-                            </option>
-                        </select>
+
+                        <slim-select :data="personsData" v-model="letter.mentioned" :multiple="true" name="people_mentioned[]" :id="'people_mentioned'" class="custom-select custom-select-sm slim-select"></slim-select>
+
                     </div>
 
                     <div class="form-group">
@@ -438,14 +415,20 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Repositories and versions</legend>
                     <div class="form-group">
                         <label for="ms_manifestation">MS manifestation</label>
-                        <select v-model="letter.ms_manifestation" class="custom-select custom-select-sm slim-select" name="ms_manifestation" id="ms_manifestation">
-                            <option value="">---</option>
-                            <option value="ALS">MS Letter</option>
-                            <option value="S">MS Copy</option>
-                            <option value="D">MS Draft</option>
-                            <option value="E">Extract</option>
-                            <option value="O">Other</option>
-                        </select>
+                        <slim-select
+                            :data="[
+                                { label: '---', value: '' },
+                                { label: 'ALS', value: 'MS Letter' },
+                                { label: 'S', value: 'MS Copy' },
+                                { label: 'D', value: 'MS Draft' },
+                                { label: 'E', value: 'Extract' },
+                                { label: 'O', value: 'Other' },
+                            ]"
+                            v-model="letter.ms_manifestation"
+                            name="ms_manifestation"
+                            :id="'ms_manifestation'"
+                            class="custom-select custom-select-sm slim-select">
+                        </slim-select>
                     </div>
 
                     <div class="form-group">
@@ -534,3 +517,4 @@ if (array_key_exists('save_post', $_POST)) {
 </div>
 
 <?= display_persons_and_places($person_type, $place_type); ?>
+<?= get_json_languages(); ?>

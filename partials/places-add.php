@@ -3,6 +3,20 @@
 $countries = json_decode(
     get_ssl_file(get_template_directory_uri() . '/assets/data/countries.json')
 );
+
+$country_options = [
+    [
+        'label' => '---',
+        'value' => '',
+    ]
+];
+foreach ($countries as $country) {
+    $country_options[] = [
+        'label' => $country->name,
+        'value' => $country->name,
+    ];
+}
+
 $pods_types = get_hiko_post_types_by_url();
 $place_type = $pods_types['place'];
 $action = 'new';
@@ -27,15 +41,21 @@ if (array_key_exists('save_post', $_POST)) {
                         modern format
                     </small>
                 </div>
-                <div class="form-group">
+                <div class="form-group requred">
                     <label for="country">Country</label>
-                    <select v-model="country" class="custom-select custom-select-sm slim-select" id="country" name="country">
+                    <slim-select
+                        :data='<?= json_encode($country_options, JSON_UNESCAPED_UNICODE); ?>'
+                        v-model="country"
+                        name="l_author[]"
+                        :id="'country'"
+                        :required="true"
+                        class="custom-select custom-select-sm slim-select">
+                    </slim-select>
+
+
+                    <select  id="" name="country">
                         <option disabled selected value>---</option>
-                        <?php foreach ($countries as $country) : ?>
-                            <option value="<?= $country->name; ?>">
-                                <?= $country->name; ?>
-                            </option>
-                        <?php endforeach; ?>
+
 
                     </select>
                 </div>

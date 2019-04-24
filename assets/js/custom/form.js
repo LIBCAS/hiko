@@ -1,5 +1,36 @@
 /* global SlimSelect Vue axios ajaxUrl homeUrl Swal */
 
+Vue.component('slim-select', {
+    props: {
+        data: {
+            type: Array,
+            required: true,
+        },
+        id: {
+            type: String,
+            required: true,
+        },
+        multiple: {
+            type: Boolean,
+            default: false,
+        },
+        required: {
+            type: Boolean,
+            default: false,
+        },
+    },
+    mounted: function() {
+        new SlimSelect({
+            select: '#' + this.id,
+        })
+    },
+    template: `<select :id="id" :multiple="multiple" :required="required">
+        <option v-for="d in data" :value="d.value" >
+            {{ d.label }}
+        </option>
+    </select>`,
+})
+
 if (document.getElementById('letter-form')) {
     new Vue({
         el: '#letter-add-form',
@@ -69,6 +100,42 @@ if (document.getElementById('letter-form')) {
             location_note: '',
         },
         computed: {
+            personsData() {
+                let self = this
+                let personsData = []
+                self.persons.map(el => {
+                    let label = `${el.name} (${el.birth_year}–${el.death_year})`
+                    personsData.push({
+                        label: label,
+                        value: el.id,
+                    })
+                })
+                return personsData
+            },
+            placesData() {
+                let self = this
+                let placesData = []
+                self.places.map(el => {
+                    placesData.push({
+                        label: el.name,
+                        value: el.id,
+                    })
+                })
+                return placesData
+            },
+            languages() {
+                let langs = []
+                let langsJSON = document.querySelector('#languages').innerHTML
+                langsJSON = JSON.parse(langsJSON)
+                for (let property in langsJSON) {
+                    let n = langsJSON[property].name.toLowerCase()
+                    langs.push({
+                        label: n,
+                        value: n,
+                    })
+                }
+                return langs
+            },
             participantsMeta() {
                 let authorsMeta = JSON.parse(JSON.stringify(this.letter.author)) // copy without vue getters and setters
                 let recipientsMeta = JSON.parse(
@@ -168,7 +235,6 @@ if (document.getElementById('letter-form')) {
                 self.getInitialData()
             } else {
                 self.loading = false
-                addSlimSelect()
             }
 
             this.persons = JSON.parse(
@@ -308,7 +374,6 @@ if (document.getElementById('letter-form')) {
                     })
                     .then(function() {
                         self.loading = false
-                        addSlimSelect()
                     })
             },
 
@@ -350,10 +415,6 @@ if (document.getElementById('letter-form')) {
                         event.target.classList.remove('rotate')
                     })
                 }
-            },
-
-            addSlimSelect: function() {
-                addSlimSelect()
             },
 
             removeKeyword: function(kw) {
@@ -406,7 +467,7 @@ if (document.getElementById('letter-form')) {
             addPersonMeta: function(type) {
                 let self = this
                 self.letter[type].push({
-                    id: '',
+                    id: null,
                     marked: '',
                     salutation: '',
                     key:
@@ -416,10 +477,6 @@ if (document.getElementById('letter-form')) {
                             .substring(7),
                     // random key for forcing Vue to update list while removing PersonMeta
                 })
-
-                setTimeout(function() {
-                    self.addSlimSelect()
-                }, 50)
             },
 
             getPersonMeta: function(ids, allMeta) {
@@ -460,7 +517,6 @@ if (document.getElementById('places-form')) {
                 return
             } else {
                 this.placeType = letterTypes['placeType']
-                addSlimSelect()
             }
             let url = new URL(window.location.href)
             if (url.searchParams.get('edit')) {
@@ -495,9 +551,6 @@ if (document.getElementById('places-form')) {
                     })
                     .catch(function() {
                         self.error = true
-                    })
-                    .then(function() {
-                        addSlimSelect()
                     })
             },
         },
@@ -609,19 +662,6 @@ function getNameById(data, id) {
     }
 
     return filtered[0].name
-}
-
-function addSlimSelect() {
-    Array.prototype.forEach.call(
-        document.querySelectorAll('.slim-select'),
-        function(selected) {
-            if (selected.id) {
-                new SlimSelect({
-                    select: '#' + selected.id,
-                })
-            }
-        }
-    )
 }
 
 function stringContains(str, substr) {

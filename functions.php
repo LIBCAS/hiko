@@ -1029,6 +1029,19 @@ function get_languages()
     return json_decode($languages);
 }
 
+function get_json_languages()
+{
+    $languages = get_ssl_file(get_template_directory_uri() . '/assets/data/languages.json');
+    ob_start();
+    ?>
+    <script id="languages" type="application/json">
+        <?= $languages; ?>
+    </script>
+    <?php
+    return ob_get_clean();
+}
+
+
 function display_persons_and_places($person_type, $place_type)
 {
     $persons = json_encode(
