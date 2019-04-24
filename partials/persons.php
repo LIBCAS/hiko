@@ -1,13 +1,7 @@
 <?php
 
 $pods_types = get_hiko_post_types_by_url();
-$person_type = $pods_types['person'];
 $path = $pods_types['path'];
-
-$persons_json = json_encode(
-    get_persons_table_data($person_type),
-    JSON_UNESCAPED_UNICODE
-)
 ?>
 
 <div class="mb-3">
@@ -15,7 +9,14 @@ $persons_json = json_encode(
 </div>
 
 <div id="datatable-persons">
-    <v-client-table :data="tableData" :columns="columns" :options="options">
+    <div v-if="loading" class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 65%">
+        </div>
+    </div>
+    <div v-if="error" class="alert alert-warning">
+        {{ error }}
+    </div>
+    <v-client-table :data="tableData" :columns="columns" :options="options" v-if="tableData.length > 0">
         <ul slot="edit" slot-scope="props" class="list-unstyled">
             <li>
                 <a :href="'<?= home_url($path . '/persons-add/?edit='); ?>' + props.row.id">Upravit</a>
@@ -42,7 +43,3 @@ $persons_json = json_encode(
 
     </v-client-table>
 </div>
-
-<script id="persons-data" type="application/json">
-    <?= $persons_json; ?>
-</script>

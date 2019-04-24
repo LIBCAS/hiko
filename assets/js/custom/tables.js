@@ -175,9 +175,7 @@ if (document.getElementById('datatable-persons')) {
         el: '#datatable-persons',
         data: {
             columns: columns,
-            tableData: JSON.parse(
-                document.querySelector('#persons-data').innerHTML
-            ),
+            tableData: [],
             options: {
                 headings: {
                     edit: '',
@@ -194,6 +192,9 @@ if (document.getElementById('datatable-persons')) {
                 customSorting: getCustomSorting(['name']),
             },
             path: '',
+            personType: '',
+            loading: true,
+            error: false,
         },
         mounted: function() {
             let letterTypes = getLetterType()
@@ -206,9 +207,30 @@ if (document.getElementById('datatable-persons')) {
                 return
             } else {
                 this.path = letterTypes['path']
+                this.personType = letterTypes['personType']
             }
+
+            this.getPersons()
         },
         methods: {
+            getPersons: function() {
+                let self = this
+                axios
+                    .get(
+                        ajaxUrl +
+                            '?action=persons_table_data&type=' +
+                            self.personType
+                    )
+                    .then(function(result) {
+                        self.tableData = result.data
+                    })
+                    .catch(function(error) {
+                        self.error = error
+                    })
+                    .then(function() {
+                        self.loading = false
+                    })
+            },
             deletePerson: function(id) {
                 let self = this
                 removeItemAjax(id, 'person', self.path, function() {

@@ -183,7 +183,8 @@ function get_persons_table_data($person_type)
         [
             'select' => $fields,
             'orderby'=> 't.name ASC',
-            'limit' => -1
+            'limit' => -1,
+            'groupby' => 't.id'
         ]
     );
 
@@ -377,16 +378,8 @@ function bulk_add_persons($file)
 }
 
 
-function save_name_alternatives($persons_string, $letter_id, $letter_type)
+function save_name_alternatives($persons_string, $person_type)
 {
-    if ($letter_type == 'bl_letter') {
-        $person_type = 'bl_person';
-    } elseif ($letter_type == 'demo_letter') {
-        $person_type = 'demo_person';
-    } else {
-        return false;
-    }
-
     $persons = json_decode(stripslashes($persons_string));
     foreach ($persons as $person) {
         $person_meta = pods_field($person_type, $person->id, 'persons_meta');
@@ -777,6 +770,7 @@ function sanitize_slashed_json($data)
 
 function save_hiko_letter($letter_type, $action, $path)
 {
+    $types = get_hiko_post_types($path);
     $people_mentioned = [];
     $authors = [];
     $recipients = [];
@@ -851,7 +845,6 @@ function save_hiko_letter($letter_type, $action, $path)
     }
 
     $participant_meta = sanitize_slashed_json($_POST['authors_meta']);
-
 
     $data = test_postdata([
         'l_number' => 'l_number',
@@ -929,7 +922,8 @@ function save_hiko_letter($letter_type, $action, $path)
         return alert($new_pod->get_error_message(), 'warning');
     } else {
         delete_hiko_cache('list_' . $path);
-        save_name_alternatives($participant_meta, $new_pod, $letter_type);
+        delete_hiko_cache('list_' . $types['person']);
+        save_name_alternatives($participant_meta, $types['person']);
         frontend_refresh();
         return alert('Uloženo', 'success');
     }
@@ -982,6 +976,7 @@ function save_hiko_person($person_type, $action)
     } elseif (is_wp_error($new_pod)) {
         return alert($new_pod->get_error_message(), 'warning');
     } else {
+        delete_hiko_cache('list_' . $person_type);
         frontend_refresh();
         return alert('Uloženo', 'success');
     }

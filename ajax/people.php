@@ -1,5 +1,32 @@
 <?php
 
+function persons_table_data()
+{
+    $person_type = test_input($_GET['type']);
+    header('Content-Type: application/json');
+
+    if (hiko_cache_exists('list_' . $person_type)) {
+        header('Last-Modified: ' . get_gmdate(get_hiko_cache_file('list_' . $person_type)));
+        echo read_hiko_cache('list_' . $person_type);
+        wp_die();
+    }
+
+    $persons = get_persons_table_data($person_type);
+
+    $json_persons = json_encode(
+        $persons,
+        JSON_UNESCAPED_UNICODE
+    );
+
+    header('Last-Modified: ' . get_gmdate());
+    echo $json_persons;
+
+    create_hiko_json_cache('list_' . $person_type, $json_persons);
+    wp_die();
+}
+add_action('wp_ajax_persons_table_data', 'persons_table_data');
+
+
 function list_people_simple()
 {
     $type = test_input($_GET['type']);
