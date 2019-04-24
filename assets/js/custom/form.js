@@ -507,6 +507,21 @@ if (document.getElementById('places-form')) {
             lat: '',
             long: '',
         },
+        computed: {
+            countries() {
+                let results = []
+                let countries = document.querySelector('#countries').innerHTML
+                countries = JSON.parse(countries)
+                let l = countries.length
+                for (let index = 0; index < l; index++) {
+                    results.push({
+                        label: countries[index].name,
+                        value: countries[index].name,
+                    })
+                }
+                return results
+            },
+        },
         mounted: function() {
             let letterTypes = getLetterType()
             if (

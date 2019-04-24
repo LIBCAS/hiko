@@ -1042,6 +1042,19 @@ function get_json_languages()
 }
 
 
+function get_json_countries()
+{
+    $countries = get_ssl_file(get_template_directory_uri() . '/assets/data/countries.json');
+    ob_start();
+    ?>
+    <script id="countries" type="application/json">
+        <?= $countries; ?>
+    </script>
+    <?php
+    return ob_get_clean();
+}
+
+
 function display_persons_and_places($person_type, $place_type)
 {
     $persons = json_encode(
