@@ -776,7 +776,6 @@ function save_hiko_letter($letter_type, $action, $path)
     $recipients = [];
     $origins = [];
     $destinations = [];
-    $langs = '';
     $keywords = '';
 
     if (array_key_exists('l_author', $_POST)) {
@@ -791,29 +790,16 @@ function save_hiko_letter($letter_type, $action, $path)
         }
     }
 
-
     if (array_key_exists('origin', $_POST)) {
-        foreach ($_POST['origin'] as $o) {
-            $origins[] = test_input($o);
-        }
+        $origins = explode(',', $_POST['origin']);
     }
 
     if (array_key_exists('dest', $_POST)) {
-        foreach ($_POST['dest'] as $d) {
-            $destinations[] = test_input($d);
-        }
+        $destinations = explode(',', $_POST['dest']);
     }
 
     if (array_key_exists('people_mentioned', $_POST)) {
-        foreach ($_POST['people_mentioned'] as $people) {
-            $people_mentioned[] = test_input($people);
-        }
-    }
-
-    if (array_key_exists('languages', $_POST)) {
-        foreach ($_POST['languages'] as $lang) {
-            $langs .= test_input($lang) . ';';
-        }
+        $people_mentioned = explode(',', $_POST['people_mentioned']);
     }
 
     if (array_key_exists('keywords', $_POST)) {
@@ -877,7 +863,8 @@ function save_hiko_letter($letter_type, $action, $path)
         'archive' => 'archive',
         'collection' => 'collection',
         'signature' => 'signature',
-        'location_note' => 'location_note'
+        'location_note' => 'location_note',
+        'languages' => 'languages'
     ]);
 
     $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
@@ -893,7 +880,6 @@ function save_hiko_letter($letter_type, $action, $path)
     $data['dest_inferred'] = get_form_checkbox_val('dest_inferred', $_POST);
     $data['l_author'] = $authors;
     $data['recipient'] = $recipients;
-    $data['languages'] = $langs;
     $data['keywords'] = $keywords;
     $data['people_mentioned'] = $people_mentioned;
     $data['dest'] = $destinations;

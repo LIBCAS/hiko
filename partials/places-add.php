@@ -26,14 +26,8 @@ if (array_key_exists('save_post', $_POST)) {
                 </div>
                 <div class="form-group requred">
                     <label for="country">Country</label>
-                    <slim-select
-                        :data='countries'
-                        v-model="country"
-                        name="country"
-                        :id="'country'"
-                        :required="true"
-                        class="custom-select custom-select-sm slim-select">
-                    </slim-select>
+                    <v-select v-model="country" :options="countries" :reduce="label => label.value" class="bg-white" required></v-select>
+                    <input type="hidden" name="country" v-model="country">
                 </div>
                 <div class="form-group">
                     <label for="note">Note on place</label>

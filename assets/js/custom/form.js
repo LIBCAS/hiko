@@ -1,35 +1,6 @@
 /* global SlimSelect Vue axios ajaxUrl homeUrl Swal */
 
-Vue.component('slim-select', {
-    props: {
-        data: {
-            type: Array,
-            required: true,
-        },
-        id: {
-            type: String,
-            required: true,
-        },
-        multiple: {
-            type: Boolean,
-            default: false,
-        },
-        required: {
-            type: Boolean,
-            default: false,
-        },
-    },
-    mounted: function() {
-        new SlimSelect({
-            select: '#' + this.id,
-        })
-    },
-    template: `<select :id="id" :multiple="multiple" :required="required">
-        <option v-for="d in data" :value="d.value" >
-            {{ d.label }}
-        </option>
-    </select>`,
-})
+Vue.component('v-select', VueSelect.VueSelect)
 
 if (document.getElementById('letter-form')) {
     new Vue({
@@ -321,6 +292,9 @@ if (document.getElementById('letter-form')) {
                         if (response.data == '404') {
                             self.error = true
                         } else {
+                            /*
+                             * TODO
+                             */
                             let rd = response.data
                             let authors = Object.keys(rd.l_author)
                             let recipients = Object.keys(rd.recipient)
@@ -341,7 +315,7 @@ if (document.getElementById('letter-form')) {
                                 rd.range_month == '0' ? '' : rd.range_month
                             self.letter.range_day =
                                 rd.range_day == '0' ? '' : rd.range_day
-
+                            /*
                             self.letter.author = self.getPersonMeta(
                                 authors,
                                 rd.authors_meta
@@ -351,9 +325,10 @@ if (document.getElementById('letter-form')) {
                                 recipients,
                                 rd.authors_meta
                             )
-
+                                */
                             self.letter.origin = Object.keys(rd.origin)
                             self.letter.destination = Object.keys(rd.dest)
+
                             self.letter.languages =
                                 rd.languages.length === 0
                                     ? []
@@ -548,6 +523,9 @@ if (document.getElementById('places-form')) {
                 })
             },
             getInitialData: function(id) {
+                /*
+                 * TODO
+                 */
                 let self = this
                 axios
                     .get(

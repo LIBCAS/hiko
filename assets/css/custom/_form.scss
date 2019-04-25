@@ -1,15 +1,25 @@
 .form-group.required label::after {
-  content: '*';
-  color: #f00;
+    content: '*';
+    color: #f00;
 }
 
 fieldset {
-  border-bottom: 1px solid #e6e6e6;
-  margin-bottom: 16px;
+    border-bottom: 1px solid #e6e6e6;
+    margin-bottom: 16px;
 }
 
 .ss-main {
-  height: 100%;
-  margin: 0;
-  padding: 0;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.vs--single .vs__selected,
+.vs__selected {
+    background-color: $info;
+    color: #fff;
+
+    & .vs__deselect {
+        fill: #fff;
+    }
 }

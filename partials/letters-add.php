@@ -1,4 +1,5 @@
 <?php
+
 $pods_types = get_hiko_post_types_by_url();
 $letter_type = $pods_types['letter'];
 $person_type = $pods_types['person'];
@@ -147,7 +148,8 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="form-group required">
                             <label :for="'author-' + index">Author</label>
                             <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
-                            <slim-select :data="personsData" v-model="a.id" name="l_author[]" :id="'author-' + index" :required="true" class="custom-select custom-select-sm slim-select"></slim-select>
+                            <v-select v-model="a.id" :options="personsData" :reduce="label => label.value" class="bg-white" required></v-select>
+                            <input type="hidden" name="l_author[]" v-model="a.id">
                         </div>
                         <div class="form-group required">
                             <label for="marked">Author as marked</label>
@@ -195,7 +197,8 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="form-group required">
                             <label :for="'recipient-' + index">Recipient</label>
                             <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
-                            <slim-select :data="personsData" v-model="r.id" name="recipient[]" :id="'recipient-' + index" :required="true" class="custom-select custom-select-sm slim-select"></slim-select>
+                            <v-select v-model="r.id" :options="personsData" :reduce="label => label.value" class="bg-white" required></v-select>
+                            <input type="hidden" name="recipient[]" v-model="r.id">
                         </div>
 
                         <div class="form-group required">
@@ -241,9 +244,11 @@ if (array_key_exists('save_post', $_POST)) {
 
                 <fieldset id="a-origin">
                     <legend>Origin</legend>
+
                     <div class="form-group">
                         <label for="origin">Origin <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)"></span></label>
-                        <slim-select :data="placesData" :multiple="true" v-model="letter.origin" name="origin[]" id="origin" class="custom-select custom-select-sm slim-select"></slim-select>
+                        <v-select v-model="letter.origin" :options="placesData" :reduce="label => label.value" class="bg-white" multiple></v-select>
+                        <input type="hidden" v-model="letter.origin" name="origin">
                     </div>
 
                     <div class="form-group">
@@ -282,7 +287,8 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Destination</legend>
                     <div class="form-group">
                         <label for="dest">Destination <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)"></span></label>
-                        <slim-select :data="placesData" :multiple="true" v-model="letter.destination" name="dest[]" id="dest" class="custom-select custom-select-sm slim-select"></slim-select>
+                        <v-select v-model="letter.destination" :options="placesData" :reduce="label => label.value" class="bg-white" multiple></v-select>
+                        <input type="hidden" v-model="letter.destination" name="dest">
                     </div>
 
                     <div class="form-group">
@@ -319,9 +325,11 @@ if (array_key_exists('save_post', $_POST)) {
 
                 <fieldset id="a-content">
                     <legend>Content</legend>
+
                     <div class="form-group">
                         <label for="languages">Languages</label>
-                        <slim-select :data="languages" v-model="letter.languages" name="languages[]" :id="'languages'" :multiple="true" class="custom-select custom-select-sm slim-select"></slim-select>
+                        <v-select v-model="letter.languages" :options="languages" :reduce="label => label.value" class="bg-white" multiple></v-select>
+                        <input type="hidden" :value="letter.languages.join(';')" name="languages">
                     </div>
 
                     <div class="form-group keywords">
@@ -361,9 +369,8 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="people_mentioned">People mentioned <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)"></span></label>
-
-                        <slim-select :data="personsData" v-model="letter.mentioned" :multiple="true" name="people_mentioned[]" :id="'people_mentioned'" class="custom-select custom-select-sm slim-select"></slim-select>
-
+                        <v-select v-model="letter.mentioned" :options="personsData" :reduce="label => label.value" class="bg-white" multiple></v-select>
+                        <input type="hidden" v-model="letter.mentioned" name="people_mentioned">
                     </div>
 
                     <div class="form-group">
@@ -415,20 +422,21 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Repositories and versions</legend>
                     <div class="form-group">
                         <label for="ms_manifestation">MS manifestation</label>
-                        <slim-select
-                            :data="[
-                                { label: '---', value: '' },
-                                { label: 'ALS', value: 'MS Letter' },
-                                { label: 'S', value: 'MS Copy' },
-                                { label: 'D', value: 'MS Draft' },
-                                { label: 'E', value: 'Extract' },
-                                { label: 'O', value: 'Other' },
-                            ]"
+
+                        <v-select
                             v-model="letter.ms_manifestation"
-                            name="ms_manifestation"
-                            :id="'ms_manifestation'"
-                            class="custom-select custom-select-sm slim-select">
-                        </slim-select>
+                            :options="[
+                                { label: 'MS Letter', value: 'ALS' },
+                                { label: 'MS Copy', value: 'S' },
+                                { label: 'MS Draft', value: 'D' },
+                                { label: 'Extract', value: 'E' },
+                                { label: 'Other', value: 'O' },
+                            ]"
+                            :reduce="label => label.value"
+                            class="bg-white">
+                        </v-select>
+                        <input type="hidden" :value="letter.ms_manifestation" name="ms_manifestation">
+
                     </div>
 
                     <div class="form-group">
@@ -497,7 +505,6 @@ if (array_key_exists('save_post', $_POST)) {
                             Public
                         </label>
                     </div>
-
                 </fieldset>
 
                 <input type="hidden" :value="participantsMeta" name="authors_meta">
