@@ -100,7 +100,7 @@
         "nativeName":"ဗမာစာ"
     },
     "ca":{
-        "name":"Catalan; Valencian",
+        "name":"Catalan",
         "nativeName":"Català"
     },
     "ch":{
@@ -112,7 +112,7 @@
         "nativeName":"нохчийн мотт"
     },
     "ny":{
-        "name":"Chichewa; Chewa; Nyanja",
+        "name":"Chichewa",
         "nativeName":"chiCheŵa, chinyanja"
     },
     "zh":{
@@ -148,7 +148,7 @@
         "nativeName":"dansk"
     },
     "dv":{
-        "name":"Divehi; Dhivehi; Maldivian;",
+        "name":"Divehi",
         "nativeName":"ދިވެހި"
     },
     "nl":{
@@ -188,7 +188,7 @@
         "nativeName":"français, langue française"
     },
     "ff":{
-        "name":"Fula; Fulah; Pulaar; Pular",
+        "name":"Fula",
         "nativeName":"Fulfulde, Pulaar, Pular"
     },
     "gl":{
@@ -204,7 +204,7 @@
         "nativeName":"Deutsch"
     },
     "el":{
-        "name":"Greek, Modern",
+        "name":"Greek",
         "nativeName":"Ελληνικά"
     },
     "gn":{
@@ -216,7 +216,7 @@
         "nativeName":"ગુજરાતી"
     },
     "ht":{
-        "name":"Haitian; Haitian Creole",
+        "name":"Haitian",
         "nativeName":"Kreyòl ayisyen"
     },
     "ha":{
@@ -224,7 +224,7 @@
         "nativeName":"Hausa, هَوُسَ"
     },
     "he":{
-        "name":"Hebrew (modern)",
+        "name":"Hebrew",
         "nativeName":"עברית"
     },
     "hz":{
@@ -253,7 +253,7 @@
     },
     "ie":{
         "name":"Interlingue",
-        "nativeName":"Originally called Occidental; then Interlingue after WWII"
+        "nativeName":"Originally called Occidental, then Interlingue after WWII"
     },
     "ga":{
         "name":"Irish",
@@ -292,7 +292,7 @@
         "nativeName":"basa Jawa"
     },
     "kl":{
-        "name":"Kalaallisut, Greenlandic",
+        "name":"Kalaallisut",
         "nativeName":"kalaallisut, kalaallit oqaasii"
     },
     "kn":{
@@ -316,7 +316,7 @@
         "nativeName":"ភាសាខ្មែរ"
     },
     "ki":{
-        "name":"Kikuyu, Gikuyu",
+        "name":"Kikuyu",
         "nativeName":"Gĩkũyũ"
     },
     "rw":{
@@ -324,7 +324,7 @@
         "nativeName":"Ikinyarwanda"
     },
     "ky":{
-        "name":"Kirghiz, Kyrgyz",
+        "name":"Kirghiz",
         "nativeName":"кыргыз тили"
     },
     "kv":{
@@ -344,7 +344,7 @@
         "nativeName":"Kurdî, كوردی‎"
     },
     "kj":{
-        "name":"Kwanyama, Kuanyama",
+        "name":"Kwanyama",
         "nativeName":"Kuanyama"
     },
     "la":{
@@ -352,7 +352,7 @@
         "nativeName":"latine, lingua latina"
     },
     "lb":{
-        "name":"Luxembourgish, Letzeburgesch",
+        "name":"Luxembourgish",
         "nativeName":"Lëtzebuergesch"
     },
     "lg":{
@@ -360,7 +360,7 @@
         "nativeName":"Luganda"
     },
     "li":{
-        "name":"Limburgish, Limburgan, Limburger",
+        "name":"Limburgish",
         "nativeName":"Limburgs"
     },
     "ln":{
@@ -412,7 +412,7 @@
         "nativeName":"te reo Māori"
     },
     "mr":{
-        "name":"Marathi (Marāṭhī)",
+        "name":"Marathi",
         "nativeName":"मराठी"
     },
     "mh":{
@@ -428,12 +428,8 @@
         "nativeName":"Ekakairũ Naoero"
     },
     "nv":{
-        "name":"Navajo, Navaho",
+        "name":"Navajo",
         "nativeName":"Diné bizaad, Dinékʼehǰí"
-    },
-    "nb":{
-        "name":"Norwegian Bokmål",
-        "nativeName":"Norsk bokmål"
     },
     "nd":{
         "name":"North Ndebele",
@@ -446,10 +442,6 @@
     "ng":{
         "name":"Ndonga",
         "nativeName":"Owambo"
-    },
-    "nn":{
-        "name":"Norwegian Nynorsk",
-        "nativeName":"Norsk nynorsk"
     },
     "no":{
         "name":"Norwegian",
@@ -468,11 +460,11 @@
         "nativeName":"Occitan"
     },
     "oj":{
-        "name":"Ojibwe, Ojibwa",
+        "name":"Ojibwe",
         "nativeName":"ᐊᓂᔑᓈᐯᒧᐎᓐ"
     },
     "cu":{
-        "name":"Old Church Slavonic, Church Slavic, Church Slavonic, Old Bulgarian, Old Slavonic",
+        "name":"Old Church Slavonic",
         "nativeName":"ѩзыкъ словѣньскъ"
     },
     "om":{
@@ -484,11 +476,11 @@
         "nativeName":"ଓଡ଼ିଆ"
     },
     "os":{
-        "name":"Ossetian, Ossetic",
+        "name":"Ossetian",
         "nativeName":"ирон æвзаг"
     },
     "pa":{
-        "name":"Panjabi, Punjabi",
+        "name":"Panjabi",
         "nativeName":"ਪੰਜਾਬੀ, پنجابی‎"
     },
     "pi":{
@@ -504,7 +496,7 @@
         "nativeName":"polski"
     },
     "ps":{
-        "name":"Pashto, Pushto",
+        "name":"Pashto",
         "nativeName":"پښتو"
     },
     "pt":{
@@ -524,7 +516,7 @@
         "nativeName":"kiRundi"
     },
     "ro":{
-        "name":"Romanian, Moldavian, Moldovan",
+        "name":"Romanian",
         "nativeName":"română"
     },
     "ru":{
@@ -532,7 +524,7 @@
         "nativeName":"русский язык"
     },
     "sa":{
-        "name":"Sanskrit (Saṁskṛta)",
+        "name":"Sanskrit",
         "nativeName":"संस्कृतम्"
     },
     "sc":{
@@ -560,7 +552,7 @@
         "nativeName":"српски језик"
     },
     "gd":{
-        "name":"Scottish Gaelic; Gaelic",
+        "name":"Scottish Gaelic",
         "nativeName":"Gàidhlig"
     },
     "sn":{
@@ -568,7 +560,7 @@
         "nativeName":"chiShona"
     },
     "si":{
-        "name":"Sinhala, Sinhalese",
+        "name":"Sinhala",
         "nativeName":"සිංහල"
     },
     "sk":{
@@ -588,7 +580,7 @@
         "nativeName":"Sesotho"
     },
     "es":{
-        "name":"Spanish; Castilian",
+        "name":"Spanish",
         "nativeName":"español, castellano"
     },
     "su":{
@@ -628,7 +620,7 @@
         "nativeName":"ትግርኛ"
     },
     "bo":{
-        "name":"Tibetan Standard, Tibetan, Central",
+        "name":"Tibetan Standard",
         "nativeName":"བོད་ཡིག"
     },
     "tk":{
@@ -644,7 +636,7 @@
         "nativeName":"Setswana"
     },
     "to":{
-        "name":"Tonga (Tonga Islands)",
+        "name":"Tonga",
         "nativeName":"faka Tonga"
     },
     "tr":{
@@ -668,7 +660,7 @@
         "nativeName":"Reo Tahiti"
     },
     "ug":{
-        "name":"Uighur, Uyghur",
+        "name":"Uighur",
         "nativeName":"Uyƣurqə, ئۇيغۇرچە‎"
     },
     "uk":{
@@ -724,7 +716,7 @@
         "nativeName":"Yorùbá"
     },
     "za":{
-        "name":"Zhuang, Chuang",
+        "name":"Zhuang",
         "nativeName":"Saɯ cueŋƅ, Saw cuengh"
     }
 }
