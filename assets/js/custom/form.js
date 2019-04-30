@@ -1,6 +1,7 @@
-/* global SlimSelect Vue axios ajaxUrl homeUrl Swal */
+/* global VueSelect  Vue axios ajaxUrl homeUrl Swal */
 
 Vue.component('v-select', VueSelect.VueSelect)
+Vue.component('multiselect', window.VueMultiselect.default)
 
 if (document.getElementById('letter-form')) {
     new Vue({
@@ -477,7 +478,7 @@ if (document.getElementById('places-form')) {
         el: '#places-form',
         data: {
             place: '',
-            country: '',
+            country: {},
             note: '',
             lat: '',
             long: '',
@@ -523,9 +524,6 @@ if (document.getElementById('places-form')) {
                 })
             },
             getInitialData: function(id) {
-                /*
-                 * TODO
-                 */
                 let self = this
                 axios
                     .get(
@@ -537,7 +535,10 @@ if (document.getElementById('places-form')) {
                     )
                     .then(function(response) {
                         self.place = response.data.name
-                        self.country = response.data.country
+                        self.country = {
+                            value: response.data.country,
+                            label: response.data.country,
+                        }
                         self.note = response.data.note
                         self.lat = response.data.latitude
                         self.long = response.data.longitude
