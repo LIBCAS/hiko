@@ -1,6 +1,5 @@
-/* global VueSelect  Vue axios ajaxUrl homeUrl Swal */
+/* global Vue axios ajaxUrl homeUrl Swal */
 
-Vue.component('v-select', VueSelect.VueSelect)
 Vue.component('multiselect', window.VueMultiselect.default)
 
 if (document.getElementById('letter-form')) {
@@ -337,7 +336,7 @@ if (document.getElementById('letter-form')) {
                             self.error = true
                         } else {
                             /*
-                             * TODO
+                             * TODO origin and destination
                              */
                             let rd = response.data
                             let authors = JSON.parse(
@@ -349,7 +348,15 @@ if (document.getElementById('letter-form')) {
                                 JSON.stringify(rd.recipient)
                             )
                             recipients = Object.keys(recipients)
+                            /*
+                            let origin = rd.origin
+                            origin = Object.keys(origin)
+                            console.log(origin)
 
+                            let destination = rd.destination
+                            destination = Object.keys(destination)
+                            console.log(destination)
+*/
                             let mentioned = rd.people_mentioned
                             let manifestation = rd.ms_manifestation
                             let languages = rd.languages
@@ -358,6 +365,8 @@ if (document.getElementById('letter-form')) {
 
                             self.$set(self.letter, 'languages', []) // must set reactive data again
                             self.$set(self.letter, 'mentioned', [])
+                            self.$set(self.letter, 'destination', []) // must set reactive data again
+                            self.$set(self.letter, 'origin', [])
 
                             self.letter.date_year =
                                 rd.date_year == '0' ? '' : rd.date_year

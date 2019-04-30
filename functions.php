@@ -791,11 +791,15 @@ function save_hiko_letter($letter_type, $action, $path)
     }
 
     if (array_key_exists('origin', $_POST)) {
-        $origins = explode(',', $_POST['origin']);
+        foreach ($_POST['origin'] as $o) {
+            $origins[] = test_input($o);
+        }
     }
 
     if (array_key_exists('dest', $_POST)) {
-        $destinations = explode(',', $_POST['dest']);
+        foreach ($_POST['dest'] as $d) {
+            $destinations[] = test_input($d);
+        }
     }
 
     if (array_key_exists('people_mentioned', $_POST)) {
@@ -831,6 +835,7 @@ function save_hiko_letter($letter_type, $action, $path)
     }
 
     $participant_meta = sanitize_slashed_json($_POST['authors_meta']);
+    $places_meta = sanitize_slashed_json($_POST['places_meta']);
 
     $data = test_postdata([
         'l_number' => 'l_number',
@@ -886,6 +891,7 @@ function save_hiko_letter($letter_type, $action, $path)
     $data['origin'] = $origins;
     $data['history'] = $history;
     $data['authors_meta'] = $participant_meta;
+    $data['places_meta'] = $places_meta;
 
     $new_pod = '';
 

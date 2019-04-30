@@ -1,8 +1,5 @@
 {
-    "meta": {
-        "version": "2.7.12",
-        "build": 1554814346
-    },
+    "meta": { "version": "2.7.12", "build": 1556641009 },
     "pods": {
         "7": {
             "id": 7,
@@ -33,18 +30,13 @@
                     "text_max_length": "255",
                     "text_allow_shortcode": "0",
                     "text_allow_html": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_placeholder": ""
                 },
                 "created": {
@@ -69,18 +61,13 @@
                     "datetime_time_format_24": "hh_mm",
                     "datetime_allow_empty": "1",
                     "datetime_html5": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "datetime_format_custom": "",
                     "datetime_format_custom_js": "",
                     "datetime_time_format_custom": "",
@@ -108,18 +95,13 @@
                     "datetime_time_format_24": "hh_mm",
                     "datetime_allow_empty": "1",
                     "datetime_html5": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "datetime_format_custom": "",
                     "datetime_format_custom_js": "",
                     "datetime_time_format_custom": "",
@@ -156,10 +138,7 @@
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "pick_select_text": "",
                     "pick_table_id": "",
                     "pick_table_index": "",
@@ -186,18 +165,13 @@
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -223,18 +197,13 @@
                     "number_min": "0",
                     "number_max": "100",
                     "number_max_length": "4",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "number_repeatable": "0",
                     "number_placeholder": ""
                 },
@@ -260,18 +229,13 @@
                     "number_min": "0",
                     "number_max": "100",
                     "number_max_length": "2",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "number_repeatable": "0",
                     "number_placeholder": ""
                 },
@@ -297,18 +261,13 @@
                     "number_min": "0",
                     "number_max": "100",
                     "number_max_length": "2",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "number_repeatable": "0",
                     "number_placeholder": ""
                 },
@@ -330,18 +289,13 @@
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -359,9 +313,7 @@
                     "sister_id": "",
                     "required": "0",
                     "unique": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "boolean_format_type": "checkbox",
                     "boolean_yes_label": "Ano",
                     "boolean_no_label": "Ne",
@@ -370,10 +322,7 @@
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ]
+                    "roles_allowed": ["administrator", "blekastad_editor"]
                 },
                 "l_author": {
                     "id": 18,
@@ -399,18 +348,13 @@
                     "pick_show_view_link": "1",
                     "pick_limit": "0",
                     "pick_user_role": [],
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "pick_select_text": "",
                     "pick_table_id": "",
                     "pick_table_index": "",
@@ -419,43 +363,35 @@
                     "pick_orderby": "",
                     "pick_groupby": ""
                 },
-                "l_author_marked": {
-                    "id": 19,
-                    "name": "l_author_marked",
-                    "label": "Author as marked",
+                "author_inferred": {
+                    "id": 20,
+                    "name": "author_inferred",
+                    "label": "Author inferred",
                     "description": "",
                     "help": "",
                     "class": "",
-                    "type": "text",
+                    "type": "boolean",
                     "weight": 11,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
                     "required": "0",
                     "unique": "0",
-                    "text_allow_shortcode": "0",
-                    "text_allow_html": "0",
-                    "text_allowed_html_tags": "strong em a ul ol li b i",
-                    "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
+                    "boolean_format_type": "checkbox",
+                    "boolean_yes_label": "Ano",
+                    "boolean_no_label": "Ne",
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
-                    "text_repeatable": "0",
-                    "text_placeholder": ""
+                    "roles_allowed": ["administrator", "blekastad_editor"]
                 },
-                "author_inferred": {
-                    "id": 20,
-                    "name": "author_inferred",
-                    "label": "Author inferred",
+                "author_uncertain": {
+                    "id": 21,
+                    "name": "author_uncertain",
+                    "label": "Author uncertain",
                     "description": "",
                     "help": "",
                     "class": "",
@@ -466,9 +402,7 @@
                     "sister_id": "",
                     "required": "0",
                     "unique": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "boolean_format_type": "checkbox",
                     "boolean_yes_label": "Ano",
                     "boolean_no_label": "Ne",
@@ -477,40 +411,7 @@
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ]
-                },
-                "author_uncertain": {
-                    "id": 21,
-                    "name": "author_uncertain",
-                    "label": "Author uncertain",
-                    "description": "",
-                    "help": "",
-                    "class": "",
-                    "type": "boolean",
-                    "weight": 13,
-                    "pick_object": "",
-                    "pick_val": "",
-                    "sister_id": "",
-                    "required": "0",
-                    "unique": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
-                    "boolean_format_type": "checkbox",
-                    "boolean_yes_label": "Ano",
-                    "boolean_no_label": "Ne",
-                    "admin_only": "0",
-                    "restrict_role": "1",
-                    "restrict_capability": "0",
-                    "hidden": "0",
-                    "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ]
+                    "roles_allowed": ["administrator", "blekastad_editor"]
                 },
                 "recipient": {
                     "id": 22,
@@ -520,7 +421,7 @@
                     "help": "",
                     "class": "",
                     "type": "pick",
-                    "weight": 14,
+                    "weight": 13,
                     "pick_object": "pod",
                     "pick_val": "bl_person",
                     "sister_id": "90",
@@ -536,18 +437,13 @@
                     "pick_show_view_link": "1",
                     "pick_limit": "0",
                     "pick_user_role": [],
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "pick_select_text": "",
                     "pick_table_id": "",
                     "pick_table_index": "",
@@ -555,39 +451,6 @@
                     "pick_where": "",
                     "pick_orderby": "",
                     "pick_groupby": ""
-                },
-                "recipient_marked": {
-                    "id": 23,
-                    "name": "recipient_marked",
-                    "label": "Recipient as marked",
-                    "description": "",
-                    "help": "",
-                    "class": "",
-                    "type": "text",
-                    "weight": 15,
-                    "pick_object": "",
-                    "pick_val": "",
-                    "sister_id": "",
-                    "required": "0",
-                    "unique": "0",
-                    "text_allow_shortcode": "0",
-                    "text_allow_html": "0",
-                    "text_allowed_html_tags": "strong em a ul ol li b i",
-                    "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
-                    "admin_only": "0",
-                    "restrict_role": "1",
-                    "restrict_capability": "0",
-                    "hidden": "0",
-                    "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
-                    "text_repeatable": "0",
-                    "text_placeholder": ""
                 },
                 "recipient_inferred": {
                     "id": 24,
@@ -597,15 +460,13 @@
                     "help": "",
                     "class": "",
                     "type": "boolean",
-                    "weight": 16,
+                    "weight": 14,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
                     "required": "0",
                     "unique": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "boolean_format_type": "checkbox",
                     "boolean_yes_label": "Ano",
                     "boolean_no_label": "Ne",
@@ -614,10 +475,7 @@
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ]
+                    "roles_allowed": ["administrator", "blekastad_editor"]
                 },
                 "recipient_uncertain": {
                     "id": 25,
@@ -627,15 +485,13 @@
                     "help": "",
                     "class": "",
                     "type": "boolean",
-                    "weight": 17,
+                    "weight": 15,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
                     "required": "0",
                     "unique": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "boolean_format_type": "checkbox",
                     "boolean_yes_label": "Ano",
                     "boolean_no_label": "Ne",
@@ -644,10 +500,7 @@
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ]
+                    "roles_allowed": ["administrator", "blekastad_editor"]
                 },
                 "recipient_notes": {
                     "id": 26,
@@ -657,7 +510,7 @@
                     "help": "",
                     "class": "",
                     "type": "paragraph",
-                    "weight": 18,
+                    "weight": 16,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -670,18 +523,13 @@
                     "paragraph_wpautop": "1",
                     "paragraph_allow_shortcode": "0",
                     "paragraph_max_length": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "paragraph_repeatable": "0",
                     "paragraph_allowed_html_tags": "strong em a ul ol li b i",
                     "paragraph_placeholder": ""
@@ -694,7 +542,7 @@
                     "help": "",
                     "class": "",
                     "type": "pick",
-                    "weight": 19,
+                    "weight": 17,
                     "pick_object": "pod",
                     "pick_val": "bl_place",
                     "sister_id": "87",
@@ -710,18 +558,13 @@
                     "pick_show_view_link": "1",
                     "pick_limit": "0",
                     "pick_user_role": [],
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "pick_select_text": "",
                     "pick_table_id": "",
                     "pick_table_index": "",
@@ -729,39 +572,6 @@
                     "pick_where": "",
                     "pick_orderby": "",
                     "pick_groupby": ""
-                },
-                "origin_marked": {
-                    "id": 28,
-                    "name": "origin_marked",
-                    "label": "Origin as marked",
-                    "description": "",
-                    "help": "",
-                    "class": "",
-                    "type": "text",
-                    "weight": 20,
-                    "pick_object": "",
-                    "pick_val": "",
-                    "sister_id": "",
-                    "required": "0",
-                    "unique": "0",
-                    "text_allow_shortcode": "0",
-                    "text_allow_html": "0",
-                    "text_allowed_html_tags": "strong em a ul ol li b i",
-                    "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
-                    "admin_only": "0",
-                    "restrict_role": "1",
-                    "restrict_capability": "0",
-                    "hidden": "0",
-                    "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
-                    "text_repeatable": "0",
-                    "text_placeholder": ""
                 },
                 "origin_inferred": {
                     "id": 29,
@@ -771,15 +581,13 @@
                     "help": "",
                     "class": "",
                     "type": "boolean",
-                    "weight": 21,
+                    "weight": 18,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
                     "required": "0",
                     "unique": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "boolean_format_type": "checkbox",
                     "boolean_yes_label": "Ano",
                     "boolean_no_label": "Ne",
@@ -788,10 +596,7 @@
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ]
+                    "roles_allowed": ["administrator", "blekastad_editor"]
                 },
                 "origin_uncertain": {
                     "id": 30,
@@ -801,15 +606,13 @@
                     "help": "",
                     "class": "",
                     "type": "boolean",
-                    "weight": 22,
+                    "weight": 19,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
                     "required": "0",
                     "unique": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "boolean_format_type": "checkbox",
                     "boolean_yes_label": "Ano",
                     "boolean_no_label": "Ne",
@@ -818,10 +621,7 @@
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ]
+                    "roles_allowed": ["administrator", "blekastad_editor"]
                 },
                 "dest": {
                     "id": 31,
@@ -831,7 +631,7 @@
                     "help": "",
                     "class": "",
                     "type": "pick",
-                    "weight": 23,
+                    "weight": 20,
                     "pick_object": "pod",
                     "pick_val": "bl_place",
                     "sister_id": "88",
@@ -847,18 +647,13 @@
                     "pick_show_view_link": "1",
                     "pick_limit": "0",
                     "pick_user_role": [],
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "pick_select_text": "",
                     "pick_table_id": "",
                     "pick_table_index": "",
@@ -867,10 +662,88 @@
                     "pick_orderby": "",
                     "pick_groupby": ""
                 },
-                "dest_marked": {
-                    "id": 32,
-                    "name": "dest_marked",
-                    "label": "Destination as marked",
+                "dest_inferred": {
+                    "id": 33,
+                    "name": "dest_inferred",
+                    "label": "Destination inferred",
+                    "description": "",
+                    "help": "",
+                    "class": "",
+                    "type": "boolean",
+                    "weight": 21,
+                    "pick_object": "",
+                    "pick_val": "",
+                    "sister_id": "",
+                    "required": "0",
+                    "unique": "0",
+                    "pick_post_status": ["publish"],
+                    "boolean_format_type": "checkbox",
+                    "boolean_yes_label": "Ano",
+                    "boolean_no_label": "Ne",
+                    "admin_only": "0",
+                    "restrict_role": "1",
+                    "restrict_capability": "0",
+                    "hidden": "0",
+                    "read_only": "0",
+                    "roles_allowed": ["administrator", "blekastad_editor"]
+                },
+                "dest_uncertain": {
+                    "id": 34,
+                    "name": "dest_uncertain",
+                    "label": "Destination uncertain",
+                    "description": "",
+                    "help": "",
+                    "class": "",
+                    "type": "boolean",
+                    "weight": 22,
+                    "pick_object": "",
+                    "pick_val": "",
+                    "sister_id": "",
+                    "required": "0",
+                    "unique": "0",
+                    "pick_post_status": ["publish"],
+                    "boolean_format_type": "checkbox",
+                    "boolean_yes_label": "Ano",
+                    "boolean_no_label": "Ne",
+                    "admin_only": "0",
+                    "restrict_role": "1",
+                    "restrict_capability": "0",
+                    "hidden": "0",
+                    "read_only": "0",
+                    "roles_allowed": ["administrator", "blekastad_editor"]
+                },
+                "languages": {
+                    "id": 35,
+                    "name": "languages",
+                    "label": "Languages",
+                    "description": "",
+                    "help": "",
+                    "class": "",
+                    "type": "text",
+                    "weight": 23,
+                    "pick_object": "",
+                    "pick_val": "",
+                    "sister_id": "",
+                    "required": "0",
+                    "unique": "0",
+                    "text_allow_shortcode": "0",
+                    "text_allow_html": "0",
+                    "text_allowed_html_tags": "strong em a ul ol li b i",
+                    "text_max_length": "-1",
+                    "pick_post_status": ["publish"],
+                    "admin_only": "0",
+                    "restrict_role": "1",
+                    "restrict_capability": "0",
+                    "hidden": "0",
+                    "read_only": "0",
+                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "text_repeatable": "0",
+                    "text_placeholder": ""
+                },
+                "keywords": {
+                    "id": 36,
+                    "name": "keywords",
+                    "label": "Keywords",
                     "description": "",
                     "help": "",
                     "class": "",
@@ -884,145 +757,14 @@
                     "text_allow_shortcode": "0",
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
-                    "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
-                    "admin_only": "0",
-                    "restrict_role": "1",
-                    "restrict_capability": "0",
-                    "hidden": "0",
-                    "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
-                    "text_repeatable": "0",
-                    "text_placeholder": ""
-                },
-                "dest_inferred": {
-                    "id": 33,
-                    "name": "dest_inferred",
-                    "label": "Destination inferred",
-                    "description": "",
-                    "help": "",
-                    "class": "",
-                    "type": "boolean",
-                    "weight": 25,
-                    "pick_object": "",
-                    "pick_val": "",
-                    "sister_id": "",
-                    "required": "0",
-                    "unique": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
-                    "boolean_format_type": "checkbox",
-                    "boolean_yes_label": "Ano",
-                    "boolean_no_label": "Ne",
-                    "admin_only": "0",
-                    "restrict_role": "1",
-                    "restrict_capability": "0",
-                    "hidden": "0",
-                    "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ]
-                },
-                "dest_uncertain": {
-                    "id": 34,
-                    "name": "dest_uncertain",
-                    "label": "Destination uncertain",
-                    "description": "",
-                    "help": "",
-                    "class": "",
-                    "type": "boolean",
-                    "weight": 26,
-                    "pick_object": "",
-                    "pick_val": "",
-                    "sister_id": "",
-                    "required": "0",
-                    "unique": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
-                    "boolean_format_type": "checkbox",
-                    "boolean_yes_label": "Ano",
-                    "boolean_no_label": "Ne",
-                    "admin_only": "0",
-                    "restrict_role": "1",
-                    "restrict_capability": "0",
-                    "hidden": "0",
-                    "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ]
-                },
-                "languages": {
-                    "id": 35,
-                    "name": "languages",
-                    "label": "Languages",
-                    "description": "",
-                    "help": "",
-                    "class": "",
-                    "type": "text",
-                    "weight": 27,
-                    "pick_object": "",
-                    "pick_val": "",
-                    "sister_id": "",
-                    "required": "0",
-                    "unique": "0",
-                    "text_allow_shortcode": "0",
-                    "text_allow_html": "0",
-                    "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "-1",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
-                    "text_repeatable": "0",
-                    "text_placeholder": ""
-                },
-                "keywords": {
-                    "id": 36,
-                    "name": "keywords",
-                    "label": "Keywords",
-                    "description": "",
-                    "help": "",
-                    "class": "",
-                    "type": "text",
-                    "weight": 28,
-                    "pick_object": "",
-                    "pick_val": "",
-                    "sister_id": "",
-                    "required": "0",
-                    "unique": "0",
-                    "text_allow_shortcode": "0",
-                    "text_allow_html": "0",
-                    "text_allowed_html_tags": "strong em a ul ol li b i",
-                    "text_max_length": "-1",
-                    "pick_post_status": [
-                        "publish"
-                    ],
-                    "admin_only": "0",
-                    "restrict_role": "1",
-                    "restrict_capability": "0",
-                    "hidden": "0",
-                    "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -1034,7 +776,7 @@
                     "help": "",
                     "class": "",
                     "type": "paragraph",
-                    "weight": 29,
+                    "weight": 25,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1048,18 +790,13 @@
                     "paragraph_allow_shortcode": "0",
                     "paragraph_allowed_html_tags": "strong em a ul ol li b i",
                     "paragraph_max_length": "-1",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "paragraph_repeatable": "0",
                     "paragraph_placeholder": ""
                 },
@@ -1071,7 +808,7 @@
                     "help": "",
                     "class": "",
                     "type": "paragraph",
-                    "weight": 30,
+                    "weight": 26,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1084,18 +821,13 @@
                     "paragraph_wpautop": "0",
                     "paragraph_allow_shortcode": "0",
                     "paragraph_max_length": "-1",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "paragraph_repeatable": "0",
                     "paragraph_allowed_html_tags": "strong em a ul ol li b i",
                     "paragraph_placeholder": ""
@@ -1108,7 +840,7 @@
                     "help": "",
                     "class": "",
                     "type": "paragraph",
-                    "weight": 31,
+                    "weight": 27,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1145,7 +877,7 @@
                     "help": "",
                     "class": "",
                     "type": "pick",
-                    "weight": 32,
+                    "weight": 28,
                     "pick_object": "pod",
                     "pick_val": "bl_person",
                     "sister_id": "91",
@@ -1189,10 +921,10 @@
                     "help": "",
                     "class": "",
                     "type": "paragraph",
-                    "weight": 33,
+                    "weight": 29,
                     "pick_object": "",
                     "pick_val": "",
-                    "sister_id": "59",
+                    "sister_id": "",
                     "required": "0",
                     "unique": "0",
                     "paragraph_allow_html": "0",
@@ -1226,7 +958,7 @@
                     "help": "",
                     "class": "",
                     "type": "paragraph",
-                    "weight": 34,
+                    "weight": 30,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1263,7 +995,7 @@
                     "help": "",
                     "class": "",
                     "type": "paragraph",
-                    "weight": 35,
+                    "weight": 31,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1300,7 +1032,7 @@
                     "help": "",
                     "class": "",
                     "type": "text",
-                    "weight": 36,
+                    "weight": 32,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1333,7 +1065,7 @@
                     "help": "",
                     "class": "",
                     "type": "website",
-                    "weight": 37,
+                    "weight": 33,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1368,7 +1100,7 @@
                     "help": "",
                     "class": "",
                     "type": "pick",
-                    "weight": 38,
+                    "weight": 34,
                     "pick_object": "custom-simple",
                     "pick_val": "",
                     "sister_id": "",
@@ -1413,7 +1145,7 @@
                     "help": "",
                     "class": "",
                     "type": "text",
-                    "weight": 39,
+                    "weight": 35,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1446,7 +1178,7 @@
                     "help": "",
                     "class": "",
                     "type": "pick",
-                    "weight": 40,
+                    "weight": 36,
                     "pick_object": "custom-simple",
                     "pick_val": "",
                     "sister_id": "",
@@ -1490,7 +1222,7 @@
                     "help": "",
                     "class": "",
                     "type": "file",
-                    "weight": 41,
+                    "weight": 37,
                     "pick_object": "custom-simple",
                     "pick_val": "",
                     "sister_id": "",
@@ -1538,7 +1270,7 @@
                     "help": "",
                     "class": "",
                     "type": "boolean",
-                    "weight": 42,
+                    "weight": 38,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1568,7 +1300,7 @@
                     "help": "",
                     "class": "",
                     "type": "boolean",
-                    "weight": 43,
+                    "weight": 39,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1598,7 +1330,7 @@
                     "help": "",
                     "class": "",
                     "type": "number",
-                    "weight": 44,
+                    "weight": 40,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1635,7 +1367,7 @@
                     "help": "",
                     "class": "",
                     "type": "number",
-                    "weight": 45,
+                    "weight": 41,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1672,7 +1404,7 @@
                     "help": "",
                     "class": "",
                     "type": "number",
-                    "weight": 46,
+                    "weight": 42,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1709,7 +1441,7 @@
                     "help": "",
                     "class": "",
                     "type": "paragraph",
-                    "weight": 47,
+                    "weight": 43,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1746,7 +1478,7 @@
                     "help": "",
                     "class": "",
                     "type": "paragraph",
-                    "weight": 48,
+                    "weight": 44,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1783,7 +1515,7 @@
                     "help": "",
                     "class": "",
                     "type": "paragraph",
-                    "weight": 49,
+                    "weight": 45,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1820,7 +1552,7 @@
                     "help": "",
                     "class": "",
                     "type": "paragraph",
-                    "weight": 50,
+                    "weight": 46,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1857,7 +1589,7 @@
                     "help": "",
                     "class": "",
                     "type": "text",
-                    "weight": 51,
+                    "weight": 47,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1893,7 +1625,7 @@
                     "help": "",
                     "class": "",
                     "type": "text",
-                    "weight": 52,
+                    "weight": 48,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1929,7 +1661,7 @@
                     "help": "",
                     "class": "",
                     "type": "text",
-                    "weight": 53,
+                    "weight": 49,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1965,7 +1697,7 @@
                     "help": "",
                     "class": "",
                     "type": "text",
-                    "weight": 54,
+                    "weight": 50,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -1998,7 +1730,7 @@
                     "help": "",
                     "class": "",
                     "type": "paragraph",
-                    "weight": 55,
+                    "weight": 51,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -2024,7 +1756,7 @@
                         "administrator",
                         "blekastad_editor"
                     ],
-                    "paragraph_repeatable": 0,
+                    "paragraph_repeatable": "0",
                     "paragraph_placeholder": ""
                 },
                 "authors_meta": {
@@ -2035,7 +1767,7 @@
                     "help": "",
                     "class": "",
                     "type": "paragraph",
-                    "weight": 56,
+                    "weight": 52,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
@@ -2061,7 +1793,44 @@
                         "administrator",
                         "blekastad_editor"
                     ],
-                    "paragraph_repeatable": 0,
+                    "paragraph_repeatable": "0",
+                    "paragraph_placeholder": ""
+                },
+                "places_meta": {
+                    "id": 404,
+                    "name": "places_meta",
+                    "label": "Places_meta",
+                    "description": "",
+                    "help": "",
+                    "class": "",
+                    "type": "paragraph",
+                    "weight": 53,
+                    "pick_object": "",
+                    "pick_val": "",
+                    "sister_id": "",
+                    "required": "0",
+                    "unique": "0",
+                    "paragraph_allow_html": "0",
+                    "paragraph_oembed": "0",
+                    "paragraph_wptexturize": "0",
+                    "paragraph_convert_chars": "0",
+                    "paragraph_wpautop": "0",
+                    "paragraph_allow_shortcode": "0",
+                    "paragraph_allowed_html_tags": "strong em a ul ol li b i",
+                    "paragraph_max_length": "0",
+                    "pick_post_status": [
+                        "publish"
+                    ],
+                    "admin_only": "0",
+                    "restrict_role": "1",
+                    "restrict_capability": "0",
+                    "hidden": "0",
+                    "read_only": "0",
+                    "roles_allowed": [
+                        "administrator",
+                        "blekastad_editor"
+                    ],
+                    "paragraph_repeatable": "0",
                     "paragraph_placeholder": ""
                 }
             },
