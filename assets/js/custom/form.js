@@ -25,11 +25,9 @@ if (document.getElementById('letter-form')) {
                 mentioned: [],
                 origin: [],
                 origin_note: '',
-                origin_marked: '',
                 origin_inferred: false,
                 origin_uncertain: false,
                 destination: [],
-                dest_marked: '',
                 dest_inferred: false,
                 dest_uncertain: false,
                 dest_note: '',
@@ -140,6 +138,29 @@ if (document.getElementById('letter-form')) {
 
                 return JSON.stringify(merged)
             },
+
+            placesMeta: function() {
+                let origins = JSON.parse(JSON.stringify(this.letter.origin))
+                let destinations = JSON.parse(
+                    JSON.stringify(this.letter.destination)
+                )
+                let merged = []
+
+                origins.forEach(item => {
+                    item = JSON.parse(JSON.stringify(item))
+                    item.id = item.id.value
+                    merged.push(item)
+                })
+
+                destinations.forEach(item => {
+                    item = JSON.parse(JSON.stringify(item))
+                    item.id = item.id.value
+                    merged.push(item)
+                })
+
+                return JSON.stringify(merged)
+            },
+
             imgUrl: function() {
                 return (
                     homeUrl +
@@ -495,12 +516,25 @@ if (document.getElementById('letter-form')) {
                 return kwObj
             },
 
-            removePersonMeta: function(personIndex, type) {
+            removeObjectMeta: function(personIndex, type) {
                 this.letter[type] = this.letter[type].filter(function(
                     item,
                     index
                 ) {
                     return index !== personIndex
+                })
+            },
+
+            addPlaceMeta: function(type) {
+                this.letter[type].push({
+                    id: {},
+                    marked: '',
+                    key:
+                        type +
+                        Math.random()
+                            .toString(36)
+                            .substring(7),
+                    // random key for forcing Vue to update list while removing PlaceMeta
                 })
             },
 

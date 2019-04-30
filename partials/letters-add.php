@@ -144,7 +144,7 @@ if (array_key_exists('save_post', $_POST)) {
                 <fieldset id="a-author">
                     <legend>Author</legend>
                     <div v-for="(a, index) in letter.author" :data-key="a.id != '' ? 'a-' + a.id.value : a.key" :key="a.id != '' ? 'a-' + a.id.value : a.key" class="border rounded my-2 py-3 px-2">
-                        <button @click="removePersonMeta(index, 'author')" type="button" class="close text-danger" aria-label="Remove author">
+                        <button @click="removeObjectMeta(index, 'author')" type="button" class="close text-danger" aria-label="Remove author">
                             <span title="Remove author">&times;</span>
                         </button>
                         <div class="form-group required">
@@ -200,7 +200,7 @@ if (array_key_exists('save_post', $_POST)) {
                 <fieldset id="a-recipient">
                     <legend>Recipient</legend>
                     <div v-for="(r, index) in letter.recipient" :data-key="r.id != '' ? 'r-' + r.id.value : r.key" :key="r.id != '' ? 'r-' + r.id.value : r.key" class="border rounded my-2 py-3 px-2">
-                        <button @click="removePersonMeta(index, 'recipient')" type="button" class="close text-danger" aria-label="Remove author">
+                        <button @click="removeObjectMeta(index, 'recipient')" type="button" class="close text-danger" aria-label="Remove author">
                             <span title="Remove recipient">&times;</span>
                         </button>
                         <div class="form-group required">
@@ -258,23 +258,40 @@ if (array_key_exists('save_post', $_POST)) {
                         <textarea v-model="letter.recipient_notes" name="recipient_notes" class="form-control form-control-sm"></textarea>
                     </div>
                 </fieldset>
-                <?php /* ?>
+
                 <fieldset id="a-origin">
                     <legend>Origin</legend>
 
-                    <div class="form-group">
-                        <label for="origin">Origin <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)"></span></label>
-                        <v-select v-model="letter.origin" :options="placesData" :reduce="label => label.value" class="bg-white" multiple></v-select>
-                        <input type="hidden" v-model="letter.origin" name="origin">
+                    <div v-for="(o, index) in letter.origin" :data-key="o.id != '' ? 'o-' + o.id.value : o.key" :key="o.id != '' ? 'o-' + o.id.value : o.key" class="border rounded my-2 py-3 px-2">
+                        <button @click="removeObjectMeta(index, 'origin')" type="button" class="close text-danger" aria-label="Remove origin">
+                            <span title="Remove origin">&times;</span>
+                        </button>
+                        <div class="form-group required">
+                            <label :for="'origin-' + index">Origin</label>
+                            <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)" title="Update places"></span>
+                            <multiselect
+                                v-model="o.id"
+                                :options="placesData"
+                                label="label"
+                                track-by="value"
+                                :required="true"
+                                >
+                            </multiselect>
+                            <input type="hidden" :value="o.id.value" name="origin[]">
+                        </div>
+                        <div class="form-group required">
+                            <label for="marked">Origin as marked</label>
+                            <input v-model="o.marked" type="text" class="form-control form-control-sm" required>
+                            <small class="form-text text-muted">
+                                origin name as written in letter
+                            </small>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="origin_marked">Origin as marked</label>
-                        <input v-model="letter.origin_marked" type="text" name="origin_marked" class="form-control form-control-sm">
-                        <small class="form-text text-muted">
-                            origin name as written in letter
-                        </small>
-                    </div>
+                    <button type="button" @click="addPlaceMeta('origin')" class="btn btn-sm btn-outline-info my-2">
+                        <span class="oi oi-plus"></span>
+                        Add origin
+                    </button>
 
                     <div class="form-check mb-3">
                         <input v-model="letter.origin_inferred" class="form-check-input" type="checkbox" id="origin_inferred" name="origin_inferred">
@@ -302,19 +319,37 @@ if (array_key_exists('save_post', $_POST)) {
 
                 <fieldset id="a-destination">
                     <legend>Destination</legend>
-                    <div class="form-group">
-                        <label for="dest">Destination <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)"></span></label>
-                        <v-select v-model="letter.destination" :options="placesData" :reduce="label => label.value" class="bg-white" multiple></v-select>
-                        <input type="hidden" v-model="letter.destination" name="dest">
+
+                    <div v-for="(d, index) in letter.destination" :data-key="d.id != '' ? 'd-' + d.id.value : d.key" :key="d.id != '' ? 'd-' + d.id.value : d.key" class="border rounded my-2 py-3 px-2">
+                        <button @click="removeObjectMeta(index, 'destination')" type="button" class="close text-danger" aria-label="Remove origin">
+                            <span title="Remove destination">&times;</span>
+                        </button>
+                        <div class="form-group required">
+                            <label :for="'destination-' + index">Destination</label>
+                            <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)" title="Update places"></span>
+                            <multiselect
+                                v-model="d.id"
+                                :options="placesData"
+                                label="label"
+                                track-by="value"
+                                :required="true"
+                                >
+                            </multiselect>
+                            <input type="hidden" :value="d.id.value" name="dest[]">
+                        </div>
+                        <div class="form-group required">
+                            <label for="marked">Destination as marked</label>
+                            <input v-model="d.marked" type="text" class="form-control form-control-sm" required>
+                            <small class="form-text text-muted">
+                                destination name as written in letter
+                            </small>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="dest_marked">Destination as marked</label>
-                        <input v-model="letter.dest_marked" type="text" name="dest_marked" class="form-control form-control-sm">
-                        <small class="form-text text-muted">
-                            destination name as written in letter
-                        </small>
-                    </div>
+                    <button type="button" @click="addPlaceMeta('destination')" class="btn btn-sm btn-outline-info my-2">
+                        <span class="oi oi-plus"></span>
+                        Add destination
+                    </button>
 
                     <div class="form-check mb-3">
                         <input v-model="letter.dest_inferred" class="form-check-input" type="checkbox" id="dest_inferred" name="dest_inferred">
@@ -339,7 +374,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                 </fieldset>
-<?php */ ?>
+
                 <fieldset id="a-content">
                     <legend>Content</legend>
 
@@ -530,6 +565,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                 </fieldset>
 
+                <input type="hidden" :value="placesMeta" name="places_meta">
                 <input type="hidden" :value="participantsMeta" name="authors_meta">
 
                 <?php if ($action == 'new') : ?>
