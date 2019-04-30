@@ -12,6 +12,8 @@ if (array_key_exists('edit', $_GET)) {
 }
 
 if (array_key_exists('save_post', $_POST)) {
+    //var_dump($_POST);
+    //die();
     echo save_hiko_letter($letter_type, $action, $path);
 }
 
@@ -141,15 +143,22 @@ if (array_key_exists('save_post', $_POST)) {
 
                 <fieldset id="a-author">
                     <legend>Author</legend>
-                    <div v-for="(a, index) in letter.author" :data-key="a.id != '' ? 'a-' + a.id : a.key" :key="a.id != '' ? 'a-' + a.id : a.key" class="border rounded my-2 py-3 px-2">
+                    <div v-for="(a, index) in letter.author" :data-key="a.id != '' ? 'a-' + a.id.value : a.key" :key="a.id != '' ? 'a-' + a.id.value : a.key" class="border rounded my-2 py-3 px-2">
                         <button @click="removePersonMeta(index, 'author')" type="button" class="close text-danger" aria-label="Remove author">
                             <span title="Remove author">&times;</span>
                         </button>
                         <div class="form-group required">
                             <label :for="'author-' + index">Author</label>
                             <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
-                            <v-select v-model="a.id" :options="personsData" :reduce="label => label.value" class="bg-white" required></v-select>
-                            <input type="hidden" name="l_author[]" v-model="a.id">
+                            <multiselect
+                                v-model="a.id"
+                                :options="personsData"
+                                label="label"
+                                track-by="value"
+                                :required="true"
+                                >
+                            </multiselect>
+                            <input type="hidden" :value="a.id.value" name="l_author[]">
                         </div>
                         <div class="form-group required">
                             <label for="marked">Author as marked</label>
@@ -190,15 +199,23 @@ if (array_key_exists('save_post', $_POST)) {
 
                 <fieldset id="a-recipient">
                     <legend>Recipient</legend>
-                    <div v-for="(r, index) in letter.recipient" :data-key="r.id != '' ? 'r-' + r.id : r.key" :key="r.id != '' ? 'r-' + r.id : r.key" class="border rounded my-2 py-3 px-2">
-                    <button @click="removePersonMeta(index, 'recipient')" type="button" class="close text-danger" aria-label="Remove author">
+                    <div v-for="(r, index) in letter.recipient" :data-key="r.id != '' ? 'r-' + r.id.value : r.key" :key="r.id != '' ? 'r-' + r.id.value : r.key" class="border rounded my-2 py-3 px-2">
+                        <button @click="removePersonMeta(index, 'recipient')" type="button" class="close text-danger" aria-label="Remove author">
                             <span title="Remove recipient">&times;</span>
                         </button>
                         <div class="form-group required">
                             <label :for="'recipient-' + index">Recipient</label>
                             <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
-                            <v-select v-model="r.id" :options="personsData" :reduce="label => label.value" class="bg-white" required></v-select>
-                            <input type="hidden" name="recipient[]" v-model="r.id">
+                            <multiselect
+                                v-model="r.id"
+                                :options="personsData"
+                                label="label"
+                                track-by="value"
+                                :required="true"
+                                >
+                            </multiselect>
+                            <input type="hidden" :value="r.id.value" name="recipient[]">
+
                         </div>
 
                         <div class="form-group required">
@@ -241,7 +258,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <textarea v-model="letter.recipient_notes" name="recipient_notes" class="form-control form-control-sm"></textarea>
                     </div>
                 </fieldset>
-
+                <?php /* ?>
                 <fieldset id="a-origin">
                     <legend>Origin</legend>
 
@@ -322,14 +339,21 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                 </fieldset>
-
+<?php */ ?>
                 <fieldset id="a-content">
                     <legend>Content</legend>
 
                     <div class="form-group">
                         <label for="languages">Languages</label>
-                        <v-select v-model="letter.languages" :options="languages" :reduce="label => label.value" class="bg-white" multiple></v-select>
-                        <input type="hidden" :value="letter.languages.join(';')" name="languages">
+                        <multiselect
+                            v-model="letter.languages"
+                            :options="languages"
+                            label="label"
+                            track-by="value"
+                            :multiple="true"
+                            >
+                        </multiselect>
+                        <input type="hidden" :value="getObjectValues(letter.languages).join(';')" name="languages">
                     </div>
 
                     <div class="form-group keywords">
@@ -369,8 +393,15 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="people_mentioned">People mentioned <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)"></span></label>
-                        <v-select v-model="letter.mentioned" :options="personsData" :reduce="label => label.value" class="bg-white" multiple></v-select>
-                        <input type="hidden" v-model="letter.mentioned" name="people_mentioned">
+                        <multiselect
+                            v-model="letter.mentioned"
+                            :options="personsData"
+                            label="label"
+                            track-by="value"
+                            :multiple="true"
+                            >
+                        </multiselect>
+                        <input type="hidden" :value="getObjectValues(letter.mentioned)" name="people_mentioned">
                     </div>
 
                     <div class="form-group">
@@ -422,21 +453,13 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Repositories and versions</legend>
                     <div class="form-group">
                         <label for="ms_manifestation">MS manifestation</label>
-
-                        <v-select
+                        <multiselect
                             v-model="letter.ms_manifestation"
-                            :options="[
-                                { label: 'MS Letter', value: 'ALS' },
-                                { label: 'MS Copy', value: 'S' },
-                                { label: 'MS Draft', value: 'D' },
-                                { label: 'Extract', value: 'E' },
-                                { label: 'Other', value: 'O' },
-                            ]"
-                            :reduce="label => label.value"
-                            class="bg-white">
-                        </v-select>
-                        <input type="hidden" :value="letter.ms_manifestation" name="ms_manifestation">
-
+                            :options="manifestations"
+                            label="label"
+                            track-by="value">
+                        </multiselect>
+                        <input type="hidden" :value="letter.ms_manifestation.value" name="ms_manifestation">
                     </div>
 
                     <div class="form-group">
