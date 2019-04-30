@@ -15,6 +15,7 @@
     <script src="https://transloadit.edgly.net/releases/uppy/v0.29.1/dist/uppy.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.17.0/vuedraggable.min.js"></script>
+    <script src="https://unpkg.com/vue-multiselect@2.1.0"></script>
     <script src="<?= get_template_directory_uri(); ?>/assets/dist/custom.min.js?v=<?= filemtime(get_template_directory() . '/assets/dist/custom.min.js'); ?>"></script>
 
     <?php wp_footer(); ?>
