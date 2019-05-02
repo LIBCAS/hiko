@@ -537,7 +537,7 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Description</legend>
                     <div class="form-group required">
                         <label for="description">Description</label>
-                        <span class="pointer oi oi-transfer pl-1" @click="getTitle"></span>
+                        <span class="pointer oi oi-transfer pl-1" @click="title = getTitle()"></span>
                         <textarea v-model="title" name="description" class="form-control form-control-sm" required>{{ title }}</textarea>
                         {{ letter.title }}
 

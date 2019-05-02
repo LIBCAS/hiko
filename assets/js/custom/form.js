@@ -262,47 +262,54 @@ if (document.getElementById('letter-form')) {
             getObjectValues: function(o) {
                 return getObjectValues(o)
             },
+
             getTitle: function() {
+                let self = this
+                let letter = self.letter
+                let personMeta = JSON.parse(JSON.stringify(self.persons))
+                let placeMeta = JSON.parse(JSON.stringify(self.places))
                 let authors = []
                 let recipients = []
                 let origin = []
                 let destination = []
-                let letter = this.letter
-                let self = this
+
                 for (let i = 0; i < letter.author.length; i++) {
-                    authors.push(getNameById(self.persons, letter.author[i]))
+                    let id = JSON.parse(JSON.stringify(letter.author[i])).id
+                        .value
+                    authors.push(getNameById(personMeta, id))
                 }
+
                 for (let i = 0; i < letter.recipient.length; i++) {
-                    recipients.push(
-                        getNameById(self.persons, letter.recipient[i])
-                    )
+                    let id = JSON.parse(JSON.stringify(letter.recipient[i])).id
+                        .value
+                    recipients.push(getNameById(personMeta, id))
                 }
 
                 for (let i = 0; i < letter.origin.length; i++) {
-                    origin.push(getNameById(self.places, letter.origin[i]))
+                    let id = JSON.parse(JSON.stringify(letter.origin[i])).id
+                        .value
+                    origin.push(getNameById(placeMeta, id))
                 }
 
                 for (let i = 0; i < letter.destination.length; i++) {
-                    destination.push(
-                        getNameById(self.places, letter.destination[i])
-                    )
+                    let id = JSON.parse(JSON.stringify(letter.destination[i]))
+                        .id.value
+                    destination.push(getNameById(placeMeta, id))
                 }
 
+                authors = authors.join('; ')
+                recipients = recipients.join('; ')
                 origin = origin.join('; ')
                 destination = destination.join('; ')
 
-                let date =
-                    letter.date_day +
-                    '. ' +
-                    letter.date_month +
-                    '. ' +
+                let date = `${letter.date_day}. ${letter.date_month}. ${
                     letter.date_year
-                let from = authors.join('; ') + ' (' + origin + ')'
-                let to = recipients + ' (' + destination + ')'
+                }`
 
-                let result = date + ' ' + from + ' to ' + to
-                self.title = result
-                return result
+                let from = `${authors} (${origin})`
+                let to = `${recipients} (${destination})`
+
+                return `${date} ${from} to ${to}`
             },
 
             getLocationData: function(callback) {
