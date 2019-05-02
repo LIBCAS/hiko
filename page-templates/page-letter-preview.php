@@ -91,7 +91,7 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
                                 <tr>
                                     <td style="width: 20%;">Autor</td>
                                     <td>
-                                        <span v-for="a in author" class="d-block"> {{ a.marked }}</span>
+                                        <span v-for="a in author" class="d-block" :title="a.title"> {{ a.marked }}</span>
 
                                         <span v-if="author_uncertain" class="d-block">
                                             <small>(Autor nejistý)</small>
@@ -106,7 +106,7 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
                                 <tr>
                                     <td style="width: 20%;">Příjemce</td>
                                     <td>
-                                        <span v-for="r in recipient" class="d-block"> {{ r.marked }}</span>
+                                        <span v-for="r in recipient" class="d-block" :title="r.title"> {{ r.marked }}</span>
 
                                         <span v-if="recipient_uncertain" class="d-block">
                                             <small>(Nejistý příjemce)</small>
@@ -136,7 +136,7 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
                                 <tr>
                                     <td style="width: 20%;">Počáteční místo</td>
                                     <td>
-                                        <span class="d-block"> {{ origin }}</span>
+                                        <span v-for="o in origin" class="d-block" :title="o.title"> {{ o.marked }}</span>
                                         <span class="d-block" v-if="origin_uncertain">
                                             <small>(Nejisté počáteční místo)</small>
                                         </span>
@@ -155,7 +155,8 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
                                 <tr>
                                     <td style="width: 20%;">Místo určení</td>
                                     <td>
-                                        <span class="d-block"> {{ destination }}</span>
+                                        <span v-for="d in destination" class="d-block" :title="d.title"> {{ d.marked }}</span>
+
                                         <span class="d-block" v-if="dest_uncertain">
                                             <small>(Nejisté místo určení)</small>
                                         </span>
@@ -263,6 +264,8 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="https://unpkg.com/axios@0.18.0/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/baguettebox.js@1.11.0/dist/baguetteBox.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-multiselect@2.1.6/dist/vue-multiselect.min.js"></script>
+
     <script src="<?= get_template_directory_uri(); ?>/assets/dist/custom.min.js?v=<?= filemtime(get_template_directory() . '/assets/dist/custom.min.js'); ?>"></script>
 </body>
 

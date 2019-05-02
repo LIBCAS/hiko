@@ -57,20 +57,23 @@ if (document.getElementById('letter-preview')) {
             }
         },
         methods: {
-            getPersonMeta: function(ids, allMeta) {
-                let metaJSON = JSON.parse(allMeta)
+            getItemData: function(item, metaJSON) {
                 let results = []
+                let ids = Object.keys(item)
+                let names = Object.values(item)
 
                 for (let index = 0; index < ids.length; index++) {
-                    let personID = ids[index][0]
+                    let itemID = ids[index][0]
                     let find = metaJSON.filter(obj => {
-                        return obj.id === personID
+                        return obj.id === itemID
                     })
+                    find[0].title = names[index]
                     results.push(find[0])
                 }
 
                 return results
             },
+
             getLetter: function(id) {
                 let self = this
                 axios
@@ -86,6 +89,8 @@ if (document.getElementById('letter-preview')) {
                             self.error = true
                         } else {
                             let rd = response.data
+                            console.log(rd)
+
                             self.title = rd.name
                             self.year = rd.date_year == '0' ? '' : rd.date_year
                             self.month =
@@ -93,25 +98,29 @@ if (document.getElementById('letter-preview')) {
                             self.day = rd.date_day == '0' ? '' : rd.date_day
                             self.date_marked = rd.date_marked
                             self.date_uncertain = rd.date_uncertain
-                            self.author = self.getPersonMeta(
-                                Object.keys(rd.l_author),
+                            self.author = self.getItemData(
+                                rd.l_author,
                                 rd.authors_meta
                             )
                             self.author_inferred = rd.author_inferred
                             self.author_uncertain = rd.author_uncertain
-                            self.recipient = self.getPersonMeta(
-                                Object.keys(rd.recipient),
+                            self.recipient = self.getItemData(
+                                rd.recipient,
                                 rd.authors_meta
                             )
                             self.recipient_inferred = rd.recipient_inferred
                             self.recipient_uncertain = rd.recipient_uncertain
                             self.recipient_notes = rd.recipient_notes
-                            self.origin = Object.values(rd.origin)[0]
-                            self.origin_marked = rd.origin_marked
+                            self.origin = self.getItemData(
+                                rd.origin,
+                                rd.places_meta
+                            )
                             self.origin_inferred = rd.origin_inferred
                             self.origin_uncertain = rd.origin_uncertain
-                            self.destination = Object.values(rd.dest)[0]
-                            self.dest_marked = rd.dest_marked
+                            self.destination = self.getItemData(
+                                rd.dest,
+                                rd.places_meta
+                            )
                             self.dest_inferred = rd.dest_inferred
                             self.dest_uncertain = rd.dest_uncertain
                             self.languages =
@@ -143,6 +152,7 @@ if (document.getElementById('letter-preview')) {
                         }
                     })
                     .catch(function(error) {
+                        console.log(error)
                         alert(error)
                         self.error = true
                     })
