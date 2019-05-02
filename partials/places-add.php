@@ -26,8 +26,8 @@ if (array_key_exists('save_post', $_POST)) {
                 </div>
                 <div class="form-group requred">
                     <label for="country">Country</label>
-                    <v-select v-model="country" :options="countries" :reduce="label => label.value" class="bg-white" required></v-select>
-                    <input type="hidden" name="country" v-model="country">
+                    <multiselect v-model="country" :options="countries" label="label" track-by="value"></multiselect>
+                    <input type="hidden" name="country" :value="country.value">
                 </div>
                 <div class="form-group">
                     <label for="note">Note on place</label>

@@ -1,6 +1,6 @@
-/* global SlimSelect Vue axios ajaxUrl homeUrl Swal */
+/* global Vue axios ajaxUrl homeUrl Swal */
 
-Vue.component('v-select', VueSelect.VueSelect)
+Vue.component('multiselect', window.VueMultiselect.default)
 
 if (document.getElementById('letter-form')) {
     new Vue({
@@ -24,11 +24,9 @@ if (document.getElementById('letter-form')) {
                 mentioned: [],
                 origin: [],
                 origin_note: '',
-                origin_marked: '',
                 origin_inferred: false,
                 origin_uncertain: false,
                 destination: [],
-                dest_marked: '',
                 dest_inferred: false,
                 dest_uncertain: false,
                 dest_note: '',
@@ -54,7 +52,7 @@ if (document.getElementById('letter-form')) {
                 notes_private: '',
                 rel_rec_name: '',
                 rel_rec_url: '',
-                ms_manifestation: '',
+                ms_manifestation: {},
                 repository: '',
                 status: 'draft',
                 collection: '',
@@ -69,6 +67,13 @@ if (document.getElementById('letter-form')) {
             letterID: null,
             title: '',
             location_note: '',
+            manifestations: [
+                { label: 'MS Letter', value: 'ALS' },
+                { label: 'MS Copy', value: 'S' },
+                { label: 'MS Draft', value: 'D' },
+                { label: 'Extract', value: 'E' },
+                { label: 'Other', value: 'O' },
+            ],
         },
         computed: {
             personsData() {
@@ -83,6 +88,7 @@ if (document.getElementById('letter-form')) {
                 })
                 return personsData
             },
+
             placesData() {
                 let self = this
                 let placesData = []
@@ -94,6 +100,7 @@ if (document.getElementById('letter-form')) {
                 })
                 return placesData
             },
+
             languages() {
                 let langs = []
                 let langsJSON = document.querySelector('#languages').innerHTML
@@ -107,6 +114,7 @@ if (document.getElementById('letter-form')) {
                 }
                 return langs
             },
+
             participantsMeta() {
                 let authorsMeta = JSON.parse(JSON.stringify(this.letter.author)) // copy without vue getters and setters
                 let recipientsMeta = JSON.parse(
@@ -116,15 +124,43 @@ if (document.getElementById('letter-form')) {
                 let merged = []
 
                 authorsMeta.forEach(item => {
+                    item = JSON.parse(JSON.stringify(item))
+                    item.id = item.id.value
                     merged.push(item)
                 })
 
                 recipientsMeta.forEach(item => {
+                    item = JSON.parse(JSON.stringify(item))
+                    item.id = item.id.value
                     merged.push(item)
                 })
 
                 return JSON.stringify(merged)
             },
+
+            placesMeta: function() {
+                let origins = JSON.parse(JSON.stringify(this.letter.origin))
+                let destinations = JSON.parse(
+                    JSON.stringify(this.letter.destination)
+                )
+
+                let merged = []
+
+                origins.forEach(item => {
+                    item = JSON.parse(JSON.stringify(item))
+                    item.id = item.id.value
+                    merged.push(item)
+                })
+
+                destinations.forEach(item => {
+                    item = JSON.parse(JSON.stringify(item))
+                    item.id = item.id.value
+                    merged.push(item)
+                })
+
+                return JSON.stringify(merged)
+            },
+
             imgUrl: function() {
                 return (
                     homeUrl +
@@ -136,6 +172,7 @@ if (document.getElementById('letter-form')) {
                     this.letterID
                 )
             },
+
             previewUrl: function() {
                 return (
                     homeUrl +
@@ -145,6 +182,7 @@ if (document.getElementById('letter-form')) {
                     this.letterID
                 )
             },
+
             repositories: function() {
                 let self = this
                 return self.locations.filter(function(loc) {
@@ -153,6 +191,7 @@ if (document.getElementById('letter-form')) {
                     }
                 })
             },
+
             collections: function() {
                 let self = this
                 return self.locations.filter(function(loc) {
@@ -161,6 +200,7 @@ if (document.getElementById('letter-form')) {
                     }
                 })
             },
+
             archives: function() {
                 let self = this
                 return self.locations.filter(function(loc) {
@@ -169,6 +209,7 @@ if (document.getElementById('letter-form')) {
                     }
                 })
             },
+
             formVisible: function() {
                 let self = this
                 if (
@@ -218,6 +259,9 @@ if (document.getElementById('letter-form')) {
             this.getLocationData()
         },
         methods: {
+            getObjectValues: function(o) {
+                return getObjectValues(o)
+            },
             getTitle: function() {
                 let authors = []
                 let recipients = []
@@ -292,16 +336,32 @@ if (document.getElementById('letter-form')) {
                         if (response.data == '404') {
                             self.error = true
                         } else {
-                            /*
-                             * TODO
-                             */
                             let rd = response.data
-                            let authors = Object.keys(rd.l_author)
-                            let recipients = Object.keys(rd.recipient)
+
+                            let authors = JSON.parse(
+                                JSON.stringify(rd.l_author)
+                            )
+                            authors = Object.keys(authors)
+
+                            let recipients = JSON.parse(
+                                JSON.stringify(rd.recipient)
+                            )
+                            recipients = Object.keys(recipients)
+
+                            let origin = rd.origin
+                            origin = Object.keys(origin)
+
+                            let destination = rd.dest
+                            destination = Object.keys(destination)
+
+                            let mentioned = rd.people_mentioned
+                            let manifestation = rd.ms_manifestation
+                            let languages = rd.languages
+
                             self.letter = rd
 
-                            self.$set(self.letter, 'recipient', []) // must set reactive data again
-                            self.$set(self.letter, 'author', [])
+                            self.$set(self.letter, 'languages', []) // must set reactive data again
+                            self.$set(self.letter, 'mentioned', [])
 
                             self.letter.date_year =
                                 rd.date_year == '0' ? '' : rd.date_year
@@ -315,31 +375,70 @@ if (document.getElementById('letter-form')) {
                                 rd.range_month == '0' ? '' : rd.range_month
                             self.letter.range_day =
                                 rd.range_day == '0' ? '' : rd.range_day
-                            /*
-                            self.letter.author = self.getPersonMeta(
-                                authors,
-                                rd.authors_meta
+
+                            if (manifestation != '') {
+                                manifestation = self.manifestations.find(
+                                    man => man.value === manifestation
+                                )
+                                self.$set(
+                                    self.letter,
+                                    'ms_manifestation',
+                                    manifestation
+                                )
+                            }
+
+                            self.$set(
+                                self.letter,
+                                'author',
+                                self.getPersonMeta(authors, rd.authors_meta)
                             )
 
-                            self.letter.recipient = self.getPersonMeta(
-                                recipients,
-                                rd.authors_meta
+                            self.$set(
+                                self.letter,
+                                'recipient',
+                                self.getPersonMeta(recipients, rd.authors_meta)
                             )
-                                */
-                            self.letter.origin = Object.keys(rd.origin)
-                            self.letter.destination = Object.keys(rd.dest)
 
-                            self.letter.languages =
-                                rd.languages.length === 0
-                                    ? []
-                                    : rd.languages.split(';')
+                            self.$set(
+                                self.letter,
+                                'origin',
+                                self.getPlaceMeta(origin, rd.places_meta)
+                            )
+
+                            self.$set(
+                                self.letter,
+                                'destination',
+                                self.getPlaceMeta(destination, rd.places_meta)
+                            )
+
+                            if (languages != '') {
+                                languages = languages.split(';')
+                                for (
+                                    let index = 0;
+                                    index < languages.length;
+                                    index++
+                                ) {
+                                    self.letter.languages.push({
+                                        label: languages[index],
+                                        value: languages[index],
+                                    })
+                                }
+                            }
+
                             self.letter.keywords =
                                 rd.keywords.length === 0
                                     ? [{ value: '' }]
                                     : self.parseKeywords(rd.keywords)
-                            self.letter.mentioned = Object.keys(
-                                rd.people_mentioned
-                            )
+
+                            if (!Array.isArray(mentioned)) {
+                                for (var key in mentioned) {
+                                    self.letter.mentioned.push({
+                                        label: mentioned[key],
+                                        value: key,
+                                    })
+                                }
+                            }
+
                             self.title = rd.name
                             self.location_note = rd.location_note
                         }
@@ -430,7 +529,7 @@ if (document.getElementById('letter-form')) {
                 return kwObj
             },
 
-            removePersonMeta: function(personIndex, type) {
+            removeObjectMeta: function(personIndex, type) {
                 this.letter[type] = this.letter[type].filter(function(
                     item,
                     index
@@ -439,10 +538,23 @@ if (document.getElementById('letter-form')) {
                 })
             },
 
+            addPlaceMeta: function(type) {
+                this.letter[type].push({
+                    id: {},
+                    marked: '',
+                    key:
+                        type +
+                        Math.random()
+                            .toString(36)
+                            .substring(7),
+                    // random key for forcing Vue to update list while removing PlaceMeta
+                })
+            },
+
             addPersonMeta: function(type) {
                 let self = this
                 self.letter[type].push({
-                    id: null,
+                    id: {},
                     marked: '',
                     salutation: '',
                     key:
@@ -454,19 +566,74 @@ if (document.getElementById('letter-form')) {
                 })
             },
 
-            getPersonMeta: function(ids, allMeta) {
-                let metaJSON = JSON.parse(allMeta)
-                let results = []
-
-                for (let index = 0; index < ids.length; index++) {
-                    let personID = ids[index][0]
-                    let find = metaJSON.filter(obj => {
-                        return obj.id === personID
-                    })
-                    results.push(find[0])
+            getPlaceMeta: function(ids, allMeta) {
+                if (ids.length == 0) {
+                    return []
                 }
 
-                return results
+                let self = this
+                let result = []
+                allMeta = JSON.parse(JSON.stringify(allMeta))
+
+                let l = ids.length
+                for (let index = 0; index < l; index++) {
+                    let placesObj = self.placesData.find(
+                        place => place.value === ids[index]
+                    )
+                    let placeData = allMeta.find(m => m.id === ids[index])
+
+                    let place = {
+                        id: JSON.parse(JSON.stringify(placesObj)),
+                    }
+
+                    if (placeData.hasOwnProperty('marked')) {
+                        place.marked = placeData.marked
+                    } else {
+                        place.marked = ''
+                    }
+
+                    result.push(place)
+                }
+
+                return result
+            },
+
+            getPersonMeta: function(ids, allMeta) {
+                if (ids.length == 0) {
+                    return []
+                }
+
+                let self = this
+                let result = []
+                allMeta = JSON.parse(JSON.stringify(allMeta))
+
+                let l = ids.length
+                for (let index = 0; index < l; index++) {
+                    let personObj = self.personsData.find(
+                        person => person.value === ids[index]
+                    )
+                    let personData = allMeta.find(m => m.id === ids[index])
+
+                    let author = {
+                        id: JSON.parse(JSON.stringify(personObj)),
+                    }
+
+                    if (personData.hasOwnProperty('marked')) {
+                        author.marked = personData.marked
+                    } else {
+                        author.marked = ''
+                    }
+
+                    if (personData.hasOwnProperty('salutation')) {
+                        author.salutation = personData.salutation
+                    } else {
+                        author.salutation = ''
+                    }
+
+                    result.push(author)
+                }
+
+                return result
             },
         },
     })
@@ -477,7 +644,7 @@ if (document.getElementById('places-form')) {
         el: '#places-form',
         data: {
             place: '',
-            country: '',
+            country: {},
             note: '',
             lat: '',
             long: '',
@@ -523,9 +690,6 @@ if (document.getElementById('places-form')) {
                 })
             },
             getInitialData: function(id) {
-                /*
-                 * TODO
-                 */
                 let self = this
                 axios
                     .get(
@@ -537,7 +701,10 @@ if (document.getElementById('places-form')) {
                     )
                     .then(function(response) {
                         self.place = response.data.name
-                        self.country = response.data.country
+                        self.country = {
+                            value: response.data.country,
+                            label: response.data.country,
+                        }
                         self.note = response.data.note
                         self.lat = response.data.latitude
                         self.long = response.data.longitude
@@ -745,4 +912,14 @@ function geoDataToSelect(geoData) {
             ')'
     }
     return output
+}
+
+function getObjectValues(obj) {
+    let result = []
+    let i
+    let l = obj.length
+    for (i = 0; i < l; i++) {
+        result.push(obj[i].value)
+    }
+    return result
 }

@@ -104,6 +104,7 @@ gulp.task('customJS', () => {
     return gulp
         .src(paths.jsCustomSRC, { since: gulp.lastRun('customJS') })
         .pipe(plumber(errorHandler))
+        .pipe(sourcemaps.init())
         .pipe(
             babel({
                 presets: [
@@ -128,6 +129,7 @@ gulp.task('customJS', () => {
         )
         .pipe(uglify())
         .pipe(lineec())
+        .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest(paths.jsCustomDestination))
         .pipe(
             notify({

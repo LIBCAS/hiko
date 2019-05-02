@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href="<?= get_template_directory_uri(); ?>/assets/open-iconic/font/css/open-iconic-bootstrap.min.css">
     <link rel="stylesheet" href="https://transloadit.edgly.net/releases/uppy/v0.29.1/dist/uppy.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/vue-select@latest/dist/vue-select.css">
+    <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.0/dist/vue-multiselect.min.css">
     <link rel="stylesheet" href="<?= get_template_directory_uri() . '/assets/dist/main.css?ver=' . filemtime(get_template_directory() . '/assets/dist/main.css'); ?>">
 
     <script type="text/javascript">
