@@ -8,18 +8,34 @@ fieldset {
     margin-bottom: 16px;
 }
 
-.ss-main {
-    height: 100%;
-    margin: 0;
+.multiselect__tags {
+    @include border-radius($input-border-radius-sm);
+    border: $input-border-width solid $input-border-color;
+    color: $input-color;
+    line-height: $input-line-height-sm;
+    min-height: calc(1.5em + 0.5rem + 2px);
+    padding: $input-padding-y-sm $input-padding-x-sm;
+}
+
+.multiselect__tag {
+    margin-bottom: 0;
+}
+
+.multiselect__input,
+.multiselect__single {
+    background: transparent;
+    @include font-size($input-font-size-sm);
+}
+
+.multiselect__single {
+    margin-bottom: 0;
     padding: 0;
 }
 
-.vs--single .vs__selected,
-.vs__selected {
-    background-color: $info;
-    color: #fff;
+.multiselect__placeholder {
+    margin-bottom: 2px;
+}
 
-    & .vs__deselect {
-        fill: #fff;
-    }
+.multiselect__content-wrapper {
+    border: $input-border-width solid $input-border-color;
 }
