@@ -847,8 +847,6 @@ function save_hiko_letter($letter_type, $action, $path)
         'range_day' => 'range_day',
         'date_marked' => 'date_marked',
         'recipient_notes' => 'recipient_notes',
-        'origin_marked' => 'origin_marked',
-        'dest_marked' => 'dest_marked',
         'abstract' => 'abstract',
         'incipit' => 'incipit',
         'explicit' => 'explicit',

@@ -143,6 +143,7 @@ if (document.getElementById('letter-form')) {
                 let destinations = JSON.parse(
                     JSON.stringify(this.letter.destination)
                 )
+
                 let merged = []
 
                 origins.forEach(item => {
@@ -335,10 +336,8 @@ if (document.getElementById('letter-form')) {
                         if (response.data == '404') {
                             self.error = true
                         } else {
-                            /*
-                             * TODO origin and destination
-                             */
                             let rd = response.data
+
                             let authors = JSON.parse(
                                 JSON.stringify(rd.l_author)
                             )
@@ -348,15 +347,13 @@ if (document.getElementById('letter-form')) {
                                 JSON.stringify(rd.recipient)
                             )
                             recipients = Object.keys(recipients)
-                            /*
+
                             let origin = rd.origin
                             origin = Object.keys(origin)
-                            console.log(origin)
 
-                            let destination = rd.destination
+                            let destination = rd.dest
                             destination = Object.keys(destination)
-                            console.log(destination)
-*/
+
                             let mentioned = rd.people_mentioned
                             let manifestation = rd.ms_manifestation
                             let languages = rd.languages
@@ -365,8 +362,6 @@ if (document.getElementById('letter-form')) {
 
                             self.$set(self.letter, 'languages', []) // must set reactive data again
                             self.$set(self.letter, 'mentioned', [])
-                            self.$set(self.letter, 'destination', []) // must set reactive data again
-                            self.$set(self.letter, 'origin', [])
 
                             self.letter.date_year =
                                 rd.date_year == '0' ? '' : rd.date_year
@@ -404,8 +399,17 @@ if (document.getElementById('letter-form')) {
                                 self.getPersonMeta(recipients, rd.authors_meta)
                             )
 
-                            self.letter.origin = Object.keys(rd.origin)
-                            self.letter.destination = Object.keys(rd.dest)
+                            self.$set(
+                                self.letter,
+                                'origin',
+                                self.getPlaceMeta(origin, rd.places_meta)
+                            )
+
+                            self.$set(
+                                self.letter,
+                                'destination',
+                                self.getPlaceMeta(destination, rd.places_meta)
+                            )
 
                             if (languages != '') {
                                 languages = languages.split(';')
@@ -562,6 +566,38 @@ if (document.getElementById('letter-form')) {
                 })
             },
 
+            getPlaceMeta: function(ids, allMeta) {
+                if (ids.length == 0) {
+                    return []
+                }
+
+                let self = this
+                let result = []
+                allMeta = JSON.parse(JSON.stringify(allMeta))
+
+                let l = ids.length
+                for (let index = 0; index < l; index++) {
+                    let placesObj = self.placesData.find(
+                        place => place.value === ids[index]
+                    )
+                    let placeData = allMeta.find(m => m.id === ids[index])
+
+                    let place = {
+                        id: JSON.parse(JSON.stringify(placesObj)),
+                    }
+
+                    if (placeData.hasOwnProperty('marked')) {
+                        place.marked = placeData.marked
+                    } else {
+                        place.marked = ''
+                    }
+
+                    result.push(place)
+                }
+
+                return result
+            },
+
             getPersonMeta: function(ids, allMeta) {
                 if (ids.length == 0) {
                     return []
@@ -580,9 +616,20 @@ if (document.getElementById('letter-form')) {
 
                     let author = {
                         id: JSON.parse(JSON.stringify(personObj)),
-                        marked: personData.marked,
-                        salutation: personData.salutation,
                     }
+
+                    if (personData.hasOwnProperty('marked')) {
+                        author.marked = personData.marked
+                    } else {
+                        author.marked = ''
+                    }
+
+                    if (personData.hasOwnProperty('salutation')) {
+                        author.salutation = personData.salutation
+                    } else {
+                        author.salutation = ''
+                    }
+
                     result.push(author)
                 }
 
