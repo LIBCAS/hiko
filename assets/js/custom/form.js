@@ -1,6 +1,7 @@
-/* global Vue axios ajaxUrl homeUrl Swal */
+/* global Vue axios ajaxUrl homeUrl Swal VeeValidate */
 
 Vue.component('multiselect', window.VueMultiselect.default)
+Vue.use(VeeValidate)
 
 if (document.getElementById('letter-form')) {
     new Vue({
@@ -259,6 +260,14 @@ if (document.getElementById('letter-form')) {
             this.getLocationData()
         },
         methods: {
+            validateForm(e) {
+                this.$validator.validate().then(valid => {
+                    if (!valid) {
+                        e.preventDefault()
+                    }
+                })
+            },
+
             getObjectValues: function(o) {
                 return getObjectValues(o)
             },

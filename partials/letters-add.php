@@ -12,8 +12,8 @@ if (array_key_exists('edit', $_GET)) {
 }
 
 if (array_key_exists('save_post', $_POST)) {
-    //var_dump($_POST);
-    //die();
+    var_dump($_POST);
+    die();
     echo save_hiko_letter($letter_type, $action, $path);
 }
 
@@ -46,14 +46,14 @@ if (array_key_exists('save_post', $_POST)) {
 
     <div class="card bg-light d-none" :class="{ 'd-block' : formVisible }">
         <div class="card-body">
-            <form method="post" id="letter-form" onkeypress="return event.keyCode!=13">
+            <form @submit="validateForm" method="post" id="letter-form" onkeypress="return event.keyCode!=13">
                 <fieldset id="a-dates">
                     <legend>Dates of letter</legend>
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
                                 <label for="date_year">Year</label>
-                                <input v-model="letter.date_year" type="number" name="date_year" class="form-control form-control-sm" min="0" max="2020">
+                                <input v-validate="'between:0,2020'" data-vv-name="'Year'" v-model="letter.date_year" type="number" name="date_year" class="form-control form-control-sm" min="0" max="2020">
                                 <small class="form-text text-muted">
                                     format YYYY, e.g. 1660
                                 </small>
@@ -62,7 +62,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="date_month">Month</label>
-                                <input v-model="letter.date_month" type="number" name="date_month" class="form-control form-control-sm" min="0" max="12">
+                                <input v-validate="'between:1,12'" data-vv-name="'Month'" v-model="letter.date_month" type="number" name="date_month" class="form-control form-control-sm" min="0" max="12">
                                 <small class="form-text text-muted">
                                     format MM, e.g. 1
                                 </small>
@@ -71,7 +71,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="date_day">Day</label>
-                                <input v-model="letter.date_day" type="number" name="date_day" class="form-control form-control-sm" min="0" max="31">
+                                <input v-validate="'between:1,31'" data-vv-name="'Day'" v-model="letter.date_day" type="number" name="date_day" class="form-control form-control-sm" min="0" max="31">
                                 <small class="form-text text-muted">
                                     format DD, e.g. 8
                                 </small>
@@ -108,7 +108,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="range_year">Year 2</label>
-                                <input v-model="letter.range_year" type="number" name="range_year" class="form-control form-control-sm" min="0" max="2020">
+                                <input v-validate="'between:0,2020'" data-vv-name="'Year 2'" v-model="letter.range_year" type="number" name="range_year" class="form-control form-control-sm" min="0" max="2020">
                                 <small class="form-text text-muted">
                                     2nd date, if range
                                 </small>
@@ -117,7 +117,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="range_month">Month 2</label>
-                                <input v-model="letter.range_month" type="number" name="range_month" class="form-control form-control-sm" min="0" max="12">
+                                <input v-validate="'between:1,12'" data-vv-name="'Month 2'" v-model="letter.range_month" type="number" name="range_month" class="form-control form-control-sm" min="0" max="12">
                                 <small class="form-text text-muted">
                                     2nd date, if range
                                 </small>
@@ -126,7 +126,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="range_day">Day 2</label>
-                                <input v-model="letter.range_day" type="number" name="range_day" class="form-control form-control-sm" min="0" max="31">
+                                <input v-validate="'between:1,31'" data-vv-name="'Day 2'" v-model="letter.range_day" type="number" name="range_day" class="form-control form-control-sm" min="0" max="31">
                                 <small class="form-text text-muted">
                                     2nd date, if range
                                 </small>
@@ -158,11 +158,11 @@ if (array_key_exists('save_post', $_POST)) {
                                 :required="true"
                                 >
                             </multiselect>
-                            <input type="hidden" :value="a.id.value" name="l_author[]">
+                            <input type="hidden" :value="a.id.value" v-validate="'required'" data-vv-name="'Author'" name="l_author[]">
                         </div>
                         <div class="form-group required">
                             <label for="marked">Author as marked</label>
-                            <input v-model="a.marked" type="text" class="form-control form-control-sm" required>
+                            <input v-validate="'required'" data-vv-name="'Author as marked'" v-model="a.marked" type="text" class="form-control form-control-sm" required>
                             <small class="form-text text-muted">
                                 author's name as written in letter
                             </small>
@@ -214,13 +214,12 @@ if (array_key_exists('save_post', $_POST)) {
                                 :required="true"
                                 >
                             </multiselect>
-                            <input type="hidden" :value="r.id.value" name="recipient[]">
-
+                            <input v-validate="'required'" data-vv-name="'Recipient'" type="hidden" :value="r.id.value" name="recipient[]">
                         </div>
 
                         <div class="form-group required">
                             <label for="recipient_as_marked">Recipient as marked</label>
-                            <input v-model="r.marked" type="text" class="form-control form-control-sm" required>
+                            <input v-validate="'required'" data-vv-name="'Recipient as marked'" v-model="r.marked" type="text" class="form-control form-control-sm" required>
                             <small class="form-text text-muted">
                                 recipient's name as written in letter
                             </small>
@@ -277,11 +276,11 @@ if (array_key_exists('save_post', $_POST)) {
                                 :required="true"
                                 >
                             </multiselect>
-                            <input type="hidden" :value="o.id.value" name="origin[]">
+                            <input v-validate="'required'" data-vv-name="'Origin'" type="hidden" :value="o.id.value" name="origin[]">
                         </div>
                         <div class="form-group required">
                             <label for="marked">Origin as marked</label>
-                            <input v-model="o.marked" type="text" class="form-control form-control-sm" required>
+                            <input v-validate="'required'" data-vv-name="'Origin as marked'" v-model="o.marked" type="text" class="form-control form-control-sm" required>
                             <small class="form-text text-muted">
                                 origin name as written in letter
                             </small>
@@ -335,11 +334,11 @@ if (array_key_exists('save_post', $_POST)) {
                                 :required="true"
                                 >
                             </multiselect>
-                            <input type="hidden" :value="d.id.value" name="dest[]">
+                            <input v-validate="'required'" data-vv-name="'Destination'" type="hidden" :value="d.id.value" name="dest[]">
                         </div>
                         <div class="form-group required">
                             <label for="marked">Destination as marked</label>
-                            <input v-model="d.marked" type="text" class="form-control form-control-sm" required>
+                            <input v-validate="'required'" data-vv-name="'Destination as marked'" v-model="d.marked" type="text" class="form-control form-control-sm" required>
                             <small class="form-text text-muted">
                                 destination name as written in letter
                             </small>
@@ -473,7 +472,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                     <div class="form-group">
                         <label for="rel_rec_url">Related resource url</label>
-                        <input v-model="letter.rel_rec_url" type="url" name="rel_rec_url" class="form-control form-control-sm">
+                        <input v-validate="{url: {require_protocol: true }}" v-model="letter.rel_rec_url" type="url" name="rel_rec_url" class="form-control form-control-sm">
                         <small class="form-text text-muted">
                             permanent/short URL to letter-related online resource
                         </small>
@@ -538,7 +537,7 @@ if (array_key_exists('save_post', $_POST)) {
                     <div class="form-group required">
                         <label for="description">Description</label>
                         <span class="pointer oi oi-transfer pl-1" @click="title = getTitle()"></span>
-                        <textarea v-model="title" name="description" class="form-control form-control-sm" required>{{ title }}</textarea>
+                        <textarea v-validate="'required'" data-vv-name="'Description'" v-model="title" name="description" class="form-control form-control-sm" required>{{ title }}</textarea>
                         {{ letter.title }}
 
                         <small class="form-text text-muted">
@@ -568,13 +567,19 @@ if (array_key_exists('save_post', $_POST)) {
                 <input type="hidden" :value="placesMeta" name="places_meta">
                 <input type="hidden" :value="participantsMeta" name="authors_meta">
 
+                <div v-if="errors.all().length > 0" class="alert alert-danger">
+                    <ul class="m-0 px-2">
+                        <li v-for="error in errors.all()">{{ error }}</li>
+                    </ul>
+                </div>
+
                 <?php if ($action == 'new') : ?>
                     <input type="hidden" name="save_post" value="new">
                 <?php else : ?>
                     <input type="hidden" name="save_post" value="edit">
                 <?php endif; ?>
 
-                <input type="submit" value="Uložit" class="btn btn-primary">
+                <input :disabled="errors.all().length > 0" type="submit" value="Uložit" class="btn btn-primary">
                 <a v-if="edit" :href="imgUrl" class="btn btn-secondary" target="_blank">Obrazové přílohy</a>
                 <a v-if="edit" :href="previewUrl" class="btn btn-secondary" target="_blank">Náhled</a>
             </form>
