@@ -12,8 +12,6 @@ if (array_key_exists('edit', $_GET)) {
 }
 
 if (array_key_exists('save_post', $_POST)) {
-    var_dump($_POST);
-    die();
     echo save_hiko_letter($letter_type, $action, $path);
 }
 
