@@ -32,6 +32,11 @@
                         Uložení
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= home_url('/napoveda/') ?>">
+                        Nápověda
+                    </a>
+                </li>
             </ul>
             <?php require 'menu-login.php'; ?>
         </div>
