@@ -503,6 +503,17 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                     <div class="form-group">
+                        <label for="document_type">Letter type <span class="text-danger">Dodat!</span></label>
+                        <multiselect
+                            v-model="letter.document_type"
+                            :options="documentTypes"
+                            label="label"
+                            track-by="value">
+                        </multiselect>
+                        <input type="hidden" :value="letter.document_type.value" name="document_type">
+                    </div>
+
+                    <div class="form-group">
                         <label for="archive">Archive</label>
                         <input v-model="letter.archive" list="archives" type="text" name="archive" class="form-control form-control-sm">
                         <datalist id="archives">
@@ -526,7 +537,6 @@ if (array_key_exists('save_post', $_POST)) {
                     <div class="form-group">
                         <label for="location_note">Notes on location</label>
                         <textarea v-model="location_note" name="location_note" class="form-control form-control-sm">{{ location_note }}</textarea>
-
                     </div>
                 </fieldset>
 

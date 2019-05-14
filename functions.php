@@ -867,7 +867,8 @@ function save_hiko_letter($letter_type, $action, $path)
         'collection' => 'collection',
         'signature' => 'signature',
         'location_note' => 'location_note',
-        'languages' => 'languages'
+        'languages' => 'languages',
+        'document_type' => 'document_type'
     ]);
 
     $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);

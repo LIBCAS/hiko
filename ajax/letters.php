@@ -154,12 +154,10 @@ function list_public_letters_single()
     $results['recipient_uncertain'] = (bool) $pod->field('recipient_uncertain');
     $results['recipient_notes'] = $pod->field('recipient_notes');
     $results['origin'] = $origins;
-    $results['origin_marked'] = $pod->field('origin_marked');
     $results['origin_inferred'] = (bool) $pod->field('origin_inferred');
     $results['origin_uncertain'] = (bool) $pod->field('origin_uncertain');
     $results['origin_note'] = $pod->field('origin_note');
     $results['dest'] = $destinations;
-    $results['dest_marked'] = $pod->field('dest_marked');
     $results['dest_uncertain'] = (bool) $pod->field('dest_uncertain');
     $results['dest_inferred'] = (bool) $pod->field('dest_inferred');
     $results['dest_note'] = $pod->field('dest_note');
@@ -184,6 +182,7 @@ function list_public_letters_single()
     $results['location_note'] = $pod->field('location_note');
     $results['authors_meta'] = json_decode($pod->field('authors_meta'));
     $results['places_meta'] = json_decode($pod->field('places_meta'));
+    $results['document_type'] = $pod->field('document_type');
 
     $results['images'] = $images_sorted;
     if (is_user_logged_in()) {

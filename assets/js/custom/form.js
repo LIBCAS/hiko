@@ -65,6 +65,7 @@ if (document.getElementById('letter-form')) {
                 archive: '',
                 signature: '',
                 location_note: '',
+                document_type: {},
             },
             persons: [],
             places: [],
@@ -79,6 +80,10 @@ if (document.getElementById('letter-form')) {
                 { label: 'MS Draft', value: 'D' },
                 { label: 'Extract', value: 'E' },
                 { label: 'Other', value: 'O' },
+            ],
+            documentTypes: [
+                { label: 'Telegram', value: 'Telegram' },
+                { label: 'Postal card', value: 'Postal card' },
             ],
         },
         computed: {
@@ -378,11 +383,13 @@ if (document.getElementById('letter-form')) {
                             let mentioned = rd.people_mentioned
                             let manifestation = rd.ms_manifestation
                             let languages = rd.languages
+                            let documentType = rd.document_type
 
                             self.letter = rd
 
                             self.$set(self.letter, 'languages', []) // must set reactive data again
                             self.$set(self.letter, 'mentioned', [])
+                            self.$set(self.letter, 'document_type', {})
 
                             self.letter.date_year =
                                 rd.date_year == '0' ? '' : rd.date_year
@@ -405,6 +412,17 @@ if (document.getElementById('letter-form')) {
                                     self.letter,
                                     'ms_manifestation',
                                     manifestation
+                                )
+                            }
+
+                            if (documentType != '' && documentType != null) {
+                                documentType = self.documentTypes.find(
+                                    dt => dt.value === documentType
+                                )
+                                self.$set(
+                                    self.letter,
+                                    'document_type',
+                                    documentType
                                 )
                             }
 
