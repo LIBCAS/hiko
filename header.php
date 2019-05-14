@@ -21,4 +21,4 @@
     <?php require_once 'partials/favicon.php'; ?>
 </head>
 
-<body>
+<body <?php body_class(); ?>>

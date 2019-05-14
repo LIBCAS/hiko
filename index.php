@@ -7,7 +7,7 @@ $page_id = get_queried_object_id();
 ?>
 <div class="container mt-5">
     <div class="row" style="min-height: 75vh;">
-        <div class="col">
+        <div class="col main-content">
             <?php while (have_posts()) : ?>
                 <?php the_post(); ?>
                 <h1><?php the_title(); ?></h1>
