@@ -322,7 +322,7 @@ function is_in_editor_role()
     $user = wp_get_current_user();
     $roles = (array) $user->roles;
 
-    $editor_roles = ['administrator', 'blekastad_editor', 'demo_editor'];
+    $editor_roles = ['administrator', 'blekastad_editor', 'tgm_editor', 'demo_editor'];
 
     $result = array_intersect($roles, $editor_roles);
 
@@ -668,6 +668,13 @@ function get_hiko_post_types($type)
         $data['editor'] = 'demo_editor';
         $data['path'] = 'demo';
         $data['title'] = 'Zkušební DB';
+    } elseif ($type == 'tgm') {
+        $data['letter'] = 'tgm_letter';
+        $data['place'] = 'tgm_place';
+        $data['person'] = 'tgm_person';
+        $data['editor'] = 'tgm_editor';
+        $data['path'] = 'tgm';
+        $data['title'] = 'Korespondence TGM';
     }
 
     return $data;
@@ -680,6 +687,8 @@ function get_hiko_post_types_by_url()
         return get_hiko_post_types('blekastad');
     } elseif (strpos($req, 'demo') !== false) {
         return get_hiko_post_types('demo');
+    } elseif (strpos($req, 'tgm') !== false) {
+        return get_hiko_post_types('tgm');
     }
     return get_hiko_post_types('');
 }

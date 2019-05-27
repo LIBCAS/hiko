@@ -18,6 +18,16 @@
                     </div>
                 </li>
                 <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="demo-tgm" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Korespondence TGM
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="demo-tgm">
+                        <a class="dropdown-item" href="<?= home_url('/tgm/letters/') ?>">Dopisy</a>
+                        <a class="dropdown-item" href="<?= home_url('/tgm/persons/') ?>">Lidé</a>
+                        <a class="dropdown-item" href="<?= home_url('/tgm/places/') ?>">Místa</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="demo-dd" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Zkušební DB
                     </a>
