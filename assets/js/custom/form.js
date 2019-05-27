@@ -883,6 +883,13 @@ function getLetterType() {
             placeType: 'demo_place',
             path: 'demo',
         }
+    } else if (stringContains(url.pathname, 'tgm')) {
+        return {
+            letterType: 'tgm_letter',
+            personType: 'tgm_person',
+            placeType: 'tgm_place',
+            path: 'tgm',
+        }
     } else {
         return 'Neplatný typ dopisu'
     }
