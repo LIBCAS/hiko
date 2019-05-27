@@ -953,7 +953,8 @@ function save_hiko_person($person_type, $action)
         'emlo' => 'emlo',
         'note' => 'note',
         'profession' => 'profession',
-        'nationality' => 'nationality'
+        'nationality' => 'nationality',
+        'gender' => 'gender'
     ]);
 
     $new_pod = '';

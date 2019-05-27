@@ -769,6 +769,7 @@ if (document.getElementById('person-name')) {
             error: false,
             personType: '',
             nationality: '',
+            gender: '',
             profession: '',
             alternativeNames: [],
         },
@@ -838,6 +839,7 @@ if (document.getElementById('person-name')) {
                             self.dod = response.data.death_year
                             self.note = response.data.note
                             self.nationality = response.data.nationality
+                            self.gender = response.data.gender
                             self.profession = response.data.profession
                             self.alternativeNames = response.data.names
                         }

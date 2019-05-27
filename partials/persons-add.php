@@ -64,6 +64,14 @@ if (array_key_exists('save_post', $_POST)) {
                         <label for="nationality">Nationality</label>
                         <input v-model="nationality" type="text" class="form-control form-control-sm" name="nationality">
                     </div>
+                    <div class="form-group">
+                        <label for="nationality">Gender</label>
+                        <input v-model="gender" list="genders" type="text" class="form-control form-control-sm" name="gender">
+                        <datalist id="genders">
+                            <option>F</option>
+                            <option>M</option>
+                        </datalist>
+                    </div>
                 </fieldset>
 
                 <fieldset>

@@ -73,6 +73,7 @@ function list_people_single()
     $results['note'] = $pod->field('note');
     $results['profession'] = $pod->field('profession');
     $results['nationality'] = $pod->field('nationality');
+    $results['gender'] = $pod->field('gender');
     $results['names'] = $alternative_names;
 
     echo json_encode(
