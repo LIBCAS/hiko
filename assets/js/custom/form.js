@@ -66,6 +66,8 @@ if (document.getElementById('letter-form')) {
                 signature: '',
                 location_note: '',
                 document_type: {},
+                preservation: {},
+                copy: {}
             },
             persons: [],
             places: [],
@@ -82,8 +84,27 @@ if (document.getElementById('letter-form')) {
                 { label: 'Other', value: 'O' },
             ],
             documentTypes: [
+                { label: 'Letter', value: 'letter' },
                 { label: 'Telegram', value: 'Telegram' },
-                { label: 'Postal card', value: 'Postal card' },
+                { label: 'Postcard', value: 'postcard' },
+            ],
+            preservation: [
+                { label: 'draft', value: 'draft' },
+                { label: 'original', value: 'original' },
+                { label: 'carbon copy', value: 'carbon copy' },
+                { label: 'photocopy', value: 'photocopy' },
+                { label: 'copy', value: 'copy' },
+            ],
+            copy: [
+                {
+                    label: 'handwritten (pen, pencil)',
+                    value: 'handwritten (pen, pencil)',
+                },
+                { label: 'typewritten', value: 'typewritten' },
+                {
+                    label: "author's autograph corrections",
+                    value: "author's autograph corrections",
+                },
             ],
         },
         computed: {

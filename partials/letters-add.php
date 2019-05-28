@@ -25,6 +25,7 @@ if (array_key_exists('save_post', $_POST)) {
     <a class="list-group-item list-group-item-action" href="#a-destination">Destination</a>
     <a class="list-group-item list-group-item-action" href="#a-content">Content</a>
     <a class="list-group-item list-group-item-action" href="#a-related-resource">Related resource</a>
+    <a class="list-group-item list-group-item-action" href="#a-manifestations">Manifestations</a>
     <a class="list-group-item list-group-item-action" href="#a-repositories-and-versions">Repositories and versions</a>
     <a class="list-group-item list-group-item-action" href="#a-description">Description</a>
     <a class="list-group-item list-group-item-action" href="#a-status">Status</a>
@@ -458,7 +459,6 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                 </fieldset>
 
-
                 <fieldset id="a-related-resource">
                     <legend>Related resource</legend>
                     <div class="form-group">
@@ -477,14 +477,10 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                 </fieldset>
 
-                <fieldset id="a-repositories-and-versions">
+                <fieldset id="a-manifestations">
+                    <legend>Manifestations</legend>
                     <div class="form-group">
-                        <label for="number">Letter number</label>
-                        <input v-model="letter.l_number" type="text" class="form-control form-control-sm" id="l_number" name="l_number">
-                    </div>
-                    <legend>Repositories and versions</legend>
-                    <div class="form-group">
-                        <label for="ms_manifestation">MS manifestation</label>
+                        <label for="ms_manifestation">MS manifestation (EMLO)</label>
                         <multiselect
                             v-model="letter.ms_manifestation"
                             :options="manifestations"
@@ -495,15 +491,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                     <div class="form-group">
-                        <label for="repository">Repository <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('locations', $event)"></span></label>
-                        <input v-model="letter.repository" list="repositories" type="text" name="repository" class="form-control form-control-sm">
-                        <datalist id="repositories">
-                            <option v-for="rep in repositories"> {{ rep.name }} </option>
-                        </datalist>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="document_type">Letter type <span class="text-danger">Dodat!</span></label>
+                        <label for="document_type">Document type</label>
                         <multiselect
                             v-model="letter.document_type"
                             :options="documentTypes"
@@ -511,6 +499,46 @@ if (array_key_exists('save_post', $_POST)) {
                             track-by="value">
                         </multiselect>
                         <input type="hidden" :value="letter.document_type.value" name="document_type">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="document_type">Preservation</label>
+                        <multiselect
+                            v-model="letter.preservation"
+                            :options="preservation"
+                            label="label"
+                            track-by="value">
+                        </multiselect>
+                        <input type="hidden" :value="letter.preservation.value" name="preservation">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="copy">Type of copy</label>
+                        <multiselect
+                            v-model="letter.copy"
+                            :options="copy"
+                            label="label"
+                            track-by="value">
+                        </multiselect>
+                        <input type="hidden" :value="letter.copy.value" name="copy">
+                    </div>
+
+
+                </fieldset>
+
+                <fieldset id="a-repositories-and-versions">
+                    <legend>Repositories and versions</legend>
+                    <div class="form-group">
+                        <label for="number">Letter number</label>
+                        <input v-model="letter.l_number" type="text" class="form-control form-control-sm" id="l_number" name="l_number">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="repository">Repository <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('locations', $event)"></span></label>
+                        <input v-model="letter.repository" list="repositories" type="text" name="repository" class="form-control form-control-sm">
+                        <datalist id="repositories">
+                            <option v-for="rep in repositories"> {{ rep.name }} </option>
+                        </datalist>
                     </div>
 
                     <div class="form-group">
