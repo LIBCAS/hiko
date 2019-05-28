@@ -498,7 +498,6 @@ if (array_key_exists('save_post', $_POST)) {
                             label="label"
                             track-by="value">
                         </multiselect>
-                        <input type="hidden" :value="letter.document_type.value" name="document_type">
                     </div>
 
                     <div class="form-group">
@@ -509,7 +508,6 @@ if (array_key_exists('save_post', $_POST)) {
                             label="label"
                             track-by="value">
                         </multiselect>
-                        <input type="hidden" :value="letter.preservation.value" name="preservation">
                     </div>
 
                     <div class="form-group">
@@ -520,9 +518,8 @@ if (array_key_exists('save_post', $_POST)) {
                             label="label"
                             track-by="value">
                         </multiselect>
-                        <input type="hidden" :value="letter.copy.value" name="copy">
                     </div>
-
+                    <input type="hidden" :value="documentTypesData" name="document_type">
 
                 </fieldset>
 

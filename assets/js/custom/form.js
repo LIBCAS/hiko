@@ -67,7 +67,7 @@ if (document.getElementById('letter-form')) {
                 location_note: '',
                 document_type: {},
                 preservation: {},
-                copy: {}
+                copy: {},
             },
             persons: [],
             places: [],
@@ -108,6 +108,28 @@ if (document.getElementById('letter-form')) {
             ],
         },
         computed: {
+            documentTypesData() {
+                let docType = this.letter.document_type
+                let preservation = this.letter.preservation
+                let docCopy = this.letter.copy
+                let data = {
+                    type:
+                        docType !== null && docType.hasOwnProperty('value')
+                            ? docType.value
+                            : '',
+                    preservation:
+                        preservation !== null &&
+                        preservation.hasOwnProperty('value')
+                            ? preservation.value
+                            : '',
+                    copy:
+                        docCopy !== null && docCopy.hasOwnProperty('value')
+                            ? docCopy.value
+                            : '',
+                }
+
+                return JSON.stringify(data)
+            },
             personsData() {
                 let self = this
                 let personsData = []
