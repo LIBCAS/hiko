@@ -845,6 +845,7 @@ function save_hiko_letter($letter_type, $action, $path)
 
     $participant_meta = sanitize_slashed_json($_POST['authors_meta']);
     $places_meta = sanitize_slashed_json($_POST['places_meta']);
+    $document_type_data = sanitize_slashed_json($_POST['document_type']);
 
     $data = test_postdata([
         'l_number' => 'l_number',
@@ -876,8 +877,7 @@ function save_hiko_letter($letter_type, $action, $path)
         'collection' => 'collection',
         'signature' => 'signature',
         'location_note' => 'location_note',
-        'languages' => 'languages',
-        'document_type' => 'document_type'
+        'languages' => 'languages'
     ]);
 
     $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
@@ -900,6 +900,8 @@ function save_hiko_letter($letter_type, $action, $path)
     $data['history'] = $history;
     $data['authors_meta'] = $participant_meta;
     $data['places_meta'] = $places_meta;
+    $data['document_type'] = $document_type_data;
+
 
     $new_pod = '';
 

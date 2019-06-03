@@ -501,7 +501,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                     <div class="form-group">
-                        <label for="document_type">Preservation</label>
+                        <label for="preservation">Preservation</label>
                         <multiselect
                             v-model="letter.preservation"
                             :options="preservation"
@@ -519,6 +519,7 @@ if (array_key_exists('save_post', $_POST)) {
                             track-by="value">
                         </multiselect>
                     </div>
+
                     <input type="hidden" :value="documentTypesData" name="document_type">
 
                 </fieldset>

@@ -112,21 +112,29 @@ if (document.getElementById('letter-form')) {
                 let docType = this.letter.document_type
                 let preservation = this.letter.preservation
                 let docCopy = this.letter.copy
-                let data = {
+                let data = []
+
+                data.push({
                     type:
                         docType !== null && docType.hasOwnProperty('value')
                             ? docType.value
                             : '',
+                })
+
+                data.push({
                     preservation:
                         preservation !== null &&
                         preservation.hasOwnProperty('value')
                             ? preservation.value
                             : '',
+                })
+
+                data.push({
                     copy:
                         docCopy !== null && docCopy.hasOwnProperty('value')
                             ? docCopy.value
                             : '',
-                }
+                })
 
                 return JSON.stringify(data)
             },
@@ -426,13 +434,12 @@ if (document.getElementById('letter-form')) {
                             let mentioned = rd.people_mentioned
                             let manifestation = rd.ms_manifestation
                             let languages = rd.languages
-                            let documentType = rd.document_type
+                            let documentTypes = rd.document_type
 
                             self.letter = rd
 
                             self.$set(self.letter, 'languages', []) // must set reactive data again
                             self.$set(self.letter, 'mentioned', [])
-                            self.$set(self.letter, 'document_type', {})
 
                             self.letter.date_year =
                                 rd.date_year == '0' ? '' : rd.date_year
@@ -458,15 +465,26 @@ if (document.getElementById('letter-form')) {
                                 )
                             }
 
-                            if (documentType != '' && documentType != null) {
-                                documentType = self.documentTypes.find(
-                                    dt => dt.value === documentType
+                            if (documentTypes === null) {
+                                self.$set(self.letter, 'document_type', {})
+                                self.$set(self.letter, 'preservation', {})
+                                self.$set(self.letter, 'copy', {})
+                            } else {
+                                let documentTypesData = arrayToSingleObject(
+                                    JSON.parse(documentTypes)
                                 )
-                                self.$set(
-                                    self.letter,
-                                    'document_type',
-                                    documentType
-                                )
+                                self.$set(self.letter, 'document_type', {
+                                    label: documentTypesData.type,
+                                    value: documentTypesData.type,
+                                })
+                                self.$set(self.letter, 'preservation', {
+                                    label: documentTypesData.preservation,
+                                    value: documentTypesData.preservation,
+                                })
+                                self.$set(self.letter, 'copy', {
+                                    label: documentTypesData.copy,
+                                    value: documentTypesData.copy,
+                                })
                             }
 
                             self.$set(
@@ -1012,5 +1030,15 @@ function getObjectValues(obj) {
     for (i = 0; i < l; i++) {
         result.push(obj[i].value)
     }
+    return result
+}
+
+function arrayToSingleObject(data) {
+    let result = {}
+
+    for (let i = 0; i < data.length; i++) {
+        result[Object.keys(data[i])] = Object.values(data[i])[0]
+    }
+
     return result
 }
