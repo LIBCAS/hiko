@@ -11,6 +11,7 @@ function delete_hiko_pod()
     $name = test_input($data->pod_name);
 
     $types = get_hiko_post_types($name);
+
     if (!has_user_permission($types['editor'])) {
         wp_send_json_error('Not allowed', 404);
     }
@@ -27,6 +28,10 @@ function delete_hiko_pod()
             wp_delete_attachment($img['ID'], true);
         }
         delete_hiko_cache('list_' . $types['path']);
+    }
+
+    if ($type == 'person') {
+        delete_hiko_cache('list_' . $types['person']);
     }
 
     $result = $pod->delete();
