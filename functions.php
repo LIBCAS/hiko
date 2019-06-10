@@ -97,10 +97,10 @@ function frontend_refresh()
     ob_start();
     ?>
     <script type="text/javascript">
-    console.log('refreshed');
-    if (window.history.replaceState) {
-        window.history.replaceState(null, null, window.location.href);
-    }
+        console.log('refreshed');
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
     </script>
     <?php
     echo ob_get_clean();
@@ -143,7 +143,7 @@ function get_related_name($related_field)
 function user_has_role($role)
 {
     $user = wp_get_current_user();
-    if (in_array($role, (array) $user->roles)) {
+    if (in_array($role, (array)$user->roles)) {
         return true;
     } else {
         return false;
@@ -182,7 +182,7 @@ function get_persons_table_data($person_type)
         $person_type,
         [
             'select' => $fields,
-            'orderby'=> 't.name ASC',
+            'orderby' => 't.name ASC',
             'limit' => -1,
             'groupby' => 't.id'
         ]
@@ -227,7 +227,7 @@ function get_places_table_data($place_type)
         $place_type,
         [
             'select' => $fields,
-            'orderby'=> 't.name ASC',
+            'orderby' => 't.name ASC',
             'limit' => -1
         ]
     );
@@ -264,13 +264,29 @@ function get_pods_name_and_id($type, $dates = false)
         $type,
         [
             'select' => $fields,
-            'orderby'=> 't.name ASC',
+            'orderby' => 't.name ASC',
             'limit' => -1
         ]
     );
 
+    if ($pod->data()) {
+        $result = $pod->data();
+    } elseif ($dates) {
+        $result = [[
+            'id' => '',
+            'name' => '',
+            'birth_year' => '',
+            'death_year' => ''
+        ]];
+    } else {
+        $result = [[
+            'id' => '',
+            'name' => '',
+        ]];
+    }
+
     /* convert to array of arrays instead objects */
-    $result = json_encode($pod->data());
+    $result = json_encode($result);
     $result = json_decode($result, true);
     return $result;
 }
@@ -289,7 +305,7 @@ function sum_array_length($array)
     foreach ($array as $el) {
         if (is_array($el)) {
             if (count($el) > 0) {
-                $sum ++;
+                $sum++;
             }
         }
     }
@@ -304,7 +320,7 @@ function has_user_permission($role)
     }
 
     $user = wp_get_current_user();
-    $roles = (array) $user->roles;
+    $roles = (array)$user->roles;
 
     if (!in_array($role, $roles) && !in_array('administrator', $roles)) {
         return false;
@@ -320,7 +336,7 @@ function is_in_editor_role()
     }
 
     $user = wp_get_current_user();
-    $roles = (array) $user->roles;
+    $roles = (array)$user->roles;
 
     $editor_roles = ['administrator', 'blekastad_editor', 'tgm_editor', 'demo_editor'];
 
@@ -616,7 +632,7 @@ function flatten_duplicate_letters($duplicate_ids, $data)
         $single_letter['origin'] = array_values(array_unique($origins));
         $single_letter['dest'] = array_values(array_unique($dests));
 
-        $flattened[] = (object) $single_letter;
+        $flattened[] = (object)$single_letter;
     }
 
     return $flattened;
@@ -1068,11 +1084,11 @@ function display_persons_and_places($person_type, $place_type)
     ?>
 
     <script id="people" type="application/json">
-    <?= $persons; ?>
+        <?= $persons; ?>
     </script>
 
     <script id="places" type="application/json">
-    <?= $places; ?>
+        <?= $places; ?>
     </script>
 
     <?php
