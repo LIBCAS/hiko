@@ -28,6 +28,7 @@ function delete_hiko_pod()
             wp_delete_attachment($img['ID'], true);
         }
         delete_hiko_cache('list_' . $types['path']);
+        delete_hiko_cache('list_' . $types['person']);
     }
 
     if ($type == 'person') {
