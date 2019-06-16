@@ -435,71 +435,90 @@ function merge_unique($array1, $array2)
 function import_letters_from_file($file)
 {
     $file_content = file_get_contents($file);
-    $splited_content = explode("\n", $file_content);
-    foreach ($splited_content as $letter) {
-        $bits = explode("\t", $letter);
+    $file_content = json_decode($file_content);
+    foreach ($file_content as $bits) {
+        $authors_ids = explode(';', $bits->author);
+        $authors_marked = explode(';', $bits->author_marked);
+        $recipients_ids = explode(';', $bits->recipient);
+        $recipients_marked = explode(';', $bits->recipient_marked);
+        $origin_ids = explode(';', $bits->origin);
+        $origin_marked = explode(';', $bits->origin_marked);
+        $dest_ids = explode(';', $bits->dest);
+        $dest_marked = explode(';', $bits->dest_marked);
         $data = [
-            'l_number' => $bits[0],
-            'date_marked' => $bits[4],
-            'date_approximate' => $bits[5],
-            'date_range' => $bits[6],
-            'date_uncertain' => $bits[10],
-            'date_notes' => $bits[11],
-            'l_author' => explode(';', $bits[12]),
-            'l_author_marked' => $bits[13],
-            'author_inferred' => $bits[14],
-            'author_note' => $bits[15],
-            'author_uncertain' => $bits[16],
-            'recipient' => explode(';', $bits[17]),
-            'recipient_marked' => $bits[18],
-            'recipient_inferred' => $bits[19],
-            'recipient_uncertain' => $bits[20],
-            'recipient_notes' => $bits[21],
-            'origin' => explode(';', $bits[22]),
-            'origin_marked' => $bits[23],
-            'origin_inferred' => $bits[24],
-            'origin_uncertain' => $bits[25],
-            'dest' => explode(';', $bits[26]),
-            'dest_marked' => $bits[27],
-            'dest_inferred' => $bits[28],
-            'dest_uncertain' => $bits[29],
-            'abstract' => $bits[30],
-            'keywords' => $bits[31],
-            'languages' => $bits[32],
-            'incipit' => $bits[33],
-            'explicit' => $bits[34],
-            'notes_public' => $bits[35],
-            'people_mentioned' => explode(';', $bits[36]),
-            'people_mentioned_notes' => $bits[37],
-            'name' => $bits[3] . '. ' . $bits[2] . '. ' . $bits[1],
-
+            'signature' => (string) $bits->signature,
+            'date_year' =>  $bits->year,
+            'date_month' => $bits->month,
+            'date_day' => $bits->day,
+            'date_uncertain' => $bits->date_uncertain,
+            'date_notes' => $bits->date_notes,
+            'l_author' => $authors_ids,
+            'author_inferred' => $bits->author_inferred,
+            'author_note' => $bits->author_notes,
+            'author_uncertain' => $bits->author_uncertain,
+            'recipient' => $recipients_ids,
+            'recipient_inferred' => $bits->recipient_inferred,
+            'recipient_uncertain' => $bits->recipient_uncertain,
+            'recipient_notes' => $bits->recipient_notes,
+            'origin' => explode(';', $bits->origin),
+            'origin_inferred' => $bits->origin_inferred,
+            'origin_uncertain' => $bits->origin_uncertain,
+            'dest' => explode(';', $bits->dest),
+            'dest_inferred' => $bits->dest_inferred,
+            'dest_uncertain' => $bits->dest_uncertain,
+            'languages' => $bits->lang,
+            'incipit' => $bits->incipit,
+            'explicit' => $bits->explicit,
+            'notes_public' => $bits->notes_public,
+            'people_mentioned' => explode(';', $bits->people_mentioned),
+            'people_mentioned_notes' => $bits->people_mentioned_notes,
+            'name' => '-',
+            'history' => "2019-02-12 08:56:51 – Miloslav Caňko \n"
         ];
 
-        if (is_numeric($bits[1])) {
-            $data['date_year'] = $bits[1];
+        $author_meta = [];
+        $places_meta = [];
+
+        for ($i = 0; $i < count($authors_ids); $i++) {
+            $author_meta[] = [
+                'id' => $authors_ids[$i],
+                'marked' => ($authors_marked && array_key_exists($i, $authors_marked)) ? $authors_marked[$i] : '',
+                'salutation' => ''
+            ];
         }
-        if (is_numeric($bits[2])) {
-            $data['date_month'] = $bits[2];
+
+        for ($i = 0; $i < count($recipients_ids); $i++) {
+            $author_meta[] = [
+                'id' => $recipients_ids[$i],
+                'marked' => ($recipients_marked && array_key_exists($i, $recipients_marked)) ? $recipients_marked[$i] : '',
+                'salutation' => ''
+            ];
         }
-        if (is_numeric($bits[3])) {
-            $data['date_day'] = $bits[3];
+
+        $data['authors_meta'] = json_encode($author_meta, JSON_UNESCAPED_UNICODE);
+
+        for ($i = 0; $i < count($origin_ids); $i++) {
+            $places_meta[] = [
+                'id' => $origin_ids[$i],
+                'marked' => ($origin_marked && array_key_exists($i, $origin_marked)) ? $origin_marked[$i] : '',
+            ];
         }
-        if (is_numeric($bits[7])) {
-            $data['date_range_year'] = $bits[7];
+
+        for ($i = 0; $i < count($dest_ids); $i++) {
+            $places_meta[] = [
+                'id' => $dest_ids[$i],
+                'marked' => ($dest_marked && array_key_exists($i, $dest_marked)) ? $dest_marked[$i] : '',
+            ];
         }
-        if (is_numeric($bits[8])) {
-            $data['date_range_month'] = $bits[8];
-        }
-        if (is_numeric($bits[9])) {
-            $data['date_range_day'] = $bits[9];
-        }
+
+        $data['places_meta'] = json_encode($places_meta, JSON_UNESCAPED_UNICODE);
 
         $new_pod = pods_api()->save_pod_item([
             'pod' => 'bl_letter',
             'data' => $data
         ]);
-
         var_dump($new_pod);
+        echo '<hr>';
     }
 }
 
