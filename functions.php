@@ -553,13 +553,10 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type)
 
     $podsAPI = new PodsAPI();
     $pod = $podsAPI->load_pod(['name' => $letter_type]);
-    $pod_id = $pod['id'];
     $author_field_id = $pod['fields']['l_author']['id'];
     $recipient_field_id = $pod['fields']['recipient']['id'];
     $origin_field_id = $pod['fields']['origin']['id'];
     $dest_field_id = $pod['fields']['dest']['id'];
-
-    $related_ids = "{$author_field_id},{$recipient_field_id},{$origin_field_id},{$dest_field_id}";
 
     $l_prefix = "{$wpdb->prefix}pods_{$letter_type}";
     $r_prefix = "{$wpdb->prefix}podsrel";
@@ -568,7 +565,7 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type)
 
     $fields = [
         't.id',
-        't.l_number',
+        't.signature',
         't.date_day',
         't.date_month',
         't.date_year',
@@ -637,7 +634,7 @@ function flatten_duplicate_letters($duplicate_ids, $data)
 
         $single_letter = [
             'id' => '',
-            'l_number' => '',
+            'signature' => '',
             'date_day' => '',
             'date_month' => '',
             'date_year' => '',
@@ -657,7 +654,7 @@ function flatten_duplicate_letters($duplicate_ids, $data)
         for ($i = 0; $i < count($duplicite_objects); $i++) {
             if ($i == 0) {
                 $single_letter['id'] = $duplicite_objects[$i]->id;
-                $single_letter['l_number'] = $duplicite_objects[$i]->l_number;
+                $single_letter['signature'] = $duplicite_objects[$i]->signature;
                 $single_letter['date_day'] = $duplicite_objects[$i]->date_day;
                 $single_letter['date_month'] = $duplicite_objects[$i]->date_month;
                 $single_letter['date_year'] = $duplicite_objects[$i]->date_year;

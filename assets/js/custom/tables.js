@@ -36,7 +36,7 @@ if (document.getElementById('datatable-letters')) {
     Vue.use(VueTables.ClientTable, false, false, 'bootstrap4')
     columns = [
         'edit',
-        'l_number',
+        'signature',
         'date',
         'author',
         'recipient',
@@ -54,7 +54,6 @@ if (document.getElementById('datatable-letters')) {
                 headings: {
                     edit: 'Akce',
                     dest: 'Destination',
-                    l_number: 'Number',
                 },
                 skin: defaultTablesOptions.skin,
                 sortable: removeElFromArr('edit', columns),
@@ -66,7 +65,7 @@ if (document.getElementById('datatable-letters')) {
                 perPageValues: defaultTablesOptions.perPageValues,
                 dateColumns: ['date'],
                 customSorting: getCustomSorting([
-                    'l_number',
+                    'signature',
                     'date',
                     'author',
                     'recipient',
