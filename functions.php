@@ -446,6 +446,7 @@ function import_letters_from_file($file)
         $origin_marked = explode(';', $bits->origin_marked);
         $dest_ids = explode(';', $bits->dest);
         $dest_marked = explode(';', $bits->dest_marked);
+
         $data = [
             'signature' => (string) $bits->signature,
             'date_uncertain' => $bits->date_uncertain,
@@ -458,10 +459,10 @@ function import_letters_from_file($file)
             'recipient_inferred' => $bits->recipient_inferred,
             'recipient_uncertain' => $bits->recipient_uncertain,
             'recipient_notes' => $bits->recipient_notes,
-            'origin' => explode(';', $bits->origin),
+            'origin' => $origin_ids,
             'origin_inferred' => $bits->origin_inferred,
             'origin_uncertain' => $bits->origin_uncertain,
-            'dest' => explode(';', $bits->dest),
+            'dest' => $dest_ids,
             'dest_inferred' => $bits->dest_inferred,
             'dest_uncertain' => $bits->dest_uncertain,
             'languages' => $bits->lang,
@@ -541,6 +542,7 @@ function import_letters_from_file($file)
             'pod' => 'bl_letter',
             'data' => $data
         ]);
+
         var_dump($new_pod);
         echo '<hr>';
     }
