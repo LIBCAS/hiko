@@ -526,7 +526,7 @@ if (document.getElementById('letter-form')) {
                             }
 
                             self.letter.keywords =
-                                rd.keywords.length === 0
+                                rd.keywords === null || rd.keywords.length === 0
                                     ? [{ value: '' }]
                                     : self.parseKeywords(rd.keywords)
 
@@ -543,7 +543,8 @@ if (document.getElementById('letter-form')) {
                             self.location_note = rd.location_note
                         }
                     })
-                    .catch(function() {
+                    .catch(function(error) {
+                        console.log(error)
                         self.error = true
                     })
                     .then(function() {

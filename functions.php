@@ -436,6 +436,7 @@ function import_letters_from_file($file)
 {
     $file_content = file_get_contents($file);
     $file_content = json_decode($file_content);
+
     foreach ($file_content as $bits) {
         $authors_ids = explode(';', $bits->author);
         $authors_marked = explode(';', $bits->author_marked);
@@ -447,9 +448,6 @@ function import_letters_from_file($file)
         $dest_marked = explode(';', $bits->dest_marked);
         $data = [
             'signature' => (string) $bits->signature,
-            'date_year' =>  $bits->year,
-            'date_month' => $bits->month,
-            'date_day' => $bits->day,
             'date_uncertain' => $bits->date_uncertain,
             'date_notes' => $bits->date_notes,
             'l_author' => $authors_ids,
@@ -473,8 +471,34 @@ function import_letters_from_file($file)
             'people_mentioned' => explode(';', $bits->people_mentioned),
             'people_mentioned_notes' => $bits->people_mentioned_notes,
             'name' => '-',
-            'history' => "2019-02-12 08:56:51 – Miloslav Caňko \n"
+            'history' => "2019-02-12 08:56:51 – Miloslav Caňko \n",
+            'date_is_range' => $bits->date_range,
         ];
+
+        if (is_numeric($bits->year)) {
+            $data['date_year'] = $bits->year;
+        }
+
+        if (is_numeric($bits->month)) {
+            $data['date_month'] = $bits->month;
+        }
+
+        if (is_numeric($bits->day)) {
+            $data['date_day'] = $bits->day;
+        }
+
+        if (is_numeric($bits->date_range_year)) {
+            $data['range_year'] = $bits->date_range_year;
+        }
+
+        if (is_numeric($bits->date_range_month)) {
+            $data['range_month'] = $bits->date_range_month;
+        }
+
+        if (is_numeric($bits->date_range_day)) {
+            $data['range_day'] = $bits->date_range_day;
+        }
+
 
         $author_meta = [];
         $places_meta = [];
