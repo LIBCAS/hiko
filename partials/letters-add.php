@@ -159,12 +159,14 @@ if (array_key_exists('save_post', $_POST)) {
                             </multiselect>
                             <input type="hidden" :value="a.id.value" v-validate="'required'" data-vv-name="'Author'" name="l_author[]">
                         </div>
-                        <div class="form-group required">
+                        <div class="form-group" :class="{ required: !letter.author_inferred }">
                             <label for="marked">Author as marked</label>
-                            <input v-validate="'required'" data-vv-name="'Author as marked'" v-model="a.marked" type="text" class="form-control form-control-sm" required>
+                            <input v-validate="letter.author_inferred ? '' : 'required'" data-vv-name="'Author as marked'" v-model="a.marked" type="text" class="form-control form-control-sm" :required="!letter.author_inferred">
                             <small class="form-text text-muted">
                                 author's name as written in letter
                             </small>
+
+                            {{  }}
                         </div>
                     </div>
 
@@ -216,9 +218,9 @@ if (array_key_exists('save_post', $_POST)) {
                             <input v-validate="'required'" data-vv-name="'Recipient'" type="hidden" :value="r.id.value" name="recipient[]">
                         </div>
 
-                        <div class="form-group required">
+                        <div class="form-group" :class="{ required: !letter.recipient_inferred }">
                             <label for="recipient_as_marked">Recipient as marked</label>
-                            <input v-validate="'required'" data-vv-name="'Recipient as marked'" v-model="r.marked" type="text" class="form-control form-control-sm" required>
+                            <input v-validate="letter.recipient_inferred ? '' : 'required'" data-vv-name="'Recipient as marked'" v-model="r.marked" type="text" class="form-control form-control-sm" :required="!letter.recipient_inferred">
                             <small class="form-text text-muted">
                                 recipient's name as written in letter
                             </small>
@@ -277,9 +279,9 @@ if (array_key_exists('save_post', $_POST)) {
                             </multiselect>
                             <input v-validate="'required'" data-vv-name="'Origin'" type="hidden" :value="o.id.value" name="origin[]">
                         </div>
-                        <div class="form-group required">
+                        <div class="form-group" :class="{ required: !letter.origin_inferred }">
                             <label for="marked">Origin as marked</label>
-                            <input v-validate="'required'" data-vv-name="'Origin as marked'" v-model="o.marked" type="text" class="form-control form-control-sm" required>
+                            <input v-validate="letter.origin_inferred ? '' : 'required'"  data-vv-name="'Origin as marked'" v-model="o.marked" type="text" class="form-control form-control-sm" :required="!letter.origin_inferred">
                             <small class="form-text text-muted">
                                 origin name as written in letter
                             </small>
@@ -335,9 +337,9 @@ if (array_key_exists('save_post', $_POST)) {
                             </multiselect>
                             <input v-validate="'required'" data-vv-name="'Destination'" type="hidden" :value="d.id.value" name="dest[]">
                         </div>
-                        <div class="form-group required">
+                        <div class="form-group" :class="{ required: !letter.dest_inferred }">
                             <label for="marked">Destination as marked</label>
-                            <input v-validate="'required'" data-vv-name="'Destination as marked'" v-model="d.marked" type="text" class="form-control form-control-sm" required>
+                            <input v-validate="letter.dest_inferred ? '' : 'required'" data-vv-name="'Destination as marked'" v-model="d.marked" type="text" class="form-control form-control-sm" :required="!letter.dest_inferred">
                             <small class="form-text text-muted">
                                 destination name as written in letter
                             </small>
