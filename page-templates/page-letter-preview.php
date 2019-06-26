@@ -18,6 +18,8 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
         $letter_path = 'blekastad';
     } elseif ($letter_type == 'demo_letter') {
         $letter_path = 'demo';
+    } elseif ($letter_type == 'tgm_letter') {
+        $letter_path = 'tgm';
     } else {
         die('Nenalezeno');
     }
