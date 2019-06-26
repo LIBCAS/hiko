@@ -399,10 +399,11 @@ function save_name_alternatives($persons_string, $person_type)
     $persons = json_decode(stripslashes($persons_string));
     foreach ($persons as $person) {
         $person_meta = pods_field($person_type, $person->id, 'persons_meta');
-
         $data = false;
 
-        if ($person_meta == null) {
+        if ($person->marked == '') {
+            $data = false;
+        } elseif ($person_meta == null) {
             $data = [
                 'names' => [$person->marked]
             ];
