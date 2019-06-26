@@ -85,8 +85,9 @@ if (document.getElementById('letter-form')) {
             ],
             documentTypes: [
                 { label: 'Letter', value: 'letter' },
-                { label: 'Telegram', value: 'Telegram' },
+                { label: 'Telegram', value: 'telegram' },
                 { label: 'Postcard', value: 'postcard' },
+                { label: 'Picture postcard', value: 'picture postcard' },
             ],
             preservation: [
                 { label: 'draft', value: 'draft' },
