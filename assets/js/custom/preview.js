@@ -128,7 +128,7 @@ if (document.getElementById('letter-preview')) {
                                     ? []
                                     : rd.languages.split(';')
                             self.keywords =
-                                rd.keywords.length === 0
+                                rd.keywords === null || rd.keywords.length === 0
                                     ? []
                                     : rd.keywords.split(';')
                             self.abstract = rd.abstract
