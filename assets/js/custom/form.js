@@ -12,6 +12,7 @@ if (document.getElementById('letter-form')) {
     new Vue({
         el: '#letter-add-form',
         data: {
+            formChanged: false,
             error: false,
             loading: true,
             letterType: '',
@@ -321,8 +322,18 @@ if (document.getElementById('letter-form')) {
 
             this.getLocationData()
         },
+
+        created() {
+            window.addEventListener('beforeunload', e => {
+                if (!this.formChanged) {
+                    e.preventDefault()
+                }
+            })
+        },
+
         methods: {
             validateForm(e) {
+                this.formChanged = true
                 this.$validator.validate().then(valid => {
                     if (!valid) {
                         e.preventDefault()
