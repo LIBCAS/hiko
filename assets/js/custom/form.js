@@ -354,6 +354,9 @@ if (document.getElementById('letter-form')) {
                 let recipients = []
                 let origin = []
                 let destination = []
+                let day = letter.date_day != '' ? letter.date_day : '?'
+                let month = letter.date_month != '' ? letter.date_month : '?'
+                let year = letter.date_year != '' ? letter.date_year : '?'
 
                 for (let i = 0; i < letter.author.length; i++) {
                     let id = JSON.parse(JSON.stringify(letter.author[i])).id
@@ -384,9 +387,7 @@ if (document.getElementById('letter-form')) {
                 origin = origin.join('; ')
                 destination = destination.join('; ')
 
-                let date = `${letter.date_day}. ${letter.date_month}. ${
-                    letter.date_year
-                }`
+                let date = `${day}. ${month}. ${year}`
 
                 let from = `${authors} (${origin})`
                 let to = `${recipients} (${destination})`
