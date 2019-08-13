@@ -560,6 +560,7 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type)
     $recipient_field_id = $pod['fields']['recipient']['id'];
     $origin_field_id = $pod['fields']['origin']['id'];
     $dest_field_id = $pod['fields']['dest']['id'];
+    $img_field_id = $pod['fields']['images']['id'];
 
     $l_prefix = "{$wpdb->prefix}pods_{$letter_type}";
     $r_prefix = "{$wpdb->prefix}podsrel";
@@ -577,7 +578,8 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type)
         'l_author.name AS author',
         'recipient.name AS recipient',
         'origin.name AS origin',
-        'dest.name AS dest'
+        'dest.name AS dest',
+        'posts.ID as images'
     ];
 
     $fields = implode(', ', $fields);
@@ -590,6 +592,9 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type)
     LEFT JOIN {$r_prefix} AS rel_l_author ON rel_l_author.field_id = {$author_field_id}
     AND rel_l_author.item_id = t.id
     LEFT JOIN {$pe_prefix} AS l_author ON l_author.id = rel_l_author.related_item_id
+    LEFT JOIN {$r_prefix} AS rel_img ON rel_img.field_id = {$img_field_id}
+    AND rel_img.item_id = t.id
+    LEFT JOIN {$wpdb->prefix}posts AS posts ON posts.ID = rel_img.related_item_id
     LEFT JOIN {$r_prefix} AS rel_recipient ON rel_recipient.field_id = {$recipient_field_id}
     AND rel_recipient.item_id = t.id
     LEFT JOIN {$pe_prefix} AS recipient ON recipient.id = rel_recipient.related_item_id
@@ -647,6 +652,7 @@ function flatten_duplicate_letters($duplicate_ids, $data)
             'recipient' => [],
             'origin' => [],
             'dest' => [],
+            'images' => []
         ];
 
         $auth = [];
@@ -668,12 +674,14 @@ function flatten_duplicate_letters($duplicate_ids, $data)
             $rec[] = $duplicite_objects[$i]->recipient;
             $origins[] = $duplicite_objects[$i]->origin;
             $dests[] = $duplicite_objects[$i]->dest;
+            $images[] = $duplicite_objects[$i]->images;
         }
 
         $single_letter['author'] = array_values(array_unique($auth));
         $single_letter['recipient'] = array_values(array_unique($rec));
         $single_letter['origin'] = array_values(array_unique($origins));
         $single_letter['dest'] = array_values(array_unique($dests));
+        $single_letter['images'] = array_values(array_unique($images));
 
         $flattened[] = (object)$single_letter;
     }
