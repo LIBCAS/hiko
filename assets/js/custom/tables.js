@@ -42,6 +42,7 @@ if (document.getElementById('datatable-letters')) {
         'recipient',
         'origin',
         'dest',
+        'images',
         'status',
     ]
 
@@ -54,6 +55,7 @@ if (document.getElementById('datatable-letters')) {
                 headings: {
                     edit: 'Akce',
                     dest: 'Destination',
+                    images: 'Obrázky',
                 },
                 skin: defaultTablesOptions.skin,
                 sortable: removeElFromArr('edit', columns),
@@ -72,6 +74,7 @@ if (document.getElementById('datatable-letters')) {
                     'origin',
                     'dest',
                     'status',
+                    'images',
                 ]),
             },
             error: false,

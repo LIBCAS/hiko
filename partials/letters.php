@@ -85,6 +85,10 @@ $path = $pods_types['path'];
             </ul>
         </span>
 
+        <span slot="images" slot-scope="props">
+            <span v-if="props.row.images !== null">ano</span>
+        </span>
+
         <span slot="status" slot-scope="props">
             <span v-if="props.row.status"> {{ props.row.status }}</span>
             <span v-else class="text-danger">Ke kontrole</span>
