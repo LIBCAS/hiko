@@ -747,16 +747,26 @@ function get_hiko_post_types($type)
     return $data;
 }
 
-function get_hiko_post_types_by_url()
+function get_hiko_post_types_by_url($url = '')
 {
     $req = $_SERVER['REQUEST_URI'];
+
+    if ($url != '') {
+        $req = $url;
+    }
+
     if (strpos($req, 'blekastad') !== false) {
         return get_hiko_post_types('blekastad');
-    } elseif (strpos($req, 'demo') !== false) {
+    }
+
+    if (strpos($req, 'demo') !== false) {
         return get_hiko_post_types('demo');
-    } elseif (strpos($req, 'tgm') !== false) {
+    }
+
+    if (strpos($req, 'tgm') !== false) {
         return get_hiko_post_types('tgm');
     }
+
     return get_hiko_post_types('');
 }
 

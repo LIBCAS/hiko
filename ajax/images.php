@@ -2,6 +2,8 @@
 
 function handle_img_uploads()
 {
+    delete_hiko_cache('list_' . get_hiko_post_types_by_url()['path']);
+
     $f = $_FILES['files'];
     $valid = verify_upload_img($f);
 
@@ -22,10 +24,9 @@ function handle_img_uploads()
         wp_send_json_error('Not found', 404);
     }
 
-    if ($type != 'bl_letter' && $type != 'demo_letter') {
+    if ($type != 'bl_letter' && $type != 'demo_letter' && $type != 'tgm_letter') {
         wp_send_json_error('Not found', 404);
     }
-
 
     $upload_dir = wp_upload_dir();
     $new_file_dir = $upload_dir['basedir'] . '/' . $type . '/' . $id;
@@ -33,13 +34,12 @@ function handle_img_uploads()
 
     $filename = $new_file_dir . '/' . $file_path;
 
-    if (file_exists($upload_dir['basedir'] . '/'. $type . '/' . $id . '/' . basename($filename))) {
+    if (file_exists($upload_dir['basedir'] . '/' . $type . '/' . $id . '/' . basename($filename))) {
         wp_send_json_error('File already exists', 403);
-        wp_die();
     }
 
     $attachment = [
-        'guid' => $upload_dir['url'] . '/'. $type . '/' . $id . '/' . basename($filename),
+        'guid' => $upload_dir['url'] . '/' . $type . '/' . $id . '/' . basename($filename),
         'post_mime_type' => wp_check_filetype(basename($filename), null)['type'],
         'post_title' => sanitize_title(preg_replace('/\.[^.]+$/', '', basename($filename))),
         'post_content' => '',
@@ -53,36 +53,39 @@ function handle_img_uploads()
         }
     }
 
-    if ($file_path) {
-        $u = move_uploaded_file($f['tmp_name'][0], $filename);
-        if (!$u) {
-            wp_send_json_error(error_get_last()['message'], 501);
-        } else {
-            $insert = wp_insert_attachment(
-                $attachment,
-                $filename,
-                0
-            );
-            if (is_wp_error($insert)) {
-                wp_send_json_error('error', 500);
-            } else {
-                $thumbs = wp_generate_attachment_metadata($insert, $filename);
-                wp_update_attachment_metadata($insert, $thumbs);
-                $pod->add_to('images', $insert);
-                $pod->save;
-                wp_send_json_success();
-            }
-        }
+    if (!$file_path) {
+        wp_send_json_error('error', 500);
     }
-    wp_send_json_error('error', 500);
+
+    $u = move_uploaded_file($f['tmp_name'][0], $filename);
+
+    if (!$u) {
+        wp_send_json_error(error_get_last()['message'], 501);
+        return;
+    }
+
+    $insert = wp_insert_attachment(
+        $attachment,
+        $filename,
+        0
+    );
+
+    if (is_wp_error($insert)) {
+        wp_send_json_error('error', 500);
+        return;
+    }
+
+    $thumbs = wp_generate_attachment_metadata($insert, $filename);
+    wp_update_attachment_metadata($insert, $thumbs);
+    $pod->add_to('images', $insert);
+    $pod->save;
+    wp_send_json_success();
 }
 add_action('wp_ajax_handle_img_uploads', 'handle_img_uploads');
 
 
 function list_images()
 {
-    $result = [];
-
     if (!array_key_exists('l_type', $_GET) || !array_key_exists('letter', $_GET)) {
         wp_send_json_error('Not found', 404);
     }
@@ -93,8 +96,10 @@ function list_images()
 
     if ($type == 'bl_letter') {
         $url = home_url('/blekastad/letters-add/?edit=' . $id);
-    } else if ($type == 'demo_letter') {
+    } elseif ($type == 'demo_letter') {
         $url = home_url('/demo/letters-add/?edit=' . $id);
+    } elseif ($type == 'tgm_letter') {
+        $url = home_url('/tgm/letters-add/?edit=' . $id);
     }
 
     $pod = pods($type, $id);
@@ -134,7 +139,6 @@ add_action('wp_ajax_list_images', 'list_images');
 
 function delete_hiko_image()
 {
-    $result = [];
     $data = file_get_contents('php://input');
     $data = mb_convert_encoding($data, 'UTF-8');
     $data = json_decode($data);
@@ -142,6 +146,8 @@ function delete_hiko_image()
     $letter_id = sanitize_text_field($data->letter);
     $type = sanitize_text_field($data->l_type);
     $img_id = sanitize_text_field($data->img);
+
+    delete_hiko_cache('list_' . get_hiko_post_types_by_url($type)['path']);
 
     $pod = pods($type, $letter_id);
 
@@ -152,11 +158,12 @@ function delete_hiko_image()
     $pod->remove_from('images', $img_id);
     $pod->save;
     $delete = wp_delete_attachment($img_id, true);
+
     if ($delete == 1) {
         wp_send_json_success();
-    } else {
-        wp_send_json_error('Error', 500);
     }
+
+    wp_send_json_error('Error', 500);
 }
 add_action('wp_ajax_delete_hiko_image', 'delete_hiko_image');
 
@@ -166,8 +173,6 @@ function change_metadata()
     $data = file_get_contents('php://input');
     $data = mb_convert_encoding($data, 'UTF-8');
     $data = json_decode($data);
-
-    $result = [];
 
     if (!property_exists($data, 'img_id') || !property_exists($data, 'img_status') || !property_exists($data, 'img_description')) {
         wp_send_json_error('Not found', 404);
@@ -186,11 +191,9 @@ function change_metadata()
 
     if (is_wp_error($update)) {
         wp_send_json_error(error_get_last()['message'], 500);
-    } else {
-        wp_send_json_success('saved');
     }
 
-    wp_die();
+    wp_send_json_success('saved');
 }
 add_action('wp_ajax_change_metadata', 'change_metadata');
 
@@ -200,8 +203,6 @@ function change_image_order()
     $data = key($_POST);
     $data = json_decode($data);
 
-    $result = [];
-
     if (!property_exists($data, 'img_id') || !property_exists($data, 'img_order')) {
         wp_send_json_error('Not found', 404);
     }
@@ -209,15 +210,13 @@ function change_image_order()
     $img_id = sanitize_text_field($data->img_id);
     $img_order = sanitize_text_field($data->img_order);
 
-
     $update = update_post_meta($img_id, 'order', $img_order);
 
     if (is_wp_error($update)) {
         wp_send_json_error(error_get_last()['message'], 500);
-    } else {
-        wp_send_json_success('saved');
+        return;
     }
 
-    wp_die();
+    wp_send_json_success('saved');
 }
 add_action('wp_ajax_change_image_order', 'change_image_order');
