@@ -13,9 +13,9 @@ function list_letter_history()
 
     if (!$history) {
         wp_send_json_error('Not found', 404);
-    } else {
-        wp_send_json_success($history);
     }
+
+    wp_send_json_success($history);
 }
 add_action('wp_ajax_list_letter_history', 'list_letter_history');
 

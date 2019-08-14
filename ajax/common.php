@@ -39,9 +39,9 @@ function delete_hiko_pod()
 
     if ($result == 1) {
         wp_send_json_success($result);
-    } else {
-        wp_send_json_error('Error', 500);
     }
+
+    wp_send_json_error('Error', 500);
 }
 
 add_action('wp_ajax_delete_hiko_pod', 'delete_hiko_pod');

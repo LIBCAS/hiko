@@ -143,11 +143,11 @@ function get_related_name($related_field)
 function user_has_role($role)
 {
     $user = wp_get_current_user();
-    if (in_array($role, (array)$user->roles)) {
+    if (in_array($role, (array) $user->roles)) {
         return true;
-    } else {
-        return false;
     }
+
+    return false;
 }
 
 function get_shortened_name()
@@ -269,6 +269,11 @@ function get_pods_name_and_id($type, $dates = false)
         ]
     );
 
+    $result = [[
+        'id' => '',
+        'name' => '',
+    ]];
+
     if ($pod->data()) {
         $result = $pod->data();
     } elseif ($dates) {
@@ -277,11 +282,6 @@ function get_pods_name_and_id($type, $dates = false)
             'name' => '',
             'birth_year' => '',
             'death_year' => ''
-        ]];
-    } else {
-        $result = [[
-            'id' => '',
-            'name' => '',
         ]];
     }
 
@@ -320,7 +320,7 @@ function has_user_permission($role)
     }
 
     $user = wp_get_current_user();
-    $roles = (array)$user->roles;
+    $roles = (array) $user->roles;
 
     if (!in_array($role, $roles) && !in_array('administrator', $roles)) {
         return false;
@@ -336,7 +336,7 @@ function is_in_editor_role()
     }
 
     $user = wp_get_current_user();
-    $roles = (array)$user->roles;
+    $roles = (array) $user->roles;
 
     $editor_roles = ['administrator', 'blekastad_editor', 'tgm_editor', 'demo_editor'];
 
@@ -415,7 +415,7 @@ function save_name_alternatives($persons_string, $person_type)
         }
 
         if ($data) {
-            $save = pods_api()->save_pod_item([
+            pods_api()->save_pod_item([
                 'pod' => $person_type,
                 'data' => [
                     'persons_meta' => json_encode($data, JSON_UNESCAPED_UNICODE)
@@ -683,7 +683,7 @@ function flatten_duplicate_letters($duplicate_ids, $data)
         $single_letter['dest'] = array_values(array_unique($dests));
         $single_letter['images'] = array_values(array_unique($images));
 
-        $flattened[] = (object)$single_letter;
+        $flattened[] = (object) $single_letter;
     }
 
     return $flattened;
@@ -999,13 +999,13 @@ function save_hiko_letter($letter_type, $action, $path)
         return alert('Něco se pokazilo', 'warning');
     } elseif (is_wp_error($new_pod)) {
         return alert($new_pod->get_error_message(), 'warning');
-    } else {
-        delete_hiko_cache('list_' . $path);
-        delete_hiko_cache('list_' . $types['person']);
-        save_name_alternatives($participant_meta, $types['person']);
-        frontend_refresh();
-        return alert('Uloženo', 'success');
     }
+
+    delete_hiko_cache('list_' . $path);
+    delete_hiko_cache('list_' . $types['person']);
+    save_name_alternatives($participant_meta, $types['person']);
+    frontend_refresh();
+    return alert('Uloženo', 'success');
 }
 
 
@@ -1055,11 +1055,11 @@ function save_hiko_person($person_type, $action)
         return alert('Něco se pokazilo', 'warning');
     } elseif (is_wp_error($new_pod)) {
         return alert($new_pod->get_error_message(), 'warning');
-    } else {
-        delete_hiko_cache('list_' . $person_type);
-        frontend_refresh();
-        return alert('Uloženo', 'success');
     }
+
+    delete_hiko_cache('list_' . $person_type);
+    frontend_refresh();
+    return alert('Uloženo', 'success');
 }
 
 
@@ -1143,7 +1143,6 @@ function display_persons_and_places($person_type, $place_type)
 
     ob_start();
     ?>
-
     <script id="people" type="application/json">
         <?= $persons; ?>
     </script>
