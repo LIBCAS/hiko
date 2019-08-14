@@ -97,6 +97,13 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                     <div class="form-check mb-3">
+                        <input v-model="letter.date_inferred" class="form-check-input" type="checkbox" id="date_inferred" name="date_inferred">
+                        <label class="form-check-label" for="date_inferred">
+                            Date inferred
+                        </label>
+                    </div>
+
+                    <div class="form-check mb-3">
                         <input v-model="letter.date_is_range" class="form-check-input" type="checkbox" id="date_is_range" name="date_is_range">
                         <label class="form-check-label" for="date_is_range">
                             Date is range

@@ -959,6 +959,7 @@ function save_hiko_letter($letter_type, $action, $path)
 
     $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
     $data['date_approximate'] = get_form_checkbox_val('date_approximate', $_POST);
+    $data['date_inferred'] = get_form_checkbox_val('date_inferred', $_POST);
     $data['date_is_range'] = get_form_checkbox_val('date_is_range', $_POST);
     $data['author_uncertain'] = get_form_checkbox_val('author_uncertain', $_POST);
     $data['author_inferred'] = get_form_checkbox_val('author_inferred', $_POST);

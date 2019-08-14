@@ -143,6 +143,7 @@ function list_public_letters_single()
     $results['range_day'] = $pod->field('range_day');
     $results['date_uncertain'] = (bool) $pod->field('date_uncertain');
     $results['date_approximate'] = (bool) $pod->field('date_approximate');
+    $results['date_inferred'] = (bool) $pod->field('date_inferred');
     $results['date_is_range'] = (bool) $pod->field('date_is_range');
     $results['date_note'] = $pod->field('date_note');
     $results['l_author'] = $authors;

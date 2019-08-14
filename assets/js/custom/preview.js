@@ -26,6 +26,8 @@ if (document.getElementById('letter-preview')) {
             year: '',
             date_marked: '',
             date_uncertain: '',
+            date_approximate: '',
+            date_inferred: '',
             title: '',
             l_number: '',
             languages: [],
@@ -89,7 +91,6 @@ if (document.getElementById('letter-preview')) {
                             self.error = true
                         } else {
                             let rd = response.data
-                            console.log(rd)
 
                             self.title = rd.name
                             self.year = rd.date_year == '0' ? '' : rd.date_year
@@ -98,6 +99,8 @@ if (document.getElementById('letter-preview')) {
                             self.day = rd.date_day == '0' ? '' : rd.date_day
                             self.date_marked = rd.date_marked
                             self.date_uncertain = rd.date_uncertain
+                            self.date_approximate = rd.date_approximate
+                            self.date_inferred = rd.date_inferred
                             self.author = self.getItemData(
                                 rd.l_author,
                                 rd.authors_meta

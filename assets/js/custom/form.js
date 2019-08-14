@@ -43,6 +43,7 @@ if (document.getElementById('letter-form')) {
                 date_marked: '',
                 date_uncertain: false,
                 date_approximate: false,
+                date_inferred: false,
                 date_is_range: false,
                 date_note: '',
                 range_year: '',
