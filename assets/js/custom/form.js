@@ -479,7 +479,7 @@ if (document.getElementById('letter-form')) {
                                 )
                             }
 
-                            if (documentTypes === null) {
+                            if (documentTypes === null || documentTypes == '') {
                                 self.$set(self.letter, 'document_type', {})
                                 self.$set(self.letter, 'preservation', {})
                                 self.$set(self.letter, 'copy', {})
