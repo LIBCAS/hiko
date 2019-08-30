@@ -326,7 +326,8 @@ if (document.getElementById('letter-form')) {
 
         created() {
             window.addEventListener('beforeunload', e => {
-                if (!this.formChanged) {
+
+                if (location.hostname !== "localhost" && !this.formChanged) {
                     e.preventDefault()
                 }
             })
