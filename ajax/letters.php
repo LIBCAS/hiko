@@ -170,8 +170,8 @@ function list_public_letters_single()
     $results['people_mentioned'] = $people_mentioned;
     $results['people_mentioned_notes'] = $pod->field('people_mentioned_notes');
     $results['notes_public'] = $pod->field('notes_public');
-    $results['rel_rec_name'] = $pod->field('rel_rec_name');
-    $results['rel_rec_url'] = $pod->field('rel_rec_url');
+    $results['related_resources'] = $pod->field('related_resources');
+
     $results['ms_manifestation'] = $pod->field('ms_manifestation');
     $results['repository'] = $pod->field('repository');
     $results['name'] = $pod->field('name');

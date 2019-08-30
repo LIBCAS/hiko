@@ -20,56 +20,55 @@ if (document.getElementById('letter-form')) {
             placeType: '',
             path: '',
             letter: {
+                abstract: '',
+                archive: '',
                 author: [],
                 author_inferred: false,
-                author_uncertain: false,
                 author_note: '',
-                recipient: [],
-                recipient_inferred: false,
-                recipient_uncertain: false,
-                recipient_notes: '',
-                mentioned: [],
-                origin: [],
-                origin_note: '',
-                origin_inferred: false,
-                origin_uncertain: false,
-                destination: [],
-                dest_inferred: false,
-                dest_uncertain: false,
-                dest_note: '',
-                date_day: '',
-                date_month: '',
-                date_year: '',
-                date_marked: '',
-                date_uncertain: false,
+                author_uncertain: false,
+                collection: '',
+                copy: {},
                 date_approximate: false,
+                date_day: '',
                 date_inferred: false,
                 date_is_range: false,
+                date_marked: '',
+                date_month: '',
                 date_note: '',
-                range_year: '',
-                range_month: '',
-                range_day: '',
+                date_uncertain: false,
+                date_year: '',
+                dest_inferred: false,
+                dest_note: '',
+                dest_uncertain: false,
+                destination: [],
+                document_type: {},
+                explicit: '',
+                incipit: '',
+                keywords: [{ value: '' }],
                 l_number: '',
                 languages: [],
-                keywords: [{ value: '' }],
-                abstract: '',
-                incipit: '',
-                explicit: '',
-                people_mentioned_notes: '',
-                notes_public: '',
-                notes_private: '',
-                rel_rec_name: '',
-                rel_rec_url: '',
-                ms_manifestation: {},
-                repository: '',
-                status: 'draft',
-                collection: '',
-                archive: '',
-                signature: '',
                 location_note: '',
-                document_type: {},
+                mentioned: [],
+                ms_manifestation: {},
+                notes_private: '',
+                notes_public: '',
+                origin: [],
+                origin_inferred: false,
+                origin_note: '',
+                origin_uncertain: false,
+                people_mentioned_notes: '',
                 preservation: {},
-                copy: {},
+                range_day: '',
+                range_month: '',
+                range_year: '',
+                recipient: [],
+                recipient_inferred: false,
+                recipient_notes: '',
+                recipient_uncertain: false,
+                related_resources: [{ link: '', title: '' }],
+                repository: '',
+                signature: '',
+                status: 'draft',
             },
             persons: [],
             places: [],
@@ -141,6 +140,7 @@ if (document.getElementById('letter-form')) {
 
                 return JSON.stringify(data)
             },
+
             personsData() {
                 let self = this
                 let personsData = []
@@ -178,6 +178,18 @@ if (document.getElementById('letter-form')) {
                     })
                 }
                 return langs
+            },
+
+            resources() {
+                let resources = JSON.parse(
+                    JSON.stringify(this.letter.related_resources)
+                )
+
+                resources = resources.filter(el => {
+                    return el.link && el.title
+                })
+
+                return JSON.stringify(resources)
             },
 
             participantsMeta() {
@@ -298,12 +310,12 @@ if (document.getElementById('letter-form')) {
                 self.error = letterTypes
                 self.loading = false
                 return
-            } else {
-                self.letterType = letterTypes['letterType']
-                self.personType = letterTypes['personType']
-                self.placeType = letterTypes['placeType']
-                self.path = letterTypes['path']
             }
+
+            self.letterType = letterTypes['letterType']
+            self.personType = letterTypes['personType']
+            self.placeType = letterTypes['placeType']
+            self.path = letterTypes['path']
 
             let edit = url.searchParams.get('edit')
             if (edit) {
@@ -326,8 +338,7 @@ if (document.getElementById('letter-form')) {
 
         created() {
             window.addEventListener('beforeunload', e => {
-
-                if (location.hostname !== "localhost" && !this.formChanged) {
+                if (location.hostname !== 'localhost' && !this.formChanged) {
                     e.preventDefault()
                 }
             })
@@ -545,6 +556,12 @@ if (document.getElementById('letter-form')) {
                                     ? [{ value: '' }]
                                     : self.parseKeywords(rd.keywords)
 
+                            self.letter.related_resources =
+                                rd.related_resources === null ||
+                                rd.related_resources.length === 0
+                                    ? [{}]
+                                    : self.parseResources(rd.related_resources)
+
                             if (!Array.isArray(mentioned)) {
                                 for (var key in mentioned) {
                                     self.letter.mentioned.push({
@@ -643,6 +660,29 @@ if (document.getElementById('letter-form')) {
                 }
 
                 return kwObj
+            },
+
+            addNewResource: function() {
+                this.letter.related_resources.push({ link: '', title: '' })
+            },
+
+            parseResources: function(resources) {
+                if (resources.length === 0) {
+                    return
+                }
+
+                resources = JSON.parse(resources)
+
+                let result = []
+
+                for (let i = 0; i < resources.length; i++) {
+                    result.push({
+                        link: resources[i].link,
+                        title: resources[i].title,
+                    })
+                }
+
+                return result
             },
 
             removeObjectMeta: function(personIndex, type) {

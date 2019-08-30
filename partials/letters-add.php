@@ -156,13 +156,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="form-group required">
                             <label :for="'author-' + index">Author</label>
                             <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
-                            <multiselect
-                                v-model="a.id"
-                                :options="personsData"
-                                label="label"
-                                track-by="value"
-                                :required="true"
-                                >
+                            <multiselect v-model="a.id" :options="personsData" label="label" track-by="value" :required="true">
                             </multiselect>
                             <input type="hidden" :value="a.id.value" v-validate="'required'" data-vv-name="'Author'" name="l_author[]">
                         </div>
@@ -173,7 +167,7 @@ if (array_key_exists('save_post', $_POST)) {
                                 author's name as written in letter
                             </small>
 
-                            {{  }}
+                            {{ }}
                         </div>
                     </div>
 
@@ -214,13 +208,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="form-group required">
                             <label :for="'recipient-' + index">Recipient</label>
                             <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
-                            <multiselect
-                                v-model="r.id"
-                                :options="personsData"
-                                label="label"
-                                track-by="value"
-                                :required="true"
-                                >
+                            <multiselect v-model="r.id" :options="personsData" label="label" track-by="value" :required="true">
                             </multiselect>
                             <input v-validate="'required'" data-vv-name="'Recipient'" type="hidden" :value="r.id.value" name="recipient[]">
                         </div>
@@ -276,19 +264,13 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="form-group required">
                             <label :for="'origin-' + index">Origin</label>
                             <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)" title="Update places"></span>
-                            <multiselect
-                                v-model="o.id"
-                                :options="placesData"
-                                label="label"
-                                track-by="value"
-                                :required="true"
-                                >
+                            <multiselect v-model="o.id" :options="placesData" label="label" track-by="value" :required="true">
                             </multiselect>
                             <input v-validate="'required'" data-vv-name="'Origin'" type="hidden" :value="o.id.value" name="origin[]">
                         </div>
                         <div class="form-group" :class="{ required: !letter.origin_inferred }">
                             <label for="marked">Origin as marked</label>
-                            <input v-validate="letter.origin_inferred ? '' : 'required'"  data-vv-name="'Origin as marked'" v-model="o.marked" type="text" class="form-control form-control-sm" :required="!letter.origin_inferred">
+                            <input v-validate="letter.origin_inferred ? '' : 'required'" data-vv-name="'Origin as marked'" v-model="o.marked" type="text" class="form-control form-control-sm" :required="!letter.origin_inferred">
                             <small class="form-text text-muted">
                                 origin name as written in letter
                             </small>
@@ -334,13 +316,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="form-group required">
                             <label :for="'destination-' + index">Destination</label>
                             <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)" title="Update places"></span>
-                            <multiselect
-                                v-model="d.id"
-                                :options="placesData"
-                                label="label"
-                                track-by="value"
-                                :required="true"
-                                >
+                            <multiselect v-model="d.id" :options="placesData" label="label" track-by="value" :required="true">
                             </multiselect>
                             <input v-validate="'required'" data-vv-name="'Destination'" type="hidden" :value="d.id.value" name="dest[]">
                         </div>
@@ -387,13 +363,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="languages">Languages</label>
-                        <multiselect
-                            v-model="letter.languages"
-                            :options="languages"
-                            label="label"
-                            track-by="value"
-                            :multiple="true"
-                            >
+                        <multiselect v-model="letter.languages" :options="languages" label="label" track-by="value" :multiple="true">
                         </multiselect>
                         <input type="hidden" :value="getObjectValues(letter.languages).join(';')" name="languages">
                     </div>
@@ -435,13 +405,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="people_mentioned">People mentioned <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)"></span></label>
-                        <multiselect
-                            v-model="letter.mentioned"
-                            :options="personsData"
-                            label="label"
-                            track-by="value"
-                            :multiple="true"
-                            >
+                        <multiselect v-model="letter.mentioned" :options="personsData" label="label" track-by="value" :multiple="true">
                         </multiselect>
                         <input type="hidden" :value="getObjectValues(letter.mentioned)" name="people_mentioned">
                     </div>
@@ -470,62 +434,59 @@ if (array_key_exists('save_post', $_POST)) {
 
                 <fieldset id="a-related-resource">
                     <legend>Related resource</legend>
-                    <div class="form-group">
-                        <label for="rel_rec_name">Related resource name</label>
-                        <input v-model="letter.rel_rec_name" type="text" name="rel_rec_name" class="form-control form-control-sm">
-                        <small class="form-text text-muted">
-                            descriptor e.g. 'Printed copy (Tamizey de Larroque) on the Internet Archive'
-                        </small>
+
+                    <div v-for="rr in letter.related_resources" class="row mb-1">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="rel_rec_name">Related resource name</label>
+                                <input v-model="rr.title" type="text" class="form-control form-control-sm">
+                                <small class="form-text text-muted">
+                                    descriptor
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="rel_rec_url">Related resource url</label>
+                                <input v-validate="{url: {require_protocol: true }}" data-vv-name="'Related resource url'" v-model="rr.link" type="url" class="form-control form-control-sm">
+                                <small class="form-text text-muted">
+                                    permanent URL to online resource
+                                </small>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="rel_rec_url">Related resource url</label>
-                        <input v-validate="{url: {require_protocol: true }}" v-model="letter.rel_rec_url" type="url" name="rel_rec_url" class="form-control form-control-sm">
-                        <small class="form-text text-muted">
-                            permanent/short URL to letter-related online resource
-                        </small>
-                    </div>
+
+                    <button type="button" class="btn btn-sm btn-outline-info mt-2 mb-4" @click="addNewResource">
+                        <span class="oi oi-plus"></span> Add
+                    </button>
+
+                    <input type="hidden" :value="resources" name="related_resources">
                 </fieldset>
 
                 <fieldset id="a-manifestations">
                     <legend>Manifestations</legend>
                     <div class="form-group">
                         <label for="ms_manifestation">MS manifestation (EMLO)</label>
-                        <multiselect
-                            v-model="letter.ms_manifestation"
-                            :options="manifestations"
-                            label="label"
-                            track-by="value">
+                        <multiselect v-model="letter.ms_manifestation" :options="manifestations" label="label" track-by="value">
                         </multiselect>
                         <input type="hidden" :value="letter.ms_manifestation.value" name="ms_manifestation">
                     </div>
 
                     <div class="form-group">
                         <label for="document_type">Document type</label>
-                        <multiselect
-                            v-model="letter.document_type"
-                            :options="documentTypes"
-                            label="label"
-                            track-by="value">
+                        <multiselect v-model="letter.document_type" :options="documentTypes" label="label" track-by="value">
                         </multiselect>
                     </div>
 
                     <div class="form-group">
                         <label for="preservation">Preservation</label>
-                        <multiselect
-                            v-model="letter.preservation"
-                            :options="preservation"
-                            label="label"
-                            track-by="value">
+                        <multiselect v-model="letter.preservation" :options="preservation" label="label" track-by="value">
                         </multiselect>
                     </div>
 
                     <div class="form-group">
                         <label for="copy">Type of copy</label>
-                        <multiselect
-                            v-model="letter.copy"
-                            :options="copy"
-                            label="label"
-                            track-by="value">
+                        <multiselect v-model="letter.copy" :options="copy" label="label" track-by="value">
                         </multiselect>
                     </div>
 

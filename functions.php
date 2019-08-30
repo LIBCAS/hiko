@@ -921,65 +921,61 @@ function save_hiko_letter($letter_type, $action, $path)
     }
 
     $participant_meta = sanitize_slashed_json($_POST['authors_meta']);
-    $places_meta = sanitize_slashed_json($_POST['places_meta']);
-    $document_type_data = sanitize_slashed_json($_POST['document_type']);
 
     $data = test_postdata([
-        'l_number' => 'l_number',
-        'date_year' => 'date_year',
-        'date_month' => 'date_month',
-        'date_day' => 'date_day',
-        'range_year' => 'range_year',
-        'range_month' => 'range_month',
-        'range_day' => 'range_day',
-        'date_marked' => 'date_marked',
-        'recipient_notes' => 'recipient_notes',
         'abstract' => 'abstract',
-        'incipit' => 'incipit',
-        'explicit' => 'explicit',
-        'people_mentioned_notes' => 'people_mentioned_notes',
-        'notes_public' => 'notes_public',
-        'notes_private' => 'notes_private',
-        'rel_rec_name' => 'rel_rec_name',
-        'rel_rec_url' => 'rel_rec_url',
-        'ms_manifestation' => 'ms_manifestation',
-        'repository' => 'repository',
-        'name' => 'description',
-        'status' => 'status',
-        'date_note' => 'date_note',
-        'origin_note' => 'origin_note',
-        'dest_note' => 'dest_note',
-        'author_note' => 'author_note',
         'archive' => 'archive',
+        'author_note' => 'author_note',
         'collection' => 'collection',
-        'signature' => 'signature',
+        'date_day' => 'date_day',
+        'date_marked' => 'date_marked',
+        'date_month' => 'date_month',
+        'date_note' => 'date_note',
+        'date_year' => 'date_year',
+        'dest_note' => 'dest_note',
+        'explicit' => 'explicit',
+        'incipit' => 'incipit',
+        'l_number' => 'l_number',
+        'languages' => 'languages',
         'location_note' => 'location_note',
-        'languages' => 'languages'
+        'ms_manifestation' => 'ms_manifestation',
+        'name' => 'description',
+        'notes_private' => 'notes_private',
+        'notes_public' => 'notes_public',
+        'origin_note' => 'origin_note',
+        'people_mentioned_notes' => 'people_mentioned_notes',
+        'range_day' => 'range_day',
+        'range_month' => 'range_month',
+        'range_year' => 'range_year',
+        'recipient_notes' => 'recipient_notes',
+        'repository' => 'repository',
+        'signature' => 'signature',
+        'status' => 'status',
     ]);
 
-    $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
+    $data['author_inferred'] = get_form_checkbox_val('author_inferred', $_POST);
+    $data['author_uncertain'] = get_form_checkbox_val('author_uncertain', $_POST);
+    $data['authors_meta'] = $participant_meta;
     $data['date_approximate'] = get_form_checkbox_val('date_approximate', $_POST);
     $data['date_inferred'] = get_form_checkbox_val('date_inferred', $_POST);
     $data['date_is_range'] = get_form_checkbox_val('date_is_range', $_POST);
-    $data['author_uncertain'] = get_form_checkbox_val('author_uncertain', $_POST);
-    $data['author_inferred'] = get_form_checkbox_val('author_inferred', $_POST);
-    $data['recipient_inferred'] = get_form_checkbox_val('recipient_inferred', $_POST);
-    $data['recipient_uncertain'] = get_form_checkbox_val('recipient_uncertain', $_POST);
+    $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
+    $data['dest'] = $destinations;
+    $data['dest_inferred'] = get_form_checkbox_val('dest_inferred', $_POST);
+    $data['dest_uncertain'] = get_form_checkbox_val('dest_uncertain', $_POST);
+    $data['document_type'] = sanitize_slashed_json($_POST['document_type']);
+    $data['history'] = $history;
+    $data['keywords'] = $keywords;
+    $data['l_author'] = $authors;
+    $data['origin'] = $origins;
     $data['origin_inferred'] = get_form_checkbox_val('origin_inferred', $_POST);
     $data['origin_uncertain'] = get_form_checkbox_val('origin_uncertain', $_POST);
-    $data['dest_uncertain'] = get_form_checkbox_val('dest_uncertain', $_POST);
-    $data['dest_inferred'] = get_form_checkbox_val('dest_inferred', $_POST);
-    $data['l_author'] = $authors;
-    $data['recipient'] = $recipients;
-    $data['keywords'] = $keywords;
     $data['people_mentioned'] = $people_mentioned;
-    $data['dest'] = $destinations;
-    $data['origin'] = $origins;
-    $data['history'] = $history;
-    $data['authors_meta'] = $participant_meta;
-    $data['places_meta'] = $places_meta;
-    $data['document_type'] = $document_type_data;
-
+    $data['places_meta'] = sanitize_slashed_json($_POST['places_meta']);
+    $data['recipient'] = $recipients;
+    $data['recipient_inferred'] = get_form_checkbox_val('recipient_inferred', $_POST);
+    $data['recipient_uncertain'] = get_form_checkbox_val('recipient_uncertain', $_POST);
+    $data['related_resources'] = sanitize_slashed_json($_POST['related_resources']);
 
     $new_pod = '';
 
@@ -998,7 +994,9 @@ function save_hiko_letter($letter_type, $action, $path)
 
     if ($new_pod == '') {
         return alert('Něco se pokazilo', 'warning');
-    } elseif (is_wp_error($new_pod)) {
+    }
+
+    if (is_wp_error($new_pod)) {
         return alert($new_pod->get_error_message(), 'warning');
     }
 
@@ -1025,16 +1023,16 @@ function get_gmdate($filepath = false)
 function save_hiko_person($person_type, $action)
 {
     $data = test_postdata([
-        'name' => 'fullname',
-        'surname' => 'surname',
-        'forename' => 'forename',
         'birth_year' => 'birth_year',
         'death_year' => 'death_year',
         'emlo' => 'emlo',
+        'forename' => 'forename',
+        'gender' => 'gender',
+        'name' => 'fullname',
+        'nationality' => 'nationality',
         'note' => 'note',
         'profession' => 'profession',
-        'nationality' => 'nationality',
-        'gender' => 'gender'
+        'surname' => 'surname',
     ]);
 
     $new_pod = '';
@@ -1054,7 +1052,9 @@ function save_hiko_person($person_type, $action)
 
     if ($new_pod == '') {
         return alert('Něco se pokazilo', 'warning');
-    } elseif (is_wp_error($new_pod)) {
+    }
+
+    if (is_wp_error($new_pod)) {
         return alert($new_pod->get_error_message(), 'warning');
     }
 
@@ -1067,11 +1067,11 @@ function save_hiko_person($person_type, $action)
 function save_hiko_place($place_type, $action)
 {
     $data = test_postdata([
-        'name' => 'place',
         'country' => 'country',
-        'note' => 'note',
         'latitude' => 'latitude',
         'longitude' => 'longitude',
+        'name' => 'place',
+        'note' => 'note',
     ]);
 
     $new_pod = '';
@@ -1091,12 +1091,15 @@ function save_hiko_place($place_type, $action)
 
     if ($new_pod == '') {
         return alert('Něco se pokazilo', 'warning');
-    } elseif (is_wp_error($new_pod)) {
-        return alert($new_pod->get_error_message(), 'warning');
-    } else {
-        frontend_refresh();
-        return alert('Uloženo', 'success');
     }
+
+    if (is_wp_error($new_pod)) {
+        return alert($new_pod->get_error_message(), 'warning');
+    }
+
+    frontend_refresh();
+    return alert('Uloženo', 'success');
+
 }
 
 function get_languages()
