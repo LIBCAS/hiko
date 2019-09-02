@@ -1,4 +1,4 @@
-/* global Vue VueTables Swal axios ajaxUrl getLetterType */
+/* global Vue VueTables Swal axios ajaxUrl getLetterType removeItemAjax removeElFromArr getCustomSorting */
 
 var columns
 
@@ -343,94 +343,5 @@ if (document.getElementById('datatable-places')) {
                 })
             },
         },
-    })
-}
-
-function removeElFromArr(el, array) {
-    var filtered = array.filter(function(value) {
-        return value != el
-    })
-    return filtered
-}
-
-function getCustomSorting(columns) {
-    let sorting = {}
-    for (let i = 0; i < columns.length; i++) {
-        sorting[columns[i]] = function(ascending) {
-            return function(a, b) {
-                if (a[columns[i]] == null) {
-                    a = ''
-                } else if (Array.isArray(a[columns[i]])) {
-                    a = a[columns[i]].toString()
-                } else {
-                    a = a[columns[i]].toLowerCase()
-                }
-
-                if (b[columns[i]] == null) {
-                    b = ''
-                } else if (Array.isArray(b[columns[i]])) {
-                    b = b[columns[i]].toString()
-                } else {
-                    b = b[columns[i]].toLowerCase()
-                }
-
-                if (ascending) {
-                    return b.localeCompare(a)
-                }
-                return a.localeCompare(b)
-            }
-        }
-    }
-
-    return sorting
-}
-
-function removeItemAjax(id, podType, podName, callback) {
-    Swal.fire({
-        title: 'Opravdu chcete smazat tuto položku?',
-        type: 'warning',
-        buttonsStyling: false,
-        showCancelButton: true,
-        confirmButtonText: 'Ano!',
-        cancelButtonText: 'Zrušit',
-        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
-    }).then(result => {
-        if (result.value) {
-            axios
-                .post(
-                    ajaxUrl + '?action=delete_hiko_pod',
-                    {
-                        ['pod_type']: podType,
-                        ['pod_name']: podName,
-                        ['id']: id,
-                    },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json;charset=utf-8',
-                        },
-                    }
-                )
-                .then(function() {
-                    Swal.fire({
-                        title: 'Odstraněno.',
-                        type: 'success',
-                        buttonsStyling: false,
-                        confirmButtonText: 'OK',
-                        confirmButtonClass: 'btn btn-primary btn-lg',
-                    })
-                    callback()
-                })
-                .catch(function(error) {
-                    Swal.fire({
-                        title: 'Při odstraňování došlo k chybě.',
-                        text: error,
-                        type: 'error',
-                        buttonsStyling: false,
-                        confirmButtonText: 'OK',
-                        confirmButtonClass: 'btn btn-primary btn-lg',
-                    })
-                })
-        }
     })
 }

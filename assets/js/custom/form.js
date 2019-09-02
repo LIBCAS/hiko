@@ -1,4 +1,4 @@
-/* global Vue axios ajaxUrl homeUrl Swal VeeValidate */
+/* global Vue axios ajaxUrl homeUrl VeeValidate getLetterType getObjectValues getNameById arrayToSingleObject getGeoCoord */
 
 if (window.hasOwnProperty('VueMultiselect')) {
     Vue.component('multiselect', window.VueMultiselect.default)
@@ -12,13 +12,6 @@ if (document.getElementById('letter-form')) {
     new Vue({
         el: '#letter-add-form',
         data: {
-            formChanged: false,
-            error: false,
-            loading: true,
-            letterType: '',
-            personType: '',
-            placeType: '',
-            path: '',
             letter: {
                 abstract: '',
                 archive: '',
@@ -70,43 +63,50 @@ if (document.getElementById('letter-form')) {
                 signature: '',
                 status: 'draft',
             },
-            persons: [],
-            places: [],
-            locations: [],
             edit: false,
+            error: false,
+            formChanged: false,
             letterID: null,
-            title: '',
+            letterType: '',
+            loading: true,
             location_note: '',
+            locations: [],
+            path: '',
+            personType: '',
+            persons: [],
+            placeType: '',
+            places: [],
+            title: '',
             manifestations: [
-                { label: 'MS Letter', value: 'ALS' },
+                { label: 'Extract', value: 'E' },
                 { label: 'MS Copy', value: 'S' },
                 { label: 'MS Draft', value: 'D' },
-                { label: 'Extract', value: 'E' },
+                { label: 'MS Letter', value: 'ALS' },
                 { label: 'Other', value: 'O' },
             ],
             documentTypes: [
                 { label: 'Letter', value: 'letter' },
-                { label: 'Telegram', value: 'telegram' },
-                { label: 'Postcard', value: 'postcard' },
                 { label: 'Picture postcard', value: 'picture postcard' },
+                { label: 'Postcard', value: 'postcard' },
+                { label: 'Telegram', value: 'telegram' },
             ],
             preservation: [
+                { label: 'carbon copy', value: 'carbon copy' },
+                { label: 'copy', value: 'copy' },
                 { label: 'draft', value: 'draft' },
                 { label: 'original', value: 'original' },
-                { label: 'carbon copy', value: 'carbon copy' },
                 { label: 'photocopy', value: 'photocopy' },
-                { label: 'copy', value: 'copy' },
             ],
             copy: [
+                {
+                    label: "author's autograph corrections",
+                    value: "author's autograph corrections",
+                },
                 {
                     label: 'handwritten (pen, pencil)',
                     value: 'handwritten (pen, pencil)',
                 },
                 { label: 'typewritten', value: 'typewritten' },
-                {
-                    label: "author's autograph corrections",
-                    value: "author's autograph corrections",
-                },
             ],
         },
         computed: {
@@ -799,11 +799,11 @@ if (document.getElementById('places-form')) {
     new Vue({
         el: '#places-form',
         data: {
-            place: '',
             country: {},
-            note: '',
             lat: '',
             long: '',
+            note: '',
+            place: '',
         },
         computed: {
             countries() {
@@ -877,18 +877,18 @@ if (document.getElementById('person-name')) {
     new Vue({
         el: '#person-name',
         data: {
-            firstName: '',
-            lastName: '',
-            emlo: '',
+            alternativeNames: [],
             dob: '',
             dod: '',
-            note: '',
+            emlo: '',
             error: false,
-            personType: '',
-            nationality: '',
+            firstName: '',
             gender: '',
+            lastName: '',
+            nationality: '',
+            note: '',
+            personType: '',
             profession: '',
-            alternativeNames: [],
         },
 
         computed: {
@@ -949,16 +949,16 @@ if (document.getElementById('person-name')) {
                         if (response.data == '404') {
                             self.error = true
                         } else {
-                            self.firstName = response.data.forename
-                            self.lastName = response.data.surname
-                            self.emlo = response.data.emlo
+                            self.alternativeNames = response.data.names
                             self.dob = response.data.birth_year
                             self.dod = response.data.death_year
-                            self.note = response.data.note
-                            self.nationality = response.data.nationality
+                            self.emlo = response.data.emlo
+                            self.firstName = response.data.forename
                             self.gender = response.data.gender
+                            self.lastName = response.data.surname
+                            self.nationality = response.data.nationality
+                            self.note = response.data.note
                             self.profession = response.data.profession
-                            self.alternativeNames = response.data.names
                         }
                     })
                     .catch(function(error) {
@@ -968,133 +968,4 @@ if (document.getElementById('person-name')) {
             },
         },
     })
-}
-
-function getNameById(data, id) {
-    var filtered = data.filter(function(line) {
-        return line.id == id
-    })
-
-    if (filtered.length == 0) {
-        return false
-    }
-
-    return filtered[0].name
-}
-
-function stringContains(str, substr) {
-    return str.indexOf(substr) !== -1
-}
-
-function getLetterType() {
-    let url = new URL(window.location.href)
-    if (stringContains(url.pathname, 'blekastad')) {
-        return {
-            letterType: 'bl_letter',
-            personType: 'bl_person',
-            placeType: 'bl_place',
-            path: 'blekastad',
-        }
-    } else if (stringContains(url.pathname, 'demo')) {
-        return {
-            letterType: 'demo_letter',
-            personType: 'demo_person',
-            placeType: 'demo_place',
-            path: 'demo',
-        }
-    } else if (stringContains(url.pathname, 'tgm')) {
-        return {
-            letterType: 'tgm_letter',
-            personType: 'tgm_person',
-            placeType: 'tgm_place',
-            path: 'tgm',
-        }
-    } else {
-        return 'Neplatný typ dopisu'
-    }
-}
-
-function getGeoCoord(callback) {
-    Swal.fire({
-        title: 'Zadejte název místa',
-        type: 'question',
-        input: 'text',
-        inputValidator: value => {
-            if (value.length < 2) {
-                return 'Zadejte název místa'
-            }
-        },
-        buttonsStyling: false,
-        showCancelButton: true,
-        confirmButtonText: 'Vyhledat',
-        cancelButtonText: 'Zrušit',
-        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
-        showLoaderOnConfirm: true,
-        preConfirm: function(value) {
-            return axios
-                .get(ajaxUrl + '?action=get_geocities_latlng&query=' + value)
-                .then(function(response) {
-                    return response.data.data
-                })
-                .catch(function(error) {
-                    Swal.showValidationMessage(
-                        `Při vyhledávání došlo k chybě: ${error}`
-                    )
-                })
-        },
-        allowOutsideClick: () => !Swal.isLoading(),
-    }).then(result => {
-        if (result.value) {
-            Swal.fire({
-                title: 'Vyberte místo',
-                type: 'question',
-                buttonsStyling: false,
-                showCancelButton: true,
-                confirmButtonText: 'Potvrdit',
-                cancelButtonText: 'Zrušit',
-                confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-                cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
-                input: 'select',
-                inputOptions: geoDataToSelect(result.value),
-            }).then(result => {
-                callback(result)
-            })
-        }
-    })
-}
-
-function geoDataToSelect(geoData) {
-    let output = {}
-    for (let i = 0; i < geoData.length; i++) {
-        let latlng = geoData[i].lat + ',' + geoData[i].lng
-        output[latlng] =
-            geoData[i].name +
-            ' (' +
-            geoData[i].adminName +
-            ' – ' +
-            geoData[i].country +
-            ')'
-    }
-    return output
-}
-
-function getObjectValues(obj) {
-    let result = []
-    let i
-    let l = obj.length
-    for (i = 0; i < l; i++) {
-        result.push(obj[i].value)
-    }
-    return result
-}
-
-function arrayToSingleObject(data) {
-    let result = {}
-
-    for (let i = 0; i < data.length; i++) {
-        result[Object.keys(data[i])] = Object.values(data[i])[0]
-    }
-
-    return result
 }

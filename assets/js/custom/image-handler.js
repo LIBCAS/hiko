@@ -1,4 +1,41 @@
-/* global Uppy ajaxUrl Vue axios Swal */
+/* global Uppy ajaxUrl Vue axios Swal errorInfoSwal */
+
+const imageHandlerSwal = {
+    confirmSave: {
+        title: 'Chcete uložit zadané údaje?',
+        type: 'info',
+        buttonsStyling: false,
+        showCancelButton: true,
+        confirmButtonText: 'Ano!',
+        cancelButtonText: 'Zrušit',
+        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
+    },
+    removeInfo: {
+        title: 'Odstraněno.',
+        type: 'success',
+        buttonsStyling: false,
+        confirmButtonText: 'OK',
+        confirmButtonClass: 'btn btn-primary btn-lg',
+    },
+    confirmRemove: {
+        title: 'Opravdu chcete odstranit tento obrázek?',
+        type: 'warning',
+        buttonsStyling: false,
+        showCancelButton: true,
+        confirmButtonText: 'Ano!',
+        cancelButtonText: 'Zrušit',
+        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
+    },
+    saveInfo: {
+        title: 'Data byla úspěšně uložena.',
+        type: 'success',
+        buttonsStyling: false,
+        confirmButtonText: 'OK',
+        confirmButtonClass: 'btn btn-primary btn-lg',
+    },
+}
 
 if (document.getElementById('media-handler')) {
     new Vue({
@@ -34,6 +71,84 @@ if (document.getElementById('media-handler')) {
         },
 
         methods: {
+            editImageMetadataAjax: function(image, callback) {
+                Swal.fire(imageHandlerSwal.confirmSave).then(result => {
+                    if (result.value) {
+                        let data = {
+                            ['img_id']: image.id,
+                            ['img_status']: image.status,
+                            ['img_description']: image.description,
+                        }
+                        axios
+                            .post(ajaxUrl + '?action=change_metadata', data, {
+                                headers: {
+                                    'Content-Type':
+                                        'application/json;charset=utf-8',
+                                },
+                            })
+                            .then(function() {
+                                Swal.fire(imageHandlerSwal.saveInfo)
+                                callback()
+                            })
+                            .catch(function(error) {
+                                Swal.fire(errorInfoSwal(error))
+                                callback()
+                            })
+                    }
+                })
+            },
+
+            removeImage: function(letterID, letterType, imgID, callback) {
+                Swal.fire(imageHandlerSwal.removeInfo).then(result => {
+                    if (result.value) {
+                        axios
+                            .post(
+                                ajaxUrl + '?action=delete_hiko_image',
+                                {
+                                    ['letter']: letterID,
+                                    ['l_type']: letterType,
+                                    ['img']: imgID,
+                                },
+                                {
+                                    headers: {
+                                        'Content-Type':
+                                            'application/json;charset=utf-8',
+                                    },
+                                }
+                            )
+
+                            .then(function() {
+                                Swal.fire(imageHandlerSwal.removeInfo)
+                                callback()
+                            })
+                            .catch(function(error) {
+                                Swal.fire(Swal.fire(errorInfoSwal(error)))
+                            })
+                    }
+                })
+            },
+
+            saveImageOrder: function(id, order) {
+                axios({
+                    method: 'post',
+                    url: ajaxUrl + '?action=change_image_order',
+                    data: {
+                        img_id: id,
+                        img_order: order,
+                    },
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Access-Control-Allow-Origin': '*',
+                    },
+                })
+                    .then(function() {
+                        return true
+                    })
+                    .catch(function(error) {
+                        Swal.fire(Swal.fire(errorInfoSwal(error)))
+                    })
+            },
+
             openModal: function(image) {
                 this.modal.visibility = true
                 this.modal.src = image.img.large
@@ -46,9 +161,14 @@ if (document.getElementById('media-handler')) {
 
             deleteImage: function(id) {
                 let self = this
-                removeImage(self.letterId, self.letterType, id, function() {
-                    self.deleteRow(id)
-                })
+                self.removeImage(
+                    self.letterId,
+                    self.letterType,
+                    id,
+                    function() {
+                        self.deleteRow(id)
+                    }
+                )
             },
 
             deleteRow: function(id) {
@@ -80,27 +200,18 @@ if (document.getElementById('media-handler')) {
 
             editImageMetadata: function(image) {
                 let self = this
-                editImageMetadata(image, function() {
+                self.editImageMetadataAjax(image, function() {
                     self.getImages()
                 })
             },
 
             saveImagesOrder: function() {
                 let self = this
-                Swal.fire({
-                    title: 'Chcete uložit zadané pořadí?',
-                    type: 'info',
-                    buttonsStyling: false,
-                    showCancelButton: true,
-                    confirmButtonText: 'Ano!',
-                    cancelButtonText: 'Zrušit',
-                    confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-                    cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
-                }).then(result => {
+                Swal.fire(imageHandlerSwal.confirmSave).then(result => {
                     if (result.value) {
                         let ordered = this.$refs.dnd.realList
                         for (let i = 0; i < ordered.length; i++) {
-                            saveImageOrder(ordered[i].id, i)
+                            self.saveImageOrder(ordered[i].id, i)
                         }
                         self.getImages()
                         self.orderMode = false
@@ -144,14 +255,7 @@ if (document.getElementById('media-handler')) {
                             } else {
                                 err = JSON.stringify(failed[i].response)
                             }
-                            Swal.fire({
-                                title: 'Při ukládání došlo k chybě.',
-                                text: err,
-                                type: 'error',
-                                buttonsStyling: false,
-                                confirmButtonText: 'OK',
-                                confirmButtonClass: 'btn btn-primary btn-lg',
-                            })
+                            Swal.fire(Swal.fire(errorInfoSwal(err)))
                         }
                     }
                     self.getImages()
@@ -159,132 +263,4 @@ if (document.getElementById('media-handler')) {
             },
         },
     })
-}
-
-function removeImage(letterID, letterType, imgID, callback) {
-    Swal.fire({
-        title: 'Opravdu chcete odstranit tento obrázek?',
-        type: 'warning',
-        buttonsStyling: false,
-        showCancelButton: true,
-        confirmButtonText: 'Ano!',
-        cancelButtonText: 'Zrušit',
-        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
-    }).then(result => {
-        if (result.value) {
-            axios
-                .post(
-                    ajaxUrl + '?action=delete_hiko_image',
-                    {
-                        ['letter']: letterID,
-                        ['l_type']: letterType,
-                        ['img']: imgID,
-                    },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json;charset=utf-8',
-                        },
-                    }
-                )
-
-                .then(function() {
-                    Swal.fire({
-                        title: 'Odstraněno.',
-                        type: 'success',
-                        buttonsStyling: false,
-                        confirmButtonText: 'OK',
-                        confirmButtonClass: 'btn btn-primary btn-lg',
-                    })
-                    callback()
-                })
-                .catch(function(error) {
-                    Swal.fire({
-                        title: 'Při odstraňování došlo k chybě.',
-                        text: error,
-                        type: 'error',
-                        buttonsStyling: false,
-                        confirmButtonText: 'OK',
-                        confirmButtonClass: 'btn btn-primary btn-lg',
-                    })
-                })
-        }
-    })
-}
-
-function editImageMetadata(image, callback) {
-    Swal.fire({
-        title: 'Chcete uložit zadané údaje?',
-        type: 'info',
-        buttonsStyling: false,
-        showCancelButton: true,
-        confirmButtonText: 'Ano!',
-        cancelButtonText: 'Zrušit',
-        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
-    }).then(result => {
-        if (result.value) {
-            let data = {
-                ['img_id']: image.id,
-                ['img_status']: image.status,
-                ['img_description']: image.description,
-            }
-
-            axios
-                .post(ajaxUrl + '?action=change_metadata', data, {
-                    headers: {
-                        'Content-Type': 'application/json;charset=utf-8',
-                    },
-                })
-                .then(function() {
-                    Swal.fire({
-                        title: 'Data byla úspěšně uložena.',
-                        type: 'success',
-                        buttonsStyling: false,
-                        confirmButtonText: 'OK',
-                        confirmButtonClass: 'btn btn-primary btn-lg',
-                    })
-                    callback()
-                })
-                .catch(function(error) {
-                    Swal.fire({
-                        title: 'Při ukládání došlo k chybě.',
-                        text: error,
-                        type: 'error',
-                        buttonsStyling: false,
-                        confirmButtonText: 'OK',
-                        confirmButtonClass: 'btn btn-primary btn-lg',
-                    })
-                    callback()
-                })
-        }
-    })
-}
-
-function saveImageOrder(id, order) {
-    axios({
-        method: 'post',
-        url: ajaxUrl + '?action=change_image_order',
-        data: {
-            img_id: id,
-            img_order: order,
-        },
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Access-Control-Allow-Origin': '*',
-        },
-    })
-        .then(function() {
-            return true
-        })
-        .catch(function(error) {
-            Swal.fire({
-                title: 'Při ukládání došlo k chybě.',
-                text: error,
-                type: 'error',
-                buttonsStyling: false,
-                confirmButtonText: 'OK',
-                confirmButtonClass: 'btn btn-primary btn-lg',
-            })
-        })
 }
