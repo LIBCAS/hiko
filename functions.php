@@ -938,6 +938,7 @@ function save_hiko_letter($letter_type, $action, $path)
         'l_number' => 'l_number',
         'languages' => 'languages',
         'location_note' => 'location_note',
+        'manifestation_notes' => 'manifestation_notes',
         'ms_manifestation' => 'ms_manifestation',
         'name' => 'description',
         'notes_private' => 'notes_private',

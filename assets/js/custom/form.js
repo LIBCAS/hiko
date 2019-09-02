@@ -43,6 +43,7 @@ if (document.getElementById('letter-form')) {
                 location_note: '',
                 mentioned: [],
                 ms_manifestation: {},
+                manifestation_notes: '',
                 notes_private: '',
                 notes_public: '',
                 origin: [],
@@ -69,7 +70,6 @@ if (document.getElementById('letter-form')) {
             letterID: null,
             letterType: '',
             loading: true,
-            location_note: '',
             locations: [],
             path: '',
             personType: '',
@@ -98,14 +98,7 @@ if (document.getElementById('letter-form')) {
                 { label: 'photocopy', value: 'photocopy' },
             ],
             copy: [
-                {
-                    label: "author's autograph corrections",
-                    value: "author's autograph corrections",
-                },
-                {
-                    label: 'handwritten (pen, pencil)',
-                    value: 'handwritten (pen, pencil)',
-                },
+                { label: 'handwritten', value: 'handwritten' },
                 { label: 'typewritten', value: 'typewritten' },
             ],
         },
@@ -572,7 +565,6 @@ if (document.getElementById('letter-form')) {
                             }
 
                             self.title = rd.name
-                            self.location_note = rd.location_note
                         }
                     })
                     .catch(function(error) {

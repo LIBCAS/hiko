@@ -492,6 +492,11 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <input type="hidden" :value="documentTypesData" name="document_type">
 
+                    <div class="form-group">
+                        <label for="manifestation_notes">Notes on manifestation</label>
+                        <textarea v-model="letter.manifestation_notes" name="manifestation_notes" class="form-control form-control-sm">{{ letter.manifestation_notes }}</textarea>
+                    </div>
+
                 </fieldset>
 
                 <fieldset id="a-repositories-and-versions">
@@ -532,7 +537,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="location_note">Notes on location</label>
-                        <textarea v-model="location_note" name="location_note" class="form-control form-control-sm">{{ location_note }}</textarea>
+                        <textarea v-model="letter.location_note" name="location_note" class="form-control form-control-sm">{{ letter.location_note }}</textarea>
                     </div>
                 </fieldset>
 
