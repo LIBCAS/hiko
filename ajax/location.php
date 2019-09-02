@@ -10,25 +10,25 @@ function insert_location_data()
     $data = mb_convert_encoding($data, 'UTF-8');
     $data = json_decode($data);
 
-    $type = $data->type;
-    $item = $data->item;
     $action = $data->action;
     $id = $data->id;
+    $item = $data->item;
+    $type = $data->type;
 
     $data = [
-        'name' => test_input($item),
         'loc_type' => test_input($type),
+        'name' => test_input($item),
     ];
 
     if ($action == 'add') {
-        $new_pod = pods_api()->save_pod_item([
+        pods_api()->save_pod_item([
             'pod' => 'location',
             'data' => $data
         ]);
 
         wp_send_json_success();
     } elseif ($action == 'edit') {
-        $new_pod = pods_api()->save_pod_item([
+        pods_api()->save_pod_item([
             'pod' => 'location',
             'data' => $data,
             'id' => $id
@@ -52,9 +52,7 @@ function delete_location_data()
     $data = mb_convert_encoding($data, 'UTF-8');
     $data = json_decode($data);
 
-    $id = $data->id;
-
-    $pod = pods('location', $id);
+    $pod = pods('location', $data->id);
     $result = $pod->delete();
     wp_send_json_success($result);
 }

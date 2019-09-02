@@ -187,6 +187,7 @@ function change_metadata()
         'post_status' => $status,
         'post_content' => $description
     ];
+
     $update = wp_update_post($post);
 
     if (is_wp_error($update)) {

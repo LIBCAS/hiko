@@ -7,8 +7,10 @@ function persons_table_data()
 
     if (hiko_cache_exists('list_' . $person_type)) {
         header('Last-Modified: ' . get_gmdate(get_hiko_cache_file('list_' . $person_type)));
-        echo read_hiko_cache('list_' . $person_type);
-        wp_die();
+
+        wp_die(
+            read_hiko_cache('list_' . $person_type)
+        );
     }
 
     $persons = get_persons_table_data($person_type);
@@ -19,10 +21,10 @@ function persons_table_data()
     );
 
     header('Last-Modified: ' . get_gmdate());
-    echo $json_persons;
 
     create_hiko_json_cache('list_' . $person_type, $json_persons);
-    wp_die();
+
+    wp_die($json_persons);
 }
 add_action('wp_ajax_persons_table_data', 'persons_table_data');
 
@@ -30,11 +32,11 @@ add_action('wp_ajax_persons_table_data', 'persons_table_data');
 function list_people_simple()
 {
     $type = test_input($_GET['type']);
-    echo json_encode(
+
+    wp_die(json_encode(
         get_pods_name_and_id($type, true),
         JSON_UNESCAPED_UNICODE
-    );
-    wp_die();
+    ));
 }
 add_action('wp_ajax_list_people_simple', 'list_people_simple');
 
@@ -47,6 +49,7 @@ function list_people_single()
     if (!array_key_exists('pods_id', $_GET)) {
         wp_send_json_error('Not found', 404);
     }
+
     $type = test_input($_GET['type']);
     $id = test_input($_GET['pods_id']);
     $pod = pods($type, $id);
@@ -76,12 +79,10 @@ function list_people_single()
     $results['gender'] = $pod->field('gender');
     $results['names'] = $alternative_names;
 
-    echo json_encode(
+    wp_die(json_encode(
         $results,
         JSON_UNESCAPED_UNICODE
-    );
-
-    wp_die();
+    ));
 }
 add_action('wp_ajax_list_people_single', 'list_people_single');
 
@@ -117,7 +118,7 @@ function count_alternate_name()
             'deleted' => [],
         ]);
     }
-    ;
+
     $table = $wpdb->prefix . 'pods_' . $types['letter'];
 
     $person_meta->names = [];

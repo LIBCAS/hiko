@@ -9,18 +9,21 @@ function get_geocities_latlng()
     $query = test_input($_GET['query']);
     $api_url = "http://api.geonames.org/searchJSON?maxRows=10&username=jarka&q={$query}";
     $geo_data = json_decode(file_get_contents($api_url));
+
     if (count($geo_data->geonames) < 1) {
         wp_send_json_error('Not found', 404);
     }
+
     $result = [];
     $index = 0;
+
     foreach ($geo_data->geonames as $g) {
         $result[$index] = [
-            'name' => $g->name,
+            'adminName' => $g->adminName1,
             'country' => $g->countryName,
             'lat' => $g->lat,
             'lng' => $g->lng,
-            'adminName' => $g->adminName1,
+            'name' => $g->name,
         ];
         $index++;
     }

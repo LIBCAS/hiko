@@ -4,11 +4,10 @@ function list_places_simple()
 {
     $type = test_input($_GET['type']);
 
-    echo json_encode(
+    wp_die(json_encode(
         get_pods_name_and_id($type),
         JSON_UNESCAPED_UNICODE
-    );
-    wp_die();
+    ));
 }
 add_action('wp_ajax_list_places_simple', 'list_places_simple');
 
@@ -31,18 +30,16 @@ function list_place_single()
         wp_send_json_error('Not found', 404);
     }
 
-    $results['id'] = $pod->display('id');
-    $results['name'] = $pod->field('name');
     $results['country'] = $pod->field('country');
-    $results['note'] = $pod->display('note');
+    $results['id'] = $pod->display('id');
     $results['latitude'] = $pod->display('latitude');
     $results['longitude'] = $pod->display('longitude');
+    $results['name'] = $pod->field('name');
+    $results['note'] = $pod->display('note');
 
-    echo json_encode(
+    wp_die(json_encode(
         $results,
         JSON_UNESCAPED_UNICODE
-    );
-
-    wp_die();
+    ));
 }
 add_action('wp_ajax_list_place_single', 'list_place_single');
