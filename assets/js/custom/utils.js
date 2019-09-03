@@ -231,3 +231,28 @@ function getCustomSorting(columns) {
 
     return sorting
 }
+
+function getTimestampFromCustomFormat(customDate) {
+    let d = new Date()
+    if (customDate == '0/0/0') {
+        d.setFullYear(1000, 12, 31)
+        return d.getTime()
+    }
+
+    customDate = customDate.split('/')
+    let year = customDate[0] == 0 ? 1000 : customDate[0]
+    let month = customDate[1] == 0 ? 0 : customDate[1] - 1
+    let day = customDate[2]
+    d.setFullYear(year, month, day)
+    return d.getTime()
+}
+
+function getTimestampFromDate(year, month, day) {
+    year = year == 0 ? 1000 : year
+    month = month == 0 ? 0 : month - 1
+
+    let d = new Date()
+    d.setFullYear(year, month, day)
+
+    return d.getTime()
+}

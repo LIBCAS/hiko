@@ -1,8 +1,13 @@
-/* global Vue VueTables Swal axios ajaxUrl getLetterType removeItemAjax removeElFromArr getCustomSorting */
+/* global Vue VueTables Swal axios ajaxUrl getLetterType removeItemAjax removeElFromArr getCustomSorting getTimestampFromDate */
 
 var columns
 
 var defaultTablesOptions = {
+    pagination: {
+        edge: true,
+    },
+    perPage: 25,
+    perPageValues: [10, 25, 50, 100],
     skin: 'table table-bordered table-hover table-striped table-sm',
     sortIcon: {
         base: 'oi pl-1',
@@ -11,25 +16,20 @@ var defaultTablesOptions = {
         is: 'oi-elevator',
     },
     texts: {
+        columns: 'Columns',
         count:
             'Zobrazena položka {from} až {to} z celkového počtu {count} položek |{count} položky|Jedna položka',
+        defaultOption: 'Vybrat {column}',
+        filter: 'Filtr: ',
+        filterBy: 'Filtrovat dle {column}',
+        filterPlaceholder: 'Hledat',
         first: 'První',
         last: 'Poslední',
-        filter: 'Filtr: ',
-        filterPlaceholder: 'Hledat',
         limit: 'Položky: ',
-        page: 'Strana: ',
-        noResults: 'Nenalezeno',
-        filterBy: 'Filtrovat dle {column}',
         loading: 'Načítá se...',
-        defaultOption: 'Vybrat {column}',
-        columns: 'Columns',
+        noResults: 'Nenalezeno',
+        page: 'Strana: ',
     },
-    pagination: {
-        edge: true,
-    },
-    perPage: 10,
-    perPageValues: [10, 25, 50, 100],
 }
 
 if (document.getElementById('datatable-letters')) {
@@ -46,40 +46,52 @@ if (document.getElementById('datatable-letters')) {
         'status',
     ]
 
+    let customSortingLetters = getCustomSorting([
+        'signature',
+        'date',
+        'author',
+        'recipient',
+        'origin',
+        'dest',
+        'status',
+        'images',
+    ])
+
+    customSortingLetters.date = function(ascending) {
+        return function(a, b) {
+            a = getTimestampFromDate(a.date_year, a.date_month, a.date_day)
+            b = getTimestampFromDate(b.date_year, b.date_month, b.date_day)
+
+            if (ascending) return a >= b ? 1 : -1
+
+            return a <= b ? 1 : -1
+        }
+    }
+
     new Vue({
         el: '#datatable-letters',
         data: {
             columns: columns,
-            tableData: [],
-            options: {
-                headings: {
-                    edit: 'Akce',
-                    dest: 'Destination',
-                    images: 'Obrázky',
-                },
-                skin: defaultTablesOptions.skin,
-                sortable: removeElFromArr('edit', columns),
-                filterable: removeElFromArr('edit', columns),
-                sortIcon: defaultTablesOptions.sortIcon,
-                texts: defaultTablesOptions.texts,
-                pagination: defaultTablesOptions.pagination,
-                perPage: defaultTablesOptions.perPage,
-                perPageValues: defaultTablesOptions.perPageValues,
-                dateColumns: ['date'],
-                customSorting: getCustomSorting([
-                    'signature',
-                    'date',
-                    'author',
-                    'recipient',
-                    'origin',
-                    'dest',
-                    'status',
-                    'images',
-                ]),
-            },
             error: false,
             loading: true,
             path: '',
+            tableData: [],
+            options: {
+                customSorting: customSortingLetters,
+                filterable: removeElFromArr('edit', columns),
+                headings: {
+                    dest: 'Destination',
+                    edit: 'Akce',
+                    images: 'Obrázky',
+                },
+                pagination: defaultTablesOptions.pagination,
+                perPage: defaultTablesOptions.perPage,
+                perPageValues: defaultTablesOptions.perPageValues,
+                skin: defaultTablesOptions.skin,
+                sortIcon: defaultTablesOptions.sortIcon,
+                sortable: removeElFromArr('edit', columns),
+                texts: defaultTablesOptions.texts,
+            },
         },
         mounted: function() {
             let letterTypes = getLetterType()
@@ -303,18 +315,18 @@ if (document.getElementById('datatable-places')) {
                 document.querySelector('#places-data').innerHTML
             ),
             options: {
+                customSorting: getCustomSorting(['city', 'country']),
+                filterable: removeElFromArr('edit', columns),
                 headings: {
                     edit: 'Akce',
                 },
-                skin: defaultTablesOptions.skin,
-                sortable: removeElFromArr('edit', columns),
-                filterable: removeElFromArr('edit', columns),
-                sortIcon: defaultTablesOptions.sortIcon,
-                texts: defaultTablesOptions.texts,
                 pagination: defaultTablesOptions.pagination,
                 perPage: defaultTablesOptions.perPage,
                 perPageValues: defaultTablesOptions.perPageValues,
-                customSorting: getCustomSorting(['city', 'country']),
+                skin: defaultTablesOptions.skin,
+                sortIcon: defaultTablesOptions.sortIcon,
+                sortable: removeElFromArr('edit', columns),
+                texts: defaultTablesOptions.texts,
             },
             path: '',
         },

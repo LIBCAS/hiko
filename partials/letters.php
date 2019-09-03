@@ -54,7 +54,9 @@ $path = $pods_types['path'];
         </ul>
 
         <span slot="date" slot-scope="props">
-            {{ props.row.date_year + '/' + props.row.date_month  + '/' + props.row.date_day }}
+            <span v-if="!props.row.date_year">0/</span><span v-else>{{ props.row.date_year }}/</span><!--
+            --><span v-if="!props.row.date_month">0/</span><span v-else>{{ props.row.date_month }}/</span><!--
+            --><span v-if="!props.row.date_day">0</span><span v-else>{{ props.row.date_day }}</span>
         </span>
 
         <span slot="author" slot-scope="props">
