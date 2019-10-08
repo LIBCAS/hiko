@@ -29,6 +29,11 @@ $title = $pods_types['title'];
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="<?= home_url($path . '/keywords/') ?>">
+                        Klíčová slova
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="<?= home_url('/location/') ?>">
                         Uložení
                     </a>

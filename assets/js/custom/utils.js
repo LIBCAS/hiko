@@ -35,6 +35,7 @@ function getLetterType() {
             personType: 'bl_person',
             placeType: 'bl_place',
             path: 'blekastad',
+            keyword: 'bl_keyword',
         }
     }
 
@@ -44,6 +45,7 @@ function getLetterType() {
             personType: 'demo_person',
             placeType: 'demo_place',
             path: 'demo',
+            keyword: 'demo_keyword',
         }
     }
 
@@ -53,6 +55,7 @@ function getLetterType() {
             personType: 'tgm_person',
             placeType: 'tgm_place',
             path: 'tgm',
+            keyword: 'tgm_keyword',
         }
     }
 

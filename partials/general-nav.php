@@ -15,6 +15,7 @@
                         <a class="dropdown-item" href="<?= home_url('/blekastad/letters/') ?>">Dopisy</a>
                         <a class="dropdown-item" href="<?= home_url('/blekastad/persons/') ?>">Lidé</a>
                         <a class="dropdown-item" href="<?= home_url('/blekastad/places/') ?>">Místa</a>
+                        <a class="dropdown-item" href="<?= home_url('/blekastad/keywords/') ?>">Klíčová slova</a>
                     </div>
                 </li>
                 <li class="nav-item dropdown">
@@ -25,6 +26,8 @@
                         <a class="dropdown-item" href="<?= home_url('/tgm/letters/') ?>">Dopisy</a>
                         <a class="dropdown-item" href="<?= home_url('/tgm/persons/') ?>">Lidé</a>
                         <a class="dropdown-item" href="<?= home_url('/tgm/places/') ?>">Místa</a>
+                        <a class="dropdown-item" href="<?= home_url('/tgm/keywords/') ?>">Klíčová slova</a>
+
                     </div>
                 </li>
                 <li class="nav-item dropdown">
@@ -35,6 +38,7 @@
                         <a class="dropdown-item" href="<?= home_url('/demo/letters/') ?>">Dopisy</a>
                         <a class="dropdown-item" href="<?= home_url('/demo/persons/') ?>">Lidé</a>
                         <a class="dropdown-item" href="<?= home_url('/demo/places/') ?>">Místa</a>
+                        <a class="dropdown-item" href="<?= home_url('/demo/keywords/') ?>">Klíčová slova</a>
                     </div>
                 </li>
                 <li class="nav-item">

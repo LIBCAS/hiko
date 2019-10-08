@@ -245,7 +245,6 @@ function get_places_table_data($place_type)
     return $places_filtered;
 }
 
-
 function get_pods_name_and_id($type, $dates = false)
 {
     $fields = [
@@ -728,6 +727,7 @@ function get_hiko_post_types($type)
         $data['editor'] = 'blekastad_editor';
         $data['path'] = 'blekastad';
         $data['title'] = 'Milada Blekastad';
+        $data['keyword'] = 'bl_keyword';
     } elseif ($type == 'demo') {
         $data['letter'] = 'demo_letter';
         $data['place'] = 'demo_place';
@@ -735,6 +735,7 @@ function get_hiko_post_types($type)
         $data['editor'] = 'demo_editor';
         $data['path'] = 'demo';
         $data['title'] = 'Zkušební DB';
+        $data['keyword'] = 'demo_keyword';
     } elseif ($type == 'tgm') {
         $data['letter'] = 'tgm_letter';
         $data['place'] = 'tgm_place';
@@ -742,6 +743,7 @@ function get_hiko_post_types($type)
         $data['editor'] = 'tgm_editor';
         $data['path'] = 'tgm';
         $data['title'] = 'Korespondence TGM';
+        $data['keyword'] = 'tgm_keyword';
     }
 
     return $data;
@@ -1100,8 +1102,8 @@ function save_hiko_place($place_type, $action)
 
     frontend_refresh();
     return alert('Uloženo', 'success');
-
 }
+
 
 function get_languages()
 {
@@ -1236,3 +1238,4 @@ require 'ajax/images.php';
 require 'ajax/export.php';
 require 'ajax/location.php';
 require 'ajax/geonames.php';
+require 'ajax/keywords.php';
