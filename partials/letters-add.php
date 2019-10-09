@@ -368,19 +368,11 @@ if (array_key_exists('save_post', $_POST)) {
                         <input type="hidden" :value="getObjectValues(letter.languages).join(';')" name="languages">
                     </div>
 
-                    <div class="form-group keywords">
+                    <div class="form-group">
                         <label for="keywords">Keywords</label>
-                        <div v-for="kw in letter.keywords" class="input-group input-group-sm mb-1">
-                            <input v-model="kw.value" type="text" name="keywords[]" @keyup.enter="addNewKeyword" class="form-control form-control-sm">
-                            <div class="input-group-append">
-                                <button class="btn btn-sm btn-outline-danger btn-remove" type="button" @click="removeKeyword(kw)">
-                                    <span class="oi oi-x"></span>
-                                </button>
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-sm btn-outline-info mt-2" @click="addNewKeyword">
-                            <span class="oi oi-plus"></span> Add
-                        </button>
+                        <multiselect v-model="letter.keywords" :options="keywords" label="label" track-by="value" :multiple="true">
+                        </multiselect>
+                        <input type="hidden" :value="getObjectValues(letter.keywords).join(';')" name="keywords">
                     </div>
 
                     <div class="form-group">

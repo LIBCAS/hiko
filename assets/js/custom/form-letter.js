@@ -29,7 +29,7 @@ if (document.getElementById('letter-form')) {
                 document_type: {},
                 explicit: '',
                 incipit: '',
-                keywords: [{ value: '' }],
+                keywords: [],
                 l_number: '',
                 languages: [],
                 location_note: '',
@@ -59,6 +59,8 @@ if (document.getElementById('letter-form')) {
             edit: false,
             error: false,
             formChanged: false,
+            keywordType: '',
+            keywords: [],
             letterID: null,
             letterType: '',
             loading: true,
@@ -301,6 +303,7 @@ if (document.getElementById('letter-form')) {
             self.personType = letterTypes['personType']
             self.placeType = letterTypes['placeType']
             self.path = letterTypes['path']
+            self.keywordType = letterTypes['keyword']
 
             let edit = url.searchParams.get('edit')
             if (edit) {
@@ -317,6 +320,8 @@ if (document.getElementById('letter-form')) {
             this.places = JSON.parse(
                 document.querySelector('#places').innerHTML
             )
+
+            this.getKeywords()
 
             this.getLocationData()
         },
@@ -445,11 +450,13 @@ if (document.getElementById('letter-form')) {
                             let mentioned = rd.people_mentioned
                             let manifestation = rd.ms_manifestation
                             let languages = rd.languages
+                            let keywords = rd.keywords
                             let documentTypes = rd.document_type
 
                             self.letter = rd
 
                             self.$set(self.letter, 'languages', []) // must set reactive data again
+                            self.$set(self.letter, 'keywords', [])
                             self.$set(self.letter, 'mentioned', [])
 
                             self.letter.date_year =
@@ -536,10 +543,19 @@ if (document.getElementById('letter-form')) {
                                 }
                             }
 
-                            self.letter.keywords =
-                                rd.keywords === null || rd.keywords.length === 0
-                                    ? [{ value: '' }]
-                                    : self.parseKeywords(rd.keywords)
+                            if (keywords != '') {
+                                keywords = keywords.split(';')
+                                for (
+                                    let index = 0;
+                                    index < keywords.length;
+                                    index++
+                                ) {
+                                    self.letter.keywords.push({
+                                        label: keywords[index],
+                                        value: keywords[index],
+                                    })
+                                }
+                            }
 
                             self.letter.related_resources =
                                 rd.related_resources === null ||
@@ -608,42 +624,29 @@ if (document.getElementById('letter-form')) {
                 }
             },
 
-            removeKeyword: function(kw) {
-                let kwIndex = this.letter.keywords.indexOf(kw)
-                this.letter.keywords = this.letter.keywords.filter(function(
-                    item,
-                    index
-                ) {
-                    return index !== kwIndex
-                })
-            },
+            getKeywords: function() {
+                let self = this
+                axios
+                    .get(
+                        ajaxUrl +
+                            '?action=keywords_table_data&type=' +
+                            self.keywordType
+                    )
+                    .then(function(response) {
+                        let keywords = response.data
+                        let result = []
 
-            addNewKeyword: function() {
-                this.letter.keywords.push({ value: '' })
-
-                let index = this.letter.keywords.length
-                setTimeout(function() {
-                    let inputs = document.querySelectorAll('.keywords input')
-                    let last = inputs[index - 1]
-                    if (last) {
-                        last.select()
-                    }
-                }, 50)
-            },
-
-            parseKeywords: function(keywords) {
-                if (keywords.length === 0) {
-                    return
-                }
-                let kwArr = keywords.split(';')
-
-                let kwObj = []
-
-                for (let i = 0; i < kwArr.length; i++) {
-                    kwObj.push({ value: kwArr[i] })
-                }
-
-                return kwObj
+                        keywords.map(kw => {
+                            result.push({
+                                label: kw.name,
+                                value: kw.name,
+                            })
+                        })
+                        self.keywords = result
+                    })
+                    .catch(function(error) {
+                        console.log(error)
+                    })
             },
 
             addNewResource: function() {
