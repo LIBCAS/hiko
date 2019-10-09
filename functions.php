@@ -434,8 +434,7 @@ function merge_unique($array1, $array2)
 
 function import_letters_from_file($file)
 {
-    $file_content = file_get_contents($file);
-    $file_content = json_decode($file_content);
+    $file_content = json_decode(file_get_contents($file));
 
     foreach ($file_content as $bits) {
         $authors_ids = explode(';', $bits->author);
@@ -499,7 +498,6 @@ function import_letters_from_file($file)
         if (is_numeric($bits->date_range_day)) {
             $data['range_day'] = $bits->date_range_day;
         }
-
 
         $author_meta = [];
         $places_meta = [];
@@ -1013,10 +1011,10 @@ function save_hiko_letter($letter_type, $action, $path)
 
 function get_gmdate($filepath = false)
 {
+    $timestamp = time();
+
     if ($filepath) {
         $timestamp = filemtime($filepath);
-    } else {
-        $timestamp = time();
     }
 
     return gmdate('D, d M Y H:i:s ', $timestamp) . 'GMT';
