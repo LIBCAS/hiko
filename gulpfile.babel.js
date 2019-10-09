@@ -18,7 +18,7 @@ const paths = {
     styleSRC: './assets/css/main.scss',
     styleDestination: './assets/dist',
 
-    jsCustomSRC: './assets/js/custom/*.js',
+    jsCustomSRC: './assets/js/custom/',
     jsCustomDestination: './assets/dist/',
     jsCustomFile: 'custom',
 
@@ -102,7 +102,14 @@ gulp.task('styles', () => {
 
 gulp.task('customJS', () => {
     return gulp
-        .src(paths.jsCustomSRC, { since: gulp.lastRun('customJS') })
+        .src(
+            [
+                paths.jsCustomSRC + 'global.js',
+                paths.jsCustomSRC + 'utils.js',
+                paths.jsCustomSRC + '!(global|utils)*.js',
+            ],
+            { since: gulp.lastRun('customJS') }
+        )
         .pipe(plumber(errorHandler))
         .pipe(sourcemaps.init())
         .pipe(
@@ -117,7 +124,7 @@ gulp.task('customJS', () => {
                 ],
             })
         )
-        .pipe(remember(paths.jsCustomSRC))
+        .pipe(remember(paths.jsCustomSRC + '*.js'))
         .pipe(concat(paths.jsCustomFile + '.js'))
         .pipe(lineec())
         .pipe(gulp.dest(paths.jsCustomDestination))
