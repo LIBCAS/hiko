@@ -624,7 +624,15 @@ if (document.getElementById('letter-form')) {
                 }
             },
 
-            getKeywords: function() {
+            regenerateKeywords: function(event) {
+                let self = this
+                event.target.classList.add('rotate')
+                self.getKeywords(() => {
+                    event.target.classList.remove('rotate')
+                })
+            },
+
+            getKeywords: function(callback = null) {
                 let self = this
                 axios
                     .get(
@@ -647,6 +655,7 @@ if (document.getElementById('letter-form')) {
                     .catch(function(error) {
                         console.log(error)
                     })
+                    .then(callback)
             },
 
             addNewResource: function() {

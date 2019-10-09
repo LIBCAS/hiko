@@ -369,7 +369,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                     <div class="form-group">
-                        <label for="keywords">Keywords</label>
+                        <label for="keywords">Keywords <span class="pointer oi oi-reload pl-1" @click="regenerateKeywords($event)"></span></label>
                         <multiselect v-model="letter.keywords" :options="keywords" label="label" track-by="value" :multiple="true">
                         </multiselect>
                         <input type="hidden" :value="getObjectValues(letter.keywords).join(';')" name="keywords">
