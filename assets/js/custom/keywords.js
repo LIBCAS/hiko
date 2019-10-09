@@ -7,7 +7,6 @@ const keywordsSwal = {
         cancelButtonText: 'Zrušit',
         confirmButtonClass: 'btn btn-primary btn-lg mr-1',
         confirmButtonText: 'Uložit',
-        input: 'text',
         showCancelButton: true,
         showLoaderOnConfirm: true,
         type: 'question',
@@ -21,17 +20,32 @@ const keywordsSwal = {
     },
 }
 
+function getKeywordForm(val1, val2) {
+    return `
+    <div class="form-group">
+    <label for="nameen">EN</label>
+    <input value="${val1}" id="nameen" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
+    </div>
+    <div class="form-group">
+    <label for="namecz">CZ</label>
+    <input value="${val2}" id="namecz" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
+    </div>
+    `
+}
+
 if (document.getElementById('datatable-keywords')) {
     Vue.use(VueTables.ClientTable, false, false, 'bootstrap4')
     new Vue({
         el: '#datatable-keywords',
         data: {
-            columns: ['name', 'edit'],
+            columns: ['name', 'namecz', 'edit'],
             tableData: [],
             error: false,
             options: {
-                filterable: ['name'],
+                filterable: ['name', 'namecz'],
                 headings: {
+                    name: 'EN',
+                    namecz: 'CZ',
                     edit: 'Akce',
                 },
                 pagination: defaultTablesOptions.pagination,
@@ -39,7 +53,7 @@ if (document.getElementById('datatable-keywords')) {
                 perPageValues: defaultTablesOptions.perPageValues,
                 skin: defaultTablesOptions.skin,
                 sortIcon: defaultTablesOptions.sortIcon,
-                sortable: ['name'],
+                sortable: ['name', 'namecz'],
                 texts: defaultTablesOptions.texts,
             },
             path: '',
@@ -87,27 +101,40 @@ if (document.getElementById('datatable-keywords')) {
                     return item.id !== id
                 })
             },
-            addKeyword: function(type, action, id, oldKeyword = false) {
+            addKeyword: function(
+                type,
+                action,
+                id,
+                oldKeyword = '',
+                oldKeywordCZ = ''
+            ) {
                 let self = this
                 let swalConfig = keywordsSwal.confirmSave
                 swalConfig.title = (id ? 'Upravit' : 'Nové ') + ' klíčové slovo'
 
-                if (oldKeyword) {
-                    swalConfig.inputValue = oldKeyword
-                }
                 swalConfig.allowOutsideClick = () => !Swal.isLoading()
-                swalConfig.inputValidator = value => {
-                    if (value.length < 3) {
-                        return 'Zadejte hodnotu'
+
+                swalConfig.html = getKeywordForm(oldKeyword, oldKeywordCZ)
+
+                swalConfig.focusConfirm = false
+
+                swalConfig.preConfirm = () => {
+                    let nameen = document.getElementById('nameen').value
+                    let namecz = document.getElementById('namecz').value
+
+                    if (nameen.length < 2) {
+                        return Swal.showValidationMessage(
+                            'Zadané hodnoty nejsou zadané v požadovaném formátu (2-255 znaků)'
+                        )
                     }
-                }
-                swalConfig.preConfirm = value => {
+
                     return axios
                         .post(
                             ajaxUrl + '?action=insert_keyword',
                             {
                                 ['type']: type,
-                                ['item']: value,
+                                ['nameen']: nameen,
+                                ['namecz']: namecz,
                                 ['action']: action,
                                 ['id']: id,
                             },
@@ -127,12 +154,12 @@ if (document.getElementById('datatable-keywords')) {
                             )
                         })
                 }
+
                 Swal.fire(swalConfig).then(result => {
                     if (result.value) {
                         Swal.fire(keywordsSwal.saveSuccess)
+                        self.getData()
                     }
-
-                    self.getData()
                 })
             },
         },

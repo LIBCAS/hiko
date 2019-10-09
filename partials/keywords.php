@@ -14,7 +14,7 @@ $keyword_type = $pods_types['keyword'];
     <v-client-table :data="tableData" :columns="columns" :options="options" v-if="tableData.length > 0">
         <ul slot="edit" slot-scope="props" class="list-unstyled">
             <li>
-                <span @click="addKeyword('<?= $keyword_type; ?>', 'edit', props.row.id, props.row.name)" class="text-success is-link py-1">
+                <span @click="addKeyword('<?= $keyword_type; ?>', 'edit', props.row.id, props.row.name, props.row.namecz)" class="text-success is-link py-1">
                     Upravit
                 </span>
             </li>

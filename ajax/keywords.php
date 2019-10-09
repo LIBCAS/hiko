@@ -1,44 +1,5 @@
 <?php
 
-function list_keywords_simple()
-{
-    $type = test_input($_GET['type']);
-
-    wp_die(json_encode(
-        get_pods_name_and_id($type),
-        JSON_UNESCAPED_UNICODE
-    ));
-}
-add_action('wp_ajax_list_keywords_simple', 'list_keywords_simple');
-
-
-function list_keyword_single()
-{
-    $results = [];
-
-    if (!array_key_exists('pods_id', $_GET)) {
-        wp_send_json_error('Not found', 404);
-    }
-
-    $id = test_input($_GET['pods_id']);
-    $type = test_input($_GET['type']);
-
-    $pod = pods($type, $id);
-
-    if (!$pod->exists()) {
-        wp_send_json_error('Not found', 404);
-    }
-
-    $results['name'] = $pod->field('name');
-
-    wp_die(json_encode(
-        $results,
-        JSON_UNESCAPED_UNICODE
-    ));
-}
-add_action('wp_ajax_list_keyword_single', 'list_keyword_single');
-
-
 function insert_keyword()
 {
     if (!is_in_editor_role()) {
@@ -51,11 +12,11 @@ function insert_keyword()
 
     $action = $data->action;
     $id = $data->id;
-    $item = $data->item;
     $type = $data->type;
 
     $data = [
-        'name' => test_input($item),
+        'name' => test_input($data->nameen),
+        'namecz' => test_input($data->namecz),
     ];
 
     if ($action == 'add') {
@@ -87,6 +48,7 @@ function get_keywords_table_data()
     $fields = [
         't.id',
         't.name AS name',
+        't.namecz',
     ];
 
     $fields = implode(', ', $fields);
@@ -105,6 +67,7 @@ function get_keywords_table_data()
     while ($keywords->fetch()) {
         $keywords_filtered[$index]['id'] = $keywords->display('id');
         $keywords_filtered[$index]['name'] = $keywords->display('name');
+        $keywords_filtered[$index]['namecz'] = $keywords->display('namecz');
         $index++;
     }
 
@@ -116,4 +79,3 @@ function get_keywords_table_data()
     wp_die();
 }
 add_action('wp_ajax_keywords_table_data', 'get_keywords_table_data');
-
