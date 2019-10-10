@@ -130,10 +130,7 @@ if (document.getElementById('letter-preview')) {
                                 rd.languages.length === 0
                                     ? []
                                     : rd.languages.split(';')
-                            self.keywords =
-                                rd.keywords === null || rd.keywords.length === 0
-                                    ? []
-                                    : rd.keywords.split(';')
+                            self.keywords = Object.values(rd.keywords)
                             self.abstract = rd.abstract
                             self.incipit = rd.incipit
                             self.explicit = rd.explicit
