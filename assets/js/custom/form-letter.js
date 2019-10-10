@@ -543,20 +543,6 @@ if (document.getElementById('letter-form')) {
                                 }
                             }
 
-                            if (keywords != '') {
-                                keywords = keywords.split(';')
-                                for (
-                                    let index = 0;
-                                    index < keywords.length;
-                                    index++
-                                ) {
-                                    self.letter.keywords.push({
-                                        label: keywords[index],
-                                        value: keywords[index],
-                                    })
-                                }
-                            }
-
                             self.letter.related_resources =
                                 rd.related_resources === null ||
                                 rd.related_resources.length === 0
@@ -568,6 +554,15 @@ if (document.getElementById('letter-form')) {
                                     self.letter.mentioned.push({
                                         label: mentioned[key],
                                         value: key,
+                                    })
+                                }
+                            }
+
+                            if (!Array.isArray(keywords)) {
+                                for (var kw in keywords) {
+                                    self.letter.keywords.push({
+                                        label: keywords[kw],
+                                        value: kw,
                                     })
                                 }
                             }
@@ -647,7 +642,7 @@ if (document.getElementById('letter-form')) {
                         keywords.map(kw => {
                             result.push({
                                 label: kw.name,
-                                value: kw.name,
+                                value: kw.id,
                             })
                         })
                         self.keywords = result
