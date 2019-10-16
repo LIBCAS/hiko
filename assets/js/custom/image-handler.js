@@ -122,7 +122,7 @@ if (document.getElementById('media-handler')) {
                                 callback()
                             })
                             .catch(function(error) {
-                                Swal.fire(Swal.fire(errorInfoSwal(error)))
+                                Swal.fire(errorInfoSwal(error))
                             })
                     }
                 })
@@ -145,7 +145,7 @@ if (document.getElementById('media-handler')) {
                         return true
                     })
                     .catch(function(error) {
-                        Swal.fire(Swal.fire(errorInfoSwal(error)))
+                        Swal.fire(errorInfoSwal(error))
                     })
             },
 
@@ -255,7 +255,7 @@ if (document.getElementById('media-handler')) {
                             } else {
                                 err = JSON.stringify(failed[i].response)
                             }
-                            Swal.fire(Swal.fire(errorInfoSwal(err)))
+                            Swal.fire(errorInfoSwal(err))
                         }
                     }
                     self.getImages()
