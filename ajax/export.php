@@ -13,6 +13,9 @@ use Box\Spout\Common\Type;
 function export_to_palladio($type)
 {
     /*
+    * TODO: sloučit úvodní načítání polí s get_letters_basic_meta
+    */
+    /*
     * needed data:
     *
     * author: First name (A); Last name (A); Gender (A); Nationality (A); Age (A); Profession (A);
@@ -20,7 +23,28 @@ function export_to_palladio($type)
     * letter: Date of dispatch; Place of dispatch; Place of dispatch (coordinates); Place of arrival; Place of arrival (coordinates); Languages; Keywords
     */
 
-    $letters = get_hiko_post_types($type)['letter'];
+    global $wpdb;
+
+    $post_types = get_hiko_post_types($type);
+
+    $podsAPI = new PodsAPI();
+    $pod = $podsAPI->load_pod(['name' => $post_types['letter']]);
+
+    $fields_id = [
+        'author' => $pod['fields']['l_author']['id'],
+        'recipient' => $pod['fields']['recipient']['id'],
+        'origin' => $pod['fields']['origin']['id'],
+        'dest' => $pod['fields']['dest']['id'],
+        'kw' => $pod['fields']['keywords']['id'],
+    ];
+
+    $prefix = [
+        'letter' => "{$wpdb->prefix}pods_{$post_types['letter']}",
+        'relation' => "{$wpdb->prefix}podsrel",
+        'place' => "{$wpdb->prefix}pods_{$post_types['place']}",
+        'person' => "{$wpdb->prefix}pods_{$post_types['person']}",
+        'kw' => "{$wpdb->prefix}pods_{$post_types['keyword']}",
+    ];
 
     $fields = [
         't.ID',
@@ -49,24 +73,46 @@ function export_to_palladio($type)
         'dest.latitude AS d_latitude',
         'keywords.name AS keyword',
     ];
-
     $fields = implode(', ', $fields);
 
-    $pods = pods(
-        $letters,
-        [
-            'groupby' => 't.id',
-            'limit' => -1,
-            'orderby' => 't.name ASC',
-            'select' => $fields,
-        ]
-    );
+    $query = "
+    SELECT {$fields}
+    FROM {$prefix['letter']} AS t
+    LEFT JOIN {$prefix['relation']} AS rel_l_author ON
+        rel_l_author.field_id = {$fields_id['author']}
+        AND rel_l_author.item_id = t.id
 
-    echo '<hr>';
-    var_dump(str_replace('@wp_podsrel', 'hka_podsrel', $pods->sql));
-    echo '<hr>';
+    LEFT JOIN {$prefix['person']} AS l_author ON
+        l_author.id = rel_l_author.related_item_id
 
-    while ($pods->fetch()) {
-        //var_dump($pods);
-    }
+    LEFT JOIN {$prefix['relation']} AS rel_recipient ON
+        rel_recipient.field_id = {$fields_id['recipient']}
+        AND rel_recipient.item_id = t.id
+
+    LEFT JOIN {$prefix['person']} AS recipient ON
+        recipient.id = rel_recipient.related_item_id
+
+    LEFT JOIN {$prefix['relation']} AS rel_origin ON
+        rel_origin.field_id = {$fields_id['origin']}
+        AND rel_origin.item_id = t.id
+
+    LEFT JOIN {$prefix['place']} AS origin ON
+        origin.id = rel_origin.related_item_id
+
+    LEFT JOIN {$prefix['relation']} AS rel_dest ON
+        rel_dest.field_id = {$fields_id['dest']}
+        AND rel_dest.item_id = t.id
+
+    LEFT JOIN {$prefix['place']} AS dest ON
+        dest.id = rel_dest.related_item_id
+
+    LEFT JOIN {$prefix['relation']} AS rel_keywords ON
+        rel_keywords.field_id = {$fields_id['kw']}
+        AND rel_keywords.item_id = t.id
+
+    LEFT JOIN {$prefix['kw']} AS keywords ON
+        keywords.id = rel_keywords.related_item_id
+    ";
+
+    var_dump($query);
 }
