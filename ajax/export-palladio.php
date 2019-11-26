@@ -7,9 +7,6 @@ ini_set("xdebug.var_display_max_depth", -1);
 
 function export_palladio_data()
 {
-    /**
-     ** TODO: order data, add headers
-     */
     if (!array_key_exists('type', $_GET)) {
         wp_send_json_error('Not found', 404);
     }
@@ -136,23 +133,30 @@ function get_palladio_data($type)
 
     $query_result = $wpdb->get_results($query, ARRAY_A);
 
-    return parse_palladio_data($query_result);
+    $data = parse_palladio_data($query_result);
+    $order_keys = [
+        'First name (A)', 'Lastname (A)', 'Gender (A)', 'Nationality (A)', 'Age (A)', 'Profession (A)',
+        'First name (R)', 'Last name (R)', 'Gender (R)', 'Nationality (R)', 'Age (R)', 'Profession (R)',
+        'Date of dispatch', 'Place of dispatch', 'Place of dispatch (coordinates)', 'Place of arrival',
+        'Place of arrival (coordinates)', 'Languages', 'Keywords'
+    ];
+    $ordered_data = [];
+
+    $index = 0;
+    foreach ($data as $row) {
+        foreach ($order_keys as $key) {
+            $ordered_data[$index][$key] = $row[$key];
+        }
+        $index++;
+    }
+
+    return $ordered_data;
 }
 
 
 function parse_palladio_data($query_result)
 {
     $query_result = merge_distinct_query_result($query_result);
-    /*
-    * TODO: sloučit úvodní načítání polí s get_letters_basic_meta
-    */
-    /*
-    * needed data:
-    *
-    * author: First name (A); Lastname (A); Gender (A); Nationality (A); Age (A); Profession (A);
-    * recipient: First name (R); Last name (R); Gender (R); Nationality (R); Age (R); Profession (R);
-    * letter: Date of dispatch; Place of dispatch; Place of dispatch (coordinates); Place of arrival; Place of arrival (coordinates); Languages; Keywords
-    */
 
     $result = [];
 
@@ -201,16 +205,16 @@ function parse_palladio_data($query_result)
         }
 
         $result[$index]['Age (A)'] = '';
-        if (is_array($row['a_birth_year']) && $row['date_year'] != 0) {
+        if (is_array($row['a_birth_year']) && $row['a_birth_year'][0] != 0 && $row['date_year'] != 0) {
             $result[$index]['Age (A)'] = $row['date_year'][0] - $row['a_birth_year'];
-        } elseif (strlen($row['a_birth_year']) != 0 && strlen($row['date_year'] != 0)) {
+        } elseif (strlen($row['a_birth_year']) != 0 && $row['a_birth_year'][0] != 0 && strlen($row['date_year'] != 0)) {
             $result[$index]['Age (A)'] = $row['date_year'] - $row['a_birth_year'];
         }
 
         $result[$index]['Age (R)'] = '';
-        if (is_array($row['r_birth_year']) && $row['date_year'] != 0) {
+        if (is_array($row['r_birth_year']) && $row['r_birth_year'][0] != 0 && $row['date_year'] != 0) {
             $result[$index]['Age (R)'] = $row['date_year'][0] - $row['r_birth_year'];
-        } elseif (strlen($row['a_birth_year']) != 0 && strlen($row['date_year'] != 0)) {
+        } elseif (strlen($row['r_birth_year']) != 0  && $row['r_birth_year'][0] != 0 && strlen($row['date_year'] != 0)) {
             $result[$index]['Age (R)'] = $row['date_year'] - $row['r_birth_year'];
         }
 
@@ -283,9 +287,11 @@ function merge_distinct_query_result($query_result)
     return $result;
 }
 
-function array_to_csv_download($array, $filename = "export.csv", $delimiter = ";")
+function array_to_csv_download($array, $filename = "export.csv", $delimiter = ";", $enclosure = '"')
 {
     $f = fopen('php://memory', 'w');
+
+    fputcsv($f, array_keys($array[0]), $delimiter);
 
     foreach ($array as $line) {
         fputcsv($f, $line, $delimiter);
