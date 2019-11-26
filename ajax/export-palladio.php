@@ -4,11 +4,32 @@ ini_set("xdebug.var_display_max_children", -1);
 ini_set("xdebug.var_display_max_data", -1);
 ini_set("xdebug.var_display_max_depth", -1);
 
-require_once get_template_directory() . '/vendor/autoload.php';
 
+function export_palladio_data()
+{
+    /**
+     ** TODO: order data, add headers
+     */
+    if (!array_key_exists('type', $_GET)) {
+        wp_send_json_error('Not found', 404);
+    }
 
-use Box\Spout\Writer\WriterFactory;
-use Box\Spout\Common\Type;
+    $type = sanitize_text_field($_GET['type']);
+
+    $format = sanitize_text_field($_GET['format']);
+
+    if ($format != 'csv') {
+        wp_send_json_error('Format not found', 404);
+    }
+
+    $data = get_palladio_data($type);
+
+    array_to_csv_download($data);
+
+    wp_die();
+}
+add_action('wp_ajax_export_palladio', 'export_palladio_data');
+
 
 function get_palladio_data($type)
 {
@@ -129,56 +150,78 @@ function parse_palladio_data($query_result)
     * needed data:
     *
     * author: First name (A); Lastname (A); Gender (A); Nationality (A); Age (A); Profession (A);
-    * recipient: First name (R); Last name (R); Gender (RA); Nationality (R); Age (R); Profession (R);
+    * recipient: First name (R); Last name (R); Gender (R); Nationality (R); Age (R); Profession (R);
     * letter: Date of dispatch; Place of dispatch; Place of dispatch (coordinates); Place of arrival; Place of arrival (coordinates); Languages; Keywords
     */
 
     $result = [];
 
     $to_flat_fields = [
-        'a_surname', 'a_forename', 'a_profession', 'a_nationality', 'a_gender',
-        'r_surname', 'r_forename', 'r_profession', 'r_nationality', 'r_gender',
-        'o_name', 'd_name',
+        'a_surname' => 'Lastname (A)',
+        'a_forename' => 'First name (A)',
+        'a_profession' => 'Profession (A)',
+        'a_nationality' => 'Nationality (A)',
+        'a_gender' => 'Gender (A)',
+        'r_surname' => 'Last name (R)',
+        'r_forename' => 'First name (R)',
+        'r_profession' => 'Profession (R)',
+        'r_nationality' => 'Nationality (R)',
+        'r_gender' => 'Gender (R)',
+        'o_name' => 'Place of dispatch',
+        'd_name' => 'Place of arrival',
     ];
 
     $index = 0;
     foreach ($query_result as $row) {
-
         $date = '';
         $date .= ($row['date_year'] != 0 ? $row['date_year'] : '');
         $date .= ($row['date_month'] != 0 ? '-' . $row['date_month'] : '');
         $date .= ($row['date_day'] != 0 ? '-' . $row['date_day'] : '');
 
-        $result[$index]['date'] = $date;
+        $result[$index]['Date of dispatch'] = $date;
 
-        $result[$index]['languages'] = str_replace(';', ',', $row['languages']);
+        $result[$index]['Languages'] = str_replace(';', ',', $row['languages']);
 
         if (is_array($row['keyword'])) {
-            $result[$index]['keyword'] = implode(',', $row['keyword']);
+            $result[$index]['Keywords'] = implode(',', $row['keyword']);
         } else {
-            $result[$index]['keyword'] =  $row['keyword'];
+            $result[$index]['Keywords'] =  $row['keyword'];
         }
 
-        $result[$index]['o_gps'] = '';
+        $result[$index]['Place of dispatch (coordinates)'] = '';
         if (is_array($row['o_latitude']) && is_array($row['o_longitude'])) {
-            $result[$index]['o_gps'] = $row['o_latitude'][0] . ', ' . $row['o_longitude'][0];
+            $result[$index]['Place of dispatch (coordinates)'] = $row['o_latitude'][0] . ', ' . $row['o_longitude'][0];
         } elseif (strlen($row['o_latitude']) != 0 && strlen($row['o_longitude'] != 0)) {
-            $result[$index]['o_gps'] = $row['o_latitude'] . ', ' . $row['o_longitude'];
+            $result[$index]['Place of dispatch (coordinates)'] = $row['o_latitude'] . ', ' . $row['o_longitude'];
         }
 
-        $result[$index]['d_gps'] = '';
+        $result[$index]['Place of arrival (coordinates)'] = '';
         if (is_array($row['d_latitude']) && is_array($row['d_longitude'])) {
-            $result[$index]['d_gps'] = $row['d_latitude'][0] . ', ' . $row['d_longitude'][0];
+            $result[$index]['Place of arrival (coordinates)'] = $row['d_latitude'][0] . ', ' . $row['d_longitude'][0];
         } elseif (strlen($row['d_latitude']) != 0 && strlen($row['d_longitude'] != 0)) {
-            $result[$index]['d_gps'] = $row['d_latitude'] . ', ' . $row['d_longitude'];
+            $result[$index]['Place of arrival (coordinates)'] = $row['d_latitude'] . ', ' . $row['d_longitude'];
+        }
+
+        $result[$index]['Age (A)'] = '';
+        if (is_array($row['a_birth_year']) && $row['date_year'] != 0) {
+            $result[$index]['Age (A)'] = $row['date_year'][0] - $row['a_birth_year'];
+        } elseif (strlen($row['a_birth_year']) != 0 && strlen($row['date_year'] != 0)) {
+            $result[$index]['Age (A)'] = $row['date_year'] - $row['a_birth_year'];
+        }
+
+        $result[$index]['Age (R)'] = '';
+        if (is_array($row['r_birth_year']) && $row['date_year'] != 0) {
+            $result[$index]['Age (R)'] = $row['date_year'][0] - $row['r_birth_year'];
+        } elseif (strlen($row['a_birth_year']) != 0 && strlen($row['date_year'] != 0)) {
+            $result[$index]['Age (R)'] = $row['date_year'] - $row['r_birth_year'];
         }
 
         foreach ($row as $field_key => $field) {
-            if (in_array($field_key, $to_flat_fields)) {
+            if (array_key_exists($field_key, $to_flat_fields)) {
                 if (is_array($field)) {
-                    $result[$index][$field_key] = $field[0];
+                    $result[$index][$to_flat_fields[$field_key]] = $field[0];
                 } else {
-                    $result[$index][$field_key] = $field;
+                    $result[$index][$to_flat_fields[$field_key]] = $field;
                 }
             }
         }
@@ -218,4 +261,21 @@ function merge_distinct_query_result($query_result)
         }
     }
     return $result;
+}
+
+function array_to_csv_download($array, $filename = "export.csv", $delimiter = ";")
+{
+    $f = fopen('php://memory', 'w');
+
+    foreach ($array as $line) {
+        fputcsv($f, $line, $delimiter);
+    }
+
+    fseek($f, 0);
+
+    header('Content-Type: application/csv');
+
+    header('Content-Disposition: attachment; filename="' . $filename . '";');
+
+    fpassthru($f);
 }
