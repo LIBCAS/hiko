@@ -159,12 +159,10 @@ function parse_palladio_data($query_result)
     $to_flat_fields = [
         'a_surname' => 'Lastname (A)',
         'a_forename' => 'First name (A)',
-        'a_profession' => 'Profession (A)',
         'a_nationality' => 'Nationality (A)',
         'a_gender' => 'Gender (A)',
         'r_surname' => 'Last name (R)',
         'r_forename' => 'First name (R)',
-        'r_profession' => 'Profession (R)',
         'r_nationality' => 'Nationality (R)',
         'r_gender' => 'Gender (R)',
         'o_name' => 'Place of dispatch',
@@ -216,6 +214,20 @@ function parse_palladio_data($query_result)
             $result[$index]['Age (R)'] = $row['date_year'] - $row['r_birth_year'];
         }
 
+        $result[$index]['Profession (A)'] = '';
+        if (is_array($row['a_profession'])) {
+            $result[$index]['Profession (A)'] = str_replace(';', ',', $row['a_profession'][0]);
+        } else {
+            $result[$index]['Profession (A)'] = str_replace(';', ',', $row['a_profession']);
+        }
+
+        $result[$index]['Profession (R)'] = '';
+        if (is_array($row['r_profession'])) {
+            $result[$index]['Profession (R)'] = str_replace(';', ',', $row['r_profession'][0]);
+        } else {
+            $result[$index]['Profession (R)'] = str_replace(';', ',', $row['r_profession']);
+        }
+
         foreach ($row as $field_key => $field) {
             if (array_key_exists($field_key, $to_flat_fields)) {
                 if (is_array($field)) {
@@ -237,7 +249,6 @@ function merge_distinct_query_result($query_result)
     $result = [];
 
     foreach ($query_result as $row) {
-        $row = (array) $row;
         if (!array_key_exists($row['ID'], $result)) {
             foreach ($row as $itemKey => $item) {
                 if ($itemKey == 'id') {
@@ -253,13 +264,22 @@ function merge_distinct_query_result($query_result)
                 }
 
                 if (is_string($item) && $item != $existingRow[$itemKey]) {
-                    $result[$row['ID']][$itemKey] = [$existingRow[$itemKey], $item];
-                } elseif (is_array($existingRow[$itemKey]) && !in_array($item, $existingRow[$itemKey])) {
+                    $result[$row['ID']][$itemKey] = [];
+
+                    if (!is_array($existingRow[$itemKey])) {
+                        $result[$row['ID']][$itemKey][] = $existingRow[$itemKey];
+                    } else {
+                        foreach ($existingRow[$itemKey] as $val) {
+                            $result[$row['ID']][$itemKey][] = $val;
+                        }
+                    }
+
                     $result[$row['ID']][$itemKey][] = $item;
                 }
             }
         }
     }
+
     return $result;
 }
 
