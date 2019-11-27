@@ -33,6 +33,7 @@ remove_action('admin_print_styles', 'print_emoji_styles');
 remove_action('wp_head', 'wp_resource_hints', 2);
 remove_action('welcome_panel', 'wp_welcome_panel');
 
+
 function wps_deregister_styles()
 {
     wp_dequeue_style('wp-block-library');
@@ -68,6 +69,7 @@ function test_input($input)
     $input = sanitize_text_field($input);
     return $input;
 }
+
 
 function test_postdata($associative_array)
 {
@@ -112,10 +114,12 @@ function get_array_name($value)
     return is_array($value) ? $value['name'] : '';
 }
 
+
 function get_nonempty_value($value)
 {
     return $value !== '';
 }
+
 
 function get_form_checkbox_val($name, $array)
 {
@@ -124,6 +128,7 @@ function get_form_checkbox_val($name, $array)
     }
     return 0;
 }
+
 
 function get_related_name($related_field)
 {
@@ -140,6 +145,7 @@ function get_related_name($related_field)
     return $names;
 }
 
+
 function user_has_role($role)
 {
     $user = wp_get_current_user();
@@ -149,6 +155,7 @@ function user_has_role($role)
 
     return false;
 }
+
 
 function get_shortened_name()
 {
@@ -162,6 +169,7 @@ function get_full_name()
     $user_data = get_user_meta(get_current_user_id());
     return $user_data['first_name'][0]  . ' ' . $user_data['last_name'][0];
 }
+
 
 function get_persons_table_data($person_type)
 {
@@ -208,8 +216,10 @@ function get_persons_table_data($person_type)
 
         $index++;
     }
+
     return $persons_filtered;
 }
+
 
 function get_places_table_data($place_type)
 {
@@ -244,6 +254,7 @@ function get_places_table_data($place_type)
 
     return $places_filtered;
 }
+
 
 function get_pods_name_and_id($type, $dates = false)
 {
@@ -298,6 +309,7 @@ function parse_json_file($url)
     return $file;
 }
 
+
 function sum_array_length($array)
 {
     $sum = 0;
@@ -318,8 +330,7 @@ function has_user_permission($role)
         return false;
     }
 
-    $user = wp_get_current_user();
-    $roles = (array) $user->roles;
+    $roles = (array) wp_get_current_user()->roles;
 
     if (!in_array($role, $roles) && !in_array('administrator', $roles)) {
         return false;
@@ -327,6 +338,7 @@ function has_user_permission($role)
 
     return true;
 }
+
 
 function is_in_editor_role()
 {
@@ -368,31 +380,6 @@ function verify_upload_img($img)
 }
 
 
-function bulk_add_persons($file)
-{
-    $file_content = file_get_contents($file);
-    $splited_content = explode("\n", $file_content);
-    foreach ($splited_content as $person) {
-        $bits = explode("\t", $person);
-
-        $data = [
-            'name' => $bits[0],
-            'surname' => $bits[1],
-            'forename' => $bits[2],
-            'birth_year' => 0,
-            'death_year' => 0,
-        ];
-
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => 'bl_person',
-            'data' => $data
-        ]);
-
-        var_dump($new_pod);
-    }
-}
-
-
 function save_name_alternatives($persons_string, $person_type)
 {
     $persons = json_decode(stripslashes($persons_string));
@@ -429,121 +416,6 @@ function save_name_alternatives($persons_string, $person_type)
 function merge_unique($array1, $array2)
 {
     return array_unique(array_merge($array1, $array2));
-}
-
-
-function import_letters_from_file($file)
-{
-    $file_content = json_decode(file_get_contents($file));
-
-    foreach ($file_content as $bits) {
-        $authors_ids = explode(';', $bits->author);
-        $authors_marked = explode(';', $bits->author_marked);
-        $recipients_ids = explode(';', $bits->recipient);
-        $recipients_marked = explode(';', $bits->recipient_marked);
-        $origin_ids = explode(';', $bits->origin);
-        $origin_marked = explode(';', $bits->origin_marked);
-        $dest_ids = explode(';', $bits->dest);
-        $dest_marked = explode(';', $bits->dest_marked);
-
-        $data = [
-            'signature' => (string) $bits->signature,
-            'date_uncertain' => $bits->date_uncertain,
-            'date_notes' => $bits->date_notes,
-            'l_author' => $authors_ids,
-            'author_inferred' => $bits->author_inferred,
-            'author_note' => $bits->author_notes,
-            'author_uncertain' => $bits->author_uncertain,
-            'recipient' => $recipients_ids,
-            'recipient_inferred' => $bits->recipient_inferred,
-            'recipient_uncertain' => $bits->recipient_uncertain,
-            'recipient_notes' => $bits->recipient_notes,
-            'origin' => $origin_ids,
-            'origin_inferred' => $bits->origin_inferred,
-            'origin_uncertain' => $bits->origin_uncertain,
-            'dest' => $dest_ids,
-            'dest_inferred' => $bits->dest_inferred,
-            'dest_uncertain' => $bits->dest_uncertain,
-            'languages' => $bits->lang,
-            'incipit' => $bits->incipit,
-            'explicit' => $bits->explicit,
-            'notes_public' => $bits->notes_public,
-            'people_mentioned' => explode(';', $bits->people_mentioned),
-            'people_mentioned_notes' => $bits->people_mentioned_notes,
-            'name' => '-',
-            'history' => "2019-02-12 08:56:51 – Miloslav Caňko \n",
-            'date_is_range' => $bits->date_range,
-        ];
-
-        if (is_numeric($bits->year)) {
-            $data['date_year'] = $bits->year;
-        }
-
-        if (is_numeric($bits->month)) {
-            $data['date_month'] = $bits->month;
-        }
-
-        if (is_numeric($bits->day)) {
-            $data['date_day'] = $bits->day;
-        }
-
-        if (is_numeric($bits->date_range_year)) {
-            $data['range_year'] = $bits->date_range_year;
-        }
-
-        if (is_numeric($bits->date_range_month)) {
-            $data['range_month'] = $bits->date_range_month;
-        }
-
-        if (is_numeric($bits->date_range_day)) {
-            $data['range_day'] = $bits->date_range_day;
-        }
-
-        $author_meta = [];
-        $places_meta = [];
-
-        for ($i = 0; $i < count($authors_ids); $i++) {
-            $author_meta[] = [
-                'id' => $authors_ids[$i],
-                'marked' => ($authors_marked && array_key_exists($i, $authors_marked)) ? $authors_marked[$i] : '',
-                'salutation' => ''
-            ];
-        }
-
-        for ($i = 0; $i < count($recipients_ids); $i++) {
-            $author_meta[] = [
-                'id' => $recipients_ids[$i],
-                'marked' => ($recipients_marked && array_key_exists($i, $recipients_marked)) ? $recipients_marked[$i] : '',
-                'salutation' => ''
-            ];
-        }
-
-        $data['authors_meta'] = json_encode($author_meta, JSON_UNESCAPED_UNICODE);
-
-        for ($i = 0; $i < count($origin_ids); $i++) {
-            $places_meta[] = [
-                'id' => $origin_ids[$i],
-                'marked' => ($origin_marked && array_key_exists($i, $origin_marked)) ? $origin_marked[$i] : '',
-            ];
-        }
-
-        for ($i = 0; $i < count($dest_ids); $i++) {
-            $places_meta[] = [
-                'id' => $dest_ids[$i],
-                'marked' => ($dest_marked && array_key_exists($i, $dest_marked)) ? $dest_marked[$i] : '',
-            ];
-        }
-
-        $data['places_meta'] = json_encode($places_meta, JSON_UNESCAPED_UNICODE);
-
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => 'bl_letter',
-            'data' => $data
-        ]);
-
-        var_dump($new_pod);
-        echo '<hr>';
-    }
 }
 
 
@@ -611,12 +483,15 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type)
 }
 
 
-function get_duplicities_by_id($objet)
+function get_duplicities_by_id($object)
 {
-    $ids = array_map(create_function('$o', 'return $o->id;'), $objet);
+    $ids = array_map(create_function('$o', 'return $o->id;'), $object);
+
     $unique = array_unique($ids);
+
     return array_unique(array_diff_assoc($ids, $unique));
 }
+
 
 function get_all_objects_by_id($object, $v)
 {
@@ -747,6 +622,7 @@ function get_hiko_post_types($type)
     return $data;
 }
 
+
 function get_hiko_post_types_by_url($url = '')
 {
     $req = $_SERVER['REQUEST_URI'];
@@ -788,19 +664,21 @@ function get_letter_single_field($type, $id, $field_name)
         ]
     );
 
-
     while ($pod->fetch()) {
         if (!$pod->exists()) {
             return false;
         }
+
         return $pod->display($field_name);
     }
 }
+
 
 function get_letter_history($type, $id)
 {
     return get_letter_single_field($type, $id, 'history');
 }
+
 
 function get_letter_created($type, $id)
 {
@@ -821,18 +699,19 @@ function get_letter_created($type, $id)
         ]
     );
 
-
     while ($pod->fetch()) {
         if (!$pod->exists()) {
             return false;
         }
         $author = get_user_meta($pod->display('author'));
+
         return [
             'date' => $pod->display('time'),
             'author' => $author['first_name'][0]  . ' ' . $author['last_name'][0],
         ];
     }
 }
+
 
 function sanitize_slashed_json($data)
 {
@@ -848,11 +727,13 @@ function sanitize_slashed_json($data)
                 $temp[test_input($sec_key)] = test_input($sec_val);
             }
         }
+
         $result[] = $temp;
     }
 
     return json_encode($result, JSON_UNESCAPED_UNICODE);
 }
+
 
 function save_hiko_letter($letter_type, $action, $path)
 {
@@ -992,6 +873,7 @@ function save_hiko_letter($letter_type, $action, $path)
     delete_hiko_cache('list_' . $types['person']);
     save_name_alternatives($participant_meta, $types['person']);
     frontend_refresh();
+
     return alert('Uloženo', 'success');
 }
 
@@ -1048,6 +930,7 @@ function save_hiko_person($person_type, $action)
 
     delete_hiko_cache('list_' . $person_type);
     frontend_refresh();
+
     return alert('Uloženo', 'success');
 }
 
@@ -1086,14 +969,16 @@ function save_hiko_place($place_type, $action)
     }
 
     frontend_refresh();
+
     return alert('Uloženo', 'success');
 }
 
 
 function get_languages()
 {
-    $languages = get_ssl_file(get_template_directory_uri() . '/assets/data/languages.json');
-    return json_decode($languages);
+    return json_decode(
+        get_ssl_file(get_template_directory_uri() . '/assets/data/languages.json')
+    );
 }
 
 function get_json_languages()
@@ -1153,10 +1038,10 @@ function create_hiko_json_cache($name, $json_data)
     $cache_folder = WP_CONTENT_DIR . '/hiko-cache';
     $filename = md5($name) . '.json';
 
-
     if (!file_exists($cache_folder)) {
         wp_mkdir_p($cache_folder);
     }
+
     $save = file_put_contents($cache_folder . '/' . $filename, $json_data);
 
     return $save;
