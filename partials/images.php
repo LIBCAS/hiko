@@ -10,19 +10,22 @@
             <a :href="url" target="_blank">
                 {{ title }}
             </a>
-
         </h3>
+
         <div class="section mb-5">
             <h4>Nahrát obrazové přílohy</h4>
             <div id="drag-drop-area"></div>
         </div>
+
         <div class="section mb-5">
             <h4>Upravit nahrané obrazové přílohy</h4>
 
             <div class="text-right" v-if="images.length > 1">
                 <span v-if="!orderMode" class="text-info pointer" @click="orderMode = true">Seřadit</span>
                 <span v-if="orderMode">
-                    <span class="text-warning pointer" @click="orderMode = false; getImages()">Zrušit</span> / <span v-if="orderMode" class="text-info pointer" @click="saveImagesOrder">Uložit</span>
+                    <span class="text-warning pointer" @click="orderMode = false; getImages()">Zrušit</span>
+                    /
+                    <span v-if="orderMode" class="text-info pointer" @click="saveImagesOrder">Uložit</span>
                 </span>
             </div>
 
@@ -43,8 +46,12 @@
                     <img class="mr-3" :src="image.img.thumb" :alt="image.description">
                     <div class="media-body pb-2">
                         <ul class="list-unstyled">
-                            <li class="text-info pointer" @click="openModal(image)"><span class="oi oi-eye mr-1"></span>Zobrazit</li>
-                            <li class="text-danger pointer" @click="deleteImage(image.id)"><span class="oi oi-trash mr-1"></span>Odstranit</li>
+                            <li class="text-info pointer" @click="openModal(image)">
+                                <span class="oi oi-eye mr-1"></span>Zobrazit
+                            </li>
+                            <li class="text-danger pointer" @click="deleteImage(image.id)">
+                                <span class="oi oi-trash mr-1"></span>Odstranit
+                            </li>
                         </ul>
                         <form class="mt-3" style="max-width:400px">
                             <div class="form-group mb-2">
@@ -58,11 +65,13 @@
                                     <option value="inherit">Veřejné</option>
                                 </select>
                             </div>
-                            <button @click="editImageMetadata(image)" type="button" name="button" class="btn btn-sm btn-primary">Uložit změny</button>
+                            <button @click="editImageMetadata(image)" type="button" name="button" class="btn btn-sm btn-primary">
+                                Uložit změny
+                            </button>
                         </form>
                     </div>
                 </li>
-            </li>
+            </ul>
         </div>
     </div>
 
@@ -77,9 +86,8 @@
                 <div class="modal-body">
                     <img v-if="modal.src" :src="modal.src">
                 </div>
-
             </div>
         </div>
-
     </div>
+
 </div>
