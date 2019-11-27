@@ -21,7 +21,7 @@ function export_palladio_data()
 
     $data = get_palladio_data($type);
 
-    array_to_csv_download($data);
+    array_to_csv_download($data, "export-$type.csv");
 
     wp_die();
 }
@@ -36,7 +36,7 @@ function get_palladio_data($type)
     /*
     * needed data:
     *
-    * author: First name (A); Lastname (A); Gender (A); Nationality (A); Age (A); Profession (A);
+    * author: First name (A); Last Name (A); Gender (A); Nationality (A); Age (A); Profession (A);
     * recipient: First name (R); Last name (R); Gender (RA); Nationality (R); Age (R); Profession (R);
     * letter: Date of dispatch; Place of dispatch; Place of dispatch (coordinates); Place of arrival; Place of arrival (coordinates); Languages; Keywords
     */
@@ -135,7 +135,7 @@ function get_palladio_data($type)
 
     $data = parse_palladio_data($query_result);
     $order_keys = [
-        'First name (A)', 'Lastname (A)', 'Gender (A)', 'Nationality (A)', 'Age (A)', 'Profession (A)',
+        'First name (A)', 'Last Name (A)', 'Gender (A)', 'Nationality (A)', 'Age (A)', 'Profession (A)',
         'First name (R)', 'Last name (R)', 'Gender (R)', 'Nationality (R)', 'Age (R)', 'Profession (R)',
         'Date of dispatch', 'Place of dispatch', 'Place of dispatch (coordinates)', 'Place of arrival',
         'Place of arrival (coordinates)', 'Languages', 'Keywords'
@@ -161,7 +161,7 @@ function parse_palladio_data($query_result)
     $result = [];
 
     $to_flat_fields = [
-        'a_surname' => 'Lastname (A)',
+        'a_surname' => 'Last Name (A)',
         'a_forename' => 'First name (A)',
         'a_nationality' => 'Nationality (A)',
         'a_gender' => 'Gender (A)',
@@ -182,10 +182,10 @@ function parse_palladio_data($query_result)
 
         $result[$index]['Date of dispatch'] = $date;
 
-        $result[$index]['Languages'] = str_replace(';', ',', $row['languages']);
+        $result[$index]['Languages'] = str_replace(';', '|', $row['languages']);
 
         if (is_array($row['keyword'])) {
-            $result[$index]['Keywords'] = implode(',', $row['keyword']);
+            $result[$index]['Keywords'] = implode('|', $row['keyword']);
         } else {
             $result[$index]['Keywords'] =  $row['keyword'];
         }
@@ -220,16 +220,16 @@ function parse_palladio_data($query_result)
 
         $result[$index]['Profession (A)'] = '';
         if (is_array($row['a_profession'])) {
-            $result[$index]['Profession (A)'] = str_replace(';', ',', $row['a_profession'][0]);
+            $result[$index]['Profession (A)'] = separate_by_vertibar($row['a_profession'][0]);
         } else {
-            $result[$index]['Profession (A)'] = str_replace(';', ',', $row['a_profession']);
+            $result[$index]['Profession (A)'] = separate_by_vertibar($row['a_profession']);
         }
 
         $result[$index]['Profession (R)'] = '';
         if (is_array($row['r_profession'])) {
-            $result[$index]['Profession (R)'] = str_replace(';', ',', $row['r_profession'][0]);
+            $result[$index]['Profession (R)'] = separate_by_vertibar($row['r_profession'][0]);
         } else {
-            $result[$index]['Profession (R)'] = str_replace(';', ',', $row['r_profession']);
+            $result[$index]['Profession (R)'] = separate_by_vertibar($row['r_profession']);
         }
 
         foreach ($row as $field_key => $field) {
@@ -300,8 +300,20 @@ function array_to_csv_download($array, $filename = "export.csv", $delimiter = ";
     fseek($f, 0);
 
     header('Content-Type: application/csv');
-
+    header('Content-Encoding: UTF-8');
+    header('Content-type: text/csv; charset=UTF-8');
+    header('Cache-Control: no-cache, must-revalidate');
+    header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
     header('Content-Disposition: attachment; filename="' . $filename . '";');
 
     fpassthru($f);
+}
+
+
+function separate_by_vertibar($str)
+{
+    $str = str_replace(';', '|', $str);
+    $str = str_replace(',', '|', $str);
+    $str = str_replace('| ', '|', $str);
+    return $str;
 }
