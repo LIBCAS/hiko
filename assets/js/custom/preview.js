@@ -1,14 +1,17 @@
-/* global Vue axios ajaxUrl baguetteBox */
+/* global Vue axios ajaxUrl baguetteBox arrayToSingleObject */
 
 if (document.getElementById('letter-preview')) {
     new Vue({
         el: '#letter-preview',
         data: {
             abstract: '',
+            archive: '',
             author: [],
             author_inferred: '',
             author_note: '',
             author_uncertain: '',
+            collection: '',
+            copy: '',
             date_approximate: '',
             date_inferred: '',
             date_is_range: '',
@@ -22,6 +25,7 @@ if (document.getElementById('letter-preview')) {
             dest_note: '',
             dest_uncertain: '',
             destination: '',
+            document_type: '',
             edit: false,
             explicit: '',
             images: [],
@@ -32,10 +36,11 @@ if (document.getElementById('letter-preview')) {
             letterID: null,
             letterType: '',
             loading: true,
+            location_note: '',
+            Manifestation: '',
             mentioned: [],
             month: '',
             month2: '',
-            ms_manifestation: '',
             notes_public: '',
             origin: '',
             origin_inferred: '',
@@ -43,6 +48,7 @@ if (document.getElementById('letter-preview')) {
             origin_note: '',
             origin_uncertain: '',
             people_mentioned_notes: '',
+            preservation: '',
             recipient: [],
             recipient_inferred: '',
             recipient_notes: '',
@@ -85,6 +91,12 @@ if (document.getElementById('letter-preview')) {
                 return results
             },
 
+            parseDocumentTypesData(docData) {
+                docData = JSON.parse(docData)
+                docData = arrayToSingleObject(docData)
+                return docData
+            },
+
             getLetter: function(id) {
                 let self = this
                 axios
@@ -100,6 +112,9 @@ if (document.getElementById('letter-preview')) {
                             self.error = true
                         } else {
                             let rd = response.data
+                            let docTypes = self.parseDocumentTypesData(
+                                rd.document_type
+                            )
 
                             self.title = rd.name
 
@@ -151,14 +166,14 @@ if (document.getElementById('letter-preview')) {
                             self.dest_note = rd.dest_note
                             self.dest_uncertain = rd.dest_uncertain
 
-                            self.languages =
-                                rd.languages.length === 0 ?
-                                [] :
-                                rd.languages.split(';')
-                            self.keywords = Object.values(rd.keywords)
                             self.abstract = rd.abstract
-                            self.incipit = rd.incipit
                             self.explicit = rd.explicit
+                            self.images = rd.images
+                            self.incipit = rd.incipit
+                            self.keywords = Object.values(rd.keywords)
+                            self.languages =
+                                rd.languages.length === 0 ? [] :
+                                rd.languages.split(';')
                             self.notes_public = rd.notes_public
 
                             self.mentioned = Object.values(rd.people_mentioned)
@@ -169,10 +184,17 @@ if (document.getElementById('letter-preview')) {
                                 rd.related_resources
                             )
 
-                            self.ms_manifestation = rd.ms_manifestation
-                            self.repository = rd.repository
-                            self.images = rd.images
+                            self.copy = docTypes.copy
+                            self.document_type = docTypes.document_type
+                            self.manifestation_notes = rd.manifestation_notes
+                            self.preservation = docTypes.preservation
+
+                            self.archive = rd.archive
+                            self.collection = rd.collection
                             self.l_number = rd.l_number
+                            self.location_note = rd.location_note
+                            self.repository = rd.repository
+                            self.signature = rd.signature
 
                             self.loading = false
                         }

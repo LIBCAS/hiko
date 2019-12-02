@@ -255,6 +255,93 @@ $link_letter_img = home_url("/{$letter_path}/letters-media/?l_type={$letter_type
                             </tbody>
                         </table>
                     </div>
+                    <div class="mb-5">
+                        <h5>Repositories and versions</h5>
+                        <table class="table">
+                            <tbody>
+                                <tr v-if="l_number">
+                                    <td style="width: 20%;">
+                                        Letter number
+                                    </td>
+                                    <td>
+                                        {{ l_number }}
+                                    </td>
+                                </tr>
+                                <tr v-if="repository">
+                                    <td style="width: 20%;">
+                                        Repository
+                                    </td>
+                                    <td>
+                                        {{ repository }}
+                                    </td>
+                                </tr>
+                                <tr v-if="archive">
+                                    <td style="width: 20%;">
+                                        Archive
+                                    </td>
+                                    <td>
+                                        {{ archive }}
+                                    </td>
+                                </tr>
+                                <tr v-if="collection">
+                                    <td style="width: 20%;">
+                                        Collection
+                                    </td>
+                                    <td>
+                                        {{ collection }}
+                                    </td>
+                                </tr>
+                                <tr v-if="signature">
+                                    <td style="width: 20%;">
+                                        Signature
+                                    </td>
+                                    <td>
+                                        {{ signature }}
+                                    </td>
+                                </tr>
+                                <tr v-if="location_note">
+                                    <td style="width: 20%;">
+                                        Note on location
+                                    </td>
+                                    <td>
+                                        {{ location_note }}
+                                    </td>
+                                </tr>
+                                <tr v-if="document_type">
+                                    <td style="width: 20%;">
+                                        Document type
+                                    </td>
+                                    <td>
+                                        {{ document_type }}
+                                    </td>
+                                </tr>
+                                <tr v-if="preservation">
+                                    <td style="width: 20%;">
+                                        Preservation
+                                    </td>
+                                    <td>
+                                        {{ preservation }}
+                                    </td>
+                                </tr>
+                                <tr v-if="copy">
+                                    <td style="width: 20%;">
+                                        Type of copy
+                                    </td>
+                                    <td>
+                                        {{ copy }}
+                                    </td>
+                                </tr>
+                                <tr v-if="manifestation_notes">
+                                    <td style="width: 20%;">
+                                        Notes on nanifestation
+                                    </td>
+                                    <td>
+                                        {{ manifestation_notes }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <div v-if="Object.keys(related_resources).length > 0" class="mb-5">
                         <h5>Related resources</h5>
                         <table class="table">
