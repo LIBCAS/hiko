@@ -77,30 +77,7 @@ function list_public_letters_single()
     $people_mentioned_related = $pod->field('people_mentioned');
     $origins_related = $pod->field('origin');
     $dests_related = $pod->field('dest');
-    $images = $pod->field('images');
     $keywords_related = $pod->field('keywords');
-
-    $images_sorted = [];
-    $i = 0;
-    foreach ($images as $img) {
-        if ($img['post_status'] != 'private') {
-            $size = wp_get_attachment_image_src($img['ID'], 'large');
-            $images_sorted[$i]['img']['large'] = $img['guid'];
-            $images_sorted[$i]['img']['thumb'] = wp_get_attachment_image_src($img['ID'], 'thumbnail')[0];
-            $images_sorted[$i]['description'] = get_post_field('post_content', $img['ID']);
-            $images_sorted[$i]['order'] = intval(get_post_meta($img['ID'], 'order', true));
-            $images_sorted[$i]['size'] = [
-                'w' => $size[1],
-                'h' => $size[2],
-            ];
-
-            $i++;
-        }
-    }
-
-    usort($images_sorted, function ($a, $b) {
-        return $a['order'] - $b['order'];
-    });
 
     if (!empty($authors_related)) {
         foreach ($authors_related as $rel_author) {
@@ -160,7 +137,7 @@ function list_public_letters_single()
     $results['dest_uncertain'] = (bool) $pod->field('dest_uncertain');
     $results['document_type'] = $pod->field('document_type');
     $results['explicit'] = $pod->field('explicit');
-    $results['images'] = $images_sorted;
+    $results['images'] = get_pod_sorted_images($pod, true);
     $results['incipit'] = $pod->field('incipit');
     $results['keywords'] = $keywords;
     $results['l_author'] = $authors;

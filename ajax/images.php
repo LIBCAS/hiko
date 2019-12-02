@@ -108,29 +108,10 @@ function list_images()
         wp_send_json_error('Not found', 404);
     }
 
-    $images = $pod->field('images');
-
     $results['name'] = $pod->field('name');
-    $results['images'] = [];
     $results['url'] = $url;
+    $results['images'] = get_pod_sorted_images($pod, false);
 
-    $images_sorted = [];
-    $i = 0;
-    foreach ($images as $img) {
-        $images_sorted[$i]['id'] = $img['ID'];
-        $images_sorted[$i]['img']['large'] = $img['guid'];
-        $images_sorted[$i]['img']['thumb'] = wp_get_attachment_image_src($img['ID'], 'thumbnail')[0];
-        $images_sorted[$i]['description'] = get_post_field('post_content', $img['ID']);
-        $images_sorted[$i]['order'] = intval(get_post_meta($img['ID'], 'order', true));
-        $images_sorted[$i]['status'] = $img['post_status'];
-        $i++;
-    }
-
-    usort($images_sorted, function ($a, $b) {
-        return $a['order'] - $b['order'];
-    });
-
-    $results['images'] = $images_sorted;
     wp_send_json_success($results);
 }
 add_action('wp_ajax_list_images', 'list_images');
@@ -221,3 +202,34 @@ function change_image_order()
     wp_send_json_success('saved');
 }
 add_action('wp_ajax_change_image_order', 'change_image_order');
+
+
+function get_pod_sorted_images($pod, $private)
+{
+    $images = $pod->field('images');
+
+    $images_sorted = [];
+
+    foreach ($images as $img) {
+        if ($private && $img['post_status'] == 'private') {
+            continue;
+        }
+
+        $images_sorted[] = [
+            'id' => $img['ID'],
+            'img' => [
+                'large' => $img['guid'],
+                'thumb' => wp_get_attachment_image_src($img['ID'], 'thumbnail')[0]
+            ],
+            'description' => get_post_field('post_content', $img['ID']),
+            'order' => intval(get_post_meta($img['ID'], 'order', true)),
+            'status' => $img['post_status']
+        ];
+    }
+
+    usort($images_sorted, function ($a, $b) {
+        return $a['order'] - $b['order'];
+    });
+
+    return $images_sorted;
+}
