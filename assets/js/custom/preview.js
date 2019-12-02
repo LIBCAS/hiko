@@ -4,47 +4,54 @@ if (document.getElementById('letter-preview')) {
     new Vue({
         el: '#letter-preview',
         data: {
-            loading: true,
+            abstract: '',
             author: [],
             author_inferred: '',
+            author_note: '',
             author_uncertain: '',
-            recipient: [],
-            recipient_inferred: '',
-            recipient_uncertain: '',
-            recipient_notes: '',
-            mentioned: [],
-            origin: '',
-            origin_marked: '',
-            origin_inferred: '',
-            origin_uncertain: '',
-            destination: '',
-            dest_marked: '',
-            dest_inferred: '',
-            dest_uncertain: '',
-            day: '',
-            month: '',
-            year: '',
-            date_marked: '',
-            date_uncertain: '',
             date_approximate: '',
             date_inferred: '',
-            title: '',
+            date_is_range: '',
+            date_marked: '',
+            date_note: '',
+            date_uncertain: '',
+            day: '',
+            day2: '',
+            dest_inferred: '',
+            dest_marked: '',
+            dest_note: '',
+            dest_uncertain: '',
+            destination: '',
+            edit: false,
+            explicit: '',
+            images: [],
+            incipit: '',
+            keywords: [],
             l_number: '',
             languages: [],
-            keywords: [],
-            abstract: '',
-            incipit: '',
-            explicit: '',
-            people_mentioned_notes: '',
-            notes_public: '',
-            rel_rec_name: '',
-            rel_rec_url: '#',
-            ms_manifestation: '',
-            repository: '',
-            edit: false,
             letterID: null,
-            images: [],
             letterType: '',
+            loading: true,
+            mentioned: [],
+            month: '',
+            month2: '',
+            ms_manifestation: '',
+            notes_public: '',
+            origin: '',
+            origin_inferred: '',
+            origin_marked: '',
+            origin_note: '',
+            origin_uncertain: '',
+            people_mentioned_notes: '',
+            recipient: [],
+            recipient_inferred: '',
+            recipient_notes: '',
+            recipient_uncertain: '',
+            related_resources: [],
+            repository: '',
+            title: '',
+            year: '',
+            year2: '',
         },
 
         mounted: function() {
@@ -53,11 +60,13 @@ if (document.getElementById('letter-preview')) {
             this.letterType = url.searchParams.get('l_type')
             this.getLetter(this.letterID)
         },
+
         updated: function() {
             if (this.images.length > 0) {
                 baguetteBox.run('#gallery')
             }
         },
+
         methods: {
             getItemData: function(item, metaJSON) {
                 let results = []
@@ -81,10 +90,10 @@ if (document.getElementById('letter-preview')) {
                 axios
                     .get(
                         ajaxUrl +
-                            '?action=list_public_letters_single&pods_id=' +
-                            id +
-                            '&l_type=' +
-                            self.letterType
+                        '?action=list_public_letters_single&pods_id=' +
+                        id +
+                        '&l_type=' +
+                        self.letterType
                     )
                     .then(function(response) {
                         if (response.data == '404') {
@@ -93,20 +102,31 @@ if (document.getElementById('letter-preview')) {
                             let rd = response.data
 
                             self.title = rd.name
+
                             self.year = rd.date_year == '0' ? '' : rd.date_year
                             self.month =
                                 rd.date_month == '0' ? '' : rd.date_month
                             self.day = rd.date_day == '0' ? '' : rd.date_day
-                            self.date_marked = rd.date_marked
-                            self.date_uncertain = rd.date_uncertain
+                            self.year2 =
+                                rd.range_year == '0' ? '' : rd.range_year
+                            self.month2 =
+                                rd.range_month == '0' ? '' : rd.range_month
+                            self.day2 = rd.range_day == '0' ? '' : rd.range_day
                             self.date_approximate = rd.date_approximate
                             self.date_inferred = rd.date_inferred
+                            self.date_is_range = rd.date_is_range
+                            self.date_marked = rd.date_marked
+                            self.date_note = rd.date_note
+                            self.date_uncertain = rd.date_uncertain
+
                             self.author = self.getItemData(
                                 rd.l_author,
                                 rd.authors_meta
                             )
                             self.author_inferred = rd.author_inferred
                             self.author_uncertain = rd.author_uncertain
+                            self.author_note = rd.author_note
+
                             self.recipient = self.getItemData(
                                 rd.recipient,
                                 rd.authors_meta
@@ -114,40 +134,46 @@ if (document.getElementById('letter-preview')) {
                             self.recipient_inferred = rd.recipient_inferred
                             self.recipient_uncertain = rd.recipient_uncertain
                             self.recipient_notes = rd.recipient_notes
+
                             self.origin = self.getItemData(
                                 rd.origin,
                                 rd.places_meta
                             )
                             self.origin_inferred = rd.origin_inferred
+                            self.origin_note = rd.origin_note
                             self.origin_uncertain = rd.origin_uncertain
+
                             self.destination = self.getItemData(
                                 rd.dest,
                                 rd.places_meta
                             )
                             self.dest_inferred = rd.dest_inferred
+                            self.dest_note = rd.dest_note
                             self.dest_uncertain = rd.dest_uncertain
+
                             self.languages =
-                                rd.languages.length === 0
-                                    ? []
-                                    : rd.languages.split(';')
+                                rd.languages.length === 0 ?
+                                [] :
+                                rd.languages.split(';')
                             self.keywords = Object.values(rd.keywords)
                             self.abstract = rd.abstract
                             self.incipit = rd.incipit
                             self.explicit = rd.explicit
+                            self.notes_public = rd.notes_public
+
                             self.mentioned = Object.values(rd.people_mentioned)
                             self.people_mentioned_notes =
                                 rd.people_mentioned_notes
-                            self.notes_public = rd.notes_public
-                            self.rel_rec_name = rd.rel_rec_name
-                            self.rel_rec_url =
-                                rd.rel_rec_url && rd.rel_rec_url.length === 0
-                                    ? '#'
-                                    : rd.rel_rec_url
+
+                            self.related_resources = JSON.parse(
+                                rd.related_resources
+                            )
+
                             self.ms_manifestation = rd.ms_manifestation
                             self.repository = rd.repository
-
                             self.images = rd.images
                             self.l_number = rd.l_number
+
                             self.loading = false
                         }
                     })

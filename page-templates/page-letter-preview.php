@@ -5,31 +5,33 @@
 if (!is_in_editor_role()) {
     die('Nemáte oprávnění zobrazit tuto stránku');
 }
-if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
-    $letter_id = sanitize_text_field($_GET['letter']);
-    $letter_type = sanitize_text_field($_GET['l_type']);
-    $pod = pods($letter_type, $letter_id);
 
-    if (!$pod->exists()) {
-        die('Nepodařilo se načíst požadovaný dopis');
-    }
-
-    if ($letter_type == 'bl_letter') {
-        $letter_path = 'blekastad';
-    } elseif ($letter_type == 'demo_letter') {
-        $letter_path = 'demo';
-    } elseif ($letter_type == 'tgm_letter') {
-        $letter_path = 'tgm';
-    } else {
-        die('Nenalezeno');
-    }
-
-    $link_dashboard = home_url("/{$letter_path}/letters/");
-    $link_letter_edit = home_url("/{$letter_path}/letters-add/?edit=$letter_id");
-    $link_letter_img = home_url("/{$letter_path}/letters-media/?l_type={$letter_type}&letter={$letter_id}");
-} else {
+if (!array_key_exists('l_type', $_GET) || !array_key_exists('letter', $_GET)) {
     die('Nepodařilo se načíst požadovaný dopis');
 }
+
+$letter_id = sanitize_text_field($_GET['letter']);
+$letter_type = sanitize_text_field($_GET['l_type']);
+$pod = pods($letter_type, $letter_id);
+
+if (!$pod->exists()) {
+    die('Nepodařilo se načíst požadovaný dopis');
+}
+
+if ($letter_type == 'bl_letter') {
+    $letter_path = 'blekastad';
+} elseif ($letter_type == 'demo_letter') {
+    $letter_path = 'demo';
+} elseif ($letter_type == 'tgm_letter') {
+    $letter_path = 'tgm';
+} else {
+    die('Nenalezeno');
+}
+
+$link_dashboard = home_url("/{$letter_path}/letters/");
+$link_letter_edit = home_url("/{$letter_path}/letters-add/?edit=$letter_id");
+$link_letter_img = home_url("/{$letter_path}/letters-media/?l_type={$letter_type}&letter={$letter_id}");
+
 
 ?>
 
@@ -53,196 +55,222 @@ if (array_key_exists('l_type', $_GET) && array_key_exists('letter', $_GET)) {
     <div class="container-fluid">
         <div id="letter-preview" class="row main-content my-5">
             <div class="col-md-9">
-                <div class="" v-if="loading">
+                <div v-if="loading">
                     Načítám
                 </div>
                 <div class="letter-single" v-else>
-                    <h3> Náhled: {{ title }}</h3>
+                    <h3> Preview: {{ title }}</h3>
                     <div class="my-5">
-                        <h5>Data</h5>
+                        <h5>Dates</h5>
                         <table class="table">
                             <tbody>
                                 <tr>
                                     <td style="width: 20%;">
-                                        Datum dopisu
+                                        Letter date
                                     </td>
                                     <td>
-                                        {{ day ? day : '?' }}. {{ month ? month : '?'}}. {{ year ? year : '????' }}
-                                        <span v-if="date_uncertain">
-                                            <br>
-                                            <small>(Nejisté datum)</small>
+                                        <span>
+                                            {{ day ? day : '?' }}. {{ month ? month : '?'}}. {{ year ? year : '????' }}
+                                        </span>
+                                        <span v-if="date_is_range">
+                                            – {{ day2 ? day2 : '?' }}. {{ month2 ? month2 : '?'}}. {{ year2 ? year2 : '????' }}
+                                        </span>
+
+                                        <span v-if="date_uncertain" class="d-block">
+                                            <small><em>Uncertain date</em></small>
+                                        </span>
+
+                                        <span v-if="date_inferred" class="d-block">
+                                            <small><em>Inferred date</em></small>
+                                        </span>
+
+                                        <span v-if="date_approximate" class="d-block">
+                                            <small><em>Approximate date</em></small>
                                         </span>
                                     </td>
                                 </tr>
                                 <tr v-if="date_marked">
-                                    <td style="width: 20%;">
-                                        Datum uvedené v dopise
+                                    <td>
+                                        Date as marked
                                     </td>
                                     <td>
                                         {{ date_marked }}
                                     </td>
                                 </tr>
-                                <!---->
+                                <tr v-if="date_note">
+                                    <td>
+                                        Notes on date
+                                    </td>
+                                    <td>
+                                        {{ date_note }}
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                     <div class="mb-5">
-                        <h5>Lidé</h5>
+                        <h5>People</h5>
                         <table class="table">
                             <tbody>
                                 <tr>
-                                    <td style="width: 20%;">Autor</td>
+                                    <td style="width: 20%;">Author</td>
                                     <td>
-                                        <span v-for="a in author" class="d-block" :title="a.title"> {{ a.marked }}</span>
-
-                                        <span v-if="author_uncertain" class="d-block">
-                                            <small>(Autor nejistý)</small>
+                                        <span v-for="a in author" class="d-block" :title="a.title">
+                                            {{ a.marked }}
                                         </span>
-
+                                        <span v-if="author_uncertain" class="d-block">
+                                            <small><em>Uncertain author</em></small>
+                                        </span>
                                         <span v-if="author_inferred" class="d-block">
-                                            <small>(Autor vyvozený z obsahu dopisu)</small>
+                                            <small><em>Inferred author</em></small>
                                         </span>
                                     </td>
                                 </tr>
-
-                                <tr>
-                                    <td style="width: 20%;">Příjemce</td>
+                                <tr v-if="author_note">
                                     <td>
-                                        <span v-for="r in recipient" class="d-block" :title="r.title"> {{ r.marked }}</span>
-
+                                        Notes on author
+                                    </td>
+                                    <td>
+                                        {{ author_note }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Recipient</td>
+                                    <td>
+                                        <span v-for="r in recipient" class="d-block" :title="r.title">
+                                            {{ r.marked }}
+                                        </span>
                                         <span v-if="recipient_uncertain" class="d-block">
-                                            <small>(Nejistý příjemce)</small>
+                                            <small><em>Uncertain recipient</em></small>
                                         </span>
                                         <span v-if="recipient_inferred" class="d-block">
-                                            <small>(Příjemce vyvozený z obsahu dopisu)</small>
+                                            <small><em>Inferred recipient</em></small>
                                         </span>
                                     </td>
                                 </tr>
-
                                 <tr v-if="recipient_notes">
-                                    <td style="width: 20%;">
-                                        Poznámky o příjemci
+                                    <td>
+                                        Notes on recipient
                                     </td>
                                     <td>
                                         {{ recipient_notes }}
                                     </td>
                                 </tr>
-
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mb-5">
-                        <h5>Místa</h5>
-                        <table class="table">
-                            <tbody>
                                 <tr>
-                                    <td style="width: 20%;">Počáteční místo</td>
-                                    <td>
-                                        <span v-for="o in origin" class="d-block" :title="o.title"> {{ o.marked }}</span>
-                                        <span class="d-block" v-if="origin_uncertain">
-                                            <small>(Nejisté počáteční místo)</small>
-                                        </span>
-                                        <span class="d-block" v-if="origin_inferred">
-                                            <small>(Počáteční místo vyvozeno z obsahu dopisu)</small>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr v-if="origin_marked">
-                                    <td>Počáteční místo uvedené v dopise</td>
-                                    <td>
-                                        <span> {{ origin_marked }}</span>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td style="width: 20%;">Místo určení</td>
-                                    <td>
-                                        <span v-for="d in destination" class="d-block" :title="d.title"> {{ d.marked }}</span>
-
-                                        <span class="d-block" v-if="dest_uncertain">
-                                            <small>(Nejisté místo určení)</small>
-                                        </span>
-                                        <span class="d-block" v-if="dest_inferred">
-                                            <small>(Místo určení vyvozeno z obsahu dopisu)</small>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr v-if="dest_marked">
-                                    <td>Místo určení uvedené v dopise</td>
-                                    <td>
-                                        <span> {{ dest_marked }}</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mb-5">
-                        <h5>Obsah</h5>
-                        <table class="table">
-                            <tbody>
-                                <tr>
-                                    <td style="width: 20%;">Jazyk</td>
-                                    <td>
-                                        <span v-for="lang in languages" class="d-block"> {{ lang }}</span>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td>Klíčová slova</td>
-                                    <td>
-                                        <span v-for="keyword in keywords" class="d-block"> {{ keyword }}</span>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td>Abstrakt</td>
-                                    <td>{{ abstract }}</td>
-                                </tr>
-
-                                <tr>
-                                    <td>Incipit</td>
-                                    <td v-html="incipit"></td>
-                                </tr>
-
-                                <tr>
-                                    <td>Explicit</td>
-                                    <td v-html="explicit"></td>
-                                </tr>
-
-                                <tr>
-                                    <td>Zmíněné osoby</td>
+                                    <td>Mentioned people</td>
                                     <td>
                                         <span v-for="m in mentioned" class="d-block"> {{ m }}</span>
                                     </td>
                                 </tr>
-
                                 <tr v-if="people_mentioned_notes">
-                                    <td>Poznámky o zmíněných osobách</td>
+                                    <td>Notes on mentioned people</td>
                                     <td>{{ people_mentioned_notes }}</td>
                                 </tr>
-
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mb-5">
+                        <h5>Places</h5>
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 20%;">Origin</td>
+                                    <td>
+                                        <span v-for="o in origin" class="d-block" :title="o.title">
+                                            {{ o.marked }}
+                                        </span>
+                                        <span class="d-block" v-if="origin_uncertain">
+                                            <small><em>Uncertain origin</em></small>
+                                        </span>
+                                        <span class="d-block" v-if="origin_inferred">
+                                            <small><em>Inferred origin</em></small>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-if="origin_note">
+                                    <td>Notes on origin</td>
+                                    <td>
+                                        {{ origin_note }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Destination</td>
+                                    <td>
+                                        <span v-for="d in destination" class="d-block" :title="d.title">
+                                            {{ d.marked }}
+                                        </span>
+                                        <span class="d-block" v-if="dest_uncertain">
+                                            <small><em>Uncertain destination</em></small>
+                                        </span>
+                                        <span class="d-block" v-if="dest_inferred">
+                                            <small><em>Inferred destination</em></small>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-if="dest_note">
+                                    <td>Notes on destination</td>
+                                    <td>
+                                        {{ dest_note }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mb-5">
+                        <h5>Content</h5>
+                        <table class="table">
+                            <tbody>
+                                <tr v-if="abstract">
+                                    <td style="width: 20%;">Abstract</td>
+                                    <td>{{ abstract }}</td>
+                                </tr>
+                                <tr v-if="incipit">
+                                    <td style="width: 20%;">Incipit</td>
+                                    <td v-html="incipit"></td>
+                                </tr>
+                                <tr v-if="explicit">
+                                    <td style="width: 20%;">Explicit</td>
+                                    <td v-html="explicit"></td>
+                                </tr>
+                                <tr v-if="languages.length > 0">
+                                    <td style="width: 20%;">Languages</td>
+                                    <td>
+                                        <span v-for="lang in languages" class="d-block">
+                                            {{ lang }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-if="keywords.length > 0">
+                                    <td>Keywords</td>
+                                    <td>
+                                        <span v-for="keyword in keywords" class="d-block">
+                                            {{ keyword }}
+                                        </span>
+                                    </td>
+                                </tr>
                                 <tr v-if="notes_public">
-                                    <td>Poznámky k dopisu</td>
+                                    <td>Notes on letter</td>
                                     <td>{{ notes_public }}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <div v-if="rel_rec_name" class="mb-5">
-                        <h5>Související zdroje</h5>
+                    <div v-if="Object.keys(related_resources).length > 0" class="mb-5">
+                        <h5>Related resources</h5>
                         <table class="table">
                             <tbody>
                                 <tr>
                                     <td>
-                                        <a :href="rel_rec_url" target="_blank">{{ rel_rec_name }}</a>
+                                        <a v-for="rr in related_resources" :href="rr.link" target="_blank">
+                                            {{ rr.title }}
+                                        </a>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-
-                    <div id="gallery" class="mb-5 row" v-if="images">
-                        <div class="col" style="width:150px" v-for="i in images">
+                    <div id="gallery" class="mb-5 d-flex flex-wrap" v-if="images">
+                        <div v-for="i in images">
                             <a :href="i.img.large" :data-caption="i.description">
                                 <figure class="figure">
                                     <img :src="i.img.thumb" class="figure-img img-thumbnail" :alt="i.description" style="width:150px;max-width:150px">
