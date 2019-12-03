@@ -32,7 +32,7 @@ $link_dashboard = home_url("/{$letter_path}/letters/");
 $link_letter_edit = home_url("/{$letter_path}/letters-add/?edit=$letter_id");
 $link_letter_img = home_url("/{$letter_path}/letters-media/?l_type={$letter_type}&letter={$letter_id}");
 
-
+$question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/question-mark.svg';
 ?>
 
 <!DOCTYPE html>
@@ -49,6 +49,18 @@ $link_letter_img = home_url("/{$letter_path}/letters-media/?l_type={$letter_type
         var ajaxUrl = '<?= admin_url('admin-ajax.php'); ?>';
         var homeUrl = '<?= home_url(); ?>';
     </script>
+    <style>
+        .badge {
+            border-radius: 50%;
+            border: 2px solid;
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 700;
+            line-height: 1;
+            padding: .2em .4em;
+            vertical-align: middle;
+        }
+    </style>
 </head>
 
 <body>
@@ -112,11 +124,19 @@ $link_letter_img = home_url("/{$letter_path}/letters-media/?l_type={$letter_type
                         <h5>People</h5>
                         <table class="table">
                             <tbody>
-                                <tr>
+                                <tr v-if="author.length > 0">
                                     <td style="width: 20%;">Author</td>
                                     <td>
-                                        <span v-for="a in author" class="d-block" :title="a.title">
-                                            {{ a.marked }}
+                                        <span v-for="a in author" class="d-block">
+                                            <span v-if="a.marked.length > 0">
+                                                {{ a.marked }}
+                                                <span v-if="a.marked != a.title" class="badge pointer" :title="a.title">
+                                                    ?
+                                                </span>
+                                            </span>
+                                            <span v-else>
+                                                {{ a.title }}
+                                            </span>
                                         </span>
                                         <span v-if="author_uncertain" class="d-block">
                                             <small><em>Uncertain author</em></small>
@@ -134,11 +154,19 @@ $link_letter_img = home_url("/{$letter_path}/letters-media/?l_type={$letter_type
                                         {{ author_note }}
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr v-if="recipient.length > 0">
                                     <td>Recipient</td>
                                     <td>
-                                        <span v-for="r in recipient" class="d-block" :title="r.title">
-                                            {{ r.marked }}
+                                        <span v-for="r in recipient" class="d-block">
+                                            <span v-if="r.marked.length > 0">
+                                                {{ r.marked }}
+                                                <span v-if="r.marked != r.title" class="badge pointer" :title="r.title">
+                                                    ?
+                                                </span>
+                                            </span>
+                                            <span v-else>
+                                                {{ r.title }}
+                                            </span>
                                         </span>
                                         <span v-if="recipient_uncertain" class="d-block">
                                             <small><em>Uncertain recipient</em></small>
@@ -156,7 +184,7 @@ $link_letter_img = home_url("/{$letter_path}/letters-media/?l_type={$letter_type
                                         {{ recipient_notes }}
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr v-if="mentioned.length > 0">
                                     <td>Mentioned people</td>
                                     <td>
                                         <span v-for="m in mentioned" class="d-block"> {{ m }}</span>
@@ -176,8 +204,16 @@ $link_letter_img = home_url("/{$letter_path}/letters-media/?l_type={$letter_type
                                 <tr>
                                     <td style="width: 20%;">Origin</td>
                                     <td>
-                                        <span v-for="o in origin" class="d-block" :title="o.title">
-                                            {{ o.marked }}
+                                        <span v-for="o in origin" class="d-block">
+                                            <span v-if="o.marked.length > 0">
+                                                {{ o.marked }}
+                                                <span v-if="o.marked != o.title" class="badge pointer" :title="o.title">
+                                                    ?
+                                                </span>
+                                            </span>
+                                            <span v-else>
+                                                {{ o.title }}
+                                            </span>
                                         </span>
                                         <span class="d-block" v-if="origin_uncertain">
                                             <small><em>Uncertain origin</em></small>
@@ -196,8 +232,16 @@ $link_letter_img = home_url("/{$letter_path}/letters-media/?l_type={$letter_type
                                 <tr>
                                     <td>Destination</td>
                                     <td>
-                                        <span v-for="d in destination" class="d-block" :title="d.title">
-                                            {{ d.marked }}
+                                        <span v-for="d in destination" class="d-block">
+                                            <span v-if="d.marked.length > 0">
+                                                {{ d.marked }}
+                                                <span v-if="d.marked != d.title" class="badge pointer" :title="d.title">
+                                                    ?
+                                                </span>
+                                            </span>
+                                            <span v-else>
+                                                {{ d.title }}
+                                            </span>
                                         </span>
                                         <span class="d-block" v-if="dest_uncertain">
                                             <small><em>Uncertain destination</em></small>
