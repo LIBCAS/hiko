@@ -93,6 +93,14 @@ if (document.getElementById('letter-preview')) {
             },
 
             parseDocumentTypesData(docData) {
+                if (!docData) {
+                    return {
+                        type: '',
+                        preservation: '',
+                        copy: '',
+                    }
+                }
+
                 docData = JSON.parse(docData)
                 docData = arrayToSingleObject(docData)
                 return docData
@@ -180,9 +188,11 @@ if (document.getElementById('letter-preview')) {
                         self.mentioned = Object.values(rd.people_mentioned)
                         self.people_mentioned_notes = rd.people_mentioned_notes
 
-                        self.related_resources = JSON.parse(
-                            rd.related_resources
-                        )
+                        if (rd.related_resources) {
+                            self.related_resources = JSON.parse(
+                                rd.related_resources
+                            )
+                        }
 
                         self.copy = docTypes.copy
                         self.document_type = docTypes.document_type
