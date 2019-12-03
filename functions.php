@@ -238,7 +238,8 @@ function get_places_table_data($place_type)
         [
             'select' => $fields,
             'orderby' => 't.name ASC',
-            'limit' => -1
+            'limit' => -1,
+            'groupby' => 't.id'
         ]
     );
 
