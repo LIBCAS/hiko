@@ -20,7 +20,7 @@ $title = $pods_types['title'];
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= home_url($path . '/persons/') ?>">
-                        Lidé
+                        Lidé / instituce
                     </a>
                 </li>
                 <li class="nav-item">

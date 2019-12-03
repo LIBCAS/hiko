@@ -85,10 +85,10 @@ if (document.getElementById('datatable-letters')) {
                 axios
                     .get(
                         ajaxUrl +
-                            '?action=list_letter_history&l_id=' +
-                            id +
-                            '&l_type=' +
-                            self.path
+                        '?action=list_letter_history&l_id=' +
+                        id +
+                        '&l_type=' +
+                        self.path
                     )
                     .then(function(result) {
                         spinner.classList.add('d-none')
@@ -104,8 +104,7 @@ if (document.getElementById('datatable-letters')) {
                     })
                     .catch(function(error) {
                         Swal.fire({
-                            title:
-                                'Historii úprav se nepodařilo načíst nebo nebo neexistuje',
+                            title: 'Historii úprav se nepodařilo načíst nebo nebo neexistuje',
                             text: error,
                             type: 'error',
                             buttonsStyling: false,
@@ -133,8 +132,8 @@ if (document.getElementById('datatable-letters')) {
                 axios
                     .get(
                         ajaxUrl +
-                            '?action=list_all_letters_short&type=' +
-                            self.path
+                        '?action=list_all_letters_short&type=' +
+                        self.path
                     )
                     .then(function(result) {
                         self.tableData = result.data
@@ -153,7 +152,7 @@ if (document.getElementById('datatable-letters')) {
 if (document.getElementById('datatable-persons')) {
     Vue.use(VueTables.ClientTable, false, false, 'bootstrap4')
 
-    columns = ['edit', 'name', 'alternatives']
+    columns = ['edit', 'name', 'alternatives', 'type']
 
     new Vue({
         el: '#datatable-persons',
@@ -189,10 +188,9 @@ if (document.getElementById('datatable-persons')) {
             ) {
                 self.error = letterTypes
                 return
-            } else {
-                this.path = letterTypes['path']
-                this.personType = letterTypes['personType']
             }
+            this.path = letterTypes['path']
+            this.personType = letterTypes['personType']
 
             this.getPersons()
         },
@@ -202,8 +200,8 @@ if (document.getElementById('datatable-persons')) {
                 axios
                     .get(
                         ajaxUrl +
-                            '?action=persons_table_data&type=' +
-                            self.personType
+                        '?action=persons_table_data&type=' +
+                        self.personType
                     )
                     .then(function(result) {
                         self.tableData = result.data
@@ -236,10 +234,10 @@ if (document.getElementById('datatable-persons')) {
                 axios
                     .get(
                         ajaxUrl +
-                            '?action=count_alternate_name&id=' +
-                            personID +
-                            '&l_type=' +
-                            self.path
+                        '?action=count_alternate_name&id=' +
+                        personID +
+                        '&l_type=' +
+                        self.path
                     )
                     .then(function(result) {
                         let r = result.data.data

@@ -16,10 +16,15 @@ if (document.getElementById('person-name')) {
             note: '',
             personType: '',
             profession: '',
+            type: 'person',
         },
 
         computed: {
             fullName: function() {
+                if (this.type == 'institution') {
+                    return this.lastName.trim()
+                }
+
                 let fullName
                 if (this.firstName.length > 0) {
                     fullName =
@@ -48,9 +53,10 @@ if (document.getElementById('person-name')) {
             ) {
                 self.error = letterTypes
                 return
-            } else {
-                this.personType = letterTypes['personType']
             }
+
+            this.personType = letterTypes['personType']
+
             let url = new URL(window.location.href)
             if (url.searchParams.get('edit')) {
                 this.getInitialData(url.searchParams.get('edit'))
@@ -67,26 +73,29 @@ if (document.getElementById('person-name')) {
                 axios
                     .get(
                         ajaxUrl +
-                            '?action=list_people_single&pods_id=' +
-                            id +
-                            '&type=' +
-                            self.personType
+                        '?action=list_people_single&pods_id=' +
+                        id +
+                        '&type=' +
+                        self.personType
                     )
                     .then(function(response) {
-                        if (response.data == '404') {
+                        let rd = response.data
+                        if (rd == '404') {
                             self.error = true
-                        } else {
-                            self.alternativeNames = response.data.names
-                            self.dob = response.data.birth_year
-                            self.dod = response.data.death_year
-                            self.emlo = response.data.emlo
-                            self.firstName = response.data.forename
-                            self.gender = response.data.gender
-                            self.lastName = response.data.surname
-                            self.nationality = response.data.nationality
-                            self.note = response.data.note
-                            self.profession = response.data.profession
+                            return
                         }
+
+                        self.alternativeNames = rd.names
+                        self.dob = rd.birth_year
+                        self.dod = rd.death_year
+                        self.emlo = rd.emlo
+                        self.firstName = rd.forename
+                        self.gender = rd.gender
+                        self.lastName = rd.surname
+                        self.nationality = rd.nationality
+                        self.note = rd.note
+                        self.profession = rd.profession
+                        self.type = rd.type ? rd.type : 'person'
                     })
                     .catch(function(error) {
                         self.error = true

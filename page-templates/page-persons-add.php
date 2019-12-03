@@ -15,9 +15,9 @@ require_once get_template_directory() . '/partials/custom-nav.php'; ?>
         <div class="col-lg-6 col-md-8">
             <?php if (has_user_permission($editor)) : ?>
                 <?php if (array_key_exists('edit', $_GET)) : ?>
-                    <h1>Editovat osobu</h1>
+                    <h1>Editovat osobu / instituci</h1>
                 <?php else : ?>
-                    <h1>Nová osoba</h1>
+                    <h1>Nová osoba / instituce</h1>
                 <?php endif; ?>
                 <?php require_once get_template_directory() . '/partials/persons-add.php'; ?>
             <?php else : ?>

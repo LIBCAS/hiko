@@ -78,6 +78,7 @@ function list_people_single()
     $results['nationality'] = $pod->field('nationality');
     $results['gender'] = $pod->field('gender');
     $results['names'] = $alternative_names;
+    $results['type'] = $pod->field('type');
 
     wp_die(json_encode(
         $results,

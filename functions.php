@@ -174,14 +174,15 @@ function get_full_name()
 function get_persons_table_data($person_type)
 {
     $fields = [
-        't.id',
-        't.name',
+        'letter_author.id AS au',
+        'letter_people_mentioned.id AS pm',
+        'letter_recipient.id AS re',
         't.birth_year',
         't.death_year',
+        't.id',
+        't.name',
         't.persons_meta',
-        'letter_author.id AS au',
-        'letter_recipient.id AS re',
-        'letter_people_mentioned.id AS pm'
+        't.type',
     ];
 
     $fields = implode(', ', $fields);
@@ -211,6 +212,7 @@ function get_persons_table_data($person_type)
         $persons_filtered[$index]['name'] = $persons->display('name');
         $persons_filtered[$index]['birth'] = $persons->display('birth_year');
         $persons_filtered[$index]['death'] = $persons->display('death_year');
+        $persons_filtered[$index]['type'] = $persons->display('type');
         $persons_filtered[$index]['alternatives'] = $alternative_names;
         $persons_filtered[$index]['relationships'] = !is_null($persons->display('au')) || !is_null($persons->display('re')) || !is_null($persons->display('pm'));
 
@@ -904,6 +906,7 @@ function save_hiko_person($person_type, $action)
         'note' => 'note',
         'profession' => 'profession',
         'surname' => 'surname',
+        'type' => 'type',
     ]);
 
     $new_pod = '';

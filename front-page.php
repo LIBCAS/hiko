@@ -23,7 +23,7 @@ $cardsData = [
                             <a href="<?= home_url("/$value/letters/"); ?>" class="card-link">Dopisy</a>
                         </li>
                         <li class="list-group-item">
-                            <a href="<?= home_url("/$value/persons/"); ?>" class="card-link">Lidé</a>
+                            <a href="<?= home_url("/$value/persons/"); ?>" class="card-link">Lidé a instituce</a>
                         </li>
                         <li class="list-group-item">
                             <a href="<?= home_url("/$value/places/"); ?>" class="card-link">Místa</a>

@@ -1,8 +1,5 @@
 {
-    "meta": {
-        "version": "2.7.12",
-        "build": 1557836687
-    },
+    "meta": { "version": "2.7.16.2", "build": 1575387103 },
     "pods": {
         "49": {
             "id": 49,
@@ -33,18 +30,13 @@
                     "text_max_length": "255",
                     "text_allow_shortcode": "0",
                     "text_allow_html": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_placeholder": ""
                 },
                 "created": {
@@ -72,7 +64,8 @@
                     "datetime_format_custom": "",
                     "datetime_format_custom_js": "",
                     "datetime_time_format_custom": "",
-                    "datetime_time_format_custom_js": ""
+                    "datetime_time_format_custom_js": "",
+                    "datetime_year_range_custom": ""
                 },
                 "modified": {
                     "id": 52,
@@ -99,7 +92,8 @@
                     "datetime_format_custom": "",
                     "datetime_format_custom_js": "",
                     "datetime_time_format_custom": "",
-                    "datetime_time_format_custom_js": ""
+                    "datetime_time_format_custom_js": "",
+                    "datetime_year_range_custom": ""
                 },
                 "surname": {
                     "id": 53,
@@ -119,18 +113,13 @@
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -152,18 +141,13 @@
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -182,25 +166,20 @@
                     "required": "0",
                     "unique": "0",
                     "number_format_type": "number",
-                    "number_format": "9999.99",
+                    "number_format": "i18n",
                     "number_decimals": "0",
                     "number_format_soft": "0",
                     "number_step": "1",
                     "number_min": "0",
                     "number_max": "100",
                     "number_max_length": "4",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "number_repeatable": "0",
                     "number_placeholder": ""
                 },
@@ -219,25 +198,20 @@
                     "required": "0",
                     "unique": "0",
                     "number_format_type": "number",
-                    "number_format": "9999.99",
+                    "number_format": "i18n",
                     "number_decimals": "0",
                     "number_format_soft": "0",
                     "number_step": "1",
                     "number_min": "0",
                     "number_max": "100",
                     "number_max_length": "4",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "number_repeatable": "0",
                     "number_placeholder": ""
                 },
@@ -259,18 +233,13 @@
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -285,7 +254,7 @@
                     "weight": 8,
                     "pick_object": "pod",
                     "pick_val": "bl_letter",
-                    "sister_id": "60",
+                    "sister_id": "18",
                     "required": "0",
                     "unique": "0",
                     "pick_format_type": "multi",
@@ -298,18 +267,13 @@
                     "pick_show_view_link": "1",
                     "pick_limit": "0",
                     "pick_user_role": [],
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "oembed_enabled_providers_funnyordiecom": "0",
                     "oembed_enabled_providers_photobucketcom": "0",
                     "oembed_enabled_providers_polldaddycom": "0",
@@ -332,7 +296,7 @@
                     "weight": 9,
                     "pick_object": "pod",
                     "pick_val": "bl_letter",
-                    "sister_id": "41",
+                    "sister_id": "22",
                     "required": "0",
                     "unique": "0",
                     "pick_format_type": "multi",
@@ -345,18 +309,13 @@
                     "pick_show_view_link": "1",
                     "pick_limit": "0",
                     "pick_user_role": [],
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "oembed_enabled_providers_funnyordiecom": "0",
                     "oembed_enabled_providers_photobucketcom": "0",
                     "oembed_enabled_providers_polldaddycom": "0",
@@ -379,7 +338,7 @@
                     "weight": 10,
                     "pick_object": "pod",
                     "pick_val": "bl_letter",
-                    "sister_id": "58",
+                    "sister_id": "40",
                     "required": "0",
                     "unique": "0",
                     "pick_format_type": "multi",
@@ -392,18 +351,13 @@
                     "pick_show_view_link": "1",
                     "pick_limit": "0",
                     "pick_user_role": [],
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "oembed_enabled_providers_funnyordiecom": "0",
                     "oembed_enabled_providers_photobucketcom": "0",
                     "oembed_enabled_providers_polldaddycom": "0",
@@ -437,25 +391,20 @@
                     "paragraph_allow_shortcode": "0",
                     "paragraph_allowed_html_tags": "strong em a ul ol li b i",
                     "paragraph_max_length": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "paragraph_repeatable": "0",
                     "paragraph_placeholder": ""
                 },
-                "profession": {
-                    "id": 400,
-                    "name": "profession",
-                    "label": "Profession",
+                "gender": {
+                    "id": 439,
+                    "name": "gender",
+                    "label": "Gender",
                     "description": "",
                     "help": "",
                     "class": "",
@@ -470,25 +419,20 @@
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
-                "nationality": {
-                    "id": 401,
-                    "name": "nationality",
-                    "label": "Nationality",
+                "persons_meta": {
+                    "id": 466,
+                    "name": "persons_meta",
+                    "label": "Persons_meta",
                     "description": "",
                     "help": "",
                     "class": "",
@@ -502,76 +446,111 @@
                     "text_allow_shortcode": "0",
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
-                    "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "text_max_length": "-1",
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
-                "persons_meta": {
-                    "id": 403,
-                    "name": "persons_meta",
-                    "label": "Person's Meta",
+                "nationality": {
+                    "id": 467,
+                    "name": "nationality",
+                    "label": "Nationality",
                     "description": "",
                     "help": "",
                     "class": "",
-                    "type": "paragraph",
+                    "type": "text",
                     "weight": 14,
                     "pick_object": "",
                     "pick_val": "",
                     "sister_id": "",
                     "required": "0",
                     "unique": "0",
-                    "paragraph_allow_html": "0",
-                    "paragraph_oembed": "0",
-                    "paragraph_wptexturize": "0",
-                    "paragraph_convert_chars": "0",
-                    "paragraph_wpautop": "0",
-                    "paragraph_allow_shortcode": "0",
-                    "paragraph_allowed_html_tags": "strong em a ul ol li b i",
-                    "paragraph_max_length": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "text_allow_shortcode": "0",
+                    "text_allow_html": "0",
+                    "text_allowed_html_tags": "strong em a ul ol li b i",
+                    "text_max_length": "255",
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
-                    "paragraph_repeatable": "0",
-                    "paragraph_placeholder": ""
+                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "text_repeatable": "0",
+                    "text_placeholder": ""
+                },
+                "profession": {
+                    "id": 468,
+                    "name": "profession",
+                    "label": "Profession",
+                    "description": "",
+                    "help": "",
+                    "class": "",
+                    "type": "text",
+                    "weight": 15,
+                    "pick_object": "",
+                    "pick_val": "",
+                    "sister_id": "",
+                    "required": "0",
+                    "unique": "0",
+                    "text_allow_shortcode": "0",
+                    "text_allow_html": "0",
+                    "text_allowed_html_tags": "strong em a ul ol li b i",
+                    "text_max_length": "255",
+                    "pick_post_status": ["publish"],
+                    "admin_only": "0",
+                    "restrict_role": "1",
+                    "restrict_capability": "0",
+                    "hidden": "0",
+                    "read_only": "0",
+                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "text_repeatable": "0",
+                    "text_placeholder": ""
+                },
+                "type": {
+                    "id": 784,
+                    "name": "type",
+                    "label": "Type",
+                    "description": "",
+                    "help": "",
+                    "class": "",
+                    "type": "text",
+                    "weight": 16,
+                    "pick_object": "",
+                    "pick_val": "",
+                    "sister_id": "",
+                    "required": "0",
+                    "unique": "0",
+                    "text_allow_shortcode": "0",
+                    "text_allow_html": "0",
+                    "text_allowed_html_tags": "strong em a ul ol li b i",
+                    "text_max_length": "255",
+                    "pick_post_status": ["publish"],
+                    "admin_only": "0",
+                    "restrict_role": "1",
+                    "restrict_capability": "0",
+                    "hidden": "0",
+                    "read_only": "0",
+                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "text_repeatable": 0,
+                    "text_placeholder": ""
                 }
             },
-            "show_in_menu": "1",
+            "show_in_menu": "0",
             "label_singular": "Blekastad person",
             "pod_index": "name",
             "hierarchical": "0",
             "ui_style": "post_type",
-            "ui_actions_enabled": [
-                "add",
-                "edit",
-                "duplicate",
-                "delete"
-            ],
+            "ui_actions_enabled": ["add", "edit", "duplicate", "delete"],
             "ui_reorder_field": "menu_order",
-            "ui_fields_manage": {
-                "0": "name",
-                "2": "modified"
-            }
+            "ui_fields_manage": { "0": "name", "2": "modified" },
+            "menu_position": "0"
         }
     }
 }

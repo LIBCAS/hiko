@@ -16,7 +16,7 @@ $editor = $pods_types['editor'];
 
         <div class="col">
             <?php if (has_user_permission($editor)) : ?>
-                <h1 class="mb-3">Osoby</h1>
+                <h1 class="mb-3">Osoby a instituce</h1>
                 <?php require_once get_template_directory() . '/partials/persons.php'; ?>
             <?php else : ?>
                 <div class="alert alert-warning mw-400">

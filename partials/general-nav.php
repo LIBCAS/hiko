@@ -13,7 +13,7 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="blekastad-dd">
                         <a class="dropdown-item" href="<?= home_url('/blekastad/letters/') ?>">Dopisy</a>
-                        <a class="dropdown-item" href="<?= home_url('/blekastad/persons/') ?>">Lidé</a>
+                        <a class="dropdown-item" href="<?= home_url('/blekastad/persons/') ?>">Lidé a instituce</a>
                         <a class="dropdown-item" href="<?= home_url('/blekastad/places/') ?>">Místa</a>
                         <a class="dropdown-item" href="<?= home_url('/blekastad/keywords/') ?>">Klíčová slova</a>
                     </div>

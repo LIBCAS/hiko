@@ -5,7 +5,7 @@ $path = $pods_types['path'];
 ?>
 
 <div class="mb-3">
-    <a href="<?= home_url($path . '/persons-add'); ?>" class="btn btn-lg btn-primary">Přidat novou osobu</a>
+    <a href="<?= home_url($path . '/persons-add'); ?>" class="btn btn-lg btn-primary">Přidat novou osobu / instituci</a>
 </div>
 
 <div id="datatable-persons">
@@ -28,7 +28,10 @@ $path = $pods_types['path'];
             </li>
         </ul>
         <span slot="name" slot-scope="props">
-            <strong>{{ props.row.name }}</strong> ({{ props.row.birth + '–' + props.row.death  }})
+            <strong>{{ props.row.name }}</strong>
+            <span v-show="props.row.type != 'institution'">
+                ({{ props.row.birth + '–' + props.row.death }})
+            </span>
         </span>
         <ul slot="alternatives" slot-scope="props" class="list-unstyled">
             <li v-for="(name, index) in props.row.alternatives" :key="index">{{name}}</li>
@@ -40,6 +43,8 @@ $path = $pods_types['path'];
                 </span>
             </li>
         </ul>
-
+        <span slot="type" slot-scope="props">
+            {{ props.row.type ? props.row.type : 'person' }}
+        </span>
     </v-client-table>
 </div>

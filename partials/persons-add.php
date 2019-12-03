@@ -23,16 +23,24 @@ if (array_key_exists('save_post', $_POST)) {
             <form name="persons" method="post" onkeypress="return event.keyCode!=13">
                 <fieldset>
                     <div class="form-group required">
-                        <label for="last_name">Surname</label>
+                        <label for="type">Type</label>
+                        <select v-model="type" class="form-control form-control-sm" name="type" required>
+                            <option value="person">Person</option>
+                            <option value="institution">Institution</option>
+                        </select>
+                    </div>
+                </fieldset>
+
+                <fieldset v-if="type == 'person'">
+                    <div class="form-group required">
+                        <label for="surname">Surname</label>
                         <input v-model="lastName" type="text" class="form-control form-control-sm" name="surname" required>
                     </div>
                     <div class="form-group">
                         <label for="first_name">Forename</label>
                         <input v-model="firstName" type="text" class="form-control form-control-sm" name="forename">
                     </div>
-                </fieldset>
 
-                <fieldset>
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
@@ -46,16 +54,14 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="date_year">Death year</label>
-                                <input v-model="dod"  type="number" name="death_year" class="form-control form-control-sm" min="0" max="2030">
+                                <input v-model="dod" type="number" name="death_year" class="form-control form-control-sm" min="0" max="2030">
                                 <small class="form-text text-muted">
                                     format YYYY, e.g. 1660
                                 </small>
                             </div>
                         </div>
                     </div>
-                </fieldset>
 
-                <fieldset>
                     <div class="form-group">
                         <label for="profession">Profession</label>
                         <input v-model="profession" type="text" class="form-control form-control-sm" name="profession">
@@ -74,16 +80,20 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                 </fieldset>
 
-                <fieldset>
-                    <div class="form-group">
-                        <label for="emlo">Emlo ID</label>
-                        <input v-model="emlo" type="text" class="form-control form-control-sm" name="emlo">
+                <fieldset v-if="type == 'institution'">
+                    <div class="form-group required">
+                        <label for="surname">Institution name</label>
+                        <input v-model="lastName" type="text" class="form-control form-control-sm" name="surname" required>
                     </div>
                 </fieldset>
 
                 <fieldset>
                     <div class="form-group">
-                        <label for="note">Note on person</label>
+                        <label for="emlo">Emlo ID</label>
+                        <input v-model="emlo" type="text" class="form-control form-control-sm" name="emlo">
+                    </div>
+                    <div class="form-group">
+                        <label for="note">Note on person / institution</label>
                         <textarea v-model="note" type="text" class="form-control form-control-sm" name="note"></textarea>
                     </div>
                 </fieldset>
@@ -96,6 +106,7 @@ if (array_key_exists('save_post', $_POST)) {
                 </ul>
 
                 <div class="form-group">
+                    <input type="hidden" :value="type">
                     <?php if ($action == 'new') : ?>
                         <input type="hidden" name="save_post" value="new">
                     <?php else : ?>
