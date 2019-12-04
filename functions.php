@@ -259,16 +259,17 @@ function get_places_table_data($place_type)
 }
 
 
-function get_pods_name_and_id($type, $dates = false)
+function get_pods_name_and_id($type, $person = false)
 {
     $fields = [
         't.id',
         't.name',
     ];
 
-    if ($dates) {
+    if ($person) {
         $fields[] = 't.birth_year';
         $fields[] = 't.death_year';
+        $fields[] = 't.type';
     }
 
     $fields = implode(', ', $fields);
@@ -289,12 +290,13 @@ function get_pods_name_and_id($type, $dates = false)
 
     if ($pod->data()) {
         $result = $pod->data();
-    } elseif ($dates) {
+    } elseif ($person) {
         $result = [[
             'id' => '',
             'name' => '',
             'birth_year' => '',
-            'death_year' => ''
+            'death_year' => '',
+            'type' => ''
         ]];
     }
 

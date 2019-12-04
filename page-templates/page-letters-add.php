@@ -7,9 +7,8 @@ get_header();
 
 $pods_types = get_hiko_post_types_by_url();
 $editor = $pods_types['editor'];
-?>
 
-<?php require_once get_template_directory() . '/partials/custom-nav.php'; ?>
+require_once get_template_directory() . '/partials/custom-nav.php'; ?>
 
 <div class="container mt-5">
     <div class="row justify-content-center" style="min-height: 75vh;">

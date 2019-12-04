@@ -24,7 +24,7 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="demo-tgm">
                         <a class="dropdown-item" href="<?= home_url('/tgm/letters/') ?>">Dopisy</a>
-                        <a class="dropdown-item" href="<?= home_url('/tgm/persons/') ?>">Lidé</a>
+                        <a class="dropdown-item" href="<?= home_url('/tgm/persons/') ?>">Lidé a instituce</a>
                         <a class="dropdown-item" href="<?= home_url('/tgm/places/') ?>">Místa</a>
                         <a class="dropdown-item" href="<?= home_url('/tgm/keywords/') ?>">Klíčová slova</a>
 
@@ -36,7 +36,7 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="demo-dd">
                         <a class="dropdown-item" href="<?= home_url('/demo/letters/') ?>">Dopisy</a>
-                        <a class="dropdown-item" href="<?= home_url('/demo/persons/') ?>">Lidé</a>
+                        <a class="dropdown-item" href="<?= home_url('/demo/persons/') ?>">Lidé a instituce</a>
                         <a class="dropdown-item" href="<?= home_url('/demo/places/') ?>">Místa</a>
                         <a class="dropdown-item" href="<?= home_url('/demo/keywords/') ?>">Klíčová slova</a>
                     </div>
