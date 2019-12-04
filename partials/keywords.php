@@ -6,7 +6,9 @@ $keyword_type = $pods_types['keyword'];
 ?>
 <div id="datatable-keywords">
     <div class="mb-3">
-        <button type="button" class="btn btn-lg btn-primary" @click="addKeyword('<?= $keyword_type; ?>', 'add', null)">Přidat nové klíčové slovo</button>
+        <button type="button" class="btn btn-lg btn-primary" @click="addKeyword('<?= $keyword_type; ?>', 'add', null)">
+            Přidat nové klíčové slovo
+        </button>
     </div>
     <div v-if="error" class="alert alert-warning">
         {{ error }}

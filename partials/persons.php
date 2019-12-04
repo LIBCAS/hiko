@@ -28,13 +28,13 @@ $path = $pods_types['path'];
             </li>
         </ul>
         <span slot="name" slot-scope="props">
-            <strong>{{ props.row.name }}</strong>
+            <strong v-html="props.row.name"></strong>
             <span v-show="props.row.type != 'institution'">
                 ({{ props.row.birth + '–' + props.row.death }})
             </span>
         </span>
         <ul slot="alternatives" slot-scope="props" class="list-unstyled">
-            <li v-for="(name, index) in props.row.alternatives" :key="index">{{name}}</li>
+            <li v-for="(name, index) in props.row.alternatives" :key="index" v-html="name"></li>
 
             <li v-if="props.row.alternatives.length > 0" >
                 <span class="is-link py-1" @click="removeEmptyNameAlternatives(props.row.id)">

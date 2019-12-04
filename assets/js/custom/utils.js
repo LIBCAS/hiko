@@ -161,13 +161,11 @@ function removeItemAjax(id, podType, podName, callback) {
         if (result.value) {
             axios
                 .post(
-                    ajaxUrl + '?action=delete_hiko_pod',
-                    {
+                    ajaxUrl + '?action=delete_hiko_pod', {
                         ['pod_type']: podType,
                         ['pod_name']: podName,
                         ['id']: id,
-                    },
-                    {
+                    }, {
                         headers: {
                             'Content-Type': 'application/json;charset=utf-8',
                         },
@@ -258,4 +256,10 @@ function getTimestampFromDate(year, month, day) {
     d.setFullYear(year, month, day)
 
     return d.getTime()
+}
+
+function decodeHTML(str) {
+    let txt = document.createElement('textarea')
+    txt.innerHTML = str
+    return txt.value
 }

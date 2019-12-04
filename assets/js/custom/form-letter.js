@@ -1,4 +1,4 @@
-/* global Vue axios ajaxUrl homeUrl getLetterType getObjectValues getNameById arrayToSingleObject */
+/* global Vue axios ajaxUrl homeUrl getLetterType getObjectValues getNameById arrayToSingleObject decodeHTML */
 
 if (document.getElementById('letter-form')) {
     new Vue({
@@ -129,7 +129,7 @@ if (document.getElementById('letter-form')) {
                 let self = this
                 let personsData = []
                 self.persons.map(el => {
-                    let label = el.name
+                    let label = decodeHTML(el.name)
                     if (el.type != 'institution') {
                         label += ` (${el.birth_year}`
 
@@ -435,145 +435,143 @@ if (document.getElementById('letter-form')) {
                     .then(function(response) {
                         if (response.data == '404') {
                             self.error = true
-                        } else {
-                            let rd = response.data
-
-                            let authors = JSON.parse(
-                                JSON.stringify(rd.l_author)
-                            )
-                            authors = Object.keys(authors)
-
-                            let recipients = JSON.parse(
-                                JSON.stringify(rd.recipient)
-                            )
-                            recipients = Object.keys(recipients)
-
-                            let origin = rd.origin
-                            origin = Object.keys(origin)
-
-                            let destination = rd.dest
-                            destination = Object.keys(destination)
-
-                            let mentioned = rd.people_mentioned
-                            let manifestation = rd.ms_manifestation
-                            let languages = rd.languages
-                            let keywords = rd.keywords
-                            let documentTypes = rd.document_type
-
-                            self.letter = rd
-
-                            self.$set(self.letter, 'languages', []) // must set reactive data again
-                            self.$set(self.letter, 'keywords', [])
-                            self.$set(self.letter, 'mentioned', [])
-
-                            self.letter.date_year =
-                                rd.date_year == '0' ? '' : rd.date_year
-                            self.letter.date_month =
-                                rd.date_month == '0' ? '' : rd.date_month
-                            self.letter.date_day =
-                                rd.date_day == '0' ? '' : rd.date_day
-                            self.letter.range_year =
-                                rd.range_year == '0' ? '' : rd.range_year
-                            self.letter.range_month =
-                                rd.range_month == '0' ? '' : rd.range_month
-                            self.letter.range_day =
-                                rd.range_day == '0' ? '' : rd.range_day
-
-                            if (manifestation != '') {
-                                manifestation = self.manifestations.find(
-                                    man => man.value === manifestation
-                                )
-                                self.$set(
-                                    self.letter,
-                                    'ms_manifestation',
-                                    manifestation
-                                )
-                            }
-
-                            if (documentTypes === null || documentTypes == '') {
-                                self.$set(self.letter, 'document_type', {})
-                                self.$set(self.letter, 'preservation', {})
-                                self.$set(self.letter, 'copy', {})
-                            } else {
-                                let documentTypesData = arrayToSingleObject(
-                                    JSON.parse(documentTypes)
-                                )
-                                self.$set(self.letter, 'document_type', {
-                                    label: documentTypesData.type,
-                                    value: documentTypesData.type,
-                                })
-                                self.$set(self.letter, 'preservation', {
-                                    label: documentTypesData.preservation,
-                                    value: documentTypesData.preservation,
-                                })
-                                self.$set(self.letter, 'copy', {
-                                    label: documentTypesData.copy,
-                                    value: documentTypesData.copy,
-                                })
-                            }
-
-                            self.$set(
-                                self.letter,
-                                'author',
-                                self.getPersonMeta(authors, rd.authors_meta)
-                            )
-
-                            self.$set(
-                                self.letter,
-                                'recipient',
-                                self.getPersonMeta(recipients, rd.authors_meta)
-                            )
-
-                            self.$set(
-                                self.letter,
-                                'origin',
-                                self.getPlaceMeta(origin, rd.places_meta)
-                            )
-
-                            self.$set(
-                                self.letter,
-                                'destination',
-                                self.getPlaceMeta(destination, rd.places_meta)
-                            )
-
-                            if (languages != '') {
-                                languages = languages.split(';')
-                                for (
-                                    let index = 0; index < languages.length; index++
-                                ) {
-                                    self.letter.languages.push({
-                                        label: languages[index],
-                                        value: languages[index],
-                                    })
-                                }
-                            }
-
-                            self.letter.related_resources =
-                                rd.related_resources === null ||
-                                rd.related_resources.length === 0 ?
-                                [{}] :
-                                self.parseResources(rd.related_resources)
-
-                            if (!Array.isArray(mentioned)) {
-                                for (var key in mentioned) {
-                                    self.letter.mentioned.push({
-                                        label: mentioned[key],
-                                        value: key,
-                                    })
-                                }
-                            }
-
-                            if (!Array.isArray(keywords)) {
-                                for (var kw in keywords) {
-                                    self.letter.keywords.push({
-                                        label: keywords[kw],
-                                        value: kw,
-                                    })
-                                }
-                            }
-
-                            self.title = rd.name
+                            return
                         }
+                        let rd = response.data
+
+                        let authors = JSON.parse(JSON.stringify(rd.l_author))
+                        authors = Object.keys(authors)
+
+                        let recipients = JSON.parse(
+                            JSON.stringify(rd.recipient)
+                        )
+                        recipients = Object.keys(recipients)
+
+                        let origin = rd.origin
+                        origin = Object.keys(origin)
+
+                        let destination = rd.dest
+                        destination = Object.keys(destination)
+
+                        let mentioned = rd.people_mentioned
+                        let manifestation = rd.ms_manifestation
+                        let languages = rd.languages
+                        let keywords = rd.keywords
+                        let documentTypes = rd.document_type
+
+                        self.letter = rd
+
+                        self.$set(self.letter, 'languages', []) // must set reactive data again
+                        self.$set(self.letter, 'keywords', [])
+                        self.$set(self.letter, 'mentioned', [])
+
+                        self.letter.date_year =
+                            rd.date_year == '0' ? '' : rd.date_year
+                        self.letter.date_month =
+                            rd.date_month == '0' ? '' : rd.date_month
+                        self.letter.date_day =
+                            rd.date_day == '0' ? '' : rd.date_day
+                        self.letter.range_year =
+                            rd.range_year == '0' ? '' : rd.range_year
+                        self.letter.range_month =
+                            rd.range_month == '0' ? '' : rd.range_month
+                        self.letter.range_day =
+                            rd.range_day == '0' ? '' : rd.range_day
+
+                        if (manifestation != '') {
+                            manifestation = self.manifestations.find(
+                                man => man.value === manifestation
+                            )
+                            self.$set(
+                                self.letter,
+                                'ms_manifestation',
+                                manifestation
+                            )
+                        }
+
+                        if (documentTypes === null || documentTypes == '') {
+                            self.$set(self.letter, 'document_type', {})
+                            self.$set(self.letter, 'preservation', {})
+                            self.$set(self.letter, 'copy', {})
+                        } else {
+                            let documentTypesData = arrayToSingleObject(
+                                JSON.parse(documentTypes)
+                            )
+                            self.$set(self.letter, 'document_type', {
+                                label: documentTypesData.type,
+                                value: documentTypesData.type,
+                            })
+                            self.$set(self.letter, 'preservation', {
+                                label: documentTypesData.preservation,
+                                value: documentTypesData.preservation,
+                            })
+                            self.$set(self.letter, 'copy', {
+                                label: documentTypesData.copy,
+                                value: documentTypesData.copy,
+                            })
+                        }
+
+                        self.$set(
+                            self.letter,
+                            'author',
+                            self.getPersonMeta(authors, rd.authors_meta)
+                        )
+
+                        self.$set(
+                            self.letter,
+                            'recipient',
+                            self.getPersonMeta(recipients, rd.authors_meta)
+                        )
+
+                        self.$set(
+                            self.letter,
+                            'origin',
+                            self.getPlaceMeta(origin, rd.places_meta)
+                        )
+
+                        self.$set(
+                            self.letter,
+                            'destination',
+                            self.getPlaceMeta(destination, rd.places_meta)
+                        )
+
+                        if (languages != '') {
+                            languages = languages.split(';')
+                            for (
+                                let index = 0; index < languages.length; index++
+                            ) {
+                                self.letter.languages.push({
+                                    label: languages[index],
+                                    value: languages[index],
+                                })
+                            }
+                        }
+
+                        self.letter.related_resources =
+                            rd.related_resources === null ||
+                            rd.related_resources.length === 0 ?
+                            [{}] :
+                            self.parseResources(rd.related_resources)
+
+                        if (!Array.isArray(mentioned)) {
+                            for (var key in mentioned) {
+                                self.letter.mentioned.push({
+                                    label: mentioned[key],
+                                    value: key,
+                                })
+                            }
+                        }
+
+                        if (!Array.isArray(keywords)) {
+                            for (var kw in keywords) {
+                                self.letter.keywords.push({
+                                    label: keywords[kw],
+                                    value: kw,
+                                })
+                            }
+                        }
+
+                        self.title = rd.name
                     })
                     .catch(function(error) {
                         console.log(error)

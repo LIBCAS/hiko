@@ -1,4 +1,4 @@
-/* global Vue Swal axios ajaxUrl */
+/* global Vue Swal axios ajaxUrl decodeHTML */
 
 const locationSwal = {
     saveSuccess: {
@@ -96,17 +96,14 @@ if (document.getElementById('repository')) {
                 swalConfig.preConfirm = value => {
                     return axios
                         .post(
-                            ajaxUrl + '?action=insert_location_data',
-                            {
+                            ajaxUrl + '?action=insert_location_data', {
                                 ['type']: type,
                                 ['item']: value,
                                 ['action']: action,
                                 ['id']: id,
-                            },
-                            {
+                            }, {
                                 headers: {
-                                    'Content-Type':
-                                        'application/json;charset=utf-8',
+                                    'Content-Type': 'application/json;charset=utf-8',
                                 },
                             }
                         )
@@ -137,19 +134,17 @@ if (document.getElementById('repository')) {
 
             deleteLocationItem: function(name, id, callback) {
                 let swalConfig = locationSwal.confirmDelete
-                swalConfig.text = name
+                swalConfig.text = decodeHTML(name)
+
                 Swal.fire(swalConfig).then(result => {
                     if (result.value) {
                         axios
                             .post(
-                                ajaxUrl + '?action=delete_location_data',
-                                {
+                                ajaxUrl + '?action=delete_location_data', {
                                     ['id']: id,
-                                },
-                                {
+                                }, {
                                     headers: {
-                                        'Content-Type':
-                                            'application/json;charset=utf-8',
+                                        'Content-Type': 'application/json;charset=utf-8',
                                     },
                                 }
                             )

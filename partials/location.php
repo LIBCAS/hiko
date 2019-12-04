@@ -10,7 +10,7 @@
         <h3>Instituce / repozitáře</h3>
 
         <button @click="insertItem('repository', 'Nový repozitář', 'add', null)" type="button" class="btn btn-primary btn-sm my-2">
-          Přidat novou instituci
+            Přidat novou instituci
         </button>
 
         <table class="table-sm table-bordered table-hover table-striped mt-3">
@@ -32,7 +32,7 @@
                             </li>
                         </ul>
                     </td>
-                    <td>{{ rep.name }}</td>
+                    <td v-html="rep.name"></td>
                 </tr>
             </tbody>
         </table>
@@ -44,7 +44,7 @@
         <h3>Sbírky / fondy</h3>
 
         <button @click="insertItem('collection', 'Nová sbírka', 'add', null)" type="button" class="btn btn-primary btn-sm my-2">
-          Přidat novou sbírku
+            Přidat novou sbírku
         </button>
 
         <table class="table-sm table-bordered table-hover table-striped mt-3">
@@ -78,7 +78,7 @@
         <h3>Archivy</h3>
 
         <button @click="insertItem('archive', 'Nový archiv', 'add', null)" type="button" class="btn btn-primary btn-sm my-2">
-          Přidat nový archiv
+            Přidat nový archiv
         </button>
 
         <table class="table-sm table-bordered table-hover table-striped mt-3">

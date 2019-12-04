@@ -31,11 +31,27 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                 </fieldset>
 
+                <fieldset v-if="type == 'institution'">
+                    <div class="form-group required">
+                        <label for="surname">Institution name</label>
+                        <input
+                        :value="decodeHTML(lastName)"
+                        @input="lastName"
+                        type="text"
+                        class="form-control form-control-sm"
+                        name="surname" required
+                        >
+                    </div>
+                </fieldset>
+
                 <fieldset v-if="type == 'person'">
                     <div class="form-group required">
                         <label for="surname">Surname</label>
                         <input v-model="lastName" type="text" class="form-control form-control-sm" name="surname" required>
                     </div>
+                </fieldset>
+
+                <fieldset v-show="type == 'person'">
                     <div class="form-group">
                         <label for="first_name">Forename</label>
                         <input v-model="firstName" type="text" class="form-control form-control-sm" name="forename">
@@ -80,13 +96,6 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                 </fieldset>
 
-                <fieldset v-if="type == 'institution'">
-                    <div class="form-group required">
-                        <label for="surname">Institution name</label>
-                        <input v-model="lastName" type="text" class="form-control form-control-sm" name="surname" required>
-                    </div>
-                </fieldset>
-
                 <fieldset>
                     <div class="form-group">
                         <label for="emlo">Emlo ID</label>
@@ -101,7 +110,7 @@ if (array_key_exists('save_post', $_POST)) {
                 <strong v-if="alternativeNames.length">Name as marked</strong>
                 <ul class="list-unstyled">
                     <li v-for="(name, index) in alternativeNames" :key="index">
-                        {{ name }}
+                        <span v-html="name"></span>
                     </li>
                 </ul>
 

@@ -60,30 +60,30 @@ $path = $pods_types['path'];
         </span>
 
         <span slot="author" slot-scope="props">
-            <span v-if="!Array.isArray(props.row.author)">{{ props.row.author }}</span>
+            <span v-if="!Array.isArray(props.row.author)" v-html="props.row.author"></span>
             <ul v-else class="list-unstyled">
-                <li v-for="author in props.row.author"> {{ author }}</li>
+                <li v-for="author in props.row.author" v-html="author"></li>
             </ul>
         </span>
 
         <span slot="recipient" slot-scope="props">
-            <span v-if="!Array.isArray(props.row.recipient)">{{ props.row.recipient }}</span>
+            <span v-if="!Array.isArray(props.row.recipient)" v-html="props.row.recipient"></span>
             <ul v-else class="list-unstyled">
-                <li v-for="recipient in props.row.recipient"> {{ recipient }}</li>
+                <li v-for="recipient in props.row.recipient" v-html="recipient"></li>
             </ul>
         </span>
 
         <span slot="origin" slot-scope="props">
-            <span v-if="!Array.isArray(props.row.origin)">{{ props.row.origin }}</span>
+            <span v-if="!Array.isArray(props.row.origin)" v-html="props.row.origin"></span>
             <ul v-else class="list-unstyled">
-                <li v-for="o in props.row.origin"> {{ o }}</li>
+                <li v-for="o in props.row.origin" v-html="o"></li>
             </ul>
         </span>
 
         <span slot="dest" slot-scope="props">
-            <span v-if="!Array.isArray(props.row.dest)">{{ props.row.dest }}</span>
+            <span v-if="!Array.isArray(props.row.dest)" v-html="props.row.dest"></span>
             <ul v-else class="list-unstyled">
-                <li v-for="d in props.row.dest"> {{ d }}</li>
+                <li v-for="d in props.row.dest" v-html="d"></li>
             </ul>
         </span>
 

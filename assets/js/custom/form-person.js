@@ -1,4 +1,4 @@
-/* global Vue axios ajaxUrl getLetterType */
+/* global Vue axios ajaxUrl getLetterType decodeHTML */
 
 if (document.getElementById('person-name')) {
     new Vue({
@@ -66,6 +66,10 @@ if (document.getElementById('person-name')) {
         methods: {
             capitalize: function(str) {
                 return str.charAt(0).toUpperCase() + str.slice(1)
+            },
+
+            decodeHTML: function(str) {
+                return decodeHTML(str)
             },
 
             getInitialData: function(id) {
