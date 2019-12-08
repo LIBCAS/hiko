@@ -424,7 +424,7 @@ function merge_unique($array1, $array2)
 }
 
 
-function get_letters_basic_meta($letter_type, $person_type, $place_type)
+function get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
 {
     global $wpdb;
 
@@ -458,6 +458,11 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type)
 
     $fields = implode(', ', $fields);
 
+    $draft_condition = '';
+    if (!$draft) {
+        $draft_condition = 'WHERE t.status = \'publish\'';
+    }
+
     $query = "
     SELECT
     {$fields}
@@ -478,6 +483,7 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type)
     LEFT JOIN {$r_prefix} AS rel_dest ON rel_dest.field_id = {$dest_field_id}
     AND rel_dest.item_id = t.id
     LEFT JOIN {$pl_prefix} AS dest ON dest.id = rel_dest.related_item_id
+    {$draft_condition}
     ORDER BY
     t.created DESC,
     t.name,
@@ -520,6 +526,7 @@ function flatten_duplicate_letters($duplicate_ids, $data)
         $single_letter = [
             'id' => '',
             'signature' => '',
+            'status' => '',
             'date_day' => '',
             'date_month' => '',
             'date_year' => '',
@@ -541,6 +548,7 @@ function flatten_duplicate_letters($duplicate_ids, $data)
             if ($i == 0) {
                 $single_letter['id'] = $duplicite_objects[$i]->id;
                 $single_letter['signature'] = $duplicite_objects[$i]->signature;
+                $single_letter['status'] = $duplicite_objects[$i]->signature;
                 $single_letter['date_day'] = $duplicite_objects[$i]->date_day;
                 $single_letter['date_month'] = $duplicite_objects[$i]->date_month;
                 $single_letter['date_year'] = $duplicite_objects[$i]->date_year;
@@ -567,9 +575,9 @@ function flatten_duplicate_letters($duplicate_ids, $data)
 }
 
 
-function get_letters_basic_meta_filtered($letter_type, $person_type, $place_type)
+function get_letters_basic_meta_filtered($letter_type, $person_type, $place_type, $draft = true)
 {
-    $q_results = get_letters_basic_meta($letter_type, $person_type, $place_type);
+    $q_results = get_letters_basic_meta($letter_type, $person_type, $place_type, $draft);
 
     $letters_duplicate_ids = get_duplicities_by_id($q_results);
 

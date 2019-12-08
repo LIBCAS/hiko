@@ -47,6 +47,25 @@ function list_all_letters_short()
 add_action('wp_ajax_list_all_letters_short', 'list_all_letters_short');
 
 
+function public_list_all_letters()
+{
+    $type = test_input($_GET['type']);
+    $types = get_hiko_post_types($type);
+
+    $letters = get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place'], false);
+
+    $json_letters = json_encode(
+        $letters,
+        JSON_UNESCAPED_UNICODE
+    );
+
+    header('Content-Type: application/json');
+    wp_die($json_letters);
+}
+add_action('wp_ajax_nopriv_public_list_all_letters', 'public_list_all_letters');
+add_action('wp_ajax_public_list_all_letters', 'public_list_all_letters');
+
+
 function list_public_letters_single()
 {
     $results = [];
