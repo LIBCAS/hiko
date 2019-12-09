@@ -1,4 +1,4 @@
-/* global Vue VueTables Swal axios ajaxUrl defaultTablesOptions getLetterType removeItemAjax removeElFromArr getCustomSorting getTimestampFromDate */
+/* global Vue VueTables Swal axios ajaxUrl defaultTablesOptions getLetterType removeItemAjax removeElFromArr getCustomSorting getTimestampFromDate isString */
 
 var columns
 
@@ -65,15 +65,11 @@ if (document.getElementById('datatable-letters')) {
         },
         mounted: function() {
             let letterTypes = getLetterType()
-            if (
-                typeof letterTypes === 'string' ||
-                letterTypes instanceof String
-            ) {
+            if (isString(letterTypes)) {
                 self.error = letterTypes
                 return
-            } else {
-                this.path = letterTypes['path']
             }
+            this.path = letterTypes['path']
 
             this.getData()
         },
@@ -182,10 +178,7 @@ if (document.getElementById('datatable-persons')) {
         mounted: function() {
             let letterTypes = getLetterType()
 
-            if (
-                typeof letterTypes === 'string' ||
-                letterTypes instanceof String
-            ) {
+            if (isString(letterTypes)) {
                 self.error = letterTypes
                 return
             }
@@ -300,15 +293,12 @@ if (document.getElementById('datatable-places')) {
         },
         mounted: function() {
             let letterTypes = getLetterType()
-            if (
-                typeof letterTypes === 'string' ||
-                letterTypes instanceof String
-            ) {
+            if (isString(letterTypes)) {
                 self.error = letterTypes
                 return
-            } else {
-                this.path = letterTypes['path']
             }
+
+            this.path = letterTypes['path']
         },
         methods: {
             deletePlace: function(id) {

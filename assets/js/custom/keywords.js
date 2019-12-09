@@ -1,4 +1,4 @@
-/* global Vue VueTables defaultTablesOptions getLetterType removeItemAjax axios Swal ajaxUrl */
+/* global Vue VueTables defaultTablesOptions getLetterType removeItemAjax axios Swal ajaxUrl isString */
 
 const keywordsSwal = {
     confirmSave: {
@@ -62,10 +62,7 @@ if (document.getElementById('datatable-keywords')) {
 
         mounted: function() {
             let letterTypes = getLetterType()
-            if (
-                typeof letterTypes === 'string' ||
-                letterTypes instanceof String
-            ) {
+            if (isString(letterTypes)) {
                 self.error = letterTypes
                 return
             }
@@ -80,8 +77,8 @@ if (document.getElementById('datatable-keywords')) {
                 axios
                     .get(
                         ajaxUrl +
-                            '?action=keywords_table_data&type=' +
-                            self.type
+                        '?action=keywords_table_data&type=' +
+                        self.type
                     )
                     .then(function(response) {
                         self.tableData = response.data
@@ -130,18 +127,15 @@ if (document.getElementById('datatable-keywords')) {
 
                     return axios
                         .post(
-                            ajaxUrl + '?action=insert_keyword',
-                            {
+                            ajaxUrl + '?action=insert_keyword', {
                                 ['type']: type,
                                 ['nameen']: nameen,
                                 ['namecz']: namecz,
                                 ['action']: action,
                                 ['id']: id,
-                            },
-                            {
+                            }, {
                                 headers: {
-                                    'Content-Type':
-                                        'application/json;charset=utf-8',
+                                    'Content-Type': 'application/json;charset=utf-8',
                                 },
                             }
                         )

@@ -1,4 +1,4 @@
-/* global Vue axios ajaxUrl homeUrl getLetterType getObjectValues getNameById arrayToSingleObject decodeHTML */
+/* global Vue axios ajaxUrl homeUrl getLetterType getObjectValues getNameById arrayToSingleObject decodeHTML isString */
 
 if (document.getElementById('letter-form')) {
     new Vue({
@@ -297,10 +297,7 @@ if (document.getElementById('letter-form')) {
             let self = this
             let url = new URL(window.location.href)
             let letterTypes = getLetterType()
-            if (
-                typeof letterTypes === 'string' ||
-                letterTypes instanceof String
-            ) {
+            if (isString(letterTypes)) {
                 self.error = letterTypes
                 self.loading = false
                 return

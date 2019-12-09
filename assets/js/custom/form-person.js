@@ -1,4 +1,4 @@
-/* global Vue axios ajaxUrl getLetterType decodeHTML */
+/* global Vue axios ajaxUrl getLetterType decodeHTML isString */
 
 if (document.getElementById('person-name')) {
     new Vue({
@@ -25,14 +25,9 @@ if (document.getElementById('person-name')) {
                     return this.lastName.trim()
                 }
 
-                let fullName
+                let fullName = this.capitalize(this.lastName).trim()
                 if (this.firstName.length > 0) {
-                    fullName =
-                        this.capitalize(this.lastName).trim() +
-                        ', ' +
-                        this.capitalize(this.firstName).trim()
-                } else {
-                    fullName = this.capitalize(this.lastName).trim()
+                    fullName += ', ' + this.capitalize(this.firstName).trim()
                 }
 
                 return fullName.trim()
@@ -47,10 +42,7 @@ if (document.getElementById('person-name')) {
 
         mounted: function() {
             let letterTypes = getLetterType()
-            if (
-                typeof letterTypes === 'string' ||
-                letterTypes instanceof String
-            ) {
+            if (isString(letterTypes)) {
                 self.error = letterTypes
                 return
             }

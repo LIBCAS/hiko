@@ -1,4 +1,4 @@
-/* global Vue ajaxUrl getLetterType */
+/* global Vue ajaxUrl getLetterType isString */
 
 if (document.getElementById('export')) {
     new Vue({
@@ -10,24 +10,18 @@ if (document.getElementById('export')) {
         },
         computed: {
             actions: function() {
-                return [
-                    {
-                        url:
-                            ajaxUrl +
-                            '?action=export_letters&type=' +
-                            this.path,
-                        title: 'Všechny dopisy bez obrázků',
-                    },
-                ]
+                return [{
+                    url: ajaxUrl +
+                        '?action=export_letters&type=' +
+                        this.path,
+                    title: 'Všechny dopisy bez obrázků',
+                }, ]
             },
         },
         mounted: function() {
             let self = this
             let letterTypes = getLetterType()
-            if (
-                typeof letterTypes === 'string' ||
-                letterTypes instanceof String
-            ) {
+            if (isString(letterTypes)) {
                 self.error = letterTypes
             } else {
                 self.path = letterTypes['path']

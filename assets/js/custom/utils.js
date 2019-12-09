@@ -263,3 +263,10 @@ function decodeHTML(str) {
     txt.innerHTML = str
     return txt.value
 }
+
+function isString(data) {
+    if (typeof data === 'string' || data instanceof String) {
+        return true
+    }
+    return false
+}

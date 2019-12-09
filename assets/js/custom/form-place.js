@@ -1,4 +1,4 @@
-/* global Vue axios ajaxUrl getLetterType getGeoCoord */
+/* global Vue axios ajaxUrl getLetterType getGeoCoord isString */
 
 if (document.getElementById('places-form')) {
     new Vue({
@@ -27,15 +27,13 @@ if (document.getElementById('places-form')) {
         },
         mounted: function() {
             let letterTypes = getLetterType()
-            if (
-                typeof letterTypes === 'string' ||
-                letterTypes instanceof String
-            ) {
+            if (isString(letterTypes)) {
                 self.error = letterTypes
                 return
-            } else {
-                this.placeType = letterTypes['placeType']
             }
+
+            this.placeType = letterTypes['placeType']
+
             let url = new URL(window.location.href)
             if (url.searchParams.get('edit')) {
                 this.getInitialData(url.searchParams.get('edit'))
@@ -55,10 +53,10 @@ if (document.getElementById('places-form')) {
                 axios
                     .get(
                         ajaxUrl +
-                            '?action=list_place_single&pods_id=' +
-                            id +
-                            '&type=' +
-                            self.placeType
+                        '?action=list_place_single&pods_id=' +
+                        id +
+                        '&type=' +
+                        self.placeType
                     )
                     .then(function(response) {
                         self.place = response.data.name
