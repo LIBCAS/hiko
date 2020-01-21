@@ -104,22 +104,25 @@ if (document.getElementById('letter-form')) {
                 let data = []
 
                 data.push({
-                    type: docType !== null && docType.hasOwnProperty('value') ?
-                        docType.value :
-                        '',
+                    type:
+                        docType !== null && docType.hasOwnProperty('value')
+                            ? docType.value
+                            : '',
                 })
 
                 data.push({
-                    preservation: preservation !== null &&
-                        preservation.hasOwnProperty('value') ?
-                        preservation.value :
-                        '',
+                    preservation:
+                        preservation !== null &&
+                        preservation.hasOwnProperty('value')
+                            ? preservation.value
+                            : '',
                 })
 
                 data.push({
-                    copy: docCopy !== null && docCopy.hasOwnProperty('value') ?
-                        docCopy.value :
-                        '',
+                    copy:
+                        docCopy !== null && docCopy.hasOwnProperty('value')
+                            ? docCopy.value
+                            : '',
                 })
 
                 return JSON.stringify(data)
@@ -210,23 +213,30 @@ if (document.getElementById('letter-form')) {
             },
 
             placesMeta: function() {
-                let origins = JSON.parse(JSON.stringify(this.letter.origin))
-                let destinations = JSON.parse(
-                    JSON.stringify(this.letter.destination)
-                )
+                let self = this
+
+                let origins = self.cleanCopy(self.letter.origin)
+
+                let destinations = self.cleanCopy(self.letter.destination)
 
                 let merged = []
 
                 origins.forEach(item => {
-                    item = JSON.parse(JSON.stringify(item))
-                    item.id = item.id.value
-                    merged.push(item)
+                    item = self.cleanCopy(item)
+                    merged.push({
+                        id: item.id.value,
+                        marked: item.marked,
+                        type: 'origin',
+                    })
                 })
 
                 destinations.forEach(item => {
-                    item = JSON.parse(JSON.stringify(item))
-                    item.id = item.id.value
-                    merged.push(item)
+                    item = self.cleanCopy(item)
+                    merged.push({
+                        id: item.id.value,
+                        marked: item.marked,
+                        type: 'destination',
+                    })
                 })
 
                 return JSON.stringify(merged)
@@ -339,6 +349,10 @@ if (document.getElementById('letter-form')) {
         },
 
         methods: {
+            cleanCopy(obj) {
+                return JSON.parse(JSON.stringify(obj))
+            },
+
             validateForm(e) {
                 this.formChanged = true
                 this.$validator.validate().then(valid => {
@@ -420,15 +434,15 @@ if (document.getElementById('letter-form')) {
             getInitialData: function() {
                 let self = this
 
-                let id = self.letterID
+                let url =
+                    ajaxUrl +
+                    '?action=list_public_letters_single&pods_id=' +
+                    self.letterID +
+                    '&l_type=' +
+                    self.letterType
+
                 axios
-                    .get(
-                        ajaxUrl +
-                        '?action=list_public_letters_single&pods_id=' +
-                        id +
-                        '&l_type=' +
-                        self.letterType
-                    )
+                    .get(url)
                     .then(function(response) {
                         if (response.data == '404') {
                             self.error = true
@@ -436,12 +450,11 @@ if (document.getElementById('letter-form')) {
                         }
                         let rd = response.data
 
-                        let authors = JSON.parse(JSON.stringify(rd.l_author))
+                        let authors = self.cleanCopy(rd.l_author)
                         authors = Object.keys(authors)
 
-                        let recipients = JSON.parse(
-                            JSON.stringify(rd.recipient)
-                        )
+                        let recipients = self.cleanCopy(rd.recipient)
+
                         recipients = Object.keys(recipients)
 
                         let origin = rd.origin
@@ -523,19 +536,25 @@ if (document.getElementById('letter-form')) {
                         self.$set(
                             self.letter,
                             'origin',
-                            self.getPlaceMeta(origin, rd.places_meta)
+                            self.getPlaceMeta(origin, rd.places_meta, 'origin')
                         )
 
                         self.$set(
                             self.letter,
                             'destination',
-                            self.getPlaceMeta(destination, rd.places_meta)
+                            self.getPlaceMeta(
+                                destination,
+                                rd.places_meta,
+                                'destination'
+                            )
                         )
 
                         if (languages != '') {
                             languages = languages.split(';')
                             for (
-                                let index = 0; index < languages.length; index++
+                                let index = 0;
+                                index < languages.length;
+                                index++
                             ) {
                                 self.letter.languages.push({
                                     label: languages[index],
@@ -546,9 +565,9 @@ if (document.getElementById('letter-form')) {
 
                         self.letter.related_resources =
                             rd.related_resources === null ||
-                            rd.related_resources.length === 0 ?
-                            [{}] :
-                            self.parseResources(rd.related_resources)
+                            rd.related_resources.length === 0
+                                ? [{}]
+                                : self.parseResources(rd.related_resources)
 
                         if (!Array.isArray(mentioned)) {
                             for (var key in mentioned) {
@@ -632,8 +651,8 @@ if (document.getElementById('letter-form')) {
                 axios
                     .get(
                         ajaxUrl +
-                        '?action=keywords_table_data&type=' +
-                        self.keywordType
+                            '?action=keywords_table_data&type=' +
+                            self.keywordType
                     )
                     .then(function(response) {
                         let keywords = response.data
@@ -689,10 +708,11 @@ if (document.getElementById('letter-form')) {
                 this.letter[type].push({
                     id: {},
                     marked: '',
-                    key: type +
+                    key:
+                        type +
                         Math.random()
-                        .toString(36)
-                        .substring(7),
+                            .toString(36)
+                            .substring(7),
                     // random key for forcing Vue to update list while removing PlaceMeta
                 })
             },
@@ -703,32 +723,46 @@ if (document.getElementById('letter-form')) {
                     id: {},
                     marked: '',
                     salutation: '',
-                    key: type +
+                    key:
+                        type +
                         Math.random()
-                        .toString(36)
-                        .substring(7),
+                            .toString(36)
+                            .substring(7),
                     // random key for forcing Vue to update list while removing PersonMeta
                 })
             },
 
-            getPlaceMeta: function(ids, allMeta) {
+            getPlaceMeta: function(ids, allMeta, type) {
                 if (ids.length == 0) {
                     return []
                 }
 
                 let self = this
+
                 let result = []
-                allMeta = JSON.parse(JSON.stringify(allMeta))
+
+                allMeta = self.cleanCopy(allMeta)
+                //console.log(allMeta)
+
+                // old way - all origin and destinations meta are not differentiated
+                //
 
                 let l = ids.length
                 for (let index = 0; index < l; index++) {
                     let placesObj = self.placesData.find(
                         place => place.value === ids[index]
                     )
-                    let placeData = allMeta.find(m => m.id === ids[index])
+
+                    let placeData = allMeta.find(meta => {
+                        if (meta.hasOwnProperty('type')) {
+                            return meta.id === ids[index] && meta.type === type
+                        }
+
+                        return meta.id === ids[index]
+                    })
 
                     let place = {
-                        id: JSON.parse(JSON.stringify(placesObj)),
+                        id: self.cleanCopy(placesObj),
                     }
 
                     if (placeData.hasOwnProperty('marked')) {
