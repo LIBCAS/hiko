@@ -5,12 +5,12 @@
     "author": "Jarka P",
     "license": "MIT",
     "devDependencies": {
-        "@babel/core": "^7.7.4",
-        "@babel/preset-env": "^7.7.4",
-        "@babel/register": "^7.7.4",
+        "@babel/core": "^7.8.3",
+        "@babel/preset-env": "^7.8.3",
+        "@babel/register": "^7.8.3",
         "beepbeep": "^1.3.0",
         "browser-sync": "^2.26.7",
-        "caniuse-lite": "^1.0.30001013",
+        "caniuse-lite": "^1.0.30001022",
         "eslint": "^5.16.0",
         "eslint-plugin-vue": "^5.2.3",
         "gulp": "^4.0.2",
@@ -29,7 +29,7 @@
         "gulp-sourcemaps": "^2.6.5",
         "gulp-uglify": "^3.0.2",
         "gulp-uglifycss": "^1.0.6",
-        "gulp-wp-pot": "^2.3.5"
+        "gulp-wp-pot": "^2.3.6"
     },
     "scripts": {
         "start": "gulp",
