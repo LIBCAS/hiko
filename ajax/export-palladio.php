@@ -28,6 +28,29 @@ function export_palladio_data()
 add_action('wp_ajax_export_palladio', 'export_palladio_data');
 
 
+function export_palladio_masaryk_data()
+{
+    $format = sanitize_text_field($_GET['format']);
+
+    $from = (int) $_GET['from'];
+
+    if ($format != 'csv') {
+        wp_send_json_error('Format not found', 404);
+    }
+
+    $data = get_masaryk_data();
+
+    if ($from == 1) {
+        array_to_csv_download($data['from'], 'export-from-masaryk.csv');
+    } else {
+        array_to_csv_download($data['to'], 'export-to-masaryk.csv');
+    }
+
+    wp_die();
+}
+add_action('wp_ajax_export_palladio_masaryk', 'export_palladio_masaryk_data');
+
+
 function get_palladio_data($type)
 {
     /*
@@ -246,6 +269,53 @@ function parse_palladio_data($query_result)
     }
 
     return $result;
+}
+
+
+function get_masaryk_data()
+{
+    $name = get_masaryk_name();
+
+    if (!$name) {
+        return false;
+    }
+
+    $results = [
+        'from' => [],
+        'to' => [],
+    ];
+
+    $letters = get_palladio_data('tgm');
+
+    foreach ($letters as $l) {
+        if ($l['Name (A)'] == $name) {
+            $results['from'][] = $l;
+        } elseif ($l['Name (R)'] == $name) {
+            $results['to'][] = $l;
+        }
+    }
+
+    return $results;
+}
+
+
+function get_masaryk_name()
+{
+    $fields = implode(', ', [
+        't.forename',
+        't.id',
+        't.surname',
+    ]);
+
+    $data = pods(
+        'tgm_person',
+        [
+            'select' => $fields,
+            'where' => 't.id = ' . MASARYK_ID,
+        ]
+    );
+
+    return trim($data->display('forename') . ' '. $data->display('surname'));
 }
 
 
