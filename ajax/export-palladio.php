@@ -134,12 +134,14 @@ function get_palladio_data($type)
     $query_result = $wpdb->get_results($query, ARRAY_A);
 
     $data = parse_palladio_data($query_result);
+
     $order_keys = [
-        'First name (A)', 'Last Name (A)', 'Gender (A)', 'Nationality (A)', 'Age (A)', 'Profession (A)',
-        'First name (R)', 'Last name (R)', 'Gender (R)', 'Nationality (R)', 'Age (R)', 'Profession (R)',
+        'Name (A)', 'Gender (A)', 'Nationality (A)', 'Age (A)', 'Profession (A)',
+        'Name (R)', 'Gender (R)', 'Nationality (R)', 'Age (R)', 'Profession (R)',
         'Date of dispatch', 'Place of dispatch', 'Place of dispatch (coordinates)', 'Place of arrival',
         'Place of arrival (coordinates)', 'Languages', 'Keywords'
     ];
+
     $ordered_data = [];
 
     $index = 0;
@@ -161,12 +163,8 @@ function parse_palladio_data($query_result)
     $result = [];
 
     $to_flat_fields = [
-        'a_surname' => 'Last Name (A)',
-        'a_forename' => 'First name (A)',
         'a_nationality' => 'Nationality (A)',
         'a_gender' => 'Gender (A)',
-        'r_surname' => 'Last name (R)',
-        'r_forename' => 'First name (R)',
         'r_nationality' => 'Nationality (R)',
         'r_gender' => 'Gender (R)',
         'o_name' => 'Place of dispatch',
@@ -203,6 +201,9 @@ function parse_palladio_data($query_result)
         } elseif (strlen($row['d_latitude']) != 0 && strlen($row['d_longitude'] != 0)) {
             $result[$index]['Place of arrival (coordinates)'] = $row['d_latitude'] . ', ' . $row['d_longitude'];
         }
+
+        $result[$index]['Name (A)'] = trim("{$row['a_forename']} {$row['a_surname']}");
+        $result[$index]['Name (R)'] = trim("{$row['r_forename']} {$row['r_surname']}");
 
         $result[$index]['Age (A)'] = '';
         if (is_array($row['a_birth_year']) && $row['a_birth_year'][0] != 0 && $row['date_year'] != 0) {

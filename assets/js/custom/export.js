@@ -10,22 +10,29 @@ if (document.getElementById('export')) {
         },
         computed: {
             actions: function() {
-                return [{
-                    url: ajaxUrl +
-                        '?action=export_letters&type=' +
-                        this.path,
-                    title: 'Všechny dopisy bez obrázků',
-                }, ]
+                return [
+                    {
+                        url:
+                            ajaxUrl +
+                            '?action=export_palladio&type=' +
+                            this.path +
+                            '&format=csv',
+                        title: 'Palladio',
+                    },
+                ]
             },
         },
         mounted: function() {
             let self = this
+
             let letterTypes = getLetterType()
+
             if (isString(letterTypes)) {
                 self.error = letterTypes
             } else {
                 self.path = letterTypes['path']
             }
+
             return
         },
     })
