@@ -190,21 +190,22 @@ if (document.getElementById('letter-form')) {
             },
 
             participantsMeta() {
-                let authorsMeta = JSON.parse(JSON.stringify(this.letter.author)) // copy without vue getters and setters
-                let recipientsMeta = JSON.parse(
-                    JSON.stringify(this.letter.recipient)
-                )
+                let self = this
+
+                let authorsMeta = self.cleanCopy(this.letter.author)
+
+                let recipientsMeta = self.cleanCopy(this.letter.recipient)
 
                 let merged = []
 
                 authorsMeta.forEach(item => {
-                    item = JSON.parse(JSON.stringify(item))
+                    item = self.cleanCopy(item)
                     item.id = item.id.value
                     merged.push(item)
                 })
 
                 recipientsMeta.forEach(item => {
-                    item = JSON.parse(JSON.stringify(item))
+                    item = self.cleanCopy(item)
                     item.id = item.id.value
                     merged.push(item)
                 })
@@ -307,6 +308,7 @@ if (document.getElementById('letter-form')) {
             let self = this
             let url = new URL(window.location.href)
             let letterTypes = getLetterType()
+
             if (isString(letterTypes)) {
                 self.error = letterTypes
                 self.loading = false
@@ -320,6 +322,7 @@ if (document.getElementById('letter-form')) {
             self.keywordType = letterTypes['keyword']
 
             let edit = url.searchParams.get('edit')
+
             if (edit) {
                 self.letterID = edit
                 self.edit = true
@@ -331,6 +334,7 @@ if (document.getElementById('letter-form')) {
             this.persons = JSON.parse(
                 document.querySelector('#people').innerHTML
             )
+
             this.places = JSON.parse(
                 document.querySelector('#places').innerHTML
             )
@@ -353,6 +357,15 @@ if (document.getElementById('letter-form')) {
                 return JSON.parse(JSON.stringify(obj))
             },
 
+            randomKey(type) {
+                return (
+                    type +
+                    Math.random()
+                        .toString(36)
+                        .substring(7)
+                )
+            },
+
             validateForm(e) {
                 this.formChanged = true
                 this.$validator.validate().then(valid => {
@@ -369,8 +382,8 @@ if (document.getElementById('letter-form')) {
             getTitle: function() {
                 let self = this
                 let letter = self.letter
-                let personMeta = JSON.parse(JSON.stringify(self.persons))
-                let placeMeta = JSON.parse(JSON.stringify(self.places))
+                let personMeta = self.cleanCopy(self.persons)
+                let placeMeta = self.cleanCopy(self.places)
                 let authors = []
                 let recipients = []
                 let origin = []
@@ -380,26 +393,22 @@ if (document.getElementById('letter-form')) {
                 let year = letter.date_year != '' ? letter.date_year : '?'
 
                 for (let i = 0; i < letter.author.length; i++) {
-                    let id = JSON.parse(JSON.stringify(letter.author[i])).id
-                        .value
+                    let id = self.cleanCopy(letter.author[i]).id.value
                     authors.push(getNameById(personMeta, id))
                 }
 
                 for (let i = 0; i < letter.recipient.length; i++) {
-                    let id = JSON.parse(JSON.stringify(letter.recipient[i])).id
-                        .value
+                    let id = self.cleanCopy(letter.recipient[i]).id.value
                     recipients.push(getNameById(personMeta, id))
                 }
 
                 for (let i = 0; i < letter.origin.length; i++) {
-                    let id = JSON.parse(JSON.stringify(letter.origin[i])).id
-                        .value
+                    let id = self.cleanCopy(letter.origin[i]).id.value
                     origin.push(getNameById(placeMeta, id))
                 }
 
                 for (let i = 0; i < letter.destination.length; i++) {
-                    let id = JSON.parse(JSON.stringify(letter.destination[i]))
-                        .id.value
+                    let id = self.cleanCopy(letter.destination[i]).id.value
                     destination.push(getNameById(placeMeta, id))
                 }
 
@@ -411,6 +420,7 @@ if (document.getElementById('letter-form')) {
                 let date = `${day}. ${month}. ${year}`
 
                 let from = `${authors} (${origin})`
+
                 let to = `${recipients} (${destination})`
 
                 return `${date} ${from} to ${to}`
@@ -705,14 +715,11 @@ if (document.getElementById('letter-form')) {
             },
 
             addPlaceMeta: function(type) {
-                this.letter[type].push({
+                let self = this
+                self.letter[type].push({
                     id: {},
                     marked: '',
-                    key:
-                        type +
-                        Math.random()
-                            .toString(36)
-                            .substring(7),
+                    key: self.randomKey,
                     // random key for forcing Vue to update list while removing PlaceMeta
                 })
             },
@@ -723,11 +730,7 @@ if (document.getElementById('letter-form')) {
                     id: {},
                     marked: '',
                     salutation: '',
-                    key:
-                        type +
-                        Math.random()
-                            .toString(36)
-                            .substring(7),
+                    key: self.randomKey,
                     // random key for forcing Vue to update list while removing PersonMeta
                 })
             },
@@ -742,12 +745,9 @@ if (document.getElementById('letter-form')) {
                 let result = []
 
                 allMeta = self.cleanCopy(allMeta)
-                //console.log(allMeta)
-
-                // old way - all origin and destinations meta are not differentiated
-                //
 
                 let l = ids.length
+
                 for (let index = 0; index < l; index++) {
                     let placesObj = self.placesData.find(
                         place => place.value === ids[index]
@@ -784,9 +784,10 @@ if (document.getElementById('letter-form')) {
 
                 let self = this
                 let result = []
-                allMeta = JSON.parse(JSON.stringify(allMeta))
+                allMeta = self.cleanCopy(allMeta)
 
                 let l = ids.length
+
                 for (let index = 0; index < l; index++) {
                     let personObj = self.personsData.find(
                         person => person.value === ids[index]
@@ -794,19 +795,17 @@ if (document.getElementById('letter-form')) {
                     let personData = allMeta.find(m => m.id === ids[index])
 
                     let author = {
-                        id: JSON.parse(JSON.stringify(personObj)),
+                        id: self.cleanCopy(personObj),
                     }
 
+                    author.marked = ''
                     if (personData.hasOwnProperty('marked')) {
                         author.marked = personData.marked
-                    } else {
-                        author.marked = ''
                     }
 
+                    author.salutation = ''
                     if (personData.hasOwnProperty('salutation')) {
                         author.salutation = personData.salutation
-                    } else {
-                        author.salutation = ''
                     }
 
                     result.push(author)

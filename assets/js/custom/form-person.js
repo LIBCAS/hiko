@@ -26,6 +26,7 @@ if (document.getElementById('person-name')) {
                 }
 
                 let fullName = this.capitalize(this.lastName).trim()
+
                 if (this.firstName.length > 0) {
                     fullName += ', ' + this.capitalize(this.firstName).trim()
                 }
@@ -42,6 +43,7 @@ if (document.getElementById('person-name')) {
 
         mounted: function() {
             let letterTypes = getLetterType()
+
             if (isString(letterTypes)) {
                 self.error = letterTypes
                 return
@@ -50,6 +52,7 @@ if (document.getElementById('person-name')) {
             this.personType = letterTypes['personType']
 
             let url = new URL(window.location.href)
+
             if (url.searchParams.get('edit')) {
                 this.getInitialData(url.searchParams.get('edit'))
             }
@@ -69,13 +72,14 @@ if (document.getElementById('person-name')) {
                 axios
                     .get(
                         ajaxUrl +
-                        '?action=list_people_single&pods_id=' +
-                        id +
-                        '&type=' +
-                        self.personType
+                            '?action=list_people_single&pods_id=' +
+                            id +
+                            '&type=' +
+                            self.personType
                     )
                     .then(function(response) {
                         let rd = response.data
+
                         if (rd == '404') {
                             self.error = true
                             return

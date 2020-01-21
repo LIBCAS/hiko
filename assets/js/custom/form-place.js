@@ -13,8 +13,11 @@ if (document.getElementById('places-form')) {
         computed: {
             countries() {
                 let results = []
-                let countries = document.querySelector('#countries').innerHTML
-                countries = JSON.parse(countries)
+
+                let countries = JSON.parse(
+                    document.querySelector('#countries').innerHTML
+                )
+
                 let l = countries.length
                 for (let index = 0; index < l; index++) {
                     results.push({
@@ -27,6 +30,7 @@ if (document.getElementById('places-form')) {
         },
         mounted: function() {
             let letterTypes = getLetterType()
+
             if (isString(letterTypes)) {
                 self.error = letterTypes
                 return
@@ -35,6 +39,7 @@ if (document.getElementById('places-form')) {
             this.placeType = letterTypes['placeType']
 
             let url = new URL(window.location.href)
+
             if (url.searchParams.get('edit')) {
                 this.getInitialData(url.searchParams.get('edit'))
             }
@@ -42,6 +47,7 @@ if (document.getElementById('places-form')) {
         methods: {
             getCoord: function() {
                 let self = this
+
                 getGeoCoord(function(latlng) {
                     let coord = latlng.value.split(',')
                     self.lat = coord[0]
@@ -50,13 +56,14 @@ if (document.getElementById('places-form')) {
             },
             getInitialData: function(id) {
                 let self = this
+
                 axios
                     .get(
                         ajaxUrl +
-                        '?action=list_place_single&pods_id=' +
-                        id +
-                        '&type=' +
-                        self.placeType
+                            '?action=list_place_single&pods_id=' +
+                            id +
+                            '&type=' +
+                            self.placeType
                     )
                     .then(function(response) {
                         self.place = response.data.name

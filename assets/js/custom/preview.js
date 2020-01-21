@@ -74,16 +74,22 @@ if (document.getElementById('letter-preview')) {
         },
 
         methods: {
-            getItemData: function(item, metaJSON) {
+            getItemData: function(item, metaJSON, type = false) {
                 let results = []
+
                 let ids = Object.keys(item)
+
                 let names = Object.values(item)
+
                 metaJSON = JSON.parse(JSON.stringify(metaJSON))
 
                 for (let index = 0; index < ids.length; index++) {
-                    let itemID = ids[index]
                     let find = metaJSON.filter(obj => {
-                        return obj.id === itemID
+                        if (obj.hasOwnProperty('type')) {
+                            return obj.id === ids[index] && obj.type === type
+                        }
+
+                        return obj.id === ids[index]
                     })
                     find[0].title = names[index]
                     results.push(find[0])
@@ -102,8 +108,8 @@ if (document.getElementById('letter-preview')) {
                 }
 
                 docData = JSON.parse(docData)
-                docData = arrayToSingleObject(docData)
-                return docData
+
+                return arrayToSingleObject(docData)
             },
 
             getLetter: function(id) {
@@ -111,18 +117,19 @@ if (document.getElementById('letter-preview')) {
                 axios
                     .get(
                         ajaxUrl +
-                        '?action=list_public_letters_single&pods_id=' +
-                        id +
-                        '&l_type=' +
-                        self.letterType
+                            '?action=list_public_letters_single&pods_id=' +
+                            id +
+                            '&l_type=' +
+                            self.letterType
                     )
                     .then(function(response) {
-                        if (response.data == '404') {
+                        let rd = response.data
+
+                        if (rd == '404') {
                             self.error = true
                             return
                         }
 
-                        let rd = response.data
                         let docTypes = self.parseDocumentTypesData(
                             rd.document_type
                         )
@@ -160,7 +167,8 @@ if (document.getElementById('letter-preview')) {
 
                         self.origin = self.getItemData(
                             rd.origin,
-                            rd.places_meta
+                            rd.places_meta,
+                            'origin'
                         )
                         self.origin_inferred = rd.origin_inferred
                         self.origin_note = rd.origin_note
@@ -168,7 +176,8 @@ if (document.getElementById('letter-preview')) {
 
                         self.destination = self.getItemData(
                             rd.dest,
-                            rd.places_meta
+                            rd.places_meta,
+                            'destination'
                         )
                         self.dest_inferred = rd.dest_inferred
                         self.dest_note = rd.dest_note
@@ -180,9 +189,9 @@ if (document.getElementById('letter-preview')) {
                         self.incipit = rd.incipit
                         self.keywords = Object.values(rd.keywords)
                         self.languages =
-                            rd.languages.length === 0 ?
-                            [] :
-                            rd.languages.split(';')
+                            rd.languages.length === 0
+                                ? []
+                                : rd.languages.split(';')
                         self.notes_public = rd.notes_public
 
                         self.mentioned = Object.values(rd.people_mentioned)
