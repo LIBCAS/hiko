@@ -104,25 +104,22 @@ if (document.getElementById('letter-form')) {
                 let data = []
 
                 data.push({
-                    type:
-                        docType !== null && docType.hasOwnProperty('value')
-                            ? docType.value
-                            : '',
+                    type: docType !== null && docType.hasOwnProperty('value') ?
+                        docType.value :
+                        '',
                 })
 
                 data.push({
-                    preservation:
-                        preservation !== null &&
-                        preservation.hasOwnProperty('value')
-                            ? preservation.value
-                            : '',
+                    preservation: preservation !== null &&
+                        preservation.hasOwnProperty('value') ?
+                        preservation.value :
+                        '',
                 })
 
                 data.push({
-                    copy:
-                        docCopy !== null && docCopy.hasOwnProperty('value')
-                            ? docCopy.value
-                            : '',
+                    copy: docCopy !== null && docCopy.hasOwnProperty('value') ?
+                        docCopy.value :
+                        '',
                 })
 
                 return JSON.stringify(data)
@@ -213,9 +210,6 @@ if (document.getElementById('letter-form')) {
             },
 
             placesMeta: function() {
-                console.log(this.letter.origin)
-                console.log(this.letter.destination)
-
                 let origins = JSON.parse(JSON.stringify(this.letter.origin))
                 let destinations = JSON.parse(
                     JSON.stringify(this.letter.destination)
@@ -430,10 +424,10 @@ if (document.getElementById('letter-form')) {
                 axios
                     .get(
                         ajaxUrl +
-                            '?action=list_public_letters_single&pods_id=' +
-                            id +
-                            '&l_type=' +
-                            self.letterType
+                        '?action=list_public_letters_single&pods_id=' +
+                        id +
+                        '&l_type=' +
+                        self.letterType
                     )
                     .then(function(response) {
                         if (response.data == '404') {
@@ -541,9 +535,7 @@ if (document.getElementById('letter-form')) {
                         if (languages != '') {
                             languages = languages.split(';')
                             for (
-                                let index = 0;
-                                index < languages.length;
-                                index++
+                                let index = 0; index < languages.length; index++
                             ) {
                                 self.letter.languages.push({
                                     label: languages[index],
@@ -554,9 +546,9 @@ if (document.getElementById('letter-form')) {
 
                         self.letter.related_resources =
                             rd.related_resources === null ||
-                            rd.related_resources.length === 0
-                                ? [{}]
-                                : self.parseResources(rd.related_resources)
+                            rd.related_resources.length === 0 ?
+                            [{}] :
+                            self.parseResources(rd.related_resources)
 
                         if (!Array.isArray(mentioned)) {
                             for (var key in mentioned) {
@@ -640,8 +632,8 @@ if (document.getElementById('letter-form')) {
                 axios
                     .get(
                         ajaxUrl +
-                            '?action=keywords_table_data&type=' +
-                            self.keywordType
+                        '?action=keywords_table_data&type=' +
+                        self.keywordType
                     )
                     .then(function(response) {
                         let keywords = response.data
@@ -697,11 +689,10 @@ if (document.getElementById('letter-form')) {
                 this.letter[type].push({
                     id: {},
                     marked: '',
-                    key:
-                        type +
+                    key: type +
                         Math.random()
-                            .toString(36)
-                            .substring(7),
+                        .toString(36)
+                        .substring(7),
                     // random key for forcing Vue to update list while removing PlaceMeta
                 })
             },
@@ -712,11 +703,10 @@ if (document.getElementById('letter-form')) {
                     id: {},
                     marked: '',
                     salutation: '',
-                    key:
-                        type +
+                    key: type +
                         Math.random()
-                            .toString(36)
-                            .substring(7),
+                        .toString(36)
+                        .substring(7),
                     // random key for forcing Vue to update list while removing PersonMeta
                 })
             },
