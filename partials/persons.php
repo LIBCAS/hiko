@@ -33,9 +33,8 @@ $path = $pods_types['path'];
                 ({{ props.row.birth + '–' + props.row.death }})
             </span>
         </span>
-        <ul slot="alternatives" slot-scope="props" class="list-unstyled">
+        <ul v-if="props.row.alternatives" slot="alternatives" slot-scope="props" class="list-unstyled">
             <li v-for="(name, index) in props.row.alternatives" :key="index" v-html="name"></li>
-
             <li v-if="props.row.alternatives.length > 0" >
                 <span class="is-link py-1" @click="removeEmptyNameAlternatives(props.row.id)">
                 <span class="spinner spinner-border spinner-border-sm d-none"></span>
