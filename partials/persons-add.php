@@ -61,7 +61,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="date_year">Birth year</label>
-                                <input v-model="dob" type="number" name="birth_year" class="form-control form-control-sm" max="2020">
+                                <input v-model="dob" type="number" name="birth_year" class="form-control form-control-sm" max="<?= date('Y'); ?>">
                                 <small class="form-text text-muted">
                                     format YYYY, e.g. 1660
                                 </small>
@@ -70,7 +70,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="date_year">Death year</label>
-                                <input v-model="dod" type="number" name="death_year" class="form-control form-control-sm" min="0" max="2030">
+                                <input v-model="dod" type="number" name="death_year" class="form-control form-control-sm" max="<?= date('Y'); ?>">
                                 <small class="form-text text-muted">
                                     format YYYY, e.g. 1660
                                 </small>
