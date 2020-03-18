@@ -371,6 +371,8 @@ function array_to_csv_download($array, $filename = "export.csv", $delimiter = ";
 {
     $f = fopen('php://memory', 'w');
 
+    fputs($f, "\xEF\xBB\xBF");
+
     fputcsv($f, array_keys($array[0]), $delimiter);
 
     foreach ($array as $line) {
