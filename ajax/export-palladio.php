@@ -225,19 +225,28 @@ function parse_palladio_data($query_result)
             $result[$index]['Place of arrival (coordinates)'] = $row['d_latitude'] . ', ' . $row['d_longitude'];
         }
 
-        $result[$index]['Name (A)'] = trim("{$row['a_forename']} {$row['a_surname']}");
-        $result[$index]['Name (R)'] = trim("{$row['r_forename']} {$row['r_surname']}");
+        if (is_array($row['a_surname'])) {
+            $result[$index]['Name (A)'] = trim("{$row['a_forename'][0]} {$row['a_surname'][0]}");
+        } else {
+            $result[$index]['Name (A)'] = trim("{$row['a_forename']} {$row['a_surname']}");
+        }
+
+        if (is_array($row['r_surname'])) {
+            $result[$index]['Name (R)'] = trim("{$row['r_forename'][0]} {$row['r_surname'][0]}");
+        } else {
+            $result[$index]['Name (R)'] = trim("{$row['r_forename']} {$row['r_surname']}");
+        }
 
         $result[$index]['Age (A)'] = '';
         if (is_array($row['a_birth_year']) && $row['a_birth_year'][0] != 0 && $row['date_year'] != 0) {
-            $result[$index]['Age (A)'] = $row['date_year'][0] - $row['a_birth_year'];
+            $result[$index]['Age (A)'] = $row['date_year'] - $row['a_birth_year'][0];
         } elseif (strlen($row['a_birth_year']) != 0 && $row['a_birth_year'][0] != 0 && strlen($row['date_year'] != 0)) {
             $result[$index]['Age (A)'] = $row['date_year'] - $row['a_birth_year'];
         }
 
         $result[$index]['Age (R)'] = '';
         if (is_array($row['r_birth_year']) && $row['r_birth_year'][0] != 0 && $row['date_year'] != 0) {
-            $result[$index]['Age (R)'] = $row['date_year'][0] - $row['r_birth_year'];
+            $result[$index]['Age (R)'] = $row['date_year'] - $row['r_birth_year'][0];
         } elseif (strlen($row['r_birth_year']) != 0  && $row['r_birth_year'][0] != 0 && strlen($row['date_year'] != 0)) {
             $result[$index]['Age (R)'] = $row['date_year'] - $row['r_birth_year'];
         }
