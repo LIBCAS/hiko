@@ -20,7 +20,7 @@ if (document.getElementById('person-name')) {
         },
 
         computed: {
-            fullName: function() {
+            fullName: function () {
                 if (this.type == 'institution') {
                     return this.lastName.trim()
                 }
@@ -33,7 +33,7 @@ if (document.getElementById('person-name')) {
 
                 return fullName.trim()
             },
-            personsFormValidated: function() {
+            personsFormValidated: function () {
                 if (this.lastName == '' || this.fullName.length < 3) {
                     return false
                 }
@@ -41,7 +41,7 @@ if (document.getElementById('person-name')) {
             },
         },
 
-        mounted: function() {
+        mounted: function () {
             let letterTypes = getLetterType()
 
             if (isString(letterTypes)) {
@@ -59,15 +59,15 @@ if (document.getElementById('person-name')) {
         },
 
         methods: {
-            capitalize: function(str) {
+            capitalize: function (str) {
                 return str.charAt(0).toUpperCase() + str.slice(1)
             },
 
-            decodeHTML: function(str) {
+            decodeHTML: function (str) {
                 return decodeHTML(str)
             },
 
-            getInitialData: function(id) {
+            getInitialData: function (id) {
                 let self = this
                 axios
                     .get(
@@ -77,7 +77,7 @@ if (document.getElementById('person-name')) {
                             '&type=' +
                             self.personType
                     )
-                    .then(function(response) {
+                    .then(function (response) {
                         let rd = response.data
 
                         if (rd == '404') {
@@ -85,7 +85,12 @@ if (document.getElementById('person-name')) {
                             return
                         }
 
-                        self.alternativeNames = rd.names
+                        if (Array.isArray(rd.names)) {
+                            self.alternativeNames = rd.names
+                        } else {
+                            self.alternativeNames = []
+                        }
+
                         self.dob = rd.birth_year
                         self.dod = rd.death_year
                         self.emlo = rd.emlo
@@ -97,7 +102,7 @@ if (document.getElementById('person-name')) {
                         self.profession = rd.profession
                         self.type = rd.type ? rd.type : 'person'
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         self.error = true
                         console.log(error)
                     })
