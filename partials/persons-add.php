@@ -13,11 +13,9 @@ if (array_key_exists('save_post', $_POST)) {
 
 ?>
 <div id="person-name">
-
     <div class="alert alert-warning" :class="{ 'd-none' : error == false }">
         Požadovaná položka nebyla nalezena. Pro vytvoření nové osoby použijte <a href="?">tento odkaz</a>.
     </div>
-
     <div class="card bg-light" :class="{ 'd-none' : error == true }">
         <div class="card-body">
             <form name="persons" method="post" onkeypress="return event.keyCode!=13">
@@ -30,33 +28,23 @@ if (array_key_exists('save_post', $_POST)) {
                         </select>
                     </div>
                 </fieldset>
-
                 <fieldset v-if="type == 'institution'">
                     <div class="form-group required">
                         <label for="surname">Institution name</label>
-                        <input
-                        :value="decodeHTML(lastName)"
-                        @input="lastName"
-                        type="text"
-                        class="form-control form-control-sm"
-                        name="surname" required
-                        >
+                        <input :value="decodeHTML(lastName)" @input="lastName = $event.target.value" type="text" class="form-control form-control-sm" name="surname" required>
                     </div>
                 </fieldset>
-
                 <fieldset v-if="type == 'person'">
                     <div class="form-group required">
                         <label for="surname">Surname</label>
-                        <input v-model="lastName" type="text" class="form-control form-control-sm" name="surname" required>
+                        <input :value="decodeHTML(lastName)" @input="lastName = $event.target.value" type="text" class="form-control form-control-sm" name="surname" required>
                     </div>
                 </fieldset>
-
                 <fieldset v-show="type == 'person'">
                     <div class="form-group">
                         <label for="first_name">Forename</label>
                         <input v-model="firstName" type="text" class="form-control form-control-sm" name="forename">
                     </div>
-
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
@@ -77,7 +65,6 @@ if (array_key_exists('save_post', $_POST)) {
                             </div>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label for="profession">Profession</label>
                         <input v-model="profession" type="text" class="form-control form-control-sm" name="profession">
@@ -95,7 +82,6 @@ if (array_key_exists('save_post', $_POST)) {
                         </datalist>
                     </div>
                 </fieldset>
-
                 <fieldset>
                     <div class="form-group">
                         <label for="emlo">Emlo ID</label>
@@ -106,14 +92,12 @@ if (array_key_exists('save_post', $_POST)) {
                         <textarea v-model="note" type="text" class="form-control form-control-sm" name="note"></textarea>
                     </div>
                 </fieldset>
-
                 <strong v-if="alternativeNames.length">Name as marked</strong>
                 <ul class="list-unstyled">
                     <li v-for="(name, index) in alternativeNames" :key="index">
                         <span v-html="name"></span>
                     </li>
                 </ul>
-
                 <div class="form-group">
                     <input type="hidden" :value="type">
                     <?php if ($action == 'new') : ?>
@@ -122,7 +106,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <input type="hidden" name="save_post" value="edit">
                     <?php endif; ?>
                     <div class="input-group mb-3">
-                        <input v-model="fullName" name="fullname" type="text" class="form-control form-control-sm not-allowed" readonly>
+                        <input :value="decodeHTML(fullName)" name="fullname" type="text" class="form-control form-control-sm not-allowed" readonly>
                         <div class="input-group-append">
                             <input class="btn btn-primary btn-sm" type="submit" value="Uložit" :disabled="personsFormValidated === false">
                         </div>
