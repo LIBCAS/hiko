@@ -32,16 +32,12 @@ const paths = {
 }
 
 const gulp = require('gulp')
-
 const sass = require('gulp-sass')
 const autoprefixer = require('gulp-autoprefixer')
-
 const concat = require('gulp-concat')
 const uglify = require('gulp-uglify')
 const babel = require('gulp-babel')
-
 const imagemin = require('gulp-imagemin')
-
 const rename = require('gulp-rename')
 const lineec = require('gulp-line-ending-corrector')
 const sourcemaps = require('gulp-sourcemaps')
@@ -53,13 +49,14 @@ const cache = require('gulp-cache')
 const remember = require('gulp-remember')
 const plumber = require('gulp-plumber')
 const beep = require('beepbeep')
+const del = require('del')
 
-const errorHandler = r => {
-    notify.onError('\n\n❌  ===> ERROR: <%= error.message %>\n')(r)
+const errorHandler = (r) => {
+    notify.onError('❌  ===> ERROR: <%= error.message %>')(r)
     beep()
 }
 
-const browsersync = done => {
+const browsersync = (done) => {
     browserSync.init({
         proxy: config.projectURL,
         open: false,
@@ -69,7 +66,7 @@ const browsersync = done => {
     done()
 }
 
-const reload = done => {
+const reload = (done) => {
     browserSync.reload()
     done()
 }
@@ -94,7 +91,7 @@ gulp.task('styles', () => {
         .pipe(browserSync.stream())
         .pipe(
             notify({
-                message: '\n\n✅  ===> STYLES — completed!\n',
+                message: '✅  ===> STYLES — completed!',
                 onLast: true,
             })
         )
@@ -140,7 +137,7 @@ gulp.task('customJS', () => {
         .pipe(gulp.dest(paths.jsCustomDestination))
         .pipe(
             notify({
-                message: '\n\n✅  ===> CUSTOM JS — completed!\n',
+                message: '✅  ===> CUSTOM JS — completed!',
                 onLast: true,
             })
         )
@@ -167,13 +164,46 @@ gulp.task('images', () => {
         .pipe(gulp.dest(paths.imgDST))
         .pipe(
             notify({
-                message: '\n\n✅  ===> IMAGES — completed!\n',
+                message: '✅  ===> IMAGES — completed!',
                 onLast: true,
             })
         )
 })
 
-gulp.task('clearCache', function(done) {
+gulp.task('cleanBuild', function () {
+    del(['build/**/*'])
+    return gulp
+        .src([
+            './**/*',
+            '!node_modules',
+            '!node_modules/**',
+            '!build',
+            '!build/**',
+            '!assets/css',
+            '!assets/css/**',
+            '!assets/js/custom/**',
+            'assets/js/vendor/**',
+            '!assets/img/raw',
+            '!assets/img/raw/**',
+            '!package-lock.json',
+            '!package.json',
+            '!composer.lock',
+            '!composer.json',
+            '!prettier.config.js',
+            '!wpgulp.config.js',
+            '!wpgulp.config.sample.js',
+            '!gulpfile.babel.js',
+        ])
+        .pipe(gulp.dest('build'))
+        .pipe(
+            notify({
+                message: 'Clean Build — completed!',
+                onLast: true,
+            })
+        )
+})
+
+gulp.task('clearCache', function (done) {
     return cache.clearAll(done)
 })
 
@@ -193,7 +223,7 @@ gulp.task('translate', () => {
         .pipe(gulp.dest('./languages/hiko.pot'))
         .pipe(
             notify({
-                message: '\n\n✅  ===> TRANSLATE — completed!\n',
+                message: '✅  ===> TRANSLATE — completed!',
                 onLast: true,
             })
         )
