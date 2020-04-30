@@ -563,8 +563,8 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                 </fieldset>
 
-                <input type="hidden" :value="placesMeta" name="places_meta">
-                <input type="hidden" :value="participantsMeta" name="authors_meta">
+                <input type="hidden" :value="decodeHTML(placesMeta)" name="places_meta">
+                <input type="hidden" :value="decodeHTML(participantsMeta)" name="authors_meta">
 
                 <div v-if="errors.all().length > 0" class="alert alert-danger">
                     <ul class="m-0 px-2">
