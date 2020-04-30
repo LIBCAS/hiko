@@ -19,7 +19,7 @@ if (array_key_exists('save_post', $_POST)) {
             <fieldset>
                 <div class="form-group required">
                     <label for="place">Primary name</label>
-                    <input v-model="place" type="text" class="form-control form-control-sm" name="place" required>
+                    <input :value="decodeHTML(place)" @input="place = $event.target.value" type="text" class="form-control form-control-sm" name="place" required>
                     <small class="form-text text-muted">
                         modern format
                     </small>
@@ -31,7 +31,7 @@ if (array_key_exists('save_post', $_POST)) {
                 </div>
                 <div class="form-group">
                     <label for="note">Note on place</label>
-                    <textarea v-model="note" class="form-control form-control-sm" id="note" name="note"></textarea>
+                    <textarea :value="decodeHTML(note)" @input="note = $event.target.value" class="form-control form-control-sm" id="note" name="note"></textarea>
                 </div>
             </fieldset>
             <fieldset>

@@ -156,7 +156,7 @@ if (document.getElementById('letter-form')) {
                 let placesData = []
                 self.places.map((el) => {
                     placesData.push({
-                        label: el.name,
+                        label: self.decodeHTML(el.name),
                         value: el.id,
                     })
                 })

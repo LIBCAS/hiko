@@ -1,4 +1,4 @@
-/* global Vue axios ajaxUrl getLetterType getGeoCoord isString */
+/* global Vue axios ajaxUrl getLetterType getGeoCoord isString decodeHTML */
 
 if (document.getElementById('places-form')) {
     new Vue({
@@ -28,7 +28,7 @@ if (document.getElementById('places-form')) {
                 return results
             },
         },
-        mounted: function() {
+        mounted: function () {
             let letterTypes = getLetterType()
 
             if (isString(letterTypes)) {
@@ -45,16 +45,20 @@ if (document.getElementById('places-form')) {
             }
         },
         methods: {
-            getCoord: function() {
+            decodeHTML: function (str) {
+                return decodeHTML(str)
+            },
+
+            getCoord: function () {
                 let self = this
 
-                getGeoCoord(function(latlng) {
+                getGeoCoord(function (latlng) {
                     let coord = latlng.value.split(',')
                     self.lat = coord[0]
                     self.long = coord[1]
                 })
             },
-            getInitialData: function(id) {
+            getInitialData: function (id) {
                 let self = this
 
                 axios
@@ -65,7 +69,7 @@ if (document.getElementById('places-form')) {
                             '&type=' +
                             self.placeType
                     )
-                    .then(function(response) {
+                    .then(function (response) {
                         self.place = response.data.name
                         self.country = {
                             value: response.data.country,
@@ -75,7 +79,7 @@ if (document.getElementById('places-form')) {
                         self.lat = response.data.latitude
                         self.long = response.data.longitude
                     })
-                    .catch(function() {
+                    .catch(function () {
                         self.error = true
                     })
             },
