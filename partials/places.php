@@ -15,7 +15,6 @@ $places_json = json_encode(
 </div>
 
 <div id="datatable-places">
-
     <v-client-table :data="tableData" :columns="columns" :options="options">
         <ul slot="edit" slot-scope="props" class="list-unstyled">
             <li>
@@ -25,8 +24,10 @@ $places_json = json_encode(
                 <a v-if="!props.row.relationships" :href="'#delete-' + props.row.id" @click="deletePlace(props.row.id)">Odstranit</a>
             </li>
         </ul>
+        <span slot="city" slot-scope="props">
+            <span v-html="props.row.city"></span>
+        </span>
     </v-client-table>
-
 </div>
 
 <script id="places-data" type="application/json">
