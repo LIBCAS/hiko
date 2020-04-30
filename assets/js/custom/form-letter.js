@@ -131,8 +131,8 @@ if (document.getElementById('letter-form')) {
             personsData() {
                 let self = this
                 let personsData = []
-                self.persons.map(el => {
-                    let label = decodeHTML(el.name)
+                self.persons.map((el) => {
+                    let label = self.decodeHTML(el.name)
                     if (el.type != 'institution') {
                         label += ` (${el.birth_year}`
 
@@ -144,7 +144,7 @@ if (document.getElementById('letter-form')) {
                     }
 
                     personsData.push({
-                        label: label,
+                        label: self.decodeHTML(label),
                         value: el.id,
                     })
                 })
@@ -154,7 +154,7 @@ if (document.getElementById('letter-form')) {
             placesData() {
                 let self = this
                 let placesData = []
-                self.places.map(el => {
+                self.places.map((el) => {
                     placesData.push({
                         label: el.name,
                         value: el.id,
@@ -182,7 +182,7 @@ if (document.getElementById('letter-form')) {
                     JSON.stringify(this.letter.related_resources)
                 )
 
-                resources = resources.filter(el => {
+                resources = resources.filter((el) => {
                     return el.link && el.title
                 })
 
@@ -198,13 +198,13 @@ if (document.getElementById('letter-form')) {
 
                 let merged = []
 
-                authorsMeta.forEach(item => {
+                authorsMeta.forEach((item) => {
                     item = self.cleanCopy(item)
                     item.id = item.id.value
                     merged.push(item)
                 })
 
-                recipientsMeta.forEach(item => {
+                recipientsMeta.forEach((item) => {
                     item = self.cleanCopy(item)
                     item.id = item.id.value
                     merged.push(item)
@@ -213,7 +213,7 @@ if (document.getElementById('letter-form')) {
                 return JSON.stringify(merged)
             },
 
-            placesMeta: function() {
+            placesMeta: function () {
                 let self = this
 
                 let origins = self.cleanCopy(self.letter.origin)
@@ -222,7 +222,7 @@ if (document.getElementById('letter-form')) {
 
                 let merged = []
 
-                origins.forEach(item => {
+                origins.forEach((item) => {
                     item = self.cleanCopy(item)
                     merged.push({
                         id: item.id.value,
@@ -231,7 +231,7 @@ if (document.getElementById('letter-form')) {
                     })
                 })
 
-                destinations.forEach(item => {
+                destinations.forEach((item) => {
                     item = self.cleanCopy(item)
                     merged.push({
                         id: item.id.value,
@@ -243,7 +243,7 @@ if (document.getElementById('letter-form')) {
                 return JSON.stringify(merged)
             },
 
-            imgUrl: function() {
+            imgUrl: function () {
                 return (
                     homeUrl +
                     '/' +
@@ -255,7 +255,7 @@ if (document.getElementById('letter-form')) {
                 )
             },
 
-            previewUrl: function() {
+            previewUrl: function () {
                 return (
                     homeUrl +
                     '/letter-preview/?l_type=' +
@@ -265,34 +265,34 @@ if (document.getElementById('letter-form')) {
                 )
             },
 
-            repositories: function() {
+            repositories: function () {
                 let self = this
-                return self.locations.filter(function(loc) {
+                return self.locations.filter(function (loc) {
                     if (loc.type == 'repository') {
                         return true
                     }
                 })
             },
 
-            collections: function() {
+            collections: function () {
                 let self = this
-                return self.locations.filter(function(loc) {
+                return self.locations.filter(function (loc) {
                     if (loc.type == 'collection') {
                         return true
                     }
                 })
             },
 
-            archives: function() {
+            archives: function () {
                 let self = this
-                return self.locations.filter(function(loc) {
+                return self.locations.filter(function (loc) {
                     if (loc.type == 'archive') {
                         return true
                     }
                 })
             },
 
-            formVisible: function() {
+            formVisible: function () {
                 let self = this
                 if (
                     self.error ||
@@ -304,7 +304,7 @@ if (document.getElementById('letter-form')) {
                 return true
             },
         },
-        mounted: function() {
+        mounted: function () {
             let self = this
             let url = new URL(window.location.href)
             let letterTypes = getLetterType()
@@ -331,13 +331,9 @@ if (document.getElementById('letter-form')) {
                 self.loading = false
             }
 
-            this.persons = JSON.parse(
-                document.querySelector('#people').innerHTML
-            )
+            this.persons = this.getInitalPersons()
 
-            this.places = JSON.parse(
-                document.querySelector('#places').innerHTML
-            )
+            this.places = this.getInitalPlaces()
 
             this.getKeywords()
 
@@ -345,7 +341,7 @@ if (document.getElementById('letter-form')) {
         },
 
         created() {
-            window.addEventListener('beforeunload', e => {
+            window.addEventListener('beforeunload', (e) => {
                 if (location.hostname !== 'localhost' && !this.formChanged) {
                     e.preventDefault()
                 }
@@ -357,29 +353,28 @@ if (document.getElementById('letter-form')) {
                 return JSON.parse(JSON.stringify(obj))
             },
 
+            decodeHTML: function (str) {
+                return decodeHTML(str)
+            },
+
             randomKey(type) {
-                return (
-                    type +
-                    Math.random()
-                        .toString(36)
-                        .substring(7)
-                )
+                return type + Math.random().toString(36).substring(7)
             },
 
             validateForm(e) {
                 this.formChanged = true
-                this.$validator.validate().then(valid => {
+                this.$validator.validate().then((valid) => {
                     if (!valid) {
                         e.preventDefault()
                     }
                 })
             },
 
-            getObjectValues: function(o) {
+            getObjectValues: function (o) {
                 return getObjectValues(o)
             },
 
-            getTitle: function() {
+            getTitle: function () {
                 let self = this
                 let letter = self.letter
                 let personMeta = self.cleanCopy(self.persons)
@@ -426,22 +421,30 @@ if (document.getElementById('letter-form')) {
                 return `${date} ${from} to ${to}`
             },
 
-            getLocationData: function(callback) {
+            getLocationData: function (callback) {
                 let self = this
                 axios
                     .get(ajaxUrl + '?action=list_locations')
-                    .then(function(response) {
+                    .then(function (response) {
                         self.locations = response.data.data
                         if (callback) {
                             callback()
                         }
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         self.error = error
                     })
             },
 
-            getInitialData: function() {
+            getInitalPersons: function () {
+                return JSON.parse(document.querySelector('#people').innerHTML)
+            },
+
+            getInitalPlaces: function () {
+                return JSON.parse(document.querySelector('#places').innerHTML)
+            },
+
+            getInitialData: function () {
                 let self = this
 
                 let url =
@@ -453,7 +456,7 @@ if (document.getElementById('letter-form')) {
 
                 axios
                     .get(url)
-                    .then(function(response) {
+                    .then(function (response) {
                         if (response.data == '404') {
                             self.error = true
                             return
@@ -464,7 +467,6 @@ if (document.getElementById('letter-form')) {
                         authors = Object.keys(authors)
 
                         let recipients = self.cleanCopy(rd.recipient)
-
                         recipients = Object.keys(recipients)
 
                         let origin = rd.origin
@@ -481,7 +483,7 @@ if (document.getElementById('letter-form')) {
 
                         self.letter = rd
 
-                        self.$set(self.letter, 'languages', []) // must set reactive data again
+                        self.$set(self.letter, 'languages', []) // set reactive data again
                         self.$set(self.letter, 'keywords', [])
                         self.$set(self.letter, 'mentioned', [])
 
@@ -500,7 +502,7 @@ if (document.getElementById('letter-form')) {
 
                         if (manifestation != '') {
                             manifestation = self.manifestations.find(
-                                man => man.value === manifestation
+                                (man) => man.value === manifestation
                             )
                             self.$set(
                                 self.letter,
@@ -582,7 +584,7 @@ if (document.getElementById('letter-form')) {
                         if (!Array.isArray(mentioned)) {
                             for (var key in mentioned) {
                                 self.letter.mentioned.push({
-                                    label: mentioned[key],
+                                    label: self.decodeHTML(mentioned[key]),
                                     value: key,
                                 })
                             }
@@ -591,40 +593,40 @@ if (document.getElementById('letter-form')) {
                         if (!Array.isArray(keywords)) {
                             for (var kw in keywords) {
                                 self.letter.keywords.push({
-                                    label: keywords[kw],
-                                    value: kw,
+                                    label: self.decodeHTML(keywords[kw]),
+                                    value: self.decodeHTML(kw),
                                 })
                             }
                         }
 
                         self.title = rd.name
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         console.log(error)
                         self.error = true
                     })
-                    .then(function() {
+                    .then(function () {
                         self.loading = false
                     })
             },
 
-            ajaxToData: function(action, targetData, postType, targetElement) {
+            ajaxToData: function (action, targetData, postType, targetElement) {
                 let self = this
                 targetElement.classList.add('rotate')
                 axios
                     .get(ajaxUrl + '?action=' + action + '&type=' + postType)
-                    .then(function(response) {
+                    .then(function (response) {
                         self[targetData] = response.data
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         console.log(error)
                     })
-                    .then(function() {
+                    .then(function () {
                         targetElement.classList.remove('rotate')
                     })
             },
 
-            regenerateSelectData: function(type, event) {
+            regenerateSelectData: function (type, event) {
                 let self = this
                 if (type == 'persons') {
                     self.ajaxToData(
@@ -642,13 +644,13 @@ if (document.getElementById('letter-form')) {
                     )
                 } else if (type == 'locations') {
                     event.target.classList.add('rotate')
-                    self.getLocationData(function() {
+                    self.getLocationData(function () {
                         event.target.classList.remove('rotate')
                     })
                 }
             },
 
-            regenerateKeywords: function(event) {
+            regenerateKeywords: function (event) {
                 let self = this
                 event.target.classList.add('rotate')
                 self.getKeywords(() => {
@@ -656,7 +658,7 @@ if (document.getElementById('letter-form')) {
                 })
             },
 
-            getKeywords: function(callback = null) {
+            getKeywords: function (callback = null) {
                 let self = this
                 axios
                     .get(
@@ -664,29 +666,29 @@ if (document.getElementById('letter-form')) {
                             '?action=keywords_table_data&type=' +
                             self.keywordType
                     )
-                    .then(function(response) {
+                    .then(function (response) {
                         let keywords = response.data
-                        let result = []
 
-                        keywords.map(kw => {
-                            result.push({
-                                label: kw.name,
+                        keywords.map((kw) => {
+                            self.keywords.push({
+                                label: self.decodeHTML(kw.name),
                                 value: kw.id,
                             })
                         })
-                        self.keywords = result
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         console.log(error)
                     })
                     .then(callback)
             },
 
-            addNewResource: function() {
+            addNewResource: function () {
                 this.letter.related_resources.push({ link: '', title: '' })
             },
 
-            parseResources: function(resources) {
+            parseResources: function (resources) {
+                let self = this
+
                 if (resources.length === 0) {
                     return
                 }
@@ -697,16 +699,16 @@ if (document.getElementById('letter-form')) {
 
                 for (let i = 0; i < resources.length; i++) {
                     result.push({
-                        link: resources[i].link,
-                        title: resources[i].title,
+                        link: self.decodeHTML(resources[i].link),
+                        title: self.decodeHTML(resources[i].title),
                     })
                 }
 
                 return result
             },
 
-            removeObjectMeta: function(personIndex, type) {
-                this.letter[type] = this.letter[type].filter(function(
+            removeObjectMeta: function (personIndex, type) {
+                this.letter[type] = this.letter[type].filter(function (
                     item,
                     index
                 ) {
@@ -714,7 +716,7 @@ if (document.getElementById('letter-form')) {
                 })
             },
 
-            addPlaceMeta: function(type) {
+            addPlaceMeta: function (type) {
                 let self = this
                 self.letter[type].push({
                     id: {},
@@ -724,7 +726,7 @@ if (document.getElementById('letter-form')) {
                 })
             },
 
-            addPersonMeta: function(type) {
+            addPersonMeta: function (type) {
                 let self = this
                 self.letter[type].push({
                     id: {},
@@ -735,7 +737,7 @@ if (document.getElementById('letter-form')) {
                 })
             },
 
-            getPlaceMeta: function(ids, allMeta, type) {
+            getPlaceMeta: function (ids, allMeta, type) {
                 if (ids.length == 0) {
                     return []
                 }
@@ -750,10 +752,10 @@ if (document.getElementById('letter-form')) {
 
                 for (let index = 0; index < l; index++) {
                     let placesObj = self.placesData.find(
-                        place => place.value === ids[index]
+                        (place) => place.value === ids[index]
                     )
 
-                    let placeData = allMeta.find(meta => {
+                    let placeData = allMeta.find((meta) => {
                         if (meta.hasOwnProperty('type')) {
                             return meta.id === ids[index] && meta.type === type
                         }
@@ -765,10 +767,10 @@ if (document.getElementById('letter-form')) {
                         id: self.cleanCopy(placesObj),
                     }
 
+                    place.marked = ''
+
                     if (placeData.hasOwnProperty('marked')) {
-                        place.marked = placeData.marked
-                    } else {
-                        place.marked = ''
+                        place.marked = self.decodeHTML(placeData.marked)
                     }
 
                     result.push(place)
@@ -777,7 +779,7 @@ if (document.getElementById('letter-form')) {
                 return result
             },
 
-            getPersonMeta: function(ids, allMeta) {
+            getPersonMeta: function (ids, allMeta) {
                 if (ids.length == 0) {
                     return []
                 }
@@ -790,9 +792,9 @@ if (document.getElementById('letter-form')) {
 
                 for (let index = 0; index < l; index++) {
                     let personObj = self.personsData.find(
-                        person => person.value === ids[index]
+                        (person) => person.value === ids[index]
                     )
-                    let personData = allMeta.find(m => m.id === ids[index])
+                    let personData = allMeta.find((m) => m.id === ids[index])
 
                     let author = {
                         id: self.cleanCopy(personObj),
@@ -800,12 +802,14 @@ if (document.getElementById('letter-form')) {
 
                     author.marked = ''
                     if (personData.hasOwnProperty('marked')) {
-                        author.marked = personData.marked
+                        author.marked = self.decodeHTML(personData.marked)
                     }
 
                     author.salutation = ''
                     if (personData.hasOwnProperty('salutation')) {
-                        author.salutation = personData.salutation
+                        author.salutation = self.decodeHTML(
+                            personData.salutation
+                        )
                     }
 
                     result.push(author)

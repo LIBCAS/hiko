@@ -79,7 +79,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                     <div class="form-group">
                         <label for="date_as_marked">Date as marked on letter</label>
-                        <input v-model="letter.date_marked" type="text" name="date_marked" class="form-control form-control-sm">
+                        <input :value="decodeHTML(letter.date_marked)" @input="letter.date_marked = $event.target.value" type="text" name="date_marked" class="form-control form-control-sm">
                     </div>
 
                     <div class="form-check mb-3">
@@ -142,7 +142,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="date_note">Notes on date</label>
-                        <textarea v-model="letter.date_note" name="date_note" class="form-control form-control-sm"></textarea>
+                        <textarea :value="decodeHTML(letter.date_note)" @input="letter.date_note = $event.target.value" name="date_note" class="form-control form-control-sm"></textarea>
                     </div>
 
                 </fieldset>
@@ -162,12 +162,10 @@ if (array_key_exists('save_post', $_POST)) {
                         </div>
                         <div class="form-group" :class="{ required: !letter.author_inferred }">
                             <label for="marked">Author as marked</label>
-                            <input v-validate="letter.author_inferred ? '' : 'required'" data-vv-name="'Author as marked'" v-model="a.marked" type="text" class="form-control form-control-sm" :required="!letter.author_inferred">
+                            <input v-validate="letter.author_inferred ? '' : 'required'" data-vv-name="'Author as marked'" :value="decodeHTML(a.marked)" @input="a.marked = $event.target.value" type="text" class="form-control form-control-sm" :required="!letter.author_inferred">
                             <small class="form-text text-muted">
                                 author's name as written in letter
                             </small>
-
-                            {{ }}
                         </div>
                     </div>
 
@@ -195,7 +193,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="author_note">Notes on author</label>
-                        <textarea v-model="letter.author_note" name="author_note" class="form-control form-control-sm"></textarea>
+                        <textarea :value="decodeHTML(letter.author_note)" @input="letter.author_note = $event.target.value" name="author_note" class="form-control form-control-sm"></textarea>
                     </div>
                 </fieldset>
 
@@ -215,7 +213,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                         <div class="form-group" :class="{ required: !letter.recipient_inferred }">
                             <label for="recipient_as_marked">Recipient as marked</label>
-                            <input v-validate="letter.recipient_inferred ? '' : 'required'" data-vv-name="'Recipient as marked'" v-model="r.marked" type="text" class="form-control form-control-sm" :required="!letter.recipient_inferred">
+                            <input v-validate="letter.recipient_inferred ? '' : 'required'" data-vv-name="'Recipient as marked'" :value="decodeHTML(r.marked)" @input="r.marked = $event.target.value" type="text" class="form-control form-control-sm" :required="!letter.recipient_inferred">
                             <small class="form-text text-muted">
                                 recipient's name as written in letter
                             </small>
@@ -223,7 +221,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                         <div class="form-group">
                             <label for="salutation">Salutation</label>
-                            <input v-model="r.salutation" type="text" class="form-control form-control-sm">
+                            <input :value="decodeHTML(r.salutation)" @input="r.salutation = $event.target.value" type="text" class="form-control form-control-sm">
                         </div>
                     </div>
                     <button type="button" @click="addPersonMeta('recipient')" class="btn btn-sm btn-outline-info my-2">
@@ -250,7 +248,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="recipient_notes">Notes on recipient</label>
-                        <textarea v-model="letter.recipient_notes" name="recipient_notes" class="form-control form-control-sm"></textarea>
+                        <textarea :value="decodeHTML(letter.recipient_notes)" @input="letter.recipient_notes = $event.target.value" name="recipient_notes" class="form-control form-control-sm"></textarea>
                     </div>
                 </fieldset>
 
@@ -270,7 +268,7 @@ if (array_key_exists('save_post', $_POST)) {
                         </div>
                         <div class="form-group" :class="{ required: !letter.origin_inferred }">
                             <label for="marked">Origin as marked</label>
-                            <input v-validate="letter.origin_inferred ? '' : 'required'" data-vv-name="'Origin as marked'" v-model="o.marked" type="text" class="form-control form-control-sm" :required="!letter.origin_inferred">
+                            <input v-validate="letter.origin_inferred ? '' : 'required'" data-vv-name="'Origin as marked'" :value="decodeHTML(o.marked)" @input="o.marked = $event.target.value" type="text" class="form-control form-control-sm" :required="!letter.origin_inferred">
                             <small class="form-text text-muted">
                                 origin name as written in letter
                             </small>
@@ -301,7 +299,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="origin_note">Notes on origin</label>
-                        <textarea v-model="letter.origin_note" name="origin_note" class="form-control form-control-sm"></textarea>
+                        <textarea :value="decodeHTML(letter.origin_note)" @input="letter.origin_note = $event.target.value" name="origin_note" class="form-control form-control-sm"></textarea>
                     </div>
 
                 </fieldset>
@@ -322,7 +320,7 @@ if (array_key_exists('save_post', $_POST)) {
                         </div>
                         <div class="form-group" :class="{ required: !letter.dest_inferred }">
                             <label for="marked">Destination as marked</label>
-                            <input v-validate="letter.dest_inferred ? '' : 'required'" data-vv-name="'Destination as marked'" v-model="d.marked" type="text" class="form-control form-control-sm" :required="!letter.dest_inferred">
+                            <input v-validate="letter.dest_inferred ? '' : 'required'" data-vv-name="'Destination as marked'" :value="decodeHTML(d.marked)" @input="d.marked = $event.target.value" type="text" class="form-control form-control-sm" :required="!letter.dest_inferred">
                             <small class="form-text text-muted">
                                 destination name as written in letter
                             </small>
@@ -353,7 +351,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="dest_note">Notes on destination</label>
-                        <textarea v-model="letter.dest_note" name="dest_note" class="form-control form-control-sm"></textarea>
+                        <textarea :value="decodeHTML(letter.dest_note)" @input="letter.dest_note = $event.target.value" name="dest_note" class="form-control form-control-sm"></textarea>
                     </div>
 
                 </fieldset>
@@ -377,11 +375,11 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="abstract">Abstract</label>
-                        <textarea v-model="letter.abstract" name="abstract" class="form-control form-control-sm"></textarea>
+                        <textarea :value="decodeHTML(letter.abstract)" @input="letter.abstract = $event.target.value" name="abstract" class="form-control form-control-sm"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="incipit">Incipit</label>
-                        <textarea v-model="letter.incipit" name="incipit" class="form-control form-control-sm"></textarea>
+                        <textarea :value="decodeHTML(letter.incipit)" @input="letter.incipit = $event.target.value" name="incipit" class="form-control form-control-sm"></textarea>
                         <small class="form-text text-muted">
                             exact words opening body of letter, e.g. opening sentence or first 10 words, but not opening salutation
                         </small>
@@ -389,7 +387,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="explicit">Explicit</label>
-                        <textarea v-model="letter.explicit" name="explicit" class="form-control form-control-sm"></textarea>
+                        <textarea :value="decodeHTML(letter.explicit)" @input="letter.explicit = $event.target.value" name="explicit" class="form-control form-control-sm"></textarea>
                         <small class="form-text text-muted">
                             exact words which close the body of the letter, e.g. closing sentence or closing 10 words, but not closing salutation
                         </small>
@@ -404,7 +402,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="people_mentioned_notes">Notes on people mentioned</label>
-                        <textarea v-model="letter.people_mentioned_notes" name="people_mentioned_notes" class="form-control form-control-sm"></textarea>
+                        <textarea :value="decodeHTML(letter.people_mentioned_notes)" @input="letter.people_mentioned_notes = $event.target.value" name="people_mentioned_notes" class="form-control form-control-sm"></textarea>
                         <small class="form-text text-muted">
                             exact words which close the body of the letter, e.g. closing sentence or closing 10 words, but not closing salutation
                         </small>
@@ -412,12 +410,12 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="notes_public">Notes on letter for public display</label>
-                        <textarea v-model="letter.notes_public" name="notes_public" class="form-control form-control-sm"></textarea>
+                        <textarea :value="decodeHTML(letter.notes_public)" @input="letter.notes_public = $event.target.value" name="notes_public" class="form-control form-control-sm"></textarea>
                     </div>
 
                     <div class="form-group">
                         <label for="notes_private">Editor' notes </label>
-                        <textarea v-model="letter.notes_private" name="notes_private" class="form-control form-control-sm"></textarea>
+                        <textarea :value="decodeHTML(letter.notes_private)" @input="letter.notes_private = $event.target.value" name="notes_private" class="form-control form-control-sm"></textarea>
                         <small class="form-text text-muted">
                             internal, hidden editors' notes for EMLO back-end use only. Preface each note with a ‘q’ followed by the initials of the person the note is intended for, e.g. ‘qml’. End each note with your own initials.
                         </small>
@@ -431,7 +429,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="rel_rec_name">Related resource name</label>
-                                <input v-model="rr.title" type="text" class="form-control form-control-sm">
+                                <input :value="decodeHTML(rr.title)" @input="rr.title = $event.target.value" type="text" class="form-control form-control-sm">
                                 <small class="form-text text-muted">
                                     descriptor
                                 </small>
@@ -440,7 +438,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="col">
                             <div class="form-group">
                                 <label for="rel_rec_url">Related resource url</label>
-                                <input v-validate="{url: {require_protocol: true }}" data-vv-name="'Related resource url'" v-model="rr.link" type="url" class="form-control form-control-sm">
+                                <input v-validate="{url: {require_protocol: true }}" data-vv-name="'Related resource url'" :value="decodeHTML(rr.link)" @input="rr.link = $event.target.value" type="url" class="form-control form-control-sm">
                                 <small class="form-text text-muted">
                                     permanent URL to online resource
                                 </small>
@@ -486,7 +484,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="manifestation_notes">Notes on manifestation</label>
-                        <textarea v-model="letter.manifestation_notes" name="manifestation_notes" class="form-control form-control-sm">{{ letter.manifestation_notes }}</textarea>
+                        <textarea :value="decodeHTML(letter.manifestation_notes)" @input="letter.manifestation_notes = $event.target.value" name="manifestation_notes" class="form-control form-control-sm">{{ letter.manifestation_notes }}</textarea>
                     </div>
 
                 </fieldset>
@@ -495,41 +493,41 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Repositories and versions</legend>
                     <div class="form-group">
                         <label for="number">Letter number</label>
-                        <input v-model="letter.l_number" type="text" class="form-control form-control-sm" id="l_number" name="l_number">
+                        <input :value="decodeHTML(letter.l_number)" @input="letter.l_number = $event.target.value" type="text" class="form-control form-control-sm" id="l_number" name="l_number">
                     </div>
 
                     <div class="form-group">
                         <label for="repository">Repository <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('locations', $event)"></span></label>
-                        <input v-model="letter.repository" list="repositories" type="text" name="repository" class="form-control form-control-sm">
+                        <input :value="decodeHTML(letter.repository)" @input="letter.repository = $event.target.value" list="repositories" type="text" name="repository" class="form-control form-control-sm">
                         <datalist id="repositories">
-                            <option v-for="rep in repositories"> {{ rep.name }} </option>
+                            <option v-for="rep in repositories" v-html="rep.name"></option>
                         </datalist>
                     </div>
 
                     <div class="form-group">
                         <label for="archive">Archive</label>
-                        <input v-model="letter.archive" list="archives" type="text" name="archive" class="form-control form-control-sm">
+                        <input :value="decodeHTML(letter.archive)" @input="letter.archive = $event.target.value" list="archives" type="text" name="archive" class="form-control form-control-sm">
                         <datalist id="archives">
-                            <option v-for="a in archives"> {{ a.name }} </option>
+                            <option v-for="a in archives" v-html="a.name"></option>
                         </datalist>
                     </div>
 
                     <div class="form-group">
                         <label for="collection">Collection</label>
-                        <input v-model="letter.collection" list="collections" type="text" name="collection" class="form-control form-control-sm">
+                        <input :value="decodeHTML(letter.collection)" @input="letter.collection = $event.target.value" list="collections" type="text" name="collection" class="form-control form-control-sm">
                         <datalist id="collections">
-                            <option v-for="c in collections"> {{ c.name }} </option>
+                            <option v-for="c in collections" v-html="c.name"></option>
                         </datalist>
                     </div>
 
                     <div class="form-group">
                         <label for="signature">Signature</label>
-                        <input v-model="letter.signature" type="text" name="signature" class="form-control form-control-sm">
+                        <input :value="decodeHTML(letter.signature)" @input="letter.signature = $event.target.value" type="text" name="signature" class="form-control form-control-sm">
                     </div>
 
                     <div class="form-group">
                         <label for="location_note">Notes on location</label>
-                        <textarea v-model="letter.location_note" name="location_note" class="form-control form-control-sm">{{ letter.location_note }}</textarea>
+                        <textarea :value="decodeHTML(letter.location_note)" @input="letter.location_note = $event.target.value" name="location_note" class="form-control form-control-sm">{{ letter.location_note }}</textarea>
                     </div>
                 </fieldset>
 
@@ -538,7 +536,7 @@ if (array_key_exists('save_post', $_POST)) {
                     <div class="form-group required">
                         <label for="description">Description</label>
                         <span class="pointer oi oi-transfer pl-1" @click="title = getTitle()"></span>
-                        <textarea v-validate="'required'" data-vv-name="'Description'" v-model="title" name="description" class="form-control form-control-sm" required>{{ title }}</textarea>
+                        <textarea v-validate="'required'" data-vv-name="'Description'" :value="decodeHTML(title)" @input="title = $event.target.value" name="description" class="form-control form-control-sm" required>{{ title }}</textarea>
                         {{ letter.title }}
 
                         <small class="form-text text-muted">
