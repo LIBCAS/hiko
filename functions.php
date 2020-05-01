@@ -420,7 +420,13 @@ function save_name_alternatives($persons_string, $person_type)
 
 function merge_unique($array1, $array2)
 {
-    return array_unique(array_merge($array1, $array2));
+    if ($array1 == null) {
+        return array_unique($array2);
+    }
+
+    $merged = array_merge($array1, $array2);
+
+    return array_unique($merged);
 }
 
 
