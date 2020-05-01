@@ -66,7 +66,7 @@
                             </li>
                         </ul>
                     </td>
-                    <td>{{ coll.name }}</td>
+                    <td v-html="coll.name"></td>
                 </tr>
             </tbody>
         </table>
@@ -100,7 +100,7 @@
                             </li>
                         </ul>
                     </td>
-                    <td>{{ a.name }}</td>
+                    <td v-html="a.name"></td>
                 </tr>
             </tbody>
         </table>

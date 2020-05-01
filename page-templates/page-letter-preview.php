@@ -71,7 +71,7 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                     Načítám
                 </div>
                 <div class="letter-single" v-else>
-                    <h3> Preview: {{ title }}</h3>
+                    <h3> Preview: <span v-html="title"></span></h3>
                     <div class="my-5">
                         <h5>Dates</h5>
                         <table class="table">
@@ -105,17 +105,13 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                                     <td>
                                         Date as marked
                                     </td>
-                                    <td>
-                                        {{ date_marked }}
-                                    </td>
+                                    <td v-html="date_marked"></td>
                                 </tr>
                                 <tr v-if="date_note">
                                     <td>
                                         Notes on date
                                     </td>
-                                    <td>
-                                        {{ date_note }}
-                                    </td>
+                                    <td v-html="date_note"></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -129,13 +125,13 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                                     <td>
                                         <span v-for="a in author" class="d-block">
                                             <span v-if="a.marked.length > 0">
-                                                {{ a.marked }}
-                                                <span v-if="a.marked != a.title" class="badge pointer" :title="a.title">
+                                                <span v-html="a.marked"></span>
+                                                <span v-if="a.marked != a.title" class="badge pointer" :title="decodeHTML(a.title)">
                                                     ?
                                                 </span>
                                             </span>
                                             <span v-else>
-                                                {{ a.title }}
+                                                <span v-html="a.title"></span>
                                             </span>
                                         </span>
                                         <span v-if="author_uncertain" class="d-block">
@@ -151,7 +147,7 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                                         Notes on author
                                     </td>
                                     <td>
-                                        {{ author_note }}
+                                        <span v-html="author_note"></span>
                                     </td>
                                 </tr>
                                 <tr v-if="recipient.length > 0">
@@ -159,13 +155,13 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                                     <td>
                                         <span v-for="r in recipient" class="d-block">
                                             <span v-if="r.marked.length > 0">
-                                                {{ r.marked }}
-                                                <span v-if="r.marked != r.title" class="badge pointer" :title="r.title">
+                                                <span v-html="r.marked"></span>
+                                                <span v-if="r.marked != r.title" class="badge pointer" :title="decodeHTML(r.title)">
                                                     ?
                                                 </span>
                                             </span>
                                             <span v-else>
-                                                {{ r.title }}
+                                                <span v-html="r.title"></span>
                                             </span>
                                         </span>
                                         <span v-if="recipient_uncertain" class="d-block">
@@ -180,19 +176,17 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                                     <td>
                                         Notes on recipient
                                     </td>
-                                    <td>
-                                        {{ recipient_notes }}
-                                    </td>
+                                    <td v-html="recipient_notes"></td>
                                 </tr>
                                 <tr v-if="mentioned.length > 0">
                                     <td>Mentioned people</td>
                                     <td>
-                                        <span v-for="m in mentioned" class="d-block"> {{ m }}</span>
+                                        <span v-for="m in mentioned" class="d-block" v-html="m"></span>
                                     </td>
                                 </tr>
                                 <tr v-if="people_mentioned_notes">
                                     <td>Notes on mentioned people</td>
-                                    <td>{{ people_mentioned_notes }}</td>
+                                    <td v-html="people_mentioned_notes"></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -206,13 +200,13 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                                     <td>
                                         <span v-for="o in origin" class="d-block">
                                             <span v-if="o.marked.length > 0">
-                                                {{ o.marked }}
-                                                <span v-if="o.marked != o.title" class="badge pointer" :title="o.title">
+                                                <span v-html="o.marked"></span>
+                                                <span v-if="o.marked != o.title" class="badge pointer" :title="decodeHTML(o.title)">
                                                     ?
                                                 </span>
                                             </span>
                                             <span v-else>
-                                                {{ o.title }}
+                                                <span v-html="o.title"></span>
                                             </span>
                                         </span>
                                         <span class="d-block" v-if="origin_uncertain">
@@ -225,22 +219,20 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                                 </tr>
                                 <tr v-if="origin_note">
                                     <td>Notes on origin</td>
-                                    <td>
-                                        {{ origin_note }}
-                                    </td>
+                                    <td v-html="origin_note"></td>
                                 </tr>
                                 <tr>
                                     <td>Destination</td>
                                     <td>
                                         <span v-for="d in destination" class="d-block">
                                             <span v-if="d.marked.length > 0">
-                                                {{ d.marked }}
-                                                <span v-if="d.marked != d.title" class="badge pointer" :title="d.title">
+                                                <span v-html="d.marked"></span>
+                                                <span v-if="d.marked != d.title" class="badge pointer" :title="decodeHTML(d.title)">
                                                     ?
                                                 </span>
                                             </span>
                                             <span v-else>
-                                                {{ d.title }}
+                                                <span v-html="d.title"></span>
                                             </span>
                                         </span>
                                         <span class="d-block" v-if="dest_uncertain">
@@ -253,9 +245,7 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                                 </tr>
                                 <tr v-if="dest_note">
                                     <td>Notes on destination</td>
-                                    <td>
-                                        {{ dest_note }}
-                                    </td>
+                                    <td v-html="dest_note"></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -266,7 +256,7 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                             <tbody>
                                 <tr v-if="abstract">
                                     <td style="width: 20%;">Abstract</td>
-                                    <td>{{ abstract }}</td>
+                                    <td v-html="abstract"></td>
                                 </tr>
                                 <tr v-if="incipit">
                                     <td style="width: 20%;">Incipit</td>
@@ -279,22 +269,18 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                                 <tr v-if="languages.length > 0">
                                     <td style="width: 20%;">Languages</td>
                                     <td>
-                                        <span v-for="lang in languages" class="d-block">
-                                            {{ lang }}
-                                        </span>
+                                        <span v-for="lang in languages" class="d-block" v-html="lang"></span>
                                     </td>
                                 </tr>
                                 <tr v-if="keywords.length > 0">
                                     <td>Keywords</td>
                                     <td>
-                                        <span v-for="keyword in keywords" class="d-block">
-                                            {{ keyword }}
-                                        </span>
+                                        <span v-for="keyword in keywords" class="d-block" v-html="keyword"></span>
                                     </td>
                                 </tr>
                                 <tr v-if="notes_public">
                                     <td>Notes on letter</td>
-                                    <td>{{ notes_public }}</td>
+                                    <td v-html="notes_public"></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -307,81 +293,61 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                                     <td style="width: 20%;">
                                         Letter number
                                     </td>
-                                    <td>
-                                        {{ l_number }}
-                                    </td>
+                                    <td v-html="l_number"></td>
                                 </tr>
                                 <tr v-if="repository">
                                     <td style="width: 20%;">
                                         Repository
                                     </td>
-                                    <td>
-                                        {{ repository }}
-                                    </td>
+                                    <td v-html="repository"></td>
                                 </tr>
                                 <tr v-if="archive">
                                     <td style="width: 20%;">
                                         Archive
                                     </td>
-                                    <td>
-                                        {{ archive }}
-                                    </td>
+                                    <td v-html="archive"></td>
                                 </tr>
                                 <tr v-if="collection">
                                     <td style="width: 20%;">
                                         Collection
                                     </td>
-                                    <td>
-                                        {{ collection }}
-                                    </td>
+                                    <td v-html="collection"></td>
                                 </tr>
                                 <tr v-if="signature">
                                     <td style="width: 20%;">
                                         Signature
                                     </td>
-                                    <td>
-                                        {{ signature }}
-                                    </td>
+                                    <td v-html="signature"></td>
                                 </tr>
                                 <tr v-if="location_note">
                                     <td style="width: 20%;">
                                         Note on location
                                     </td>
-                                    <td>
-                                        {{ location_note }}
-                                    </td>
+                                    <td v-html="location_note"></td>
                                 </tr>
                                 <tr v-if="document_type">
                                     <td style="width: 20%;">
                                         Document type
                                     </td>
-                                    <td>
-                                        {{ document_type }}
-                                    </td>
+                                    <td v-html="document_type"></td>
                                 </tr>
                                 <tr v-if="preservation">
                                     <td style="width: 20%;">
                                         Preservation
                                     </td>
-                                    <td>
-                                        {{ preservation }}
-                                    </td>
+                                    <td v-html="preservation"></td>
                                 </tr>
                                 <tr v-if="copy">
                                     <td style="width: 20%;">
                                         Type of copy
                                     </td>
-                                    <td>
-                                        {{ copy }}
-                                    </td>
+                                    <td v-html="copy"></td>
                                 </tr>
                                 <tr v-if="manifestation_notes">
                                     <td style="width: 20%;">
                                         Notes on nanifestation
                                     </td>
-                                    <td>
-                                        {{ manifestation_notes }}
-                                    </td>
+                                    <td v-html="manifestation_notes"></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -392,9 +358,7 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                             <tbody>
                                 <tr>
                                     <td>
-                                        <a v-for="rr in related_resources" :href="rr.link" target="_blank">
-                                            {{ rr.title }}
-                                        </a>
+                                        <a v-for="rr in related_resources" :href="rr.link" target="_blank" v-html="rr.title"></a>
                                     </td>
                                 </tr>
                             </tbody>
@@ -405,7 +369,7 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                             <a :href="i.img.large" :data-caption="i.description">
                                 <figure class="figure">
                                     <img :src="i.img.thumb" class="figure-img img-thumbnail" :alt="i.description" style="width:150px;max-width:150px">
-                                    <figcaption class="figure-caption">{{ i.description }}</figcaption>
+                                    <figcaption class="figure-caption" v-html="i.description"></figcaption>
                                 </figure>
                             </a>
                         </div>

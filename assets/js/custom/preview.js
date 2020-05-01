@@ -1,4 +1,4 @@
-/* global Vue axios ajaxUrl baguetteBox arrayToSingleObject */
+/* global Vue axios ajaxUrl baguetteBox arrayToSingleObject decodeHTML */
 
 if (document.getElementById('letter-preview')) {
     new Vue({
@@ -60,21 +60,25 @@ if (document.getElementById('letter-preview')) {
             year2: '',
         },
 
-        mounted: function() {
+        mounted: function () {
             let url = new URL(window.location.href)
             this.letterID = url.searchParams.get('letter')
             this.letterType = url.searchParams.get('l_type')
             this.getLetter(this.letterID)
         },
 
-        updated: function() {
+        updated: function () {
             if (this.images.length > 0) {
                 baguetteBox.run('#gallery')
             }
         },
 
         methods: {
-            getItemData: function(item, metaJSON, type = false) {
+            decodeHTML: function (str) {
+                return decodeHTML(str)
+            },
+
+            getItemData: function (item, metaJSON, type = false) {
                 let results = []
 
                 let ids = Object.keys(item)
@@ -84,7 +88,7 @@ if (document.getElementById('letter-preview')) {
                 metaJSON = JSON.parse(JSON.stringify(metaJSON))
 
                 for (let index = 0; index < ids.length; index++) {
-                    let find = metaJSON.filter(obj => {
+                    let find = metaJSON.filter((obj) => {
                         if (obj.hasOwnProperty('type')) {
                             return obj.id === ids[index] && obj.type === type
                         }
@@ -112,7 +116,7 @@ if (document.getElementById('letter-preview')) {
                 return arrayToSingleObject(docData)
             },
 
-            getLetter: function(id) {
+            getLetter: function (id) {
                 let self = this
                 axios
                     .get(
@@ -122,7 +126,7 @@ if (document.getElementById('letter-preview')) {
                             '&l_type=' +
                             self.letterType
                     )
-                    .then(function(response) {
+                    .then(function (response) {
                         let rd = response.data
 
                         if (rd == '404') {
@@ -217,7 +221,7 @@ if (document.getElementById('letter-preview')) {
 
                         self.loading = false
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         console.log(error)
                         alert(error)
                         self.error = true

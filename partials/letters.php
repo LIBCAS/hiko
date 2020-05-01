@@ -64,6 +64,10 @@ $path = $pods_types['path'];
             </ul>
         </span>
 
+        <span slot="signature" slot-scope="props">
+            <span v-if="props.row.signature" v-html="props.row.signature"></span>
+        </span>
+
         <span slot="recipient" slot-scope="props">
             <span v-if="!Array.isArray(props.row.recipient)" v-html="props.row.recipient"></span>
             <ul v-else class="list-unstyled">

@@ -7,9 +7,7 @@
     <div v-if="!error">
         <h3>
             Dopis:
-            <a :href="url" target="_blank">
-                {{ title }}
-            </a>
+            <a :href="url" target="_blank" v-html="title"></a>
         </h3>
 
         <div class="section mb-5">
@@ -18,7 +16,7 @@
         </div>
 
         <div class="section mb-5">
-            <h4>Upravit nahrané obrazové přílohy</h4>
+            <h4 v-if="images.length > 1">Upravit nahrané obrazové přílohy</h4>
 
             <div class="text-right" v-if="images.length > 1">
                 <span v-if="!orderMode" class="text-info pointer" @click="orderMode = true">Seřadit</span>
