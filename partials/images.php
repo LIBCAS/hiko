@@ -82,7 +82,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <img v-if="modal.src" :src="modal.src">
+                    <img v-if="modal.src" :src="modal.src" class="w-100">
                 </div>
             </div>
         </div>

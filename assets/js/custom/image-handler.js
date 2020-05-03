@@ -1,4 +1,4 @@
-/* global Uppy ajaxUrl Vue axios Swal errorInfoSwal */
+/* global Uppy ajaxUrl Vue axios Swal errorInfoSwal decodeHTML */
 
 const imageHandlerSwal = {
     confirmSave: {
@@ -54,7 +54,7 @@ if (document.getElementById('media-handler')) {
             orderMode: false,
             orderedImages: [],
         },
-        created: function() {
+        created: function () {
             let self = this
             let urlParams = new URLSearchParams(window.location.search)
             self.letterType = urlParams.get('l_type')
@@ -65,14 +65,18 @@ if (document.getElementById('media-handler')) {
             }
         },
 
-        mounted: function() {
+        mounted: function () {
             this.getImages()
             this.registerUppy()
         },
 
         methods: {
-            editImageMetadataAjax: function(image, callback) {
-                Swal.fire(imageHandlerSwal.confirmSave).then(result => {
+            decodeHTML: function (str) {
+                return decodeHTML(str)
+            },
+
+            editImageMetadataAjax: function (image, callback) {
+                Swal.fire(imageHandlerSwal.confirmSave).then((result) => {
                     if (result.value) {
                         let data = {
                             ['img_id']: image.id,
@@ -86,11 +90,11 @@ if (document.getElementById('media-handler')) {
                                         'application/json;charset=utf-8',
                                 },
                             })
-                            .then(function() {
+                            .then(function () {
                                 Swal.fire(imageHandlerSwal.saveInfo)
                                 callback()
                             })
-                            .catch(function(error) {
+                            .catch(function (error) {
                                 Swal.fire(errorInfoSwal(error))
                                 callback()
                             })
@@ -98,8 +102,8 @@ if (document.getElementById('media-handler')) {
                 })
             },
 
-            removeImage: function(letterID, letterType, imgID, callback) {
-                Swal.fire(imageHandlerSwal.removeInfo).then(result => {
+            removeImage: function (letterID, letterType, imgID, callback) {
+                Swal.fire(imageHandlerSwal.removeInfo).then((result) => {
                     if (result.value) {
                         axios
                             .post(
@@ -117,18 +121,18 @@ if (document.getElementById('media-handler')) {
                                 }
                             )
 
-                            .then(function() {
+                            .then(function () {
                                 Swal.fire(imageHandlerSwal.removeInfo)
                                 callback()
                             })
-                            .catch(function(error) {
+                            .catch(function (error) {
                                 Swal.fire(errorInfoSwal(error))
                             })
                     }
                 })
             },
 
-            saveImageOrder: function(id, order) {
+            saveImageOrder: function (id, order) {
                 axios({
                     method: 'post',
                     url: ajaxUrl + '?action=change_image_order',
@@ -141,44 +145,44 @@ if (document.getElementById('media-handler')) {
                         'Access-Control-Allow-Origin': '*',
                     },
                 })
-                    .then(function() {
+                    .then(function () {
                         return true
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         Swal.fire(errorInfoSwal(error))
                     })
             },
 
-            openModal: function(image) {
+            openModal: function (image) {
                 this.modal.visibility = true
-                this.modal.src = image.img.large
+                this.modal.src = this.decodeHTML(image.img.large)
             },
 
-            closeModal: function() {
+            closeModal: function () {
                 this.modal.visibility = false
                 this.modal.src = false
             },
 
-            deleteImage: function(id) {
+            deleteImage: function (id) {
                 let self = this
                 self.removeImage(
                     self.letterId,
                     self.letterType,
                     id,
-                    function() {
+                    function () {
                         self.deleteRow(id)
                     }
                 )
             },
 
-            deleteRow: function(id) {
+            deleteRow: function (id) {
                 let self = this
-                self.images = self.images.filter(function(item) {
+                self.images = self.images.filter(function (item) {
                     return item.id !== id
                 })
             },
 
-            getImages: function() {
+            getImages: function () {
                 let self = this
                 axios
                     .get(ajaxUrl, {
@@ -188,26 +192,26 @@ if (document.getElementById('media-handler')) {
                             l_type: this.letterType,
                         },
                     })
-                    .then(function(response) {
+                    .then(function (response) {
                         self.title = response.data.data.name
                         self.images = response.data.data.images
                         self.url = response.data.data.url
                     })
-                    .catch(function() {
+                    .catch(function () {
                         self.error = true
                     })
             },
 
-            editImageMetadata: function(image) {
+            editImageMetadata: function (image) {
                 let self = this
-                self.editImageMetadataAjax(image, function() {
+                self.editImageMetadataAjax(image, function () {
                     self.getImages()
                 })
             },
 
-            saveImagesOrder: function() {
+            saveImagesOrder: function () {
                 let self = this
-                Swal.fire(imageHandlerSwal.confirmSave).then(result => {
+                Swal.fire(imageHandlerSwal.confirmSave).then((result) => {
                     if (result.value) {
                         let ordered = this.$refs.dnd.realList
                         for (let i = 0; i < ordered.length; i++) {
@@ -219,7 +223,7 @@ if (document.getElementById('media-handler')) {
                 })
             },
 
-            registerUppy: function() {
+            registerUppy: function () {
                 let self = this
                 var uppy = Uppy.Core({
                     restrictions: {
@@ -245,7 +249,7 @@ if (document.getElementById('media-handler')) {
                             '&letter=' +
                             self.letterId,
                     })
-                uppy.on('complete', result => {
+                uppy.on('complete', (result) => {
                     if (result.hasOwnProperty('failed')) {
                         let failed = result.failed
                         let err = ''
