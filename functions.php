@@ -994,6 +994,16 @@ function save_hiko_place($place_type, $action)
 }
 
 
+function hiko_sanitize_file_name($file)
+{
+    $file = remove_accents($file);
+
+    $file = sanitize_file_name($file);
+
+    return $file;
+}
+
+
 function get_languages()
 {
     return json_decode(

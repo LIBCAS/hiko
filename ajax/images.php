@@ -30,7 +30,7 @@ function handle_img_uploads()
 
     $upload_dir = wp_upload_dir();
     $new_file_dir = $upload_dir['basedir'] . '/' . $type . '/' . $id;
-    $file_path = remove_accents($f['name'][0]);
+    $file_path = hiko_sanitize_file_name($f['name'][0]);
 
     $filename = $new_file_dir . '/' . $file_path;
 
