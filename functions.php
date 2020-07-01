@@ -496,17 +496,7 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
     t.id
     ";
 
-    return $wpdb->get_results($query);
-}
-
-
-function get_duplicities_by_id($object)
-{
-    $ids = array_map(create_function('$o', 'return $o->id;'), $object);
-
-    $unique = array_unique($ids);
-
-    return array_unique(array_diff_assoc($ids, $unique));
+    return $wpdb->get_results($query, ARRAY_A);
 }
 
 
@@ -521,83 +511,47 @@ function get_all_objects_by_id($object, $v)
     return $found;
 }
 
-
-function flatten_duplicate_letters($duplicate_ids, $data)
+/* TODO: refactor!!! */
+function flatten_duplicate_letters($query_result)
 {
-    $flattened = [];
+    $result = [];
 
-    foreach ($duplicate_ids as $ld) {
-        $duplicite_objects = get_all_objects_by_id($data, $ld);
-
-        $single_letter = [
-            'id' => '',
-            'signature' => '',
-            'status' => '',
-            'date_day' => '',
-            'date_month' => '',
-            'date_year' => '',
-            'status' => '',
-            'created' => '',
-            'author' => [],
-            'recipient' => [],
-            'origin' => [],
-            'dest' => [],
-            'images' => []
-        ];
-
-        $auth = [];
-        $rec = [];
-        $origins = [];
-        $dests = [];
-
-        for ($i = 0; $i < count($duplicite_objects); $i++) {
-            if ($i == 0) {
-                $single_letter['id'] = $duplicite_objects[$i]->id;
-                $single_letter['signature'] = $duplicite_objects[$i]->signature;
-                $single_letter['status'] = $duplicite_objects[$i]->signature;
-                $single_letter['date_day'] = $duplicite_objects[$i]->date_day;
-                $single_letter['date_month'] = $duplicite_objects[$i]->date_month;
-                $single_letter['date_year'] = $duplicite_objects[$i]->date_year;
-                $single_letter['status'] = $duplicite_objects[$i]->status;
-                $single_letter['created'] = $duplicite_objects[$i]->created;
+    foreach ($query_result as $row) {
+        if (!array_key_exists($row['id'], $result)) {
+            foreach ($row as $itemKey => $item) {
+                $result[$row['id']][$itemKey] = $item;
             }
-            $auth[] = $duplicite_objects[$i]->author;
-            $rec[] = $duplicite_objects[$i]->recipient;
-            $origins[] = $duplicite_objects[$i]->origin;
-            $dests[] = $duplicite_objects[$i]->dest;
-            $images[] = $duplicite_objects[$i]->images;
+        } else {
+            $existingRow = $result[$row['id']];
+            foreach ($row as $itemKey => $item) {
+                if (is_string($item) && $item != $existingRow[$itemKey]) {
+                    $result[$row['id']][$itemKey] = [];
+
+                    if (!is_array($existingRow[$itemKey])) {
+                        $result[$row['id']][$itemKey][] = $existingRow[$itemKey];
+                    } else {
+                        foreach ($existingRow[$itemKey] as $val) {
+                            $result[$row['id']][$itemKey][] = $val;
+                        }
+                    }
+
+                    $result[$row['id']][$itemKey][] = $item;
+                }
+            }
         }
-
-        $single_letter['author'] = array_values(array_unique($auth));
-        $single_letter['recipient'] = array_values(array_unique($rec));
-        $single_letter['origin'] = array_values(array_unique($origins));
-        $single_letter['dest'] = array_values(array_unique($dests));
-        $single_letter['images'] = array_values(array_unique($images));
-
-        $flattened[] = (object) $single_letter;
     }
 
-    return $flattened;
+    return $result;
 }
 
 
 function get_letters_basic_meta_filtered($letter_type, $person_type, $place_type, $draft = true)
 {
-    $q_results = get_letters_basic_meta($letter_type, $person_type, $place_type, $draft);
+    $filtered_letters = flatten_duplicate_letters(
+        get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
+    );
 
-    $letters_duplicate_ids = get_duplicities_by_id($q_results);
-
-    $new_flat_letters = flatten_duplicate_letters($letters_duplicate_ids, $q_results);
-
-    $q_results_filtered = array_filter($q_results, function ($r) use ($letters_duplicate_ids) {
-        return !in_array($r->id, $letters_duplicate_ids);
-    }, ARRAY_FILTER_USE_BOTH);
-
-    foreach ($new_flat_letters as $l) {
-        $q_results_filtered[] = $l;
-    }
-
-    return array_values($q_results_filtered);
+    return array_values($filtered_letters);
 }
 
 
