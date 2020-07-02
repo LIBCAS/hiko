@@ -425,24 +425,23 @@ if (array_key_exists('save_post', $_POST)) {
                 <fieldset id="a-related-resource">
                     <legend>Related resource</legend>
 
-                    <div v-for="rr in letter.related_resources" class="row mb-1">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="rel_rec_name">Related resource name</label>
-                                <input :value="decodeHTML(rr.title)" @input="rr.title = $event.target.value" type="text" class="form-control form-control-sm">
-                                <small class="form-text text-muted">
-                                    descriptor
-                                </small>
-                            </div>
+                    <div v-for="rr, index in letter.related_resources" class="border rounded my-2 py-3 px-2">
+                        <button @click="removeObjectMeta(index, 'related_resources')" type="button" class="close text-danger" aria-label="Remove related resource">
+                            <span title="Remove related resource">&times;</span>
+                        </button>
+                        <div class="form-group">
+                            <label for="rel_rec_name">Related resource name</label>
+                            <input :value="decodeHTML(rr.title)" @input="rr.title = $event.target.value" type="text" class="form-control form-control-sm">
+                            <small class="form-text text-muted">
+                                descriptor
+                            </small>
                         </div>
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="rel_rec_url">Related resource url</label>
-                                <input v-validate="{url: {require_protocol: true }}" data-vv-name="'Related resource url'" :value="decodeHTML(rr.link)" @input="rr.link = $event.target.value" type="url" class="form-control form-control-sm">
-                                <small class="form-text text-muted">
-                                    permanent URL to online resource
-                                </small>
-                            </div>
+                        <div class="form-group">
+                            <label for="rel_rec_url">Related resource url</label>
+                            <input v-validate="{url: {require_protocol: true }}" data-vv-name="'Related resource url'" :value="decodeHTML(rr.link)" @input="rr.link = $event.target.value" type="url" class="form-control form-control-sm">
+                            <small class="form-text text-muted">
+                                permanent URL to online resource
+                            </small>
                         </div>
                     </div>
 

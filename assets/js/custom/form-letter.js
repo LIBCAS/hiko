@@ -178,15 +178,7 @@ if (document.getElementById('letter-form')) {
             },
 
             resources() {
-                let resources = JSON.parse(
-                    JSON.stringify(this.letter.related_resources)
-                )
-
-                resources = resources.filter((el) => {
-                    return el.link && el.title
-                })
-
-                return JSON.stringify(resources)
+                return JSON.stringify(this.letter.related_resources)
             },
 
             participantsMeta() {
