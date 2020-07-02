@@ -6,6 +6,7 @@ if (document.getElementById('datatable-letters')) {
     Vue.use(VueTables.ClientTable, false, false, 'bootstrap4')
     columns = [
         'edit',
+        'id',
         'signature',
         'date',
         'author',
@@ -25,7 +26,19 @@ if (document.getElementById('datatable-letters')) {
         'dest',
         'status',
         'images',
+        'id',
     ])
+
+    customSortingLetters.id = function (ascending) {
+        return function (a, b) {
+            a = parseInt(a.id)
+            b = parseInt(b.id)
+
+            if (ascending) return a >= b ? 1 : -1
+
+            return a <= b ? 1 : -1
+        }
+    }
 
     customSortingLetters.date = function (ascending) {
         return function (a, b) {
@@ -52,6 +65,7 @@ if (document.getElementById('datatable-letters')) {
                 headings: {
                     dest: 'Destination',
                     edit: 'Akce',
+                    id: 'ID',
                     images: 'Obrázky',
                 },
                 pagination: defaultTablesOptions.pagination,
