@@ -2,15 +2,14 @@
 
 function list_places_simple()
 {
-    $type = test_input($_GET['type']);
-
-    wp_die(json_encode(
-        get_pods_name_and_id($type),
+    $places = json_encode(
+        get_pods_name_and_id(test_input($_GET['type'])),
         JSON_UNESCAPED_UNICODE
-    ));
+    );
+
+    wp_die($places);
 }
 add_action('wp_ajax_list_places_simple', 'list_places_simple');
-
 
 
 function list_place_single()
@@ -21,10 +20,10 @@ function list_place_single()
         wp_send_json_error('Not found', 404);
     }
 
-    $id = test_input($_GET['pods_id']);
-    $type = test_input($_GET['type']);
-
-    $pod = pods($type, $id);
+    $pod = pods(
+        test_input($_GET['type']),
+        test_input($_GET['pods_id'])
+    );
 
     if (!$pod->exists()) {
         wp_send_json_error('Not found', 404);
