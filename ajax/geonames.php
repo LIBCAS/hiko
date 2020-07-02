@@ -7,7 +7,9 @@ function get_geocities_latlng()
     }
 
     $query = test_input($_GET['query']);
-    $api_url = "http://api.geonames.org/searchJSON?maxRows=10&username=jarka&q={$query}";
+
+    $api_url = "https://secure.geonames.org/searchJSON?maxRows=10&username=jarka&q={$query}";
+
     $geo_data = json_decode(file_get_contents($api_url));
 
     if (count($geo_data->geonames) < 1) {
