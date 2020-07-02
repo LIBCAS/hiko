@@ -1,13 +1,60 @@
 <?php
 
-function list_places_simple()
+function list_places_simple($type = false, $ajax = true)
 {
+    if (!$type) {
+        $type = test_input($_GET['type']);
+    }
+
+    $fields = implode(', ', [
+        't.id',
+        't.name',
+        't.latitude',
+        't.longitude',
+    ]);
+
+    $pod = pods(
+        $type,
+        [
+            'limit' => -1,
+            'orderby' => 't.name ASC',
+            'select' => $fields,
+        ]
+    );
+
+    $places = [];
+
+    while ($pod->fetch()) {
+        $name = $pod->display('name');
+
+        if ($pod->display('latitude') && $pod->display('longitude')) {
+            $name .= ' (' . $pod->display('latitude') . ', ' . $pod->display('longitude') . ')';
+        }
+
+        $places[] = [
+            'id'=> $pod->display('id'),
+            'name'=> $name,
+        ];
+    }
+
+    if (!$pod->data()) {
+        $places[] = [
+            'id' => '',
+            'name' => '',
+        ];
+    }
+
     $places = json_encode(
-        get_pods_name_and_id(test_input($_GET['type'])),
+        $places,
         JSON_UNESCAPED_UNICODE
     );
 
-    wp_die($places);
+    if ($ajax) {
+        header('Content-Type: application/json');
+        wp_die($places);
+    }
+
+    return $places;
 }
 add_action('wp_ajax_list_places_simple', 'list_places_simple');
 

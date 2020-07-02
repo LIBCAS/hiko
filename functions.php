@@ -1006,10 +1006,8 @@ function display_persons_and_places($person_type, $place_type)
         get_pods_name_and_id($person_type, true),
         JSON_UNESCAPED_UNICODE
     );
-    $places = json_encode(
-        get_pods_name_and_id($place_type),
-        JSON_UNESCAPED_UNICODE
-    );
+
+    $places = list_places_simple($place_type, false);
 
     ob_start();
     ?>
