@@ -27,6 +27,11 @@ $places_json = json_encode(
         <span slot="city" slot-scope="props">
             <span v-html="props.row.city"></span>
         </span>
+        <span slot="latlong" slot-scope="props">
+            <a v-if="props.row.latlong" :href="props.row.latlong | mapLink" target="_blank">
+                {{ props.row.latlong }}
+            </a>
+        </span>
     </v-client-table>
 </div>
 

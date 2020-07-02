@@ -27,8 +27,8 @@ if (document.getElementById('datatable-letters')) {
         'images',
     ])
 
-    customSortingLetters.date = function(ascending) {
-        return function(a, b) {
+    customSortingLetters.date = function (ascending) {
+        return function (a, b) {
             a = getTimestampFromDate(a.date_year, a.date_month, a.date_day)
             b = getTimestampFromDate(b.date_year, b.date_month, b.date_day)
 
@@ -63,7 +63,7 @@ if (document.getElementById('datatable-letters')) {
                 texts: defaultTablesOptions.texts,
             },
         },
-        mounted: function() {
+        mounted: function () {
             let letterTypes = getLetterType()
             if (isString(letterTypes)) {
                 self.error = letterTypes
@@ -74,19 +74,19 @@ if (document.getElementById('datatable-letters')) {
             this.getData()
         },
         methods: {
-            showHistory: function(id, event) {
+            showHistory: function (id, event) {
                 let self = this
                 let spinner = event.target.querySelector('.spinner')
                 spinner.classList.remove('d-none')
                 axios
                     .get(
                         ajaxUrl +
-                        '?action=list_letter_history&l_id=' +
-                        id +
-                        '&l_type=' +
-                        self.path
+                            '?action=list_letter_history&l_id=' +
+                            id +
+                            '&l_type=' +
+                            self.path
                     )
-                    .then(function(result) {
+                    .then(function (result) {
                         spinner.classList.add('d-none')
                         let r = result.data.data
                         r = r.replace(/\n/g, '<br>')
@@ -98,9 +98,10 @@ if (document.getElementById('datatable-letters')) {
                             confirmButtonClass: 'btn btn-primary btn-lg mr-1',
                         })
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         Swal.fire({
-                            title: 'Historii úprav se nepodařilo načíst nebo nebo neexistuje',
+                            title:
+                                'Historii úprav se nepodařilo načíst nebo nebo neexistuje',
                             text: error,
                             type: 'error',
                             buttonsStyling: false,
@@ -108,36 +109,36 @@ if (document.getElementById('datatable-letters')) {
                             confirmButtonClass: 'btn btn-primary btn-lg mr-1',
                         })
                     })
-                    .then(function() {
+                    .then(function () {
                         spinner.classList.add('d-none')
                     })
             },
-            deleteLetter: function(id) {
+            deleteLetter: function (id) {
                 let self = this
-                removeItemAjax(id, 'letter', self.path, function() {
+                removeItemAjax(id, 'letter', self.path, function () {
                     self.deleteRow(id, self.tableData)
                 })
             },
-            deleteRow: function(id, data) {
-                this.tableData = data.filter(function(item) {
+            deleteRow: function (id, data) {
+                this.tableData = data.filter(function (item) {
                     return item.id !== id
                 })
             },
-            getData: function() {
+            getData: function () {
                 let self = this
                 axios
                     .get(
                         ajaxUrl +
-                        '?action=list_all_letters_short&type=' +
-                        self.path
+                            '?action=list_all_letters_short&type=' +
+                            self.path
                     )
-                    .then(function(result) {
+                    .then(function (result) {
                         self.tableData = result.data
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         self.error = error
                     })
-                    .then(function() {
+                    .then(function () {
                         self.loading = false
                     })
             },
@@ -175,7 +176,7 @@ if (document.getElementById('datatable-persons')) {
             loading: true,
             error: false,
         },
-        mounted: function() {
+        mounted: function () {
             let letterTypes = getLetterType()
 
             if (isString(letterTypes)) {
@@ -188,37 +189,37 @@ if (document.getElementById('datatable-persons')) {
             this.getPersons()
         },
         methods: {
-            getPersons: function() {
+            getPersons: function () {
                 let self = this
                 axios
                     .get(
                         ajaxUrl +
-                        '?action=persons_table_data&type=' +
-                        self.personType
+                            '?action=persons_table_data&type=' +
+                            self.personType
                     )
-                    .then(function(result) {
+                    .then(function (result) {
                         self.tableData = result.data
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         self.error = error
                     })
-                    .then(function() {
+                    .then(function () {
                         self.loading = false
                     })
             },
-            deletePerson: function(id) {
+            deletePerson: function (id) {
                 let self = this
-                removeItemAjax(id, 'person', self.path, function() {
+                removeItemAjax(id, 'person', self.path, function () {
                     self.deleteRow(id, self.tableData)
                 })
             },
-            deleteRow: function(id, data) {
-                this.tableData = data.filter(function(item) {
+            deleteRow: function (id, data) {
+                this.tableData = data.filter(function (item) {
                     return item.id !== id
                 })
             },
 
-            removeEmptyNameAlternatives: function(personID) {
+            removeEmptyNameAlternatives: function (personID) {
                 let self = this
 
                 let spinner = event.target.querySelector('.spinner')
@@ -227,17 +228,17 @@ if (document.getElementById('datatable-persons')) {
                 axios
                     .get(
                         ajaxUrl +
-                        '?action=count_alternate_name&id=' +
-                        personID +
-                        '&l_type=' +
-                        self.path
+                            '?action=count_alternate_name&id=' +
+                            personID +
+                            '&l_type=' +
+                            self.path
                     )
-                    .then(function(result) {
+                    .then(function (result) {
                         let r = result.data.data
 
                         // remove empty values from actual tableData to avoid new ajax call
                         if (r.hasOwnProperty('deleted')) {
-                            let rowData = self.tableData.filter(obj => {
+                            let rowData = self.tableData.filter((obj) => {
                                 return obj.id === personID
                             })
 
@@ -246,7 +247,7 @@ if (document.getElementById('datatable-persons')) {
                             rowData = JSON.parse(JSON.stringify(rowData[0]))
 
                             let updated = rowData.alternatives.filter(
-                                el => !r.deleted.includes(el)
+                                (el) => !r.deleted.includes(el)
                             )
 
                             rowData.alternatives = updated
@@ -254,10 +255,10 @@ if (document.getElementById('datatable-persons')) {
                             self.$set(self.tableData, index, rowData)
                         }
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         console.log(error)
                     })
-                    .then(function() {
+                    .then(function () {
                         spinner.classList.add('d-none')
                     })
             },
@@ -267,7 +268,7 @@ if (document.getElementById('datatable-persons')) {
 
 if (document.getElementById('datatable-places')) {
     Vue.use(VueTables.ClientTable, false, false, 'bootstrap4')
-    columns = ['edit', 'city', 'country']
+    columns = ['edit', 'city', 'country', 'latlong']
     new Vue({
         el: '#datatable-places',
         data: {
@@ -280,6 +281,7 @@ if (document.getElementById('datatable-places')) {
                 filterable: removeElFromArr('edit', columns),
                 headings: {
                     edit: 'Akce',
+                    latlong: 'Coordinates',
                 },
                 pagination: defaultTablesOptions.pagination,
                 perPage: defaultTablesOptions.perPage,
@@ -291,7 +293,7 @@ if (document.getElementById('datatable-places')) {
             },
             path: '',
         },
-        mounted: function() {
+        mounted: function () {
             let letterTypes = getLetterType()
             if (isString(letterTypes)) {
                 self.error = letterTypes
@@ -301,16 +303,23 @@ if (document.getElementById('datatable-places')) {
             this.path = letterTypes['path']
         },
         methods: {
-            deletePlace: function(id) {
+            deletePlace: function (id) {
                 let self = this
-                removeItemAjax(id, 'place', self.path, function() {
+                removeItemAjax(id, 'place', self.path, function () {
                     self.deleteRow(id, self.tableData)
                 })
             },
-            deleteRow: function(id, data) {
-                this.tableData = data.filter(function(item) {
+            deleteRow: function (id, data) {
+                this.tableData = data.filter(function (item) {
                     return item.id !== id
                 })
+            },
+        },
+        filters: {
+            mapLink: function (coordinates) {
+                if (!coordinates) return ''
+                coordinates = coordinates.split(',')
+                return `https://www.openstreetmap.org/?mlat=${coordinates[0]}&mlon=${coordinates[1]}&zoom=12`
             },
         },
     })

@@ -229,6 +229,8 @@ function get_places_table_data($place_type)
         't.id',
         't.name AS city',
         't.country',
+        't.latitude',
+        't.longitude',
         'letter_origin.id AS letter_id',
         'letter_destination.id AS dest_id'
     ];
@@ -246,13 +248,20 @@ function get_places_table_data($place_type)
     );
 
     $places_filtered = [];
-    $index = 0;
+
     while ($places->fetch()) {
-        $places_filtered[$index]['id'] = $places->display('id');
-        $places_filtered[$index]['city'] = $places->display('city');
-        $places_filtered[$index]['country'] = $places->display('country');
-        $places_filtered[$index]['relationships'] = !is_null($places->display('letter_id')) || !is_null($places->display('dest_id'));
-        $index++;
+        $latlong = '';
+        if ($places->display('latitude') && $places->display('longitude')) {
+            $latlong = $places->display('latitude') . ',' . $places->display('longitude');
+        }
+
+        $places_filtered[] = [
+            'id' => $places->display('id'),
+            'city' => $places->display('city'),
+            'country' => $places->display('country'),
+            'latlong' => $latlong,
+            'relationships' => !is_null($places->display('letter_id')) || !is_null($places->display('dest_id'))
+        ];
     }
 
     return $places_filtered;
