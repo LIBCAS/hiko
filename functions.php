@@ -1103,3 +1103,4 @@ require 'ajax/export-palladio.php';
 require 'ajax/location.php';
 require 'ajax/geonames.php';
 require 'ajax/keywords.php';
+require 'ajax/professions.php';
