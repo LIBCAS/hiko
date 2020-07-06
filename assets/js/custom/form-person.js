@@ -16,6 +16,8 @@ if (document.getElementById('person-name')) {
             note: '',
             personType: '',
             profession: '',
+            professions: [],
+            professionsType: '',
             type: 'person',
         },
 
@@ -51,11 +53,15 @@ if (document.getElementById('person-name')) {
 
             this.personType = letterTypes['personType']
 
+            this.professionsType = letterTypes['profession']
+
             let url = new URL(window.location.href)
 
             if (url.searchParams.get('edit')) {
                 this.getInitialData(url.searchParams.get('edit'))
             }
+
+            this.getProfessions()
         },
 
         methods: {
@@ -106,6 +112,39 @@ if (document.getElementById('person-name')) {
                         self.error = true
                         console.log(error)
                     })
+            },
+
+            regenerateProfessions: function (event) {
+                let self = this
+                event.target.classList.add('rotate')
+                self.getProfessions(() => {
+                    event.target.classList.remove('rotate')
+                })
+            },
+
+            getProfessions: function (callback = null) {
+                let self = this
+
+                axios
+                    .get(
+                        ajaxUrl +
+                            '?action=professions_table_data&type=' +
+                            self.professionsType
+                    )
+                    .then(function (response) {
+                        let professions = response.data
+
+                        professions.map((kw) => {
+                            self.professions.push({
+                                label: self.decodeHTML(kw.name),
+                                value: kw.id,
+                            })
+                        })
+                    })
+                    .catch(function (error) {
+                        console.log(error)
+                    })
+                    .then(callback)
             },
         },
     })
