@@ -31,6 +31,9 @@ $cardsData = [
                         <li class="list-group-item">
                             <a href="<?= home_url("/$value/keywords/"); ?>" class="card-link">Klíčová slova</a>
                         </li>
+                        <li class="list-group-item">
+                            <a href="<?= home_url("/$value/profession/"); ?>" class="card-link">Profese</a>
+                        </li>
                     </ul>
                 </div>
             </div>
