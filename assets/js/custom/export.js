@@ -9,7 +9,7 @@ if (document.getElementById('export')) {
             openDD: false,
         },
         computed: {
-            actions: function () {
+            actions: function() {
                 let customActions = []
 
                 if (this.path == 'tgm') {
@@ -36,35 +36,10 @@ if (document.getElementById('export')) {
                         title: ' Palladio – dopisy pro TGM',
                     })
                 }
-
-                if (this.path == 'blekastad') {
-                    customActions.push({
-                        url:
-                            ajaxUrl +
-                            '?action=export_palladio&type=' +
-                            this.path +
-                            '&format=csv',
-                        title: 'Palladio – vše',
-                    })
-
-                    customActions.push({
-                        url:
-                            ajaxUrl +
-                            '?action=export_palladio_masaryk&format=csv&from=1',
-                        title: ' Palladio – dopisy od MB',
-                    })
-
-                    customActions.push({
-                        url:
-                            ajaxUrl +
-                            '?action=export_palladio_masaryk&format=csv&from=0',
-                        title: ' Palladio – dopisy pro MB',
-                    })
-                }
                 return customActions
             },
         },
-        mounted: function () {
+        mounted: function() {
             let self = this
 
             let letterTypes = getLetterType()
