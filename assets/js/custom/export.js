@@ -92,3 +92,41 @@ if (document.getElementById('export-person')) {
         },
     })
 }
+
+if (document.getElementById('export-place')) {
+    new Vue({
+        el: '#export-place',
+        data: {
+            type: '',
+            error: false,
+            openDD: false,
+        },
+        computed: {
+            actions: function () {
+                let customActions = []
+
+                customActions.push({
+                    url:
+                        ajaxUrl +
+                        '?action=export_places&type=' +
+                        this.type +
+                        '&format=csv',
+                    title: 'Místa',
+                })
+
+                return customActions
+            },
+        },
+        mounted: function () {
+            let letterTypes = getLetterType()
+
+            if (isString(letterTypes)) {
+                this.error = letterTypes
+            } else {
+                this.type = letterTypes['placeType']
+            }
+
+            return
+        },
+    })
+}
