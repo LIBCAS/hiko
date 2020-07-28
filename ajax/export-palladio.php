@@ -1,10 +1,5 @@
 <?php
 
-ini_set("xdebug.var_display_max_children", -1);
-ini_set("xdebug.var_display_max_data", -1);
-ini_set("xdebug.var_display_max_depth", -1);
-
-
 function export_palladio_data()
 {
     if (!array_key_exists('type', $_GET)) {
@@ -325,77 +320,4 @@ function get_masaryk_name()
     );
 
     return trim($data->display('forename') . ' '. $data->display('surname'));
-}
-
-
-function merge_distinct_query_result($query_result)
-{
-    $result = [];
-
-    foreach ($query_result as $row) {
-        if (!array_key_exists($row['ID'], $result)) {
-            foreach ($row as $itemKey => $item) {
-                if ($itemKey == 'id') {
-                    continue;
-                }
-                $result[$row['ID']][$itemKey] = $item;
-            }
-        } else {
-            $existingRow = $result[$row['ID']];
-            foreach ($row as $itemKey => $item) {
-                if ($itemKey == 'ID') {
-                    continue;
-                }
-
-                if (is_string($item) && $item != $existingRow[$itemKey]) {
-                    $result[$row['ID']][$itemKey] = [];
-
-                    if (!is_array($existingRow[$itemKey])) {
-                        $result[$row['ID']][$itemKey][] = $existingRow[$itemKey];
-                    } else {
-                        foreach ($existingRow[$itemKey] as $val) {
-                            $result[$row['ID']][$itemKey][] = $val;
-                        }
-                    }
-
-                    $result[$row['ID']][$itemKey][] = $item;
-                }
-            }
-        }
-    }
-
-    return $result;
-}
-
-function array_to_csv_download($array, $filename = "export.csv", $delimiter = ";", $enclosure = '"')
-{
-    $f = fopen('php://memory', 'w');
-
-    fputs($f, "\xEF\xBB\xBF");
-
-    fputcsv($f, array_keys($array[0]), $delimiter);
-
-    foreach ($array as $line) {
-        fputcsv($f, $line, $delimiter);
-    }
-
-    fseek($f, 0);
-
-    header('Content-Type: application/csv');
-    header('Content-Encoding: UTF-8');
-    header('Content-type: text/csv; charset=UTF-8');
-    header('Cache-Control: no-cache, must-revalidate');
-    header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-    header('Content-Disposition: attachment; filename="' . $filename . '";');
-
-    fpassthru($f);
-}
-
-
-function separate_by_vertibar($str)
-{
-    $str = str_replace(';', '|', $str);
-    $str = str_replace(',', '|', $str);
-    $str = str_replace('| ', '|', $str);
-    return $str;
 }
