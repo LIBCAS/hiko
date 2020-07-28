@@ -12,7 +12,16 @@ if (document.getElementById('export')) {
             actions: function () {
                 let customActions = []
 
-                if (this.path == 'tgm') {
+                customActions.push({
+                    url:
+                        ajaxUrl +
+                        '?action=export_letters&type=' +
+                        this.path +
+                        '&format=csv',
+                    title: 'Vše',
+                })
+
+                if (this.path == 'blekastad' || this.path == 'tgm') {
                     customActions.push({
                         url:
                             ajaxUrl +
@@ -21,7 +30,9 @@ if (document.getElementById('export')) {
                             '&format=csv',
                         title: 'Palladio – vše',
                     })
+                }
 
+                if (this.path == 'tgm') {
                     customActions.push({
                         url:
                             ajaxUrl +

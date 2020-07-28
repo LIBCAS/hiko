@@ -142,6 +142,30 @@ function get_letter_export_data($type)
 }
 
 
+function export_letters()
+{
+    if (!array_key_exists('type', $_GET)) {
+        wp_send_json_error('Not found', 404);
+    }
+
+    $type = sanitize_text_field($_GET['type']);
+
+    $format = sanitize_text_field($_GET['format']);
+
+    if ($format != 'csv') {
+        wp_send_json_error('Format not found', 404);
+    }
+
+    array_to_csv_download(
+        get_letter_export_data($type),
+        "export-$type.csv"
+    );
+
+    wp_die();
+}
+add_action('wp_ajax_export_letters', 'export_letters');
+
+
 function export_persons()
 {
     if (!array_key_exists('type', $_GET)) {
@@ -263,7 +287,6 @@ function parse_letter_export_data($query_result)
             'Status' => $row['status'],
         ];
     }
-
 
     return $result;
 }
