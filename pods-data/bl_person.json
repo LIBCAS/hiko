@@ -1,8 +1,5 @@
 {
-    "meta": {
-        "version": "2.7.21",
-        "build": 1594060719
-    },
+    "meta": { "version": "2.7.21", "build": 1596016832 },
     "pods": {
         "49": {
             "id": 49,
@@ -33,18 +30,13 @@
                     "text_max_length": "255",
                     "text_allow_shortcode": "0",
                     "text_allow_html": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_placeholder": ""
                 },
                 "created": {
@@ -121,18 +113,13 @@
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -154,18 +141,13 @@
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -191,18 +173,13 @@
                     "number_min": "0",
                     "number_max": "100",
                     "number_max_length": "4",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "number_repeatable": "0",
                     "number_placeholder": ""
                 },
@@ -228,18 +205,13 @@
                     "number_min": "0",
                     "number_max": "100",
                     "number_max_length": "4",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "number_repeatable": "0",
                     "number_placeholder": ""
                 },
@@ -261,18 +233,13 @@
                     "text_allow_html": "0",
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -300,18 +267,13 @@
                     "pick_show_view_link": "1",
                     "pick_limit": "0",
                     "pick_user_role": [],
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "oembed_enabled_providers_collegehumorcom": "0",
                     "oembed_enabled_providers_funnyordiecom": "0",
                     "oembed_enabled_providers_photobucketcom": "0",
@@ -350,18 +312,13 @@
                     "pick_show_view_link": "1",
                     "pick_limit": "0",
                     "pick_user_role": [],
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "oembed_enabled_providers_collegehumorcom": "0",
                     "oembed_enabled_providers_funnyordiecom": "0",
                     "oembed_enabled_providers_photobucketcom": "0",
@@ -400,18 +357,13 @@
                     "pick_show_view_link": "1",
                     "pick_limit": "0",
                     "pick_user_role": [],
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "oembed_enabled_providers_collegehumorcom": "0",
                     "oembed_enabled_providers_funnyordiecom": "0",
                     "oembed_enabled_providers_photobucketcom": "0",
@@ -448,18 +400,13 @@
                     "paragraph_allow_shortcode": "0",
                     "paragraph_allowed_html_tags": "strong em a ul ol li b i",
                     "paragraph_max_length": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "paragraph_repeatable": "0",
                     "paragraph_placeholder": ""
                 },
@@ -482,18 +429,13 @@
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
                     "oembed_enabled_providers_collegehumorcom": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -516,18 +458,13 @@
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "-1",
                     "oembed_enabled_providers_collegehumorcom": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -550,18 +487,13 @@
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
                     "oembed_enabled_providers_collegehumorcom": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -584,18 +516,13 @@
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
                     "oembed_enabled_providers_collegehumorcom": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
@@ -618,66 +545,71 @@
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
                     "oembed_enabled_providers_collegehumorcom": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
                 },
-                "rel_profession": {
-                    "id": 806,
-                    "name": "rel_profession",
-                    "label": "Related Profession",
+                "profession_short": {
+                    "id": 1710,
+                    "name": "profession_short",
+                    "label": "Profession - short",
                     "description": "",
                     "help": "",
                     "class": "",
-                    "type": "pick",
+                    "type": "text",
                     "weight": 17,
-                    "pick_object": "pod",
-                    "pick_val": "bl_profession",
-                    "sister_id": "812",
+                    "pick_object": "",
+                    "pick_val": "",
+                    "sister_id": "",
                     "required": "0",
                     "unique": "0",
-                    "pick_format_type": "multi",
-                    "pick_format_single": "dropdown",
-                    "pick_format_multi": "multiselect",
-                    "pick_display_format_multi": "default",
-                    "pick_display_format_separator": ", ",
-                    "pick_allow_add_new": "0",
-                    "pick_taggable": "0",
-                    "pick_show_icon": "1",
-                    "pick_show_edit_link": "1",
-                    "pick_show_view_link": "1",
-                    "pick_limit": "0",
-                    "pick_user_role": [],
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "text_allow_shortcode": "0",
+                    "text_allow_html": "0",
+                    "text_allowed_html_tags": "strong em a ul ol li b i",
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
-                    "pick_select_text": "",
-                    "pick_table_id": "",
-                    "pick_table_index": "",
-                    "pick_display": "",
-                    "pick_where": "",
-                    "pick_orderby": "",
-                    "pick_groupby": ""
+                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "text_repeatable": 0,
+                    "text_max_length": 255,
+                    "text_placeholder": ""
+                },
+                "profession_detailed": {
+                    "id": 1711,
+                    "name": "profession_detailed",
+                    "label": "Profession - detailed",
+                    "description": "",
+                    "help": "",
+                    "class": "",
+                    "type": "text",
+                    "weight": 18,
+                    "pick_object": "",
+                    "pick_val": "",
+                    "sister_id": "",
+                    "required": "0",
+                    "unique": "0",
+                    "text_allow_shortcode": "0",
+                    "text_allow_html": "0",
+                    "text_allowed_html_tags": "strong em a ul ol li b i",
+                    "pick_post_status": ["publish"],
+                    "admin_only": "0",
+                    "restrict_role": "1",
+                    "restrict_capability": "0",
+                    "hidden": "0",
+                    "read_only": "0",
+                    "roles_allowed": ["administrator", "blekastad_editor"],
+                    "text_repeatable": 0,
+                    "text_max_length": 255,
+                    "text_placeholder": ""
                 }
             },
             "show_in_menu": "0",
@@ -685,17 +617,9 @@
             "pod_index": "name",
             "hierarchical": "0",
             "ui_style": "post_type",
-            "ui_actions_enabled": [
-                "add",
-                "edit",
-                "duplicate",
-                "delete"
-            ],
+            "ui_actions_enabled": ["add", "edit", "duplicate", "delete"],
             "ui_reorder_field": "menu_order",
-            "ui_fields_manage": {
-                "0": "name",
-                "2": "modified"
-            },
+            "ui_fields_manage": { "0": "name", "2": "modified" },
             "menu_position": "0"
         }
     }

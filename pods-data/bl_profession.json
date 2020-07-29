@@ -1,11 +1,8 @@
 {
-    "meta": {
-        "version": "2.7.21",
-        "build": 1594060778
-    },
+    "meta": { "version": "2.7.21", "build": 1596016872 },
     "pods": {
-        "802": {
-            "id": 802,
+        "1698": {
+            "id": 1698,
             "name": "bl_profession",
             "label": "Blekastad Professions",
             "description": "",
@@ -15,7 +12,7 @@
             "alias": "",
             "fields": {
                 "name": {
-                    "id": 803,
+                    "id": 1699,
                     "name": "name",
                     "label": "Name",
                     "description": "",
@@ -34,22 +31,17 @@
                     "text_allow_shortcode": "0",
                     "text_allow_html": "0",
                     "oembed_enabled_providers_collegehumorcom": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_placeholder": ""
                 },
                 "namecz": {
-                    "id": 804,
+                    "id": 1700,
                     "name": "namecz",
                     "label": "Name CZ",
                     "description": "",
@@ -67,66 +59,15 @@
                     "text_allowed_html_tags": "strong em a ul ol li b i",
                     "text_max_length": "255",
                     "oembed_enabled_providers_collegehumorcom": "0",
-                    "pick_post_status": [
-                        "publish"
-                    ],
+                    "pick_post_status": ["publish"],
                     "admin_only": "0",
                     "restrict_role": "1",
                     "restrict_capability": "0",
                     "hidden": "0",
                     "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
+                    "roles_allowed": ["administrator", "blekastad_editor"],
                     "text_repeatable": "0",
                     "text_placeholder": ""
-                },
-                "related_person": {
-                    "id": 807,
-                    "name": "related_person",
-                    "label": "Related Person",
-                    "description": "",
-                    "help": "",
-                    "class": "",
-                    "type": "pick",
-                    "weight": 2,
-                    "pick_object": "pod",
-                    "pick_val": "bl_person",
-                    "sister_id": "806",
-                    "required": "0",
-                    "unique": "0",
-                    "pick_format_type": "multi",
-                    "pick_format_single": "dropdown",
-                    "pick_format_multi": "multiselect",
-                    "pick_display_format_multi": "default",
-                    "pick_display_format_separator": ", ",
-                    "pick_allow_add_new": "1",
-                    "pick_taggable": "0",
-                    "pick_show_icon": "1",
-                    "pick_show_edit_link": "1",
-                    "pick_show_view_link": "1",
-                    "pick_limit": "0",
-                    "pick_user_role": [],
-                    "pick_post_status": [
-                        "publish"
-                    ],
-                    "admin_only": "0",
-                    "restrict_role": "1",
-                    "restrict_capability": "0",
-                    "hidden": "0",
-                    "read_only": "0",
-                    "roles_allowed": [
-                        "administrator",
-                        "blekastad_editor"
-                    ],
-                    "pick_select_text": "",
-                    "pick_table_id": "",
-                    "pick_table_index": "",
-                    "pick_display": "",
-                    "pick_where": "",
-                    "pick_orderby": "",
-                    "pick_groupby": ""
                 }
             },
             "show_in_menu": "0",
@@ -135,16 +76,9 @@
             "hierarchical": "0",
             "ui_style": "post_type",
             "menu_position": "0",
-            "ui_actions_enabled": [
-                "add",
-                "edit",
-                "duplicate",
-                "delete"
-            ],
+            "ui_actions_enabled": ["add", "edit", "duplicate", "delete"],
             "ui_reorder_field": "menu_order",
-            "ui_fields_manage": [
-                "name"
-            ]
+            "ui_fields_manage": ["name"]
         }
     }
 }
