@@ -887,6 +887,8 @@ function save_hiko_person($person_type, $action)
         'nationality' => 'nationality',
         'note' => 'note',
         'profession' => 'profession',
+        'profession_detailed' => 'profession_detailed',
+        'profession_short' => 'profession_short',
         'surname' => 'surname',
         'type' => 'type',
     ]);

@@ -57,13 +57,13 @@ if (document.getElementById('person-name')) {
 
             this.professionsType = letterTypes['profession']
 
+            this.getProfessions()
+
             let url = new URL(window.location.href)
 
             if (url.searchParams.get('edit')) {
                 this.getInitialData(url.searchParams.get('edit'))
             }
-
-            this.getProfessions()
         },
 
         methods: {
@@ -95,8 +95,6 @@ if (document.getElementById('person-name')) {
 
                         if (Array.isArray(rd.names)) {
                             self.alternativeNames = rd.names
-                        } else {
-                            self.alternativeNames = []
                         }
 
                         self.dob = rd.birth_year
@@ -109,6 +107,21 @@ if (document.getElementById('person-name')) {
                         self.note = rd.note
                         self.profession = rd.profession
                         self.type = rd.type ? rd.type : 'person'
+
+                        if (rd.profession_detailed) {
+                            self.professionDetailed = []
+                            rd.profession_detailed.split(';').map((item) => {
+                                self.professionDetailed.push(
+                                    self.getProfessionById(item)
+                                )
+                            })
+                        }
+
+                        if (rd.profession_short) {
+                            self.professionShort = self.getProfessionById(
+                                rd.profession_short
+                            )
+                        }
                     })
                     .catch(function (error) {
                         self.error = true
@@ -159,6 +172,17 @@ if (document.getElementById('person-name')) {
                         return index !== professionIndex
                     }
                 )
+            },
+
+            getProfessionById: function (id) {
+                let filtered = this.professions.filter((profession) => {
+                    return profession.value == id
+                })
+
+                return {
+                    label: filtered[0].label,
+                    value: filtered[0].value,
+                }
             },
 
             getObjectValues: function (o) {

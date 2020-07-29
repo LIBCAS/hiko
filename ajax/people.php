@@ -75,6 +75,8 @@ function list_people_single()
     $results['emlo'] = $pod->field('emlo');
     $results['note'] = $pod->field('note');
     $results['profession'] = $pod->field('profession');
+    $results['profession_short'] = $pod->field('profession_short');
+    $results['profession_detailed'] = $pod->field('profession_detailed');
     $results['nationality'] = $pod->field('nationality');
     $results['gender'] = $pod->field('gender');
     $results['names'] = $alternative_names;
