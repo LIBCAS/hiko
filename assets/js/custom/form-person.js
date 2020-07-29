@@ -1,4 +1,4 @@
-/* global Vue axios ajaxUrl getLetterType decodeHTML isString */
+/* global Vue axios ajaxUrl getLetterType decodeHTML isString getObjectValues */
 
 if (document.getElementById('person-name')) {
     new Vue({
@@ -16,6 +16,8 @@ if (document.getElementById('person-name')) {
             note: '',
             personType: '',
             profession: '',
+            professionDetailed: [{ label: null, value: null }],
+            professionShort: [],
             professions: [],
             professionsType: '',
             type: 'person',
@@ -115,9 +117,9 @@ if (document.getElementById('person-name')) {
             },
 
             regenerateProfessions: function (event) {
-                let self = this
+                this.professions = []
                 event.target.classList.add('rotate')
-                self.getProfessions(() => {
+                this.getProfessions(() => {
                     event.target.classList.remove('rotate')
                 })
             },
@@ -145,6 +147,27 @@ if (document.getElementById('person-name')) {
                         console.log(error)
                     })
                     .then(callback)
+            },
+
+            addNewprofession: function () {
+                this.professionDetailed.push({ label: null, value: null })
+            },
+
+            removeProfession: function (professionIndex) {
+                this.professionDetailed = this.professionDetailed.filter(
+                    function (item, index) {
+                        return index !== professionIndex
+                    }
+                )
+            },
+
+            getObjectValues: function (o) {
+                let values = getObjectValues(o)
+
+                // remove duplicates
+                return values.filter(function (item, pos, self) {
+                    return self.indexOf(item) == pos
+                })
             },
         },
     })
