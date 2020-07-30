@@ -1,4 +1,4 @@
-/* global Vue axios ajaxUrl getLetterType decodeHTML isString */
+/* global Vue axios ajaxUrl getLetterType decodeHTML isString getObjectValues */
 
 if (document.getElementById('person-name')) {
     new Vue({
@@ -16,6 +16,10 @@ if (document.getElementById('person-name')) {
             note: '',
             personType: '',
             profession: '',
+            professionDetailed: [{ label: null, value: null }],
+            professionShort: [],
+            professions: [],
+            professionsType: '',
             type: 'person',
         },
 
@@ -50,6 +54,10 @@ if (document.getElementById('person-name')) {
             }
 
             this.personType = letterTypes['personType']
+
+            this.professionsType = letterTypes['profession']
+
+            this.getProfessions()
 
             let url = new URL(window.location.href)
 
@@ -87,8 +95,6 @@ if (document.getElementById('person-name')) {
 
                         if (Array.isArray(rd.names)) {
                             self.alternativeNames = rd.names
-                        } else {
-                            self.alternativeNames = []
                         }
 
                         self.dob = rd.birth_year
@@ -101,11 +107,91 @@ if (document.getElementById('person-name')) {
                         self.note = rd.note
                         self.profession = rd.profession
                         self.type = rd.type ? rd.type : 'person'
+
+                        if (rd.profession_detailed) {
+                            self.professionDetailed = []
+                            rd.profession_detailed.split(';').map((item) => {
+                                self.professionDetailed.push(
+                                    self.getProfessionById(item)
+                                )
+                            })
+                        }
+
+                        if (rd.profession_short) {
+                            self.professionShort = self.getProfessionById(
+                                rd.profession_short
+                            )
+                        }
                     })
                     .catch(function (error) {
                         self.error = true
                         console.log(error)
                     })
+            },
+
+            regenerateProfessions: function (event) {
+                this.professions = []
+                event.target.classList.add('rotate')
+                this.getProfessions(() => {
+                    event.target.classList.remove('rotate')
+                })
+            },
+
+            getProfessions: function (callback = null) {
+                let self = this
+
+                axios
+                    .get(
+                        ajaxUrl +
+                            '?action=professions_table_data&type=' +
+                            self.professionsType
+                    )
+                    .then(function (response) {
+                        let professions = response.data
+
+                        professions.map((kw) => {
+                            self.professions.push({
+                                label: self.decodeHTML(kw.name),
+                                value: kw.id,
+                            })
+                        })
+                    })
+                    .catch(function (error) {
+                        console.log(error)
+                    })
+                    .then(callback)
+            },
+
+            addNewprofession: function () {
+                this.professionDetailed.push({ label: null, value: null })
+            },
+
+            removeProfession: function (professionIndex) {
+                this.professionDetailed = this.professionDetailed.filter(
+                    function (item, index) {
+                        return index !== professionIndex
+                    }
+                )
+            },
+
+            getProfessionById: function (id) {
+                let filtered = this.professions.filter((profession) => {
+                    return profession.value == id
+                })
+
+                return {
+                    label: filtered[0].label,
+                    value: filtered[0].value,
+                }
+            },
+
+            getObjectValues: function (o) {
+                let values = getObjectValues(o)
+
+                // remove duplicates
+                return values.filter(function (item, pos, self) {
+                    return self.indexOf(item) == pos
+                })
             },
         },
     })

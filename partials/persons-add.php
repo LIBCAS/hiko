@@ -66,7 +66,26 @@ if (array_key_exists('save_post', $_POST)) {
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="profession">Profession</label>
+                        <label for="profession_short">Profession (Palladio) <span class="pointer oi oi-reload pl-1" @click="regenerateProfessions($event)"></span></label>
+                        <multiselect v-model="professionShort" :options="professions" label="label" track-by="value">
+                        </multiselect>
+                        <input type="hidden" :value="professionShort.value" name="profession_short">
+                    </div>
+                    <div class="form-group">
+                        <label for="profession_detailed">Professions <span class="pointer oi oi-reload pl-1" @click="regenerateProfessions($event)"></span></label>
+                        <div v-for="pf, index in professionDetailed" class="border rounded my-2 py-3 px-2 d-flex align-items-start">
+                            <multiselect v-model="professionDetailed[index]" :options="professions" label="label" track-by="value"></multiselect>
+                            <button @click="removeProfession(index)" type="button" class="close text-danger" aria-label="Remove profession">
+                                <span title="Remove profession">&times;</span>
+                            </button>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-info d-block mt-2 mb-4" @click="addNewprofession">
+                            <span class="oi oi-plus"></span> Add
+                        </button>
+                        <input type="hidden" :value="getObjectValues(professionDetailed).join(';')" name="profession_detailed">
+                    </div>
+                    <div class="form-group">
+                        <label for="profession">Profession (deprecated)</label>
                         <input v-model="profession" type="text" class="form-control form-control-sm" name="profession">
                     </div>
                     <div class="form-group">

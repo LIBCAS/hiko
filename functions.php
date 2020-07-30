@@ -583,6 +583,7 @@ function get_hiko_post_types($type)
         $data['path'] = 'blekastad';
         $data['title'] = 'Milada Blekastad';
         $data['keyword'] = 'bl_keyword';
+        $data['profession'] = 'bl_profession';
     } elseif ($type == 'demo') {
         $data['letter'] = 'demo_letter';
         $data['place'] = 'demo_place';
@@ -591,6 +592,7 @@ function get_hiko_post_types($type)
         $data['path'] = 'demo';
         $data['title'] = 'Zkušební DB';
         $data['keyword'] = 'demo_keyword';
+        $data['profession'] = 'demo_profession';
     } elseif ($type == 'tgm') {
         $data['letter'] = 'tgm_letter';
         $data['place'] = 'tgm_place';
@@ -599,6 +601,7 @@ function get_hiko_post_types($type)
         $data['path'] = 'tgm';
         $data['title'] = 'Korespondence TGM';
         $data['keyword'] = 'tgm_keyword';
+        $data['profession'] = 'tgm_profession';
     }
 
     return $data;
@@ -884,6 +887,8 @@ function save_hiko_person($person_type, $action)
         'nationality' => 'nationality',
         'note' => 'note',
         'profession' => 'profession',
+        'profession_detailed' => 'profession_detailed',
+        'profession_short' => 'profession_short',
         'surname' => 'surname',
         'type' => 'type',
     ]);
@@ -1175,3 +1180,4 @@ require 'ajax/export-palladio.php';
 require 'ajax/location.php';
 require 'ajax/geonames.php';
 require 'ajax/keywords.php';
+require 'ajax/professions.php';

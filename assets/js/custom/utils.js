@@ -12,7 +12,7 @@ function errorInfoSwal(error, title = 'Při ukládání došlo k chybě.') {
 }
 
 function getNameById(data, id) {
-    var filtered = data.filter(function(line) {
+    var filtered = data.filter(function (line) {
         return line.id == id
     })
 
@@ -36,6 +36,7 @@ function getLetterType() {
             placeType: 'bl_place',
             path: 'blekastad',
             keyword: 'bl_keyword',
+            profession: 'bl_profession',
         }
     }
 
@@ -46,6 +47,7 @@ function getLetterType() {
             placeType: 'demo_place',
             path: 'demo',
             keyword: 'demo_keyword',
+            profession: 'demo_profession',
         }
     }
 
@@ -56,6 +58,7 @@ function getLetterType() {
             placeType: 'tgm_place',
             path: 'tgm',
             keyword: 'tgm_keyword',
+            profession: 'tgm_profession',
         }
     }
 
@@ -75,24 +78,24 @@ function getGeoCoord(callback) {
         title: 'Zadejte název místa',
         type: 'question',
         allowOutsideClick: () => !Swal.isLoading(),
-        inputValidator: value => {
+        inputValidator: (value) => {
             if (value.length < 2) {
                 return 'Zadejte název místa'
             }
         },
-        preConfirm: function(value) {
+        preConfirm: function (value) {
             return axios
                 .get(ajaxUrl + '?action=get_geocities_latlng&query=' + value)
-                .then(function(response) {
+                .then(function (response) {
                     return response.data.data
                 })
-                .catch(function(error) {
+                .catch(function (error) {
                     Swal.showValidationMessage(
                         `Při vyhledávání došlo k chybě: ${error}`
                     )
                 })
         },
-    }).then(result => {
+    }).then((result) => {
         if (result.value) {
             Swal.fire({
                 buttonsStyling: false,
@@ -105,7 +108,7 @@ function getGeoCoord(callback) {
                 showCancelButton: true,
                 title: 'Vyberte místo',
                 type: 'question',
-            }).then(result => {
+            }).then((result) => {
                 callback(result)
             })
         }
@@ -157,21 +160,23 @@ function removeItemAjax(id, podType, podName, callback) {
         cancelButtonText: 'Zrušit',
         confirmButtonClass: 'btn btn-primary btn-lg mr-1',
         cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
-    }).then(result => {
+    }).then((result) => {
         if (result.value) {
             axios
                 .post(
-                    ajaxUrl + '?action=delete_hiko_pod', {
+                    ajaxUrl + '?action=delete_hiko_pod',
+                    {
                         ['pod_type']: podType,
                         ['pod_name']: podName,
                         ['id']: id,
-                    }, {
+                    },
+                    {
                         headers: {
                             'Content-Type': 'application/json;charset=utf-8',
                         },
                     }
                 )
-                .then(function() {
+                .then(function () {
                     Swal.fire({
                         title: 'Odstraněno.',
                         type: 'success',
@@ -181,7 +186,7 @@ function removeItemAjax(id, podType, podName, callback) {
                     })
                     callback()
                 })
-                .catch(function(error) {
+                .catch(function (error) {
                     Swal.fire({
                         title: 'Při odstraňování došlo k chybě.',
                         text: error,
@@ -196,7 +201,7 @@ function removeItemAjax(id, podType, podName, callback) {
 }
 
 function removeElFromArr(el, array) {
-    return array.filter(function(value) {
+    return array.filter(function (value) {
         return value != el
     })
 }
@@ -204,8 +209,8 @@ function removeElFromArr(el, array) {
 function getCustomSorting(columns) {
     let sorting = {}
     for (let i = 0; i < columns.length; i++) {
-        sorting[columns[i]] = function(ascending) {
-            return function(a, b) {
+        sorting[columns[i]] = function (ascending) {
+            return function (a, b) {
                 if (a[columns[i]] == null) {
                     a = ''
                 } else if (Array.isArray(a[columns[i]])) {
