@@ -19,6 +19,7 @@ if (document.getElementById('person-name')) {
             professionDetailed: [{ label: null, value: null }],
             professionShort: [],
             professions: [],
+            professionsPalladio: [],
             professionsType: '',
             type: 'person',
         },
@@ -149,11 +150,18 @@ if (document.getElementById('person-name')) {
                     .then(function (response) {
                         let professions = response.data
 
-                        professions.map((kw) => {
+                        professions.map((profession) => {
                             self.professions.push({
-                                label: self.decodeHTML(kw.name),
-                                value: kw.id,
+                                label: self.decodeHTML(profession.name),
+                                value: profession.id,
                             })
+
+                            if (profession.palladio) {
+                                self.professionsPalladio.push({
+                                    label: self.decodeHTML(profession.name),
+                                    value: profession.id,
+                                })
+                            }
                         })
                     })
                     .catch(function (error) {

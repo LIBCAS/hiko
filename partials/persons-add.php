@@ -67,7 +67,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                     <div class="form-group">
                         <label for="profession_short">Profession (Palladio) <span class="pointer oi oi-reload pl-1" @click="regenerateProfessions($event)"></span></label>
-                        <multiselect v-model="professionShort" :options="professions" label="label" track-by="value">
+                        <multiselect v-model="professionShort" :options="professionsPalladio" label="label" track-by="value">
                         </multiselect>
                         <input type="hidden" :value="professionShort.value" name="profession_short">
                     </div>
