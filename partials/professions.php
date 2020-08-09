@@ -14,9 +14,12 @@ $profession_type = $pods_types['profession'];
         {{ error }}
     </div>
     <v-client-table :data="tableData" :columns="columns" :options="options" v-if="tableData.length > 0">
+        <span slot="palladio" slot-scope="props">
+            {{ props.row.palladio ? 'palladio' : '' }}
+        </span>
         <ul slot="edit" slot-scope="props" class="list-unstyled">
             <li>
-                <span @click="addProfession('<?= $profession_type; ?>', 'edit', props.row.id, props.row.name, props.row.namecz)" class="text-success is-link py-1">
+                <span @click="addProfession('<?= $profession_type; ?>', 'edit', props.row.id, props.row.name, props.row.namecz, props.row.palladio)" class="text-success is-link py-1">
                     Upravit
                 </span>
             </li>

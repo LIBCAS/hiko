@@ -17,6 +17,7 @@ function insert_profession()
     $data = [
         'name' => test_input($data->nameen),
         'namecz' => test_input($data->namecz),
+        'palladio' => (bool) $data->palladio ? 1 : 0,
     ];
 
     if ($action == 'add') {
@@ -49,6 +50,7 @@ function get_professions_table_data()
         't.id',
         't.name AS name',
         't.namecz',
+        't.palladio',
     ];
 
     $fields = implode(', ', $fields);
@@ -68,6 +70,7 @@ function get_professions_table_data()
         $professions_filtered[$index]['id'] = $professions->display('id');
         $professions_filtered[$index]['name'] = $professions->display('name');
         $professions_filtered[$index]['namecz'] = $professions->display('namecz');
+        $professions_filtered[$index]['palladio'] = $professions->field('palladio') == 0 ? false : true;
         $index++;
     }
 

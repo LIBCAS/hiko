@@ -20,15 +20,21 @@ const professionsSwal = {
     },
 }
 
-function getProfessionForm(val1, val2) {
+function getProfessionForm(nameEn, nameCs, palladio) {
+    palladio = palladio ? 'checked="checked"' : ''
+
     return `
     <div class="form-group">
     <label for="nameen">EN</label>
-    <input value="${val1}" id="nameen" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
+    <input value="${nameEn}" id="nameen" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
     </div>
     <div class="form-group">
     <label for="namecz">CZ</label>
-    <input value="${val2}" id="namecz" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
+    <input value="${nameCs}" id="namecz" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
+    </div>
+    <div class="form-check">
+    <input type="checkbox" class="form-check-input" id="palladio" ${palladio} autocomplete="off">
+    <label class="form-check-label" id="palladio" for="palladio">Palladio</label>
     </div>
     `
 }
@@ -38,7 +44,7 @@ if (document.getElementById('datatable-profession')) {
     new Vue({
         el: '#datatable-profession',
         data: {
-            columns: ['name', 'namecz', 'edit'],
+            columns: ['name', 'namecz', 'palladio', 'edit'],
             tableData: [],
             error: false,
             options: {
@@ -46,6 +52,7 @@ if (document.getElementById('datatable-profession')) {
                 headings: {
                     name: 'EN',
                     namecz: 'CZ',
+                    palladio: 'Type',
                     edit: 'Akce',
                 },
                 pagination: defaultTablesOptions.pagination,
@@ -53,7 +60,7 @@ if (document.getElementById('datatable-profession')) {
                 perPageValues: defaultTablesOptions.perPageValues,
                 skin: defaultTablesOptions.skin,
                 sortIcon: defaultTablesOptions.sortIcon,
-                sortable: ['name', 'namecz'],
+                sortable: ['name', 'namecz', 'palladio'],
                 texts: defaultTablesOptions.texts,
             },
             path: '',
@@ -103,7 +110,8 @@ if (document.getElementById('datatable-profession')) {
                 action,
                 id,
                 oldProfession = '',
-                oldProfessionCZ = ''
+                oldProfessionCZ = '',
+                oldPalladio = false
             ) {
                 let self = this
                 let swalConfig = professionsSwal.confirmSave
@@ -113,7 +121,8 @@ if (document.getElementById('datatable-profession')) {
 
                 swalConfig.html = getProfessionForm(
                     oldProfession,
-                    oldProfessionCZ
+                    oldProfessionCZ,
+                    oldPalladio
                 )
 
                 swalConfig.focusConfirm = false
@@ -121,6 +130,7 @@ if (document.getElementById('datatable-profession')) {
                 swalConfig.preConfirm = () => {
                     let nameen = document.getElementById('nameen').value
                     let namecz = document.getElementById('namecz').value
+                    let palladio = document.getElementById('palladio').checked
 
                     if (nameen.length < 2) {
                         return Swal.showValidationMessage(
@@ -135,6 +145,7 @@ if (document.getElementById('datatable-profession')) {
                                 ['type']: type,
                                 ['nameen']: nameen,
                                 ['namecz']: namecz,
+                                ['palladio']: palladio,
                                 ['action']: action,
                                 ['id']: id,
                             },
