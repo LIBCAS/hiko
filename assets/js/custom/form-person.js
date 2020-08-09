@@ -113,14 +113,18 @@ if (document.getElementById('person-name')) {
                             self.professionDetailed = []
                             rd.profession_detailed.split(';').map((item) => {
                                 self.professionDetailed.push(
-                                    self.getProfessionById(item)
+                                    self.getProfessionById(
+                                        item,
+                                        self.professions
+                                    )
                                 )
                             })
                         }
 
                         if (rd.profession_short) {
                             self.professionShort = self.getProfessionById(
-                                rd.profession_short
+                                rd.profession_short,
+                                self.professionsPalladio
                             )
                         }
                     })
@@ -151,13 +155,13 @@ if (document.getElementById('person-name')) {
                         let professions = response.data
 
                         professions.map((profession) => {
-                            self.professions.push({
-                                label: self.decodeHTML(profession.name),
-                                value: profession.id,
-                            })
-
                             if (profession.palladio) {
                                 self.professionsPalladio.push({
+                                    label: self.decodeHTML(profession.name),
+                                    value: profession.id,
+                                })
+                            } else {
+                                self.professions.push({
                                     label: self.decodeHTML(profession.name),
                                     value: profession.id,
                                 })
@@ -182,8 +186,8 @@ if (document.getElementById('person-name')) {
                 )
             },
 
-            getProfessionById: function (id) {
-                let filtered = this.professions.filter((profession) => {
+            getProfessionById: function (id, professions) {
+                let filtered = professions.filter((profession) => {
                     return profession.value == id
                 })
 
