@@ -141,7 +141,7 @@ if (document.getElementById('datatable-keywords')) {
             },
         ],
         height: '600px',
-
+        layout: 'fitColumns',
         pagination: 'local',
         paginationSize: 25,
     })
@@ -151,8 +151,6 @@ if (document.getElementById('datatable-keywords')) {
     )
 
     document.querySelectorAll('.tabulator-header-filter').forEach((item) => {
-        console.log(item.querySelector('input'))
-
         item.querySelector('input').classList.add(
             'form-control',
             'form-control-sm'
