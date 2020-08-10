@@ -1,4 +1,4 @@
-/* global Vue VueTables defaultTablesOptions getLetterType removeItemAjax axios Swal ajaxUrl isString */
+/* global Tabulator getLetterType removeItemAjax axios Swal ajaxUrl */
 
 const keywordsSwal = {
     confirmSave: {
@@ -12,7 +12,7 @@ const keywordsSwal = {
         type: 'question',
     },
     saveSuccess: {
-        title: 'Položka byla úspěšně přidána',
+        title: 'Klíčové slovo byla úspěšně upraveno',
         type: 'success',
         buttonsStyling: false,
         confirmButtonText: 'OK',
@@ -20,142 +20,142 @@ const keywordsSwal = {
     },
 }
 
-function getKeywordForm(val1, val2) {
+const letterTypes = getLetterType()
+
+var table
+
+function deleteKeyword(id, index) {
+    removeItemAjax(id, 'keyword', letterTypes['path'], () => {
+        table.deleteRow(index)
+    })
+}
+
+function updateTableRow(data) {
+    table.updateOrAddRow(data.id, {
+        id: data.id,
+        name: data.name,
+        namecz: data.namecz,
+    })
+}
+
+function addKeyword(type, action, id, oldKeyword = '', oldKeywordCZ = '') {
+    let swalConfig = keywordsSwal.confirmSave
+
+    swalConfig.title = (id ? 'Upravit' : 'Nové ') + ' klíčové slovo'
+    swalConfig.allowOutsideClick = () => !Swal.isLoading()
+    swalConfig.html = getKeywordForm(oldKeyword, oldKeywordCZ)
+    swalConfig.focusConfirm = false
+
+    swalConfig.preConfirm = () => {
+        let nameen = document.getElementById('nameen').value
+        let namecz = document.getElementById('namecz').value
+
+        if (nameen.length < 2) {
+            return Swal.showValidationMessage(
+                'Zadané hodnoty nejsou zadané v požadovaném formátu (2-255 znaků)'
+            )
+        }
+
+        return axios
+            .post(
+                ajaxUrl + '?action=insert_keyword',
+                {
+                    ['type']: type,
+                    ['nameen']: nameen,
+                    ['namecz']: namecz,
+                    ['action']: action,
+                    ['id']: id,
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json;charset=utf-8',
+                    },
+                }
+            )
+            .then(function (response) {
+                updateTableRow(response.data.data)
+                return response.data
+            })
+            .catch(function (error) {
+                Swal.showValidationMessage(
+                    `Při ukládání došlo k chybě: ${error}`
+                )
+            })
+    }
+
+    Swal.fire(swalConfig).then((result) => {
+        if (result.value) {
+            Swal.fire(keywordsSwal.saveSuccess)
+        }
+    })
+}
+
+function getKeywordForm(en, cs) {
     return `
     <div class="form-group">
     <label for="nameen">EN</label>
-    <input value="${val1}" id="nameen" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
+    <input value="${en}" id="nameen" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
     </div>
     <div class="form-group">
     <label for="namecz">CZ</label>
-    <input value="${val2}" id="namecz" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
+    <input value="${cs}" id="namecz" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
     </div>
     `
 }
 
 if (document.getElementById('datatable-keywords')) {
-    Vue.use(VueTables.ClientTable, false, false, 'bootstrap4')
-    new Vue({
-        el: '#datatable-keywords',
-        data: {
-            columns: ['name', 'namecz', 'edit'],
-            tableData: [],
-            error: false,
-            options: {
-                filterable: ['name', 'namecz'],
-                headings: {
-                    name: 'EN',
-                    namecz: 'CZ',
-                    edit: 'Akce',
+    table = new Tabulator('#datatable-keywords', {
+        columns: [
+            {
+                field: 'name',
+                headerFilter: 'input',
+                title: 'EN',
+            },
+            {
+                field: 'namecz',
+                headerFilter: 'input',
+                title: 'CZ',
+            },
+            {
+                field: 'id',
+                formatter: function (cell) {
+                    const rowData = cell.getRow().getData()
+                    const rowIndex = cell.getRow().getIndex()
+                    return `
+                    <ul class="list-unstyled mb-0">
+                        <li>
+                            <span onclick="addKeyword('${letterTypes['keyword']}', 'edit', ${rowData.id}, '${rowData.name}', '${rowData.namecz}')" class="text-info is-link py-1">
+                                Upravit
+                            </span>
+                        </li>
+                        <li>
+                            <span onclick="deleteKeyword(${rowData.id}, ${rowIndex})" class="text-danger is-link py-1">
+                                Odstranit
+                            </span>
+                        </li>
+                    </ul>
+                    `
                 },
-                pagination: defaultTablesOptions.pagination,
-                perPage: defaultTablesOptions.perPage,
-                perPageValues: defaultTablesOptions.perPageValues,
-                skin: defaultTablesOptions.skin,
-                sortIcon: defaultTablesOptions.sortIcon,
-                sortable: ['name', 'namecz'],
-                texts: defaultTablesOptions.texts,
+                headerSort: false,
+                title: '',
             },
-            path: '',
-            type: '',
-        },
+        ],
+        height: '600px',
 
-        mounted: function() {
-            let letterTypes = getLetterType()
-            if (isString(letterTypes)) {
-                self.error = letterTypes
-                return
-            }
-            this.type = letterTypes['keyword']
-            this.path = letterTypes['path']
+        pagination: 'local',
+        paginationSize: 25,
+    })
 
-            this.getData()
-        },
-        methods: {
-            getData: function() {
-                let self = this
-                axios
-                    .get(
-                        ajaxUrl +
-                        '?action=keywords_table_data&type=' +
-                        self.type
-                    )
-                    .then(function(response) {
-                        self.tableData = response.data
-                    })
-                    .catch(function(error) {
-                        self.error = error
-                    })
-            },
-            deleteKeyword: function(id) {
-                let self = this
-                removeItemAjax(id, 'keyword', self.path, function() {
-                    self.deleteRow(id, self.tableData)
-                })
-            },
-            deleteRow: function(id, data) {
-                this.tableData = data.filter(function(item) {
-                    return item.id !== id
-                })
-            },
-            addKeyword: function(
-                type,
-                action,
-                id,
-                oldKeyword = '',
-                oldKeywordCZ = ''
-            ) {
-                let self = this
-                let swalConfig = keywordsSwal.confirmSave
-                swalConfig.title = (id ? 'Upravit' : 'Nové ') + ' klíčové slovo'
+    table.setData(
+        ajaxUrl + '?action=keywords_table_data&type=' + letterTypes['keyword']
+    )
 
-                swalConfig.allowOutsideClick = () => !Swal.isLoading()
+    document.querySelectorAll('.tabulator-header-filter').forEach((item) => {
+        console.log(item.querySelector('input'))
 
-                swalConfig.html = getKeywordForm(oldKeyword, oldKeywordCZ)
-
-                swalConfig.focusConfirm = false
-
-                swalConfig.preConfirm = () => {
-                    let nameen = document.getElementById('nameen').value
-                    let namecz = document.getElementById('namecz').value
-
-                    if (nameen.length < 2) {
-                        return Swal.showValidationMessage(
-                            'Zadané hodnoty nejsou zadané v požadovaném formátu (2-255 znaků)'
-                        )
-                    }
-
-                    return axios
-                        .post(
-                            ajaxUrl + '?action=insert_keyword', {
-                                ['type']: type,
-                                ['nameen']: nameen,
-                                ['namecz']: namecz,
-                                ['action']: action,
-                                ['id']: id,
-                            }, {
-                                headers: {
-                                    'Content-Type': 'application/json;charset=utf-8',
-                                },
-                            }
-                        )
-                        .then(function(response) {
-                            return response.data
-                        })
-                        .catch(function(error) {
-                            Swal.showValidationMessage(
-                                `Při ukládání došlo k chybě: ${error}`
-                            )
-                        })
-                }
-
-                Swal.fire(swalConfig).then(result => {
-                    if (result.value) {
-                        Swal.fire(keywordsSwal.saveSuccess)
-                        self.getData()
-                    }
-                })
-            },
-        },
+        item.querySelector('input').classList.add(
+            'form-control',
+            'form-control-sm'
+        )
     })
 }
