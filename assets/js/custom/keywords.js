@@ -12,7 +12,7 @@ const keywordsSwal = {
         type: 'question',
     },
     saveSuccess: {
-        title: 'Klíčové slovo byla úspěšně upraveno',
+        title: 'Klíčové slovo bylo úspěšně upraveno',
         type: 'success',
         buttonsStyling: false,
         confirmButtonText: 'OK',
@@ -27,14 +27,6 @@ var table
 function deleteKeyword(id, index) {
     removeItemAjax(id, 'keyword', letterTypes['path'], () => {
         table.deleteRow(index)
-    })
-}
-
-function updateTableRow(data) {
-    table.updateOrAddRow(data.id, {
-        id: data.id,
-        name: data.name,
-        namecz: data.namecz,
     })
 }
 
@@ -72,9 +64,12 @@ function addKeyword(type, action, id, oldKeyword = '', oldKeywordCZ = '') {
                     },
                 }
             )
-            .then(function (response) {
-                updateTableRow(response.data.data)
-                return response.data
+            .then(function () {
+                table.replaceData(
+                    ajaxUrl +
+                        '?action=keywords_table_data&type=' +
+                        letterTypes['keyword']
+                )
             })
             .catch(function (error) {
                 Swal.showValidationMessage(

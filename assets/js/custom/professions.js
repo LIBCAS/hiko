@@ -49,15 +49,6 @@ function getProfessionForm(nameEn, nameCs, palladio) {
     `
 }
 
-function updateTableRow(data) {
-    table.updateOrAddRow(data.id, {
-        id: data.id,
-        name: data.name,
-        namecz: data.namecz,
-        palladio: data.palladio,
-    })
-}
-
 function addProfession(
     type,
     action,
@@ -103,8 +94,12 @@ function addProfession(
                     },
                 }
             )
-            .then(function (response) {
-                updateTableRow(response.data.data)
+            .then(function () {
+                table.replaceData(
+                    ajaxUrl +
+                        '?action=professions_table_data&type=' +
+                        letterTypes['profession']
+                )
             })
             .catch(function (error) {
                 Swal.showValidationMessage(
@@ -134,31 +129,20 @@ if (document.getElementById('datatable-profession')) {
                 title: 'CZ',
             },
             {
-                field: 'palladio',
-                headerFilter: 'input',
-                formatter: function (cell) {
-                    if (cell.getValue()) {
-                        return 'Palladio'
-                    }
-
-                    return ''
-                },
-                title: 'Type',
-            },
-            {
                 field: 'id',
                 formatter: function (cell) {
                     const rowData = cell.getRow().getData()
                     const rowIndex = cell.getRow().getIndex()
+
                     return `
                     <ul class="list-unstyled mb-0">
                         <li>
-                            <span onclick="addKeyword('${letterTypes['profession']}', 'edit', ${rowData.id}, '${rowData.name}', '${rowData.namecz}')" class="text-info is-link py-1">
+                            <span onclick="addProfession('${letterTypes['profession']}', 'edit', ${rowData.id}, '${rowData.name}', '${rowData.namecz}', ${rowData.palladio})" class="text-info is-link py-1">
                                 Upravit
                             </span>
                         </li>
                         <li>
-                            <span onclick="deleteKeyword(${rowData.id}, ${rowIndex})" class="text-danger is-link py-1">
+                            <span onclick="deleteProfession(${rowData.id}, ${rowIndex})" class="text-danger is-link py-1">
                                 Odstranit
                             </span>
                         </li>
@@ -170,7 +154,7 @@ if (document.getElementById('datatable-profession')) {
             },
         ],
         groupBy: 'palladio',
-        groupHeader: function (value, count, data, group) {
+        groupHeader: function (value, count) {
             value = value ? 'Palladio' : 'Profession'
 
             return `
