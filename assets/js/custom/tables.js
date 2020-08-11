@@ -1,4 +1,14 @@
-/* global Vue VueTables Swal axios ajaxUrl defaultTablesOptions getLetterType removeItemAjax removeElFromArr getCustomSorting getTimestampFromDate isString */
+/* global Tabulator homeUrl Vue VueTables Swal axios ajaxUrl defaultTablesOptions getLetterType removeItemAjax removeElFromArr getCustomSorting getTimestampFromDate isString */
+
+const letterTypes = getLetterType()
+
+var table
+
+function deletePlace(id, index) {
+    removeItemAjax(id, 'place', letterTypes['path'], () => {
+        table.deleteRow(index)
+    })
+}
 
 var columns
 
@@ -281,60 +291,81 @@ if (document.getElementById('datatable-persons')) {
 }
 
 if (document.getElementById('datatable-places')) {
-    Vue.use(VueTables.ClientTable, false, false, 'bootstrap4')
-    columns = ['edit', 'city', 'country', 'latlong']
-    new Vue({
-        el: '#datatable-places',
-        data: {
-            columns: columns,
-            tableData: JSON.parse(
-                document.querySelector('#places-data').innerHTML
-            ),
-            options: {
-                customSorting: getCustomSorting(['city', 'country']),
-                filterable: removeElFromArr('edit', columns),
-                headings: {
-                    edit: 'Akce',
-                    latlong: 'Coordinates',
-                },
-                pagination: defaultTablesOptions.pagination,
-                perPage: defaultTablesOptions.perPage,
-                perPageValues: defaultTablesOptions.perPageValues,
-                skin: defaultTablesOptions.skin,
-                sortIcon: defaultTablesOptions.sortIcon,
-                sortable: removeElFromArr('edit', columns),
-                texts: defaultTablesOptions.texts,
-            },
-            path: '',
-        },
-        mounted: function () {
-            let letterTypes = getLetterType()
-            if (isString(letterTypes)) {
-                self.error = letterTypes
-                return
-            }
+    table = new Tabulator('#datatable-places', {
+        columns: [
+            {
+                field: 'id',
+                formatter: function (cell) {
+                    const rowData = cell.getRow().getData()
+                    const rowIndex = cell.getRow().getIndex()
+                    const placeId = cell.getValue()
 
-            this.path = letterTypes['path']
-        },
-        methods: {
-            deletePlace: function (id) {
-                let self = this
-                removeItemAjax(id, 'place', self.path, function () {
-                    self.deleteRow(id, self.tableData)
-                })
+                    let actions = '<ul class="list-unstyled">'
+
+                    actions += `
+                    <li>
+                        <a href="${homeUrl}/${letterTypes['path']}/places-add/?edit=${placeId}" class="text-info is-link py-1">Upravit</a>
+                    </li>
+                    `
+
+                    actions += rowData.relationships
+                        ? ''
+                        : `
+                    <li>
+                    <a onclick="deletePlace(${placeId}, ${rowIndex})" class="text-danger is-link">Odstranit</a>
+                    </li>
+                    `
+                    actions += '</ul>'
+
+                    return actions
+                },
+                headerSort: false,
+                title: '',
             },
-            deleteRow: function (id, data) {
-                this.tableData = data.filter(function (item) {
-                    return item.id !== id
-                })
+            {
+                field: 'city',
+                headerFilter: 'input',
+                title: 'City',
             },
-        },
-        filters: {
-            mapLink: function (coordinates) {
-                if (!coordinates) return ''
-                coordinates = coordinates.split(',')
-                return `https://www.openstreetmap.org/?mlat=${coordinates[0]}&mlon=${coordinates[1]}&zoom=12`
+            {
+                field: 'country',
+                headerFilter: 'input',
+                title: 'Country',
             },
-        },
+            {
+                field: 'latlong',
+                formatter: function (cell) {
+                    const latlong = cell.getValue()
+
+                    if (!latlong) {
+                        return ''
+                    }
+
+                    const coordinates = latlong.split(',')
+                    const link = `https://www.openstreetmap.org/?mlat=${coordinates[0]}&mlon=${coordinates[1]}&zoom=12`
+
+                    return `
+                    <a href="${link}" target="_blank">
+                        ${latlong}
+                    </a>
+                    `
+                },
+                headerFilter: 'input',
+                title: 'Coordinates',
+            },
+        ],
+        height: '600px',
+        layout: 'fitColumns',
+        pagination: 'local',
+        paginationSize: 25,
+    })
+
+    table.setData(JSON.parse(document.querySelector('#places-data').innerHTML))
+
+    document.querySelectorAll('.tabulator-header-filter').forEach((item) => {
+        item.querySelector('input').classList.add(
+            'form-control',
+            'form-control-sm'
+        )
     })
 }
