@@ -1,4 +1,4 @@
-/* global Tabulator homeUrl Vue VueTables Swal axios ajaxUrl defaultTablesOptions getLetterType removeItemAjax removeElFromArr getCustomSorting getTimestampFromDate isString */
+/* global Tabulator updateTableHeaders homeUrl Vue VueTables Swal axios ajaxUrl defaultTablesOptions getLetterType removeItemAjax removeElFromArr getCustomSorting getTimestampFromDate isString */
 
 const letterTypes = getLetterType()
 
@@ -363,10 +363,5 @@ if (document.getElementById('datatable-places')) {
 
     table.setData(JSON.parse(document.querySelector('#places-data').innerHTML))
 
-    document.querySelectorAll('.tabulator-header-filter').forEach((item) => {
-        item.querySelector('input').classList.add(
-            'form-control',
-            'form-control-sm'
-        )
-    })
+    updateTableHeaders()
 }

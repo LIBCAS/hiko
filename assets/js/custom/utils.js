@@ -275,3 +275,12 @@ function isString(data) {
     }
     return false
 }
+
+function updateTableHeaders() {
+    document.querySelectorAll('.tabulator-header-filter').forEach((item) => {
+        item.querySelector('input').classList.add(
+            'form-control',
+            'form-control-sm'
+        )
+    })
+}

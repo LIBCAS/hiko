@@ -1,4 +1,4 @@
-/* global Tabulator getLetterType removeItemAjax axios Swal ajaxUrl */
+/* global Tabulator updateTableHeaders getLetterType removeItemAjax axios Swal ajaxUrl */
 
 const professionsSwal = {
     confirmSave: {
@@ -174,10 +174,5 @@ if (document.getElementById('datatable-profession')) {
             letterTypes['profession']
     )
 
-    document.querySelectorAll('.tabulator-header-filter').forEach((item) => {
-        item.querySelector('input').classList.add(
-            'form-control',
-            'form-control-sm'
-        )
-    })
+    updateTableHeaders()
 }
