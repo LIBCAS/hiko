@@ -462,7 +462,7 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
     $pe_prefix = "{$wpdb->prefix}pods_{$person_type}";
 
     $fields = [
-        't.id',
+        't.id AS ID',
         't.signature',
         't.date_day',
         't.date_month',
@@ -528,43 +528,10 @@ function get_all_objects_by_id($object, $v)
     return $found;
 }
 
-/* TODO: refactor!!! */
-function flatten_duplicate_letters($query_result)
-{
-    $result = [];
-
-    foreach ($query_result as $row) {
-        if (!array_key_exists($row['id'], $result)) {
-            foreach ($row as $itemKey => $item) {
-                $result[$row['id']][$itemKey] = $item;
-            }
-        } else {
-            $existingRow = $result[$row['id']];
-            foreach ($row as $itemKey => $item) {
-                if (is_string($item) && $item != $existingRow[$itemKey]) {
-                    $result[$row['id']][$itemKey] = [];
-
-                    if (!is_array($existingRow[$itemKey])) {
-                        $result[$row['id']][$itemKey][] = $existingRow[$itemKey];
-                    } else {
-                        foreach ($existingRow[$itemKey] as $val) {
-                            $result[$row['id']][$itemKey][] = $val;
-                        }
-                    }
-
-                    $result[$row['id']][$itemKey][] = $item;
-                }
-            }
-        }
-    }
-
-    return $result;
-}
-
 
 function get_letters_basic_meta_filtered($letter_type, $person_type, $place_type, $draft = true)
 {
-    $filtered_letters = flatten_duplicate_letters(
+    $filtered_letters = merge_distinct_query_result(
         get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
     );
 
@@ -1122,14 +1089,20 @@ function merge_distinct_query_result($query_result)
                     $result[$row['ID']][$itemKey] = [];
 
                     if (!is_array($existingRow[$itemKey])) {
-                        $result[$row['ID']][$itemKey][] = $existingRow[$itemKey];
+                        if (!in_array($existingRow[$itemKey], $result[$row['ID']][$itemKey])) {
+                            $result[$row['ID']][$itemKey][] = $existingRow[$itemKey];
+                        }
                     } else {
                         foreach ($existingRow[$itemKey] as $val) {
-                            $result[$row['ID']][$itemKey][] = $val;
+                            if (!in_array($val, $result[$row['ID']][$itemKey])) {
+                                $result[$row['ID']][$itemKey][] = $val;
+                            }
                         }
                     }
 
-                    $result[$row['ID']][$itemKey][] = $item;
+                    if (!in_array($item, $result[$row['ID']][$itemKey])) {
+                        $result[$row['ID']][$itemKey][] = $item;
+                    }
                 }
             }
         }
