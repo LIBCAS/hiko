@@ -862,8 +862,6 @@ function save_hiko_letter($letter_type, $action, $path)
         return alert($new_pod->get_error_message(), 'warning');
     }
 
-    delete_hiko_cache('list_' . $path);
-    delete_hiko_cache('list_' . $types['person']);
     save_name_alternatives($participant_meta, $types['person']);
     frontend_refresh();
 
@@ -924,7 +922,6 @@ function save_hiko_person($person_type, $action)
         return alert($new_pod->get_error_message(), 'warning');
     }
 
-    delete_hiko_cache('list_' . $person_type);
     frontend_refresh();
 
     return alert('Uloženo', 'success');
@@ -1040,7 +1037,7 @@ function display_persons_and_places($person_type, $place_type)
 function create_hiko_json_cache($name, $json_data)
 {
     $cache_folder = WP_CONTENT_DIR . '/hiko-cache';
-    $filename = md5($name) . '.json';
+    $filename = "{$name}.json";
 
     if (!file_exists($cache_folder)) {
         wp_mkdir_p($cache_folder);
@@ -1055,7 +1052,7 @@ function create_hiko_json_cache($name, $json_data)
 function hiko_cache_exists($name)
 {
     $cache_folder = WP_CONTENT_DIR . '/hiko-cache';
-    $file = md5($name) . '.json';
+    $file = "{$name}.json";
 
     if (file_exists($cache_folder . '/' . $file)) {
         return true;
@@ -1066,7 +1063,7 @@ function hiko_cache_exists($name)
 
 function delete_hiko_cache($name)
 {
-    $file = WP_CONTENT_DIR . '/hiko-cache' . '/' . md5($name) . '.json';
+    $file = WP_CONTENT_DIR . '/hiko-cache' . '/' . $name . '.json';
 
     if (file_exists($file)) {
         unlink($file);
@@ -1084,7 +1081,7 @@ function read_hiko_cache($name)
 
 function get_hiko_cache_file($name)
 {
-    return WP_CONTENT_DIR . '/hiko-cache' . '/' . md5($name) . '.json';
+    return WP_CONTENT_DIR . '/hiko-cache' . '/' . $name . '.json';
 }
 
 

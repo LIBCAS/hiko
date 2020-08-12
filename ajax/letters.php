@@ -27,20 +27,12 @@ function list_all_letters_short()
 
     header('Content-Type: application/json');
 
-    if (hiko_cache_exists('list_' . $types['path'])) {
-        header('Last-Modified: ' . get_gmdate(get_hiko_cache_file('list_' . $types['path'])));
-        wp_die(read_hiko_cache('list_' . $types['path']));
-    }
-
-    $letters = get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place']);
+    header('Last-Modified: ' . get_gmdate());
 
     $json_letters = json_encode(
-        $letters,
+        get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place']),
         JSON_UNESCAPED_UNICODE
     );
-
-    header('Last-Modified: ' . get_gmdate());
-    create_hiko_json_cache('list_' . $types['path'], $json_letters);
 
     wp_die($json_letters);
 }
@@ -54,12 +46,10 @@ function public_list_all_letters()
 
     $letters = get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place'], false);
 
-    $json_letters = json_encode(
-        $letters,
-        JSON_UNESCAPED_UNICODE
-    );
+    $json_letters = json_encode($letters, JSON_UNESCAPED_UNICODE);
 
     header('Content-Type: application/json');
+
     wp_die($json_letters);
 }
 add_action('wp_ajax_nopriv_public_list_all_letters', 'public_list_all_letters');
@@ -190,10 +180,7 @@ function list_public_letters_single()
         $results['notes_private'] = $pod->field('notes_private');
     }
 
-    wp_die(json_encode(
-        $results,
-        JSON_UNESCAPED_UNICODE
-    ));
+    wp_die(json_encode($results, JSON_UNESCAPED_UNICODE));
 }
 add_action('wp_ajax_list_public_letters_single', 'list_public_letters_single');
 add_action('wp_ajax_nopriv_list_public_letters_single', 'list_public_letters_single');
