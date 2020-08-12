@@ -208,11 +208,16 @@ function get_persons_table_data($person_type)
             $alternative_names = [];
         }
 
+        $type = $persons->display('type');
+        if (empty($type)) {
+            $type = 'person';
+        }
+
         $persons_filtered[$index]['id'] = $persons->display('id');
         $persons_filtered[$index]['name'] = $persons->display('name');
         $persons_filtered[$index]['birth'] = $persons->display('birth_year');
         $persons_filtered[$index]['death'] = $persons->display('death_year');
-        $persons_filtered[$index]['type'] = $persons->display('type');
+        $persons_filtered[$index]['type'] = $type;
         $persons_filtered[$index]['alternatives'] = $alternative_names;
         $persons_filtered[$index]['relationships'] = !is_null($persons->display('au')) || !is_null($persons->display('re')) || !is_null($persons->display('pm'));
 

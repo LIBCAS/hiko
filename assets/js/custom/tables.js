@@ -10,6 +10,39 @@ function deletePlace(id, index) {
     })
 }
 
+function deletePerson(id, index) {
+    removeItemAjax(id, 'person', letterTypes['path'], () => {
+        table.deleteRow(index)
+    })
+}
+
+function removeEmptyNameAlternatives(personID) {
+    const spinner = event.target.querySelector('.spinner')
+    spinner.classList.remove('d-none')
+
+    axios
+        .get(
+            ajaxUrl +
+                '?action=count_alternate_name&id=' +
+                personID +
+                '&l_type=' +
+                letterTypes['path']
+        )
+        .then(function () {
+            table.replaceData(
+                ajaxUrl +
+                    '?action=persons_table_data&type=' +
+                    letterTypes['personType']
+            )
+        })
+        .catch(function (error) {
+            console.log(error)
+        })
+        .then(function () {
+            spinner.classList.add('d-none')
+        })
+}
+
 var columns
 
 if (document.getElementById('datatable-letters')) {
@@ -171,123 +204,109 @@ if (document.getElementById('datatable-letters')) {
 }
 
 if (document.getElementById('datatable-persons')) {
-    Vue.use(VueTables.ClientTable, false, false, 'bootstrap4')
+    table = new Tabulator('#datatable-persons', {
+        columns: [
+            {
+                field: 'id',
+                formatter: function (cell) {
+                    const rowData = cell.getRow().getData()
+                    const rowIndex = cell.getRow().getIndex()
+                    const personId = cell.getValue()
 
-    columns = ['edit', 'name', 'alternatives', 'type']
+                    let actions = '<ul class="list-unstyled">'
 
-    new Vue({
-        el: '#datatable-persons',
-        data: {
-            columns: columns,
-            tableData: [],
-            options: {
-                headings: {
-                    edit: '',
-                    alternatives: 'Name as marked',
+                    actions += `
+                    <li>
+                        <a href="${homeUrl}/${letterTypes['path']}/persons-add/?edit=${personId}" class="text-info is-link py-1">Upravit</a>
+                    </li>
+                    `
+
+                    actions += rowData.relationships
+                        ? ''
+                        : `
+                    <li>
+                    <a onclick="deletePerson(${personId}, ${rowIndex})" class="text-danger is-link">Odstranit</a>
+                    </li>
+                    `
+                    actions += '</ul>'
+
+                    return actions
                 },
-                skin: defaultTablesOptions.skin,
-                sortable: ['name'],
-                filterable: removeElFromArr('edit', columns),
-                sortIcon: defaultTablesOptions.sortIcon,
-                texts: defaultTablesOptions.texts,
-                pagination: defaultTablesOptions.pagination,
-                perPage: defaultTablesOptions.perPage,
-                perPageValues: defaultTablesOptions.perPageValues,
-                customSorting: getCustomSorting(['name']),
+                headerSort: false,
+                title: '',
             },
-            path: '',
-            personType: '',
-            loading: true,
-            error: false,
+            {
+                field: 'name',
+                headerFilter: 'input',
+                formatter: function (cell) {
+                    const name = cell.getValue()
+                    const rowData = cell.getRow().getData()
+
+                    if (rowData.type != 'person') {
+                        return `<strong>${name}</strong>`
+                    }
+
+                    let resultName = `<strong>${name}</strong> `
+                    resultName += `(${rowData.birth}–${rowData.death})`
+
+                    return resultName
+                },
+                title: 'Name',
+            },
+            {
+                field: 'alternatives',
+                formatter: function (cell) {
+                    const names = cell.getValue()
+                    const rowIndex = cell.getRow().getIndex()
+
+                    if (!Array.isArray(names) || names.length == 0) {
+                        return ''
+                    }
+
+                    let actions = '<ul class="list-unstyled">'
+
+                    names.forEach((name) => {
+                        actions += `<li>${name}</li>`
+                    })
+
+                    actions += `
+                    <li onclick="removeEmptyNameAlternatives(${rowIndex})">
+                        <span class="is-link py-1 is-info">
+                            <span class="spinner spinner-border spinner-border-sm d-none"></span>
+                            Odstranit nepoužité varianty jména
+                        </span>
+                    </li>
+                    `
+
+                    actions += '</ul>'
+
+                    return actions
+                },
+                headerFilter: 'input',
+                title: 'Name as marked',
+            },
+        ],
+        height: '600px',
+        groupBy: 'type',
+        groupHeader: function (value, count) {
+            value = value == 'institution' ? 'Institution' : 'Person'
+
+            return `
+            ${value} <span class="text-danger">${count} items</span>
+            `
         },
-        mounted: function () {
-            let letterTypes = getLetterType()
-
-            if (isString(letterTypes)) {
-                self.error = letterTypes
-                return
-            }
-            this.path = letterTypes['path']
-            this.personType = letterTypes['personType']
-
-            this.getPersons()
-        },
-        methods: {
-            getPersons: function () {
-                let self = this
-                axios
-                    .get(
-                        ajaxUrl +
-                            '?action=persons_table_data&type=' +
-                            self.personType
-                    )
-                    .then(function (result) {
-                        self.tableData = result.data
-                    })
-                    .catch(function (error) {
-                        self.error = error
-                    })
-                    .then(function () {
-                        self.loading = false
-                    })
-            },
-            deletePerson: function (id) {
-                let self = this
-                removeItemAjax(id, 'person', self.path, function () {
-                    self.deleteRow(id, self.tableData)
-                })
-            },
-            deleteRow: function (id, data) {
-                this.tableData = data.filter(function (item) {
-                    return item.id !== id
-                })
-            },
-
-            removeEmptyNameAlternatives: function (personID) {
-                let self = this
-
-                let spinner = event.target.querySelector('.spinner')
-                spinner.classList.remove('d-none')
-
-                axios
-                    .get(
-                        ajaxUrl +
-                            '?action=count_alternate_name&id=' +
-                            personID +
-                            '&l_type=' +
-                            self.path
-                    )
-                    .then(function (result) {
-                        let r = result.data.data
-
-                        // remove empty values from actual tableData to avoid new ajax call
-                        if (r.hasOwnProperty('deleted')) {
-                            let rowData = self.tableData.filter((obj) => {
-                                return obj.id === personID
-                            })
-
-                            let index = self.tableData.indexOf(rowData[0])
-
-                            rowData = JSON.parse(JSON.stringify(rowData[0]))
-
-                            let updated = rowData.alternatives.filter(
-                                (el) => !r.deleted.includes(el)
-                            )
-
-                            rowData.alternatives = updated
-
-                            self.$set(self.tableData, index, rowData)
-                        }
-                    })
-                    .catch(function (error) {
-                        console.log(error)
-                    })
-                    .then(function () {
-                        spinner.classList.add('d-none')
-                    })
-            },
-        },
+        groupStartOpen: false,
+        layout: 'fitColumns',
+        pagination: 'local',
+        paginationSize: 25,
+        selectable: false,
     })
+
+    table.setData(
+        ajaxUrl + '?action=persons_table_data&type=' + letterTypes['personType']
+    )
+
+    updateTableHeaders()
 }
 
 if (document.getElementById('datatable-places')) {

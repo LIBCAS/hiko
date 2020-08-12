@@ -158,9 +158,10 @@ if (document.getElementById('datatable-profession')) {
             value = value ? 'Palladio' : 'Profession'
 
             return `
-            ${value} <span class="">${count} items</span>
+            ${value} <span class="text-danger">${count} items</span>
             `
         },
+        groupStartOpen: false,
         height: '600px',
         layout: 'fitColumns',
         pagination: 'local',

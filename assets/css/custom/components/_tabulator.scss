@@ -1195,7 +1195,8 @@ body.tabulator-print-fullscreen-hide > *:not(.tabulator-print-fullscreen) {
 
 .tabulator-row {
     &.tabulator-group {
-        background-color: $gray-400;
+        border-bottom-color: $gray-500;
+        border-top-color: $gray-500;
 
         &:hover {
             background-color: rgba($gray-400, 0.75);
