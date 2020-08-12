@@ -1,4 +1,4 @@
-/* global Tabulator updateTableHeaders homeUrl Vue VueTables Swal axios ajaxUrl defaultTablesOptions getLetterType removeItemAjax removeElFromArr getCustomSorting getTimestampFromDate isString */
+/* global Tabulator updateTableHeaders homeUrl Swal axios ajaxUrl getLetterType removeItemAjax getTimestampFromDate */
 
 const letterTypes = getLetterType()
 
@@ -12,6 +12,12 @@ function deletePlace(id, index) {
 
 function deletePerson(id, index) {
     removeItemAjax(id, 'person', letterTypes['path'], () => {
+        table.deleteRow(index)
+    })
+}
+
+function deleteLetter(id, index) {
+    removeItemAjax(id, 'letter', letterTypes['path'], () => {
         table.deleteRow(index)
     })
 }
@@ -43,164 +49,230 @@ function removeEmptyNameAlternatives(personID) {
         })
 }
 
-var columns
+function listLetterMultiData(data) {
+    if (!Array.isArray(data)) {
+        return data
+    }
+
+    let list = '<ul class="list-unstyled">'
+    data.forEach((author) => {
+        list += `<li>${author}</li>`
+    })
+    list += '</ul>'
+
+    return list
+}
+
+function sortLetterMultiData(aData, bData) {
+    let a = aData // if is string
+    let b = bData // if is string
+
+    if (!aData) {
+        a = ''
+    } else if (Array.isArray(aData) && aData[0]) {
+        a = aData[0]
+    }
+
+    if (!bData) {
+        b = ''
+    } else if (Array.isArray(bData) && bData[0]) {
+        b = bData[0]
+    }
+
+    return a.localeCompare(b)
+}
+
+function showHistory(id, event) {
+    const spinner = event.querySelector('.spinner')
+    spinner.classList.remove('d-none')
+
+    axios
+        .get(
+            ajaxUrl +
+                '?action=list_letter_history&l_id=' +
+                id +
+                '&l_type=' +
+                letterTypes['path']
+        )
+        .then(function (result) {
+            Swal.fire({
+                title: 'Historie úprav',
+                html: result.data.data.replace(/\n/g, '<br>'),
+                buttonsStyling: false,
+                confirmButtonText: 'Zavřít',
+                confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+            })
+        })
+        .catch(function (error) {
+            Swal.fire({
+                title:
+                    'Historii úprav se nepodařilo načíst nebo nebo neexistuje',
+                text: error,
+                type: 'error',
+                buttonsStyling: false,
+                confirmButtonText: 'Zavřít',
+                confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+            })
+        })
+        .then(function () {
+            spinner.classList.add('d-none')
+        })
+}
 
 if (document.getElementById('datatable-letters')) {
-    Vue.use(VueTables.ClientTable, false, false, 'bootstrap4')
-    columns = [
-        'edit',
-        'id',
-        'signature',
-        'date',
-        'author',
-        'recipient',
-        'origin',
-        'dest',
-        'images',
-        'status',
-    ]
+    table = new Tabulator('#datatable-letters', {
+        columns: [
+            {
+                field: 'actions',
+                formatter: function (cell) {
+                    const rowIndex = cell.getRow().getIndex()
+                    const letterId = cell.getRow().getData().id
 
-    let customSortingLetters = getCustomSorting([
-        'signature',
-        'date',
-        'author',
-        'recipient',
-        'origin',
-        'dest',
-        'status',
-        'images',
-        'id',
-    ])
-
-    customSortingLetters.id = function (ascending) {
-        return function (a, b) {
-            a = parseInt(a.id)
-            b = parseInt(b.id)
-
-            if (ascending) return a >= b ? 1 : -1
-
-            return a <= b ? 1 : -1
-        }
-    }
-
-    customSortingLetters.date = function (ascending) {
-        return function (a, b) {
-            a = getTimestampFromDate(a.date_year, a.date_month, a.date_day)
-            b = getTimestampFromDate(b.date_year, b.date_month, b.date_day)
-
-            if (ascending) return a >= b ? 1 : -1
-
-            return a <= b ? 1 : -1
-        }
-    }
-
-    new Vue({
-        el: '#datatable-letters',
-        data: {
-            columns: columns,
-            error: false,
-            loading: true,
-            path: '',
-            tableData: [],
-            options: {
-                customSorting: customSortingLetters,
-                filterable: removeElFromArr('edit', columns),
-                headings: {
-                    dest: 'Destination',
-                    edit: 'Akce',
-                    id: 'ID',
-                    images: 'Obrázky',
+                    return `
+                    <ul class="list-unstyled">
+                    <li>
+                        <a href="${homeUrl}/${letterTypes['path']}/letters-add/?edit=${letterId}" class="text-info py-1">Upravit</a>
+                    </li>
+                    <li>
+                        <a href="${homeUrl}/${letterTypes['path']}/letters-media/?l_type=${letterTypes['letterType']}&letter=${letterId}" class="py-1 text-primary">Obrazové přílohy</a>
+                    </li>
+                    <li>
+                        <a href="${homeUrl}/letter-preview/?l_type=${letterTypes['letterType']}&letter=${letterId}" class="py-1 text-primary">Náhled</a>
+                    </li>
+                    <li>
+                        <span onclick="showHistory(${letterId}, this)" class="is-link text-primary py-1">
+                            <span class="spinner spinner-border spinner-border-sm d-none"></span>
+                            Historie úprav
+                        </span>
+                    </li>
+                    <li>
+                        <span onclick="deleteLetter(${letterId}, ${rowIndex})" class="text-danger is-link">
+                            Odstranit
+                        </span>
+                    </li>
+                    </ul>
+                    `
                 },
-                pagination: defaultTablesOptions.pagination,
-                perPage: defaultTablesOptions.perPage,
-                perPageValues: defaultTablesOptions.perPageValues,
-                skin: defaultTablesOptions.skin,
-                sortIcon: defaultTablesOptions.sortIcon,
-                sortable: removeElFromArr('edit', columns),
-                texts: defaultTablesOptions.texts,
+                headerSort: false,
+                title: '',
             },
-        },
-        mounted: function () {
-            let letterTypes = getLetterType()
-            if (isString(letterTypes)) {
-                self.error = letterTypes
-                return
-            }
-            this.path = letterTypes['path']
+            {
+                field: 'id',
+                headerFilter: 'input',
+                title: 'ID',
+            },
+            {
+                field: 'signature',
+                headerFilter: 'input',
+                title: 'Signature',
+            },
+            {
+                field: 'date',
+                headerFilter: 'input',
+                formatter: function (cell) {
+                    const dateData = cell.getRow().getData()
 
-            this.getData()
-        },
-        methods: {
-            showHistory: function (id, event) {
-                let self = this
-                let spinner = event.target.querySelector('.spinner')
-                spinner.classList.remove('d-none')
-                axios
-                    .get(
-                        ajaxUrl +
-                            '?action=list_letter_history&l_id=' +
-                            id +
-                            '&l_type=' +
-                            self.path
+                    let year = dateData.date_year ? dateData.date_year : 0
+                    let month = dateData.date_month ? dateData.date_month : 0
+                    let day = dateData.date_day ? dateData.date_day : 0
+                    return `
+                    ${year}/${month}/${day}
+                    `
+                },
+                sorter: function (a, b, aRow, bRow) {
+                    let aRowData = aRow.getData()
+                    let bRowData = bRow.getData()
+
+                    a = getTimestampFromDate(
+                        aRowData.date_year,
+                        aRowData.date_month,
+                        aRowData.date_day
                     )
-                    .then(function (result) {
-                        spinner.classList.add('d-none')
-                        let r = result.data.data
-                        r = r.replace(/\n/g, '<br>')
-                        Swal.fire({
-                            title: 'Historie úprav',
-                            html: r,
-                            buttonsStyling: false,
-                            confirmButtonText: 'Zavřít',
-                            confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-                        })
-                    })
-                    .catch(function (error) {
-                        Swal.fire({
-                            title:
-                                'Historii úprav se nepodařilo načíst nebo nebo neexistuje',
-                            text: error,
-                            type: 'error',
-                            buttonsStyling: false,
-                            confirmButtonText: 'Zavřít',
-                            confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-                        })
-                    })
-                    .then(function () {
-                        spinner.classList.add('d-none')
-                    })
-            },
-            deleteLetter: function (id) {
-                let self = this
-                removeItemAjax(id, 'letter', self.path, function () {
-                    self.deleteRow(id, self.tableData)
-                })
-            },
-            deleteRow: function (id, data) {
-                this.tableData = data.filter(function (item) {
-                    return item.id !== id
-                })
-            },
-            getData: function () {
-                let self = this
-                axios
-                    .get(
-                        ajaxUrl +
-                            '?action=list_all_letters_short&type=' +
-                            self.path
+
+                    b = getTimestampFromDate(
+                        bRowData.date_year,
+                        bRowData.date_month,
+                        bRowData.date_day
                     )
-                    .then(function (result) {
-                        self.tableData = result.data
-                    })
-                    .catch(function (error) {
-                        self.error = error
-                    })
-                    .then(function () {
-                        self.loading = false
-                    })
+
+                    return a - b
+                },
+                title: 'Date',
             },
-        },
+            {
+                field: 'author',
+                headerFilter: 'input',
+                formatter: function (cell) {
+                    return listLetterMultiData(cell.getValue())
+                },
+                sorter: function (a, b) {
+                    return sortLetterMultiData(a, b)
+                },
+                title: 'Author',
+            },
+            {
+                field: 'recipient',
+                headerFilter: 'input',
+                formatter: function (cell) {
+                    return listLetterMultiData(cell.getValue())
+                },
+                sorter: function (a, b) {
+                    return sortLetterMultiData(a, b)
+                },
+                title: 'Recipient',
+            },
+            {
+                field: 'origin',
+                headerFilter: 'input',
+                formatter: function (cell) {
+                    return listLetterMultiData(cell.getValue())
+                },
+                sorter: function (a, b) {
+                    return sortLetterMultiData(a, b)
+                },
+                title: 'Origin',
+            },
+            {
+                field: 'dest',
+                headerFilter: 'input',
+                formatter: function (cell) {
+                    return listLetterMultiData(cell.getValue())
+                },
+                sorter: function (a, b) {
+                    return sortLetterMultiData(a, b)
+                },
+                title: 'Destination',
+            },
+            {
+                field: 'images',
+                headerFilter: 'input',
+                formatter: function (cell) {
+                    if (cell.getValue()) {
+                        return 'ano'
+                    }
+
+                    return ''
+                },
+                title: 'Images',
+            },
+            {
+                field: 'status',
+                headerFilter: 'input',
+                title: 'Status',
+            },
+        ],
+        height: '600px',
+        layout: 'fitColumns',
+        pagination: 'local',
+        paginationSize: 25,
+        selectable: false,
     })
+
+    table.setData(
+        ajaxUrl + '?action=list_all_letters_short&type=' + letterTypes['path']
+    )
+
+    updateTableHeaders()
 }
 
 if (document.getElementById('datatable-persons')) {
