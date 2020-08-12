@@ -165,6 +165,7 @@ if (document.getElementById('datatable-profession')) {
         layout: 'fitColumns',
         pagination: 'local',
         paginationSize: 25,
+        selectable: false,
     })
 
     table.setData(

@@ -139,6 +139,7 @@ if (document.getElementById('datatable-keywords')) {
         layout: 'fitColumns',
         pagination: 'local',
         paginationSize: 25,
+        selectable: false,
     })
 
     table.setData(

@@ -358,6 +358,7 @@ if (document.getElementById('datatable-places')) {
         layout: 'fitColumns',
         pagination: 'local',
         paginationSize: 25,
+        selectable: false,
     })
 
     table.setData(JSON.parse(document.querySelector('#places-data').innerHTML))

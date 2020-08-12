@@ -34,12 +34,16 @@ $footerBorderColor: #aaa !default; //footer border color
 $footerSeperatorColor: #999 !default; //footer bottom seperator color
 $footerActiveColor: #d00 !default; //footer bottom active text color
 
-
 // custom variables
 $rowAltBackgroundColor: $gray-200;
 $rowHoverBackground: $gray-300;
 $headerBackgroundColor: $gray-200;
 $footerBackgroundColor: $gray-200;
+$borderColor: $table-border-color;
+$headerBorderColor: $table-border-color;
+$rowBorderColor: $table-border-color;
+$footerBorderColor: $table-border-color;
+$backgroundColor: $gray-100;
 
 //Tabulator Containing Element
 .tabulator {
@@ -1183,6 +1187,18 @@ body.tabulator-print-fullscreen-hide > *:not(.tabulator-print-fullscreen) {
 
                 background: $rowTextColor;
             }
+        }
+    }
+}
+
+// custom
+
+.tabulator-row {
+    &.tabulator-group {
+        background-color: $gray-400;
+
+        &:hover {
+            background-color: rgba($gray-400, 0.75);
         }
     }
 }
