@@ -126,7 +126,7 @@ if (document.getElementById('datatable-letters')) {
                 field: 'actions',
                 formatter: function (cell) {
                     const rowIndex = cell.getRow().getIndex()
-                    const letterId = cell.getRow().getData().id
+                    const letterId = cell.getRow().getData().ID
 
                     return `
                     <ul class="list-unstyled">
@@ -157,7 +157,7 @@ if (document.getElementById('datatable-letters')) {
                 title: '',
             },
             {
-                field: 'id',
+                field: 'ID',
                 headerFilter: 'input',
                 title: 'ID',
             },
