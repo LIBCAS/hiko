@@ -483,8 +483,11 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
         $draft_condition = 'WHERE t.status = \'publish\'';
     }
 
+    $user_name = get_full_name();
+
     $query = "
     SELECT
+    LOCATE('{$user_name}', t.history) AS my_letter,
     {$fields}
     FROM
     $l_prefix AS t

@@ -17,4 +17,15 @@ $path = $pods_types['path'];
         </div>
     </div>
 </div>
+<div id="my-letters-filter" class="mb-2">
+    Zobrazit
+    <div class="form-check form-check-inline ml-2">
+        <input class="form-check-input" type="radio" name="letters-filter" id="my" value="my">
+        <label class="form-check-label" for="my">mé dopisy</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="letters-filter" id="all" value="all" checked>
+        <label class="form-check-label" for="all">všechny dopisy</label>
+    </div>
+</div>
 <div id="datatable-letters"></div>

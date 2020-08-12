@@ -260,6 +260,12 @@ if (document.getElementById('datatable-letters')) {
                 headerFilter: 'input',
                 title: 'Status',
             },
+            {
+                field: 'my_letter',
+                headerFilter: 'input',
+                title: 'My Letter',
+                visible: false,
+            },
         ],
         height: '600px',
         layout: 'fitColumns',
@@ -273,6 +279,20 @@ if (document.getElementById('datatable-letters')) {
     )
 
     updateTableHeaders()
+
+    document.querySelectorAll('#my-letters-filter input').forEach((radio) => {
+        radio.addEventListener('change', () => {
+            let selected = document.querySelector(
+                'input[name="letters-filter"]:checked'
+            ).value
+
+            if (selected == 'my') {
+                table.addFilter('my_letter', '!=', '0')
+            } else {
+                table.removeFilter('my_letter', '!=', '0')
+            }
+        })
+    })
 }
 
 if (document.getElementById('datatable-persons')) {
