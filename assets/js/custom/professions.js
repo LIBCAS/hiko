@@ -159,9 +159,8 @@ if (document.getElementById('datatable-profession')) {
         dataLoaded: function (data) {
             document.getElementById('total-count').innerHTML = data.length
         },
-        footerElement: `<span>
-            Showing <span id="search-count"></span> items from <span id="total-count"></span> total items
-            </span>`,
+        footerElement:
+            '<span>Showing <span id="search-count"></span> items from <span id="total-count"></span> total items</span>',
         groupBy: 'palladio',
         groupHeader: function (value, count) {
             value = value ? 'Palladio' : 'Profession'
@@ -176,6 +175,7 @@ if (document.getElementById('datatable-profession')) {
         pagination: 'local',
         paginationSize: 25,
         selectable: false,
+        tooltips: true,
     })
 
     table.setData(

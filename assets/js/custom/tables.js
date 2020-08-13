@@ -173,9 +173,7 @@ if (document.getElementById('datatable-letters')) {
                     let year = data.date_year ? data.date_year : 0
                     let month = data.date_month ? data.date_month : 0
                     let day = data.date_day ? data.date_day : 0
-                    return `
-                    ${year}/${month}/${day}
-                    `
+                    return `${year}/${month}/${day}`
                 },
                 sorter: function (a, b, aRow, bRow) {
                     let aRowData = aRow.getData()
@@ -271,15 +269,15 @@ if (document.getElementById('datatable-letters')) {
         dataLoaded: function (data) {
             document.getElementById('total-count').innerHTML = data.length
         },
-        footerElement: `<span>
-            Showing <span id="search-count"></span> items from <span id="total-count"></span> total items
-            </span>`,
+        footerElement:
+            '<span>Showing <span id="search-count"></span> items from <span id="total-count"></span> total items</span>',
         height: '600px',
-        layout: 'fitColumns',
+        layout: 'fitDataFill',
         index: 'ID',
         pagination: 'local',
         paginationSize: 25,
         selectable: false,
+        tooltips: true,
     })
 
     table.setData(
@@ -392,9 +390,8 @@ if (document.getElementById('datatable-persons')) {
         dataLoaded: function (data) {
             document.getElementById('total-count').innerHTML = data.length
         },
-        footerElement: `<span>
-            Showing <span id="search-count"></span> items from <span id="total-count"></span> total items
-            </span>`,
+        footerElement:
+            '<span>Showing <span id="search-count"></span> items from <span id="total-count"></span> total items</span>tooltips: true',
         height: '600px',
         groupBy: 'type',
         groupHeader: function (value, count) {
@@ -409,6 +406,7 @@ if (document.getElementById('datatable-persons')) {
         pagination: 'local',
         paginationSize: 25,
         selectable: false,
+        tooltips: true,
     })
 
     table.setData(
@@ -488,14 +486,14 @@ if (document.getElementById('datatable-places')) {
         dataLoaded: function (data) {
             document.getElementById('total-count').innerHTML = data.length
         },
-        footerElement: `<span>
-            Showing <span id="search-count"></span> items from <span id="total-count"></span> total items
-            </span>`,
+        footerElement:
+            '<span>Showing <span id="search-count"></span> items from <span id="total-count"></span> total items</span>',
         height: '600px',
         layout: 'fitColumns',
         pagination: 'local',
         paginationSize: 25,
         selectable: false,
+        tooltips: true,
     })
 
     table.setData(JSON.parse(document.querySelector('#places-data').innerHTML))
