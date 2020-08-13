@@ -2,14 +2,13 @@
 
 function list_letter_history()
 {
-    $l_type = test_input($_GET['l_type']);
-    $l_id = test_input($_GET['l_id']);
-    $types = get_hiko_post_types($l_type);
+    $types = get_hiko_post_types(test_input($_GET['l_type']));
 
     if (!has_user_permission($types['editor'])) {
         wp_send_json_error('Not allowed', 403);
     }
-    $history = get_letter_history($types['letter'], $l_id);
+
+    $history = get_letter_history($types['letter'], test_input($_GET['l_id']));
 
     if (!$history) {
         wp_send_json_error('Not found', 404);
@@ -22,15 +21,14 @@ add_action('wp_ajax_list_letter_history', 'list_letter_history');
 
 function list_all_letters_short()
 {
-    $type = test_input($_GET['type']);
-    $types = get_hiko_post_types($type);
+    $types = get_hiko_post_types(test_input($_GET['type']));
 
     header('Content-Type: application/json');
 
     header('Last-Modified: ' . get_gmdate());
 
     $json_letters = json_encode(
-        get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place']),
+        get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place'], true, true),
         JSON_UNESCAPED_UNICODE
     );
 
@@ -41,12 +39,12 @@ add_action('wp_ajax_list_all_letters_short', 'list_all_letters_short');
 
 function public_list_all_letters()
 {
-    $type = test_input($_GET['type']);
-    $types = get_hiko_post_types($type);
+    $types = get_hiko_post_types(test_input($_GET['type']));
 
-    $letters = get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place'], false);
-
-    $json_letters = json_encode($letters, JSON_UNESCAPED_UNICODE);
+    $json_letters = json_encode(
+        get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place'], false),
+        JSON_UNESCAPED_UNICODE
+    );
 
     header('Content-Type: application/json');
 
