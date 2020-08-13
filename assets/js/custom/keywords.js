@@ -135,6 +135,15 @@ if (document.getElementById('datatable-keywords')) {
                 title: '',
             },
         ],
+        dataFiltered: function (filters, rows) {
+            document.getElementById('search-count').innerHTML = rows.length
+        },
+        dataLoaded: function (data) {
+            document.getElementById('total-count').innerHTML = data.length
+        },
+        footerElement: `<span>
+            Showing <span id="search-count"></span> items from <span id="total-count"></span> total items
+            </span>`,
         height: '600px',
         layout: 'fitColumns',
         pagination: 'local',

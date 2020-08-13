@@ -267,6 +267,15 @@ if (document.getElementById('datatable-letters')) {
                 visible: false,
             },
         ],
+        dataFiltered: function (filters, rows) {
+            document.getElementById('search-count').innerHTML = rows.length
+        },
+        dataLoaded: function (data) {
+            document.getElementById('total-count').innerHTML = data.length
+        },
+        footerElement: `<span>
+            Showing <span id="search-count"></span> items from <span id="total-count"></span> total items
+            </span>`,
         height: '600px',
         layout: 'fitColumns',
         pagination: 'local',
@@ -378,6 +387,15 @@ if (document.getElementById('datatable-persons')) {
                 title: 'Name as marked',
             },
         ],
+        dataFiltered: function (filters, rows) {
+            document.getElementById('search-count').innerHTML = rows.length
+        },
+        dataLoaded: function (data) {
+            document.getElementById('total-count').innerHTML = data.length
+        },
+        footerElement: `<span>
+            Showing <span id="search-count"></span> items from <span id="total-count"></span> total items
+            </span>`,
         height: '600px',
         groupBy: 'type',
         groupHeader: function (value, count) {
@@ -465,6 +483,15 @@ if (document.getElementById('datatable-places')) {
                 title: 'Coordinates',
             },
         ],
+        dataFiltered: function (filters, rows) {
+            document.getElementById('search-count').innerHTML = rows.length
+        },
+        dataLoaded: function (data) {
+            document.getElementById('total-count').innerHTML = data.length
+        },
+        footerElement: `<span>
+            Showing <span id="search-count"></span> items from <span id="total-count"></span> total items
+            </span>`,
         height: '600px',
         layout: 'fitColumns',
         pagination: 'local',
