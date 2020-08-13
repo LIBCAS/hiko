@@ -517,6 +517,52 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
 }
 
 
+function get_letters_history($letter_type)
+{
+    $fields = implode(', ', [
+        't.id AS ID',
+        't.history',
+    ]);
+
+    $letters = pods(
+        $letter_type,
+        [
+            'select' => $fields,
+            'limit' => -1,
+        ]
+    );
+
+    $result = [];
+
+    while ($letters->fetch()) {
+        $result[] = [
+            'ID' => $letters->display('ID'),
+            'editors' => get_editors_from_history($letters->display('history')),
+        ];
+    }
+
+    return $result;
+}
+
+
+function get_editors_from_history($history)
+{
+    $editors = [];
+
+    $lines = explode("\n", $history);
+
+    foreach ($lines as $line) {
+        $name = explode(' – ', $line)[1];
+
+        if (!in_array($name, $editors)) {
+            $editors[] = $name;
+        }
+    }
+
+    return $editors;
+}
+
+
 function get_all_objects_by_id($object, $v)
 {
     $found = [];
@@ -529,15 +575,37 @@ function get_all_objects_by_id($object, $v)
 }
 
 
-function get_letters_basic_meta_filtered($letter_type, $person_type, $place_type, $draft = true)
+function get_letters_basic_meta_filtered($letter_type, $person_type, $place_type, $draft = true, $history = false)
 {
     $filtered_letters = merge_distinct_query_result(
         get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
     );
 
-    return array_values($filtered_letters);
+    $letters = array_values($filtered_letters);
+
+    if (!$history) {
+        return $letters;
+    }
+
+    $history = get_letters_history($letter_type);
+
+    $result = [];
+
+    foreach ($letters as $letter) {
+        $letter_history = array_filter($history, function ($h) use ($letter) {
+            return ($h['ID'] == $letter['ID']);
+        });
+
+        $letter['editors'] = array_values($letter_history)[0]['editors'];
+
+        $result[] = $letter;
+    }
+
+    return $result;
 }
 
+
+get_letters_basic_meta_filtered('demo_letter', 'demo_person', 'demo_place', true, true);
 
 function get_hiko_post_types($type)
 {
@@ -609,27 +677,76 @@ function get_hiko_post_types_by_url($url = '')
 
 function get_letter_single_field($type, $id, $field_name)
 {
-    $fields = [
-        "t.{$field_name}",
-        't.ID'
-    ];
+    function get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
+    {
+        global $wpdb;
 
-    $fields = implode(', ', $fields);
+        $podsAPI = new PodsAPI();
+        $pod = $podsAPI->load_pod(['name' => $letter_type]);
+        $author_field_id = $pod['fields']['l_author']['id'];
+        $recipient_field_id = $pod['fields']['recipient']['id'];
+        $origin_field_id = $pod['fields']['origin']['id'];
+        $dest_field_id = $pod['fields']['dest']['id'];
+        $img_field_id = $pod['fields']['images']['id'];
 
-    $pod = pods(
-        $type,
-        [
-            'where' => "t.id = '{$id}'",
-            'select' => $fields
-        ]
-    );
+        $l_prefix = "{$wpdb->prefix}pods_{$letter_type}";
+        $r_prefix = "{$wpdb->prefix}podsrel";
+        $pl_prefix = "{$wpdb->prefix}pods_{$place_type}";
+        $pe_prefix = "{$wpdb->prefix}pods_{$person_type}";
 
-    while ($pod->fetch()) {
-        if (!$pod->exists()) {
-            return false;
+        $fields = [
+            't.id AS ID',
+            't.signature',
+            't.date_day',
+            't.date_month',
+            't.date_year',
+            't.status',
+            't.created',
+            'l_author.name AS author',
+            'recipient.name AS recipient',
+            'origin.name AS origin',
+            'dest.name AS dest',
+            'posts.ID as images'
+        ];
+
+        $fields = implode(', ', $fields);
+
+        $draft_condition = '';
+        if (!$draft) {
+            $draft_condition = 'WHERE t.status = \'publish\'';
         }
 
-        return $pod->display($field_name);
+        $user_name = get_full_name();
+
+        $query = "
+    SELECT
+    LOCATE('{$user_name}', t.history) AS my_letter,
+    {$fields}
+    FROM
+    $l_prefix AS t
+    LEFT JOIN {$r_prefix} AS rel_l_author ON rel_l_author.field_id = {$author_field_id}
+    AND rel_l_author.item_id = t.id
+    LEFT JOIN {$pe_prefix} AS l_author ON l_author.id = rel_l_author.related_item_id
+    LEFT JOIN {$r_prefix} AS rel_img ON rel_img.field_id = {$img_field_id}
+    AND rel_img.item_id = t.id
+    LEFT JOIN {$wpdb->prefix}posts AS posts ON posts.ID = rel_img.related_item_id
+    LEFT JOIN {$r_prefix} AS rel_recipient ON rel_recipient.field_id = {$recipient_field_id}
+    AND rel_recipient.item_id = t.id
+    LEFT JOIN {$pe_prefix} AS recipient ON recipient.id = rel_recipient.related_item_id
+    LEFT JOIN {$r_prefix} AS rel_origin ON rel_origin.field_id = {$origin_field_id}
+    AND rel_origin.item_id = t.id
+    LEFT JOIN {$pl_prefix} AS origin ON origin.id = rel_origin.related_item_id
+    LEFT JOIN {$r_prefix} AS rel_dest ON rel_dest.field_id = {$dest_field_id}
+    AND rel_dest.item_id = t.id
+    LEFT JOIN {$pl_prefix} AS dest ON dest.id = rel_dest.related_item_id
+    {$draft_condition}
+    ORDER BY
+    t.created DESC,
+    t.name,
+    t.id
+    ";
+
+        return $wpdb->get_results($query, ARRAY_A);
     }
 }
 
@@ -1143,6 +1260,17 @@ function separate_by_vertibar($str)
     $str = str_replace(',', '|', $str);
     $str = str_replace('| ', '|', $str);
     return $str;
+}
+
+
+function get_editors_by_role($role)
+{
+    return get_users([
+        'role' => $role,
+        'meta_key' => 'last_name',
+        'orderby' => 'meta_value',
+        'order' => 'asc',
+    ]);
 }
 
 
