@@ -42,9 +42,11 @@ function insert_profession()
 add_action('wp_ajax_insert_profession', 'insert_profession');
 
 
-function get_professions_table_data()
+function get_professions_table_data($professions_type = false, $ajax = true)
 {
-    $professions_type = test_input($_GET['type']);
+    if (!$professions_type) {
+        $professions_type = test_input($_GET['type']);
+    }
 
     $fields = [
         't.id',
@@ -74,11 +76,14 @@ function get_professions_table_data()
         $index++;
     }
 
-    echo json_encode(
-        $professions_filtered,
-        JSON_UNESCAPED_UNICODE
-    );
 
-    wp_die();
+    $professions_filtered = json_encode($professions_filtered, JSON_UNESCAPED_UNICODE);
+
+    if ($ajax) {
+        header('Content-Type: application/json');
+        wp_die($professions_filtered);
+    }
+
+    return $professions_filtered;
 }
 add_action('wp_ajax_professions_table_data', 'get_professions_table_data');

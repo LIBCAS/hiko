@@ -12,6 +12,7 @@ if (document.getElementById('person-name')) {
             firstName: '',
             gender: '',
             lastName: '',
+            loading: true,
             nationality: '',
             note: '',
             personType: '',
@@ -48,6 +49,8 @@ if (document.getElementById('person-name')) {
 
         mounted: function () {
             let letterTypes = getLetterType()
+            let self = this
+            let url = new URL(window.location.href)
 
             if (isString(letterTypes)) {
                 self.error = letterTypes
@@ -55,15 +58,20 @@ if (document.getElementById('person-name')) {
             }
 
             this.personType = letterTypes['personType']
-
             this.professionsType = letterTypes['profession']
 
-            this.getProfessions()
+            let initialProfessions = JSON.parse(
+                document.querySelector('#professions').innerHTML
+            )
 
-            let url = new URL(window.location.href)
+            self.mapProfessions(initialProfessions)
 
             if (url.searchParams.get('edit')) {
-                this.getInitialData(url.searchParams.get('edit'))
+                this.getInitialData(url.searchParams.get('edit'), () => {
+                    self.loading = false
+                })
+            } else {
+                self.loading = false
             }
         },
 
@@ -76,7 +84,7 @@ if (document.getElementById('person-name')) {
                 return decodeHTML(str)
             },
 
-            getInitialData: function (id) {
+            getInitialData: function (id, callback = null) {
                 let self = this
                 axios
                     .get(
@@ -132,6 +140,7 @@ if (document.getElementById('person-name')) {
                         self.error = true
                         console.log(error)
                     })
+                    .then(callback)
             },
 
             regenerateProfessions: function (event) {
@@ -152,26 +161,29 @@ if (document.getElementById('person-name')) {
                             self.professionsType
                     )
                     .then(function (response) {
-                        let professions = response.data
-
-                        professions.map((profession) => {
-                            if (profession.palladio) {
-                                self.professionsPalladio.push({
-                                    label: self.decodeHTML(profession.name),
-                                    value: profession.id,
-                                })
-                            } else {
-                                self.professions.push({
-                                    label: self.decodeHTML(profession.name),
-                                    value: profession.id,
-                                })
-                            }
-                        })
+                        self.mapProfessions(response.data)
                     })
                     .catch(function (error) {
                         console.log(error)
                     })
                     .then(callback)
+            },
+
+            mapProfessions: function (rawProfessions) {
+                let self = this
+                rawProfessions.map((profession) => {
+                    if (profession.palladio) {
+                        self.professionsPalladio.push({
+                            label: self.decodeHTML(profession.name),
+                            value: profession.id,
+                        })
+                    } else {
+                        self.professions.push({
+                            label: self.decodeHTML(profession.name),
+                            value: profession.id,
+                        })
+                    }
+                })
             },
 
             addNewprofession: function () {

@@ -2,6 +2,7 @@
 
 $pods_types = get_hiko_post_types_by_url();
 $person_type = $pods_types['person'];
+$profession_type = $pods_types['profession'];
 $action = 'new';
 if (array_key_exists('edit', $_GET)) {
     $action = 'edit';
@@ -12,11 +13,15 @@ if (array_key_exists('save_post', $_POST)) {
 }
 
 ?>
-<div id="person-name">
-    <div class="alert alert-warning" :class="{ 'd-none' : error == false }">
+<div id="person-name" v-cloak>
+    <div v-if="loading && !error" class="progress my-3">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 65%">
+        </div>
+    </div>
+    <div v-if="!loading && error " class="alert alert-warning">
         Požadovaná položka nebyla nalezena. Pro vytvoření nové osoby použijte <a href="?">tento odkaz</a>.
     </div>
-    <div class="card bg-light" :class="{ 'd-none' : error == true }">
+    <div class="card bg-light" :class="{ 'd-none' : error || loading }">
         <div class="card-body">
             <form name="persons" method="post" onkeypress="return event.keyCode!=13">
                 <fieldset>
@@ -135,3 +140,7 @@ if (array_key_exists('save_post', $_POST)) {
         </div>
     </div>
 </div>
+
+<script id="professions" type="application/json">
+    <?= get_professions_table_data($profession_type, false); ?>
+</script>
