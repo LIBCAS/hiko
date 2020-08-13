@@ -276,6 +276,7 @@ if (document.getElementById('datatable-letters')) {
             </span>`,
         height: '600px',
         layout: 'fitColumns',
+        index: 'ID',
         pagination: 'local',
         paginationSize: 25,
         selectable: false,
