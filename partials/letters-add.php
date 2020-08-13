@@ -32,7 +32,7 @@ if (array_key_exists('save_post', $_POST)) {
 </div>
 
 
-<div id="letter-add-form">
+<div id="letter-add-form" v-cloak>
 
     <div v-if="loading" class="progress">
         <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 65%">

@@ -6,7 +6,7 @@ $path = $pods_types['path'];
 
 <div class="mb-3 d-flex justify-content-between">
     <a href="<?= home_url($path . '/persons-add'); ?>" class="btn btn-lg btn-primary">Přidat novou osobu / instituci</a>
-    <div class="dropdown d-inline-block" id="export-person">
+    <div class="dropdown d-inline-block" id="export-person" v-cloak>
         <button @click="openDD = !openDD" v-show="actions.length" class="btn btn-outline-primary btn-lg dropdown-toggle" type="button">
             Exportovat
         </button>

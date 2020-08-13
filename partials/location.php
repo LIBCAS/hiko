@@ -1,4 +1,4 @@
-<div id="location">
+<div id="location" v-cloak>
     <div v-if="loading" class="progress my-5">
         <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 65%">
         </div>

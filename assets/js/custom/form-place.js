@@ -9,6 +9,8 @@ if (document.getElementById('places-form')) {
             long: '',
             note: '',
             place: '',
+            error: false,
+            loading: true,
         },
         computed: {
             countries() {
@@ -30,6 +32,8 @@ if (document.getElementById('places-form')) {
         },
         mounted: function () {
             let letterTypes = getLetterType()
+            let url = new URL(window.location.href)
+            let self = this
 
             if (isString(letterTypes)) {
                 self.error = letterTypes
@@ -38,10 +42,12 @@ if (document.getElementById('places-form')) {
 
             this.placeType = letterTypes['placeType']
 
-            let url = new URL(window.location.href)
-
             if (url.searchParams.get('edit')) {
-                this.getInitialData(url.searchParams.get('edit'))
+                this.getInitialData(url.searchParams.get('edit'), () => {
+                    self.loading = false
+                })
+            } else {
+                self.loading = false
             }
         },
         methods: {
@@ -58,7 +64,7 @@ if (document.getElementById('places-form')) {
                     self.long = coord[1]
                 })
             },
-            getInitialData: function (id) {
+            getInitialData: function (id, callback = null) {
                 let self = this
 
                 axios
@@ -82,6 +88,7 @@ if (document.getElementById('places-form')) {
                     .catch(function () {
                         self.error = true
                     })
+                    .then(callback)
             },
         },
     })
