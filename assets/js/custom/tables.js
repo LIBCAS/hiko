@@ -169,12 +169,10 @@ if (document.getElementById('datatable-letters')) {
             {
                 field: 'date',
                 headerFilter: 'input',
-                formatter: function (cell) {
-                    const dateData = cell.getRow().getData()
-
-                    let year = dateData.date_year ? dateData.date_year : 0
-                    let month = dateData.date_month ? dateData.date_month : 0
-                    let day = dateData.date_day ? dateData.date_day : 0
+                mutator: function (value, data) {
+                    let year = data.date_year ? data.date_year : 0
+                    let month = data.date_month ? data.date_month : 0
+                    let day = data.date_day ? data.date_day : 0
                     return `
                     ${year}/${month}/${day}
                     `
