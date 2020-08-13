@@ -21,27 +21,7 @@ $places_json = json_encode(
         </div>
     </div>
 </div>
-
-<div id="datatable-places">
-    <v-client-table :data="tableData" :columns="columns" :options="options">
-        <ul slot="edit" slot-scope="props" class="list-unstyled">
-            <li>
-                <a :href="'<?= home_url($path . '/places-add/?edit='); ?>' + props.row.id">Upravit</a>
-            </li>
-            <li>
-                <a v-if="!props.row.relationships" :href="'#delete-' + props.row.id" @click="deletePlace(props.row.id)">Odstranit</a>
-            </li>
-        </ul>
-        <span slot="city" slot-scope="props">
-            <span v-html="props.row.city"></span>
-        </span>
-        <span slot="latlong" slot-scope="props">
-            <a v-if="props.row.latlong" :href="props.row.latlong | mapLink" target="_blank">
-                {{ props.row.latlong }}
-            </a>
-        </span>
-    </v-client-table>
-</div>
+<div id="datatable-places"></div>
 
 <script id="places-data" type="application/json">
     <?= $places_json; ?>

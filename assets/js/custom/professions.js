@@ -1,4 +1,4 @@
-/* global Vue VueTables defaultTablesOptions getLetterType removeItemAjax axios Swal ajaxUrl isString */
+/* global Tabulator updateTableHeaders getLetterType removeItemAjax axios Swal ajaxUrl */
 
 const professionsSwal = {
     confirmSave: {
@@ -12,12 +12,22 @@ const professionsSwal = {
         type: 'question',
     },
     saveSuccess: {
-        title: 'Položka byla úspěšně přidána',
+        title: 'Profese byla úspěšně upravena',
         type: 'success',
         buttonsStyling: false,
         confirmButtonText: 'OK',
         confirmButtonClass: 'btn btn-primary btn-lg',
     },
+}
+
+const letterTypes = getLetterType()
+
+var table
+
+function deleteProfession(id, index) {
+    removeItemAjax(id, 'profession', letterTypes['path'], () => {
+        table.deleteRow(index)
+    })
 }
 
 function getProfessionForm(nameEn, nameCs, palladio) {
@@ -39,140 +49,140 @@ function getProfessionForm(nameEn, nameCs, palladio) {
     `
 }
 
-if (document.getElementById('datatable-profession')) {
-    Vue.use(VueTables.ClientTable, false, false, 'bootstrap4')
-    new Vue({
-        el: '#datatable-profession',
-        data: {
-            columns: ['name', 'namecz', 'palladio', 'edit'],
-            tableData: [],
-            error: false,
-            options: {
-                filterable: ['name', 'namecz'],
-                headings: {
-                    name: 'EN',
-                    namecz: 'CZ',
-                    palladio: 'Type',
-                    edit: 'Akce',
+function addProfession(
+    type,
+    action,
+    id,
+    oldProfession = '',
+    oldProfessionCZ = '',
+    oldPalladio = false
+) {
+    let swalConfig = professionsSwal.confirmSave
+    swalConfig.title = id ? 'Upravit profesi' : 'Nová profese '
+    swalConfig.allowOutsideClick = () => !Swal.isLoading()
+    swalConfig.html = getProfessionForm(
+        oldProfession,
+        oldProfessionCZ,
+        oldPalladio
+    )
+    swalConfig.focusConfirm = false
+    swalConfig.preConfirm = () => {
+        let nameen = document.getElementById('nameen').value
+        let namecz = document.getElementById('namecz').value
+        let palladio = document.getElementById('palladio').checked
+
+        if (nameen.length < 2) {
+            return Swal.showValidationMessage(
+                'Zadané hodnoty nejsou zadané v požadovaném formátu (2-255 znaků)'
+            )
+        }
+
+        return axios
+            .post(
+                ajaxUrl + '?action=insert_profession',
+                {
+                    ['type']: type,
+                    ['nameen']: nameen,
+                    ['namecz']: namecz,
+                    ['palladio']: palladio,
+                    ['action']: action,
+                    ['id']: id,
                 },
-                pagination: defaultTablesOptions.pagination,
-                perPage: defaultTablesOptions.perPage,
-                perPageValues: defaultTablesOptions.perPageValues,
-                skin: defaultTablesOptions.skin,
-                sortIcon: defaultTablesOptions.sortIcon,
-                sortable: ['name', 'namecz', 'palladio'],
-                texts: defaultTablesOptions.texts,
-            },
-            path: '',
-            type: '',
-        },
-
-        mounted: function () {
-            let letterTypes = getLetterType()
-            if (isString(letterTypes)) {
-                self.error = letterTypes
-                return
-            }
-            this.type = letterTypes['profession']
-            this.path = letterTypes['path']
-
-            this.getData()
-        },
-        methods: {
-            getData: function () {
-                let self = this
-                axios
-                    .get(
-                        ajaxUrl +
-                            '?action=professions_table_data&type=' +
-                            self.type
-                    )
-                    .then(function (response) {
-                        self.tableData = response.data
-                    })
-                    .catch(function (error) {
-                        self.error = error
-                    })
-            },
-            deleteProfession: function (id) {
-                let self = this
-                removeItemAjax(id, 'profession', self.path, function () {
-                    self.deleteRow(id, self.tableData)
-                })
-            },
-            deleteRow: function (id, data) {
-                this.tableData = data.filter(function (item) {
-                    return item.id !== id
-                })
-            },
-            addProfession: function (
-                type,
-                action,
-                id,
-                oldProfession = '',
-                oldProfessionCZ = '',
-                oldPalladio = false
-            ) {
-                let self = this
-                let swalConfig = professionsSwal.confirmSave
-                swalConfig.title = id ? 'Upravit profesi' : 'Nová profese '
-
-                swalConfig.allowOutsideClick = () => !Swal.isLoading()
-
-                swalConfig.html = getProfessionForm(
-                    oldProfession,
-                    oldProfessionCZ,
-                    oldPalladio
-                )
-
-                swalConfig.focusConfirm = false
-
-                swalConfig.preConfirm = () => {
-                    let nameen = document.getElementById('nameen').value
-                    let namecz = document.getElementById('namecz').value
-                    let palladio = document.getElementById('palladio').checked
-
-                    if (nameen.length < 2) {
-                        return Swal.showValidationMessage(
-                            'Zadané hodnoty nejsou zadané v požadovaném formátu (2-255 znaků)'
-                        )
-                    }
-
-                    return axios
-                        .post(
-                            ajaxUrl + '?action=insert_profession',
-                            {
-                                ['type']: type,
-                                ['nameen']: nameen,
-                                ['namecz']: namecz,
-                                ['palladio']: palladio,
-                                ['action']: action,
-                                ['id']: id,
-                            },
-                            {
-                                headers: {
-                                    'Content-Type':
-                                        'application/json;charset=utf-8',
-                                },
-                            }
-                        )
-                        .then(function (response) {
-                            return response.data
-                        })
-                        .catch(function (error) {
-                            Swal.showValidationMessage(
-                                `Při ukládání došlo k chybě: ${error}`
-                            )
-                        })
+                {
+                    headers: {
+                        'Content-Type': 'application/json;charset=utf-8',
+                    },
                 }
+            )
+            .then(function () {
+                table.replaceData(
+                    ajaxUrl +
+                        '?action=professions_table_data&type=' +
+                        letterTypes['profession']
+                )
+            })
+            .catch(function (error) {
+                Swal.showValidationMessage(
+                    `Při ukládání došlo k chybě: ${error}`
+                )
+            })
+    }
 
-                Swal.fire(swalConfig).then((result) => {
-                    if (result.value) {
-                        Swal.fire(professionsSwal.saveSuccess)
-                        self.getData()
-                    }
-                })
-            },
-        },
+    Swal.fire(swalConfig).then((result) => {
+        if (result.value) {
+            Swal.fire(professionsSwal.saveSuccess)
+        }
     })
+}
+
+if (document.getElementById('datatable-profession')) {
+    table = new Tabulator('#datatable-profession', {
+        columns: [
+            {
+                field: 'name',
+                headerFilter: 'input',
+                title: 'EN',
+            },
+            {
+                field: 'namecz',
+                headerFilter: 'input',
+                title: 'CZ',
+            },
+            {
+                field: 'id',
+                formatter: function (cell) {
+                    const rowData = cell.getRow().getData()
+                    const rowIndex = cell.getRow().getIndex()
+
+                    return `
+                    <ul class="list-unstyled mb-0">
+                        <li>
+                            <span onclick="addProfession('${letterTypes['profession']}', 'edit', ${rowData.id}, '${rowData.name}', '${rowData.namecz}', ${rowData.palladio})" class="text-info is-link py-1">
+                                Upravit
+                            </span>
+                        </li>
+                        <li>
+                            <span onclick="deleteProfession(${rowData.id}, ${rowIndex})" class="text-danger is-link py-1">
+                                Odstranit
+                            </span>
+                        </li>
+                    </ul>
+                    `
+                },
+                headerSort: false,
+                title: '',
+            },
+        ],
+        dataFiltered: function (filters, rows) {
+            document.getElementById('search-count').innerHTML = rows.length
+        },
+        dataLoaded: function (data) {
+            document.getElementById('total-count').innerHTML = data.length
+        },
+        footerElement: `<span>
+            Showing <span id="search-count"></span> items from <span id="total-count"></span> total items
+            </span>`,
+        groupBy: 'palladio',
+        groupHeader: function (value, count) {
+            value = value ? 'Palladio' : 'Profession'
+
+            return `
+            ${value} <span class="text-danger">${count} items</span>
+            `
+        },
+        groupStartOpen: false,
+        height: '600px',
+        layout: 'fitColumns',
+        pagination: 'local',
+        paginationSize: 25,
+        selectable: false,
+    })
+
+    table.setData(
+        ajaxUrl +
+            '?action=professions_table_data&type=' +
+            letterTypes['profession']
+    )
+
+    updateTableHeaders()
 }

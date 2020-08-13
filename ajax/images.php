@@ -2,8 +2,6 @@
 
 function handle_img_uploads()
 {
-    delete_hiko_cache('list_' . get_hiko_post_types_by_url()['path']);
-
     $f = $_FILES['files'];
     $valid = verify_upload_img($f);
 
@@ -64,19 +62,14 @@ function handle_img_uploads()
         return;
     }
 
-    $insert = wp_insert_attachment(
-        $attachment,
-        $filename,
-        0
-    );
+    $insert = wp_insert_attachment($attachment, $filename, 0);
 
     if (is_wp_error($insert)) {
         wp_send_json_error('error', 500);
         return;
     }
 
-    $thumbs = wp_generate_attachment_metadata($insert, $filename);
-    wp_update_attachment_metadata($insert, $thumbs);
+    wp_update_attachment_metadata($insert, wp_generate_attachment_metadata($insert, $filename));
     $pod->add_to('images', $insert);
     $pod->save;
     wp_send_json_success();
@@ -127,8 +120,6 @@ function delete_hiko_image()
     $letter_id = sanitize_text_field($data->letter);
     $type = sanitize_text_field($data->l_type);
     $img_id = sanitize_text_field($data->img);
-
-    delete_hiko_cache('list_' . get_hiko_post_types_by_url($type)['path']);
 
     $pod = pods($type, $letter_id);
 

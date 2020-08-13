@@ -20,12 +20,12 @@ function insert_keyword()
     ];
 
     if ($action == 'add') {
-        pods_api()->save_pod_item([
+        $newId = pods_api()->save_pod_item([
             'pod' => $type,
             'data' => $data
         ]);
 
-        wp_send_json_success();
+        wp_send_json_success(array_merge($data, ['id' => $newId]));
     } elseif ($action == 'edit') {
         pods_api()->save_pod_item([
             'pod' => $type,
@@ -33,7 +33,7 @@ function insert_keyword()
             'id' => $id
         ]);
 
-        wp_send_json_success();
+        wp_send_json_success(array_merge($data, ['id' => $id]));
     }
 
     wp_send_json_error();

@@ -208,11 +208,16 @@ function get_persons_table_data($person_type)
             $alternative_names = [];
         }
 
+        $type = $persons->display('type');
+        if (empty($type)) {
+            $type = 'person';
+        }
+
         $persons_filtered[$index]['id'] = $persons->display('id');
         $persons_filtered[$index]['name'] = $persons->display('name');
         $persons_filtered[$index]['birth'] = $persons->display('birth_year');
         $persons_filtered[$index]['death'] = $persons->display('death_year');
-        $persons_filtered[$index]['type'] = $persons->display('type');
+        $persons_filtered[$index]['type'] = $type;
         $persons_filtered[$index]['alternatives'] = $alternative_names;
         $persons_filtered[$index]['relationships'] = !is_null($persons->display('au')) || !is_null($persons->display('re')) || !is_null($persons->display('pm'));
 
@@ -457,7 +462,7 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
     $pe_prefix = "{$wpdb->prefix}pods_{$person_type}";
 
     $fields = [
-        't.id',
+        't.id AS ID',
         't.signature',
         't.date_day',
         't.date_month',
@@ -478,8 +483,11 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
         $draft_condition = 'WHERE t.status = \'publish\'';
     }
 
+    $user_name = get_full_name();
+
     $query = "
     SELECT
+    LOCATE('{$user_name}', t.history) AS my_letter,
     {$fields}
     FROM
     $l_prefix AS t
@@ -520,43 +528,10 @@ function get_all_objects_by_id($object, $v)
     return $found;
 }
 
-/* TODO: refactor!!! */
-function flatten_duplicate_letters($query_result)
-{
-    $result = [];
-
-    foreach ($query_result as $row) {
-        if (!array_key_exists($row['id'], $result)) {
-            foreach ($row as $itemKey => $item) {
-                $result[$row['id']][$itemKey] = $item;
-            }
-        } else {
-            $existingRow = $result[$row['id']];
-            foreach ($row as $itemKey => $item) {
-                if (is_string($item) && $item != $existingRow[$itemKey]) {
-                    $result[$row['id']][$itemKey] = [];
-
-                    if (!is_array($existingRow[$itemKey])) {
-                        $result[$row['id']][$itemKey][] = $existingRow[$itemKey];
-                    } else {
-                        foreach ($existingRow[$itemKey] as $val) {
-                            $result[$row['id']][$itemKey][] = $val;
-                        }
-                    }
-
-                    $result[$row['id']][$itemKey][] = $item;
-                }
-            }
-        }
-    }
-
-    return $result;
-}
-
 
 function get_letters_basic_meta_filtered($letter_type, $person_type, $place_type, $draft = true)
 {
-    $filtered_letters = flatten_duplicate_letters(
+    $filtered_letters = merge_distinct_query_result(
         get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
     );
 
@@ -854,8 +829,6 @@ function save_hiko_letter($letter_type, $action, $path)
         return alert($new_pod->get_error_message(), 'warning');
     }
 
-    delete_hiko_cache('list_' . $path);
-    delete_hiko_cache('list_' . $types['person']);
     save_name_alternatives($participant_meta, $types['person']);
     frontend_refresh();
 
@@ -916,7 +889,6 @@ function save_hiko_person($person_type, $action)
         return alert($new_pod->get_error_message(), 'warning');
     }
 
-    delete_hiko_cache('list_' . $person_type);
     frontend_refresh();
 
     return alert('Uloženo', 'success');
@@ -1032,7 +1004,7 @@ function display_persons_and_places($person_type, $place_type)
 function create_hiko_json_cache($name, $json_data)
 {
     $cache_folder = WP_CONTENT_DIR . '/hiko-cache';
-    $filename = md5($name) . '.json';
+    $filename = "{$name}.json";
 
     if (!file_exists($cache_folder)) {
         wp_mkdir_p($cache_folder);
@@ -1047,7 +1019,7 @@ function create_hiko_json_cache($name, $json_data)
 function hiko_cache_exists($name)
 {
     $cache_folder = WP_CONTENT_DIR . '/hiko-cache';
-    $file = md5($name) . '.json';
+    $file = "{$name}.json";
 
     if (file_exists($cache_folder . '/' . $file)) {
         return true;
@@ -1058,7 +1030,7 @@ function hiko_cache_exists($name)
 
 function delete_hiko_cache($name)
 {
-    $file = WP_CONTENT_DIR . '/hiko-cache' . '/' . md5($name) . '.json';
+    $file = WP_CONTENT_DIR . '/hiko-cache' . '/' . $name . '.json';
 
     if (file_exists($file)) {
         unlink($file);
@@ -1076,7 +1048,7 @@ function read_hiko_cache($name)
 
 function get_hiko_cache_file($name)
 {
-    return WP_CONTENT_DIR . '/hiko-cache' . '/' . md5($name) . '.json';
+    return WP_CONTENT_DIR . '/hiko-cache' . '/' . $name . '.json';
 }
 
 
@@ -1117,14 +1089,20 @@ function merge_distinct_query_result($query_result)
                     $result[$row['ID']][$itemKey] = [];
 
                     if (!is_array($existingRow[$itemKey])) {
-                        $result[$row['ID']][$itemKey][] = $existingRow[$itemKey];
+                        if (!in_array($existingRow[$itemKey], $result[$row['ID']][$itemKey])) {
+                            $result[$row['ID']][$itemKey][] = $existingRow[$itemKey];
+                        }
                     } else {
                         foreach ($existingRow[$itemKey] as $val) {
-                            $result[$row['ID']][$itemKey][] = $val;
+                            if (!in_array($val, $result[$row['ID']][$itemKey])) {
+                                $result[$row['ID']][$itemKey][] = $val;
+                            }
                         }
                     }
 
-                    $result[$row['ID']][$itemKey][] = $item;
+                    if (!in_array($item, $result[$row['ID']][$itemKey])) {
+                        $result[$row['ID']][$itemKey][] = $item;
+                    }
                 }
             }
         }

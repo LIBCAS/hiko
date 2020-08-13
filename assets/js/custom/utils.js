@@ -200,66 +200,9 @@ function removeItemAjax(id, podType, podName, callback) {
     })
 }
 
-function removeElFromArr(el, array) {
-    return array.filter(function (value) {
-        return value != el
-    })
-}
-
-function getCustomSorting(columns) {
-    let sorting = {}
-    for (let i = 0; i < columns.length; i++) {
-        sorting[columns[i]] = function (ascending) {
-            return function (a, b) {
-                if (a[columns[i]] == null) {
-                    a = ''
-                } else if (Array.isArray(a[columns[i]])) {
-                    a = a[columns[i]].toString()
-                } else {
-                    a = a[columns[i]].toLowerCase()
-                }
-
-                if (b[columns[i]] == null) {
-                    b = ''
-                } else if (Array.isArray(b[columns[i]])) {
-                    b = b[columns[i]].toString()
-                } else {
-                    b = b[columns[i]].toLowerCase()
-                }
-
-                if (ascending) {
-                    return b.localeCompare(a)
-                }
-                return a.localeCompare(b)
-            }
-        }
-    }
-
-    return sorting
-}
-
-function getTimestampFromCustomFormat(customDate) {
-    let d = new Date()
-    if (customDate == '0/0/0') {
-        d.setFullYear(1000, 12, 31)
-        return d.getTime()
-    }
-
-    customDate = customDate.split('/')
-    let year = customDate[0] == 0 ? 1000 : customDate[0]
-    let month = customDate[1] == 0 ? 0 : customDate[1] - 1
-    let day = customDate[2]
-    d.setFullYear(year, month, day)
-    return d.getTime()
-}
-
 function getTimestampFromDate(year, month, day) {
-    year = year == 0 ? 1000 : year
-    month = month == 0 ? 0 : month - 1
-
     let d = new Date()
-    d.setFullYear(year, month, day)
-
+    d.setFullYear(year ? year : 0, month ? month - 1 : 0, day ? day : 1)
     return d.getTime()
 }
 
@@ -274,4 +217,13 @@ function isString(data) {
         return true
     }
     return false
+}
+
+function updateTableHeaders() {
+    document.querySelectorAll('.tabulator-header-filter').forEach((item) => {
+        item.querySelector('input').classList.add(
+            'form-control',
+            'form-control-sm'
+        )
+    })
 }
