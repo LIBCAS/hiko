@@ -390,13 +390,20 @@ if (document.getElementById('letter-form')) {
                 }
 
                 for (let i = 0; i < letter.origin.length; i++) {
-                    let id = self.cleanCopy(letter.origin[i]).id.value
-                    origin.push(getNameById(placeMeta, id))
+                    let name = getNameById(
+                        placeMeta,
+                        self.cleanCopy(letter.origin[i]).id.value
+                    )
+
+                    origin.push(name.split(' (')[0]) // remove coordinates
                 }
 
                 for (let i = 0; i < letter.destination.length; i++) {
-                    let id = self.cleanCopy(letter.destination[i]).id.value
-                    destination.push(getNameById(placeMeta, id))
+                    let name = getNameById(
+                        placeMeta,
+                        self.cleanCopy(letter.destination[i]).id.value
+                    )
+                    destination.push(name.split(' (')[0]) // remove coordinates
                 }
 
                 authors = authors.join('; ')
