@@ -282,7 +282,7 @@ if (document.getElementById('datatable-letters')) {
         footerElement:
             '<span>Showing <span id="search-count"></span> items from <span id="total-count"></span> total items</span>',
         height: '600px',
-        layout: 'fitDataFill',
+        layout: 'fitColumns',
         index: 'ID',
         pagination: 'local',
         paginationSize: 25,
