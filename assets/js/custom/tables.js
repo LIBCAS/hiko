@@ -121,6 +121,10 @@ function showHistory(id, event) {
 
 if (document.getElementById('datatable-letters')) {
     table = new Tabulator('#datatable-letters', {
+        ajaxResponse: function (url, params, response) {
+            document.getElementById('custom-filters').classList.remove('d-none')
+            return response
+        },
         columns: [
             {
                 field: 'actions',
@@ -262,6 +266,12 @@ if (document.getElementById('datatable-letters')) {
                 title: 'My Letter',
                 visible: false,
             },
+            {
+                field: 'editors',
+                headerFilter: 'input',
+                title: 'Editors',
+                visible: false,
+            },
         ],
         dataFiltered: function (filters, rows) {
             document.getElementById('search-count').innerHTML = rows.length
@@ -292,13 +302,27 @@ if (document.getElementById('datatable-letters')) {
                 'input[name="letters-filter"]:checked'
             ).value
 
+            table.removeFilter('my_letter', '!=', '0')
+
             if (selected == 'my') {
                 table.addFilter('my_letter', '!=', '0')
-            } else {
-                table.removeFilter('my_letter', '!=', '0')
             }
         })
     })
+
+    if (document.getElementById('editors-letters-filter')) {
+        document
+            .getElementById('editors-letters-filter')
+            .addEventListener('change', (e) => {
+                table.clearFilter()
+
+                let editor = e.target.value
+
+                if (editor != 'all') {
+                    table.addFilter('editors', 'like', editor)
+                }
+            })
+    }
 }
 
 if (document.getElementById('datatable-persons')) {
