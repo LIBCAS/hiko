@@ -18,7 +18,7 @@ if (document.getElementById('person-name')) {
             personType: '',
             profession: '',
             professionDetailed: [{ label: null, value: null }],
-            professionShort: [],
+            professionShort: [{ label: null, value: null }],
             professions: [],
             professionsPalladio: [],
             professionsType: '',
@@ -76,6 +76,10 @@ if (document.getElementById('person-name')) {
         },
 
         methods: {
+            cleanCopy(obj) {
+                return JSON.parse(JSON.stringify(obj))
+            },
+
             capitalize: function (str) {
                 return str.charAt(0).toUpperCase() + str.slice(1)
             },
@@ -120,20 +124,29 @@ if (document.getElementById('person-name')) {
                         if (rd.profession_detailed) {
                             self.professionDetailed = []
                             rd.profession_detailed.split(';').map((item) => {
-                                self.professionDetailed.push(
-                                    self.getProfessionById(
-                                        item,
-                                        self.professions
+                                if (item != '') {
+                                    self.professionDetailed.push(
+                                        self.getProfessionById(
+                                            item,
+                                            self.professions
+                                        )
                                     )
-                                )
+                                }
                             })
                         }
 
                         if (rd.profession_short) {
-                            self.professionShort = self.getProfessionById(
-                                rd.profession_short,
-                                self.professionsPalladio
-                            )
+                            self.professionShort = []
+                            rd.profession_short.split(';').map((item) => {
+                                if (item != '') {
+                                    self.professionShort.push(
+                                        self.getProfessionById(
+                                            item,
+                                            self.professionsPalladio
+                                        )
+                                    )
+                                }
+                            })
                         }
                     })
                     .catch(function (error) {
@@ -190,15 +203,25 @@ if (document.getElementById('person-name')) {
                 this.professionDetailed.push({ label: null, value: null })
             },
 
-            removeProfession: function (professionIndex) {
-                this.professionDetailed = this.professionDetailed.filter(
-                    function (item, index) {
-                        return index !== professionIndex
-                    }
-                )
+            addNewPalladioProfession: function () {
+                this.professionShort.push({ label: null, value: null })
+            },
+
+            removePalladioProfession: function (professionIndex) {
+                this.professionShort = this.professionShort.filter(function (
+                    item,
+                    index
+                ) {
+                    return index !== professionIndex
+                })
             },
 
             getProfessionById: function (id, professions) {
+                professions = this.cleanCopy(professions)
+
+                if (professions.length == 0) {
+                    return []
+                }
                 let filtered = professions.filter((profession) => {
                     return profession.value == id
                 })

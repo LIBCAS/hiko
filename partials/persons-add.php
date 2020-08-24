@@ -72,9 +72,16 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
                     <div class="form-group">
                         <label for="profession_short">Palladio Profession <span class="pointer oi oi-reload pl-1" @click="regenerateProfessions($event)"></span></label>
-                        <multiselect v-model="professionShort" :options="professionsPalladio" label="label" track-by="value">
-                        </multiselect>
-                        <input type="hidden" :value="professionShort.value" name="profession_short">
+                        <div v-for="pf, index in professionShort" class="border rounded my-2 py-3 px-2 d-flex align-items-start">
+                            <multiselect v-model="professionShort[index]" :options="professionsPalladio" label="label" track-by="value"></multiselect>
+                            <button @click="removePalladioProfession(index)" type="button" class="close text-danger" aria-label="Remove palladio profession">
+                                <span title="Remove palladio profession">&times;</span>
+                            </button>
+                        </div>
+                        <button v-if="professionShort.length < 3" type="button" class="btn btn-sm btn-outline-info d-block mt-2 mb-4" @click="addNewPalladioProfession">
+                            <span class="oi oi-plus"></span> Add
+                        </button>
+                        <input type="hidden" :value="getObjectValues(professionShort).join(';')" name="profession_short">
                     </div>
                     <div class="form-group">
                         <label for="profession_detailed">Professions <span class="pointer oi oi-reload pl-1" @click="regenerateProfessions($event)"></span></label>
