@@ -605,8 +605,6 @@ function get_letters_basic_meta_filtered($letter_type, $person_type, $place_type
 }
 
 
-get_letters_basic_meta_filtered('demo_letter', 'demo_person', 'demo_place', true, true);
-
 function get_hiko_post_types($type)
 {
     $data = [
@@ -677,76 +675,23 @@ function get_hiko_post_types_by_url($url = '')
 
 function get_letter_single_field($type, $id, $field_name)
 {
-    function get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
-    {
-        global $wpdb;
+    $pod = pods(
+        $type,
+        [
+            'where' => "t.id = '{$id}'",
+            'select' => implode(', ', [
+                "t.{$field_name}",
+                't.ID'
+            ])
+        ]
+    );
 
-        $podsAPI = new PodsAPI();
-        $pod = $podsAPI->load_pod(['name' => $letter_type]);
-        $author_field_id = $pod['fields']['l_author']['id'];
-        $recipient_field_id = $pod['fields']['recipient']['id'];
-        $origin_field_id = $pod['fields']['origin']['id'];
-        $dest_field_id = $pod['fields']['dest']['id'];
-        $img_field_id = $pod['fields']['images']['id'];
-
-        $l_prefix = "{$wpdb->prefix}pods_{$letter_type}";
-        $r_prefix = "{$wpdb->prefix}podsrel";
-        $pl_prefix = "{$wpdb->prefix}pods_{$place_type}";
-        $pe_prefix = "{$wpdb->prefix}pods_{$person_type}";
-
-        $fields = [
-            't.id AS ID',
-            't.signature',
-            't.date_day',
-            't.date_month',
-            't.date_year',
-            't.status',
-            't.created',
-            'l_author.name AS author',
-            'recipient.name AS recipient',
-            'origin.name AS origin',
-            'dest.name AS dest',
-            'posts.ID as images'
-        ];
-
-        $fields = implode(', ', $fields);
-
-        $draft_condition = '';
-        if (!$draft) {
-            $draft_condition = 'WHERE t.status = \'publish\'';
+    while ($pod->fetch()) {
+        if (!$pod->exists()) {
+            return false;
         }
 
-        $user_name = get_full_name();
-
-        $query = "
-    SELECT
-    LOCATE('{$user_name}', t.history) AS my_letter,
-    {$fields}
-    FROM
-    $l_prefix AS t
-    LEFT JOIN {$r_prefix} AS rel_l_author ON rel_l_author.field_id = {$author_field_id}
-    AND rel_l_author.item_id = t.id
-    LEFT JOIN {$pe_prefix} AS l_author ON l_author.id = rel_l_author.related_item_id
-    LEFT JOIN {$r_prefix} AS rel_img ON rel_img.field_id = {$img_field_id}
-    AND rel_img.item_id = t.id
-    LEFT JOIN {$wpdb->prefix}posts AS posts ON posts.ID = rel_img.related_item_id
-    LEFT JOIN {$r_prefix} AS rel_recipient ON rel_recipient.field_id = {$recipient_field_id}
-    AND rel_recipient.item_id = t.id
-    LEFT JOIN {$pe_prefix} AS recipient ON recipient.id = rel_recipient.related_item_id
-    LEFT JOIN {$r_prefix} AS rel_origin ON rel_origin.field_id = {$origin_field_id}
-    AND rel_origin.item_id = t.id
-    LEFT JOIN {$pl_prefix} AS origin ON origin.id = rel_origin.related_item_id
-    LEFT JOIN {$r_prefix} AS rel_dest ON rel_dest.field_id = {$dest_field_id}
-    AND rel_dest.item_id = t.id
-    LEFT JOIN {$pl_prefix} AS dest ON dest.id = rel_dest.related_item_id
-    {$draft_condition}
-    ORDER BY
-    t.created DESC,
-    t.name,
-    t.id
-    ";
-
-        return $wpdb->get_results($query, ARRAY_A);
+        return $pod->display($field_name);
     }
 }
 
