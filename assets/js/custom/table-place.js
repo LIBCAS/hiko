@@ -22,7 +22,7 @@ if (document.getElementById('datatable-places')) {
                     const rowIndex = cell.getRow().getIndex()
                     const placeId = cell.getValue()
 
-                    let actions = '<ul class="list-unstyled">'
+                    let actions = ''
 
                     actions += `
                     <li>
@@ -37,9 +37,8 @@ if (document.getElementById('datatable-places')) {
                     <a onclick="deletePlace(${placeId}, ${rowIndex})" class="text-danger is-link">Odstranit</a>
                     </li>
                     `
-                    actions += '</ul>'
 
-                    return actions
+                    return `<ul class="list-unstyled mb-0">${actions}</ul>`
                 },
                 headerSort: false,
                 title: '',

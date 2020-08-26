@@ -26,7 +26,7 @@ function getProfessionsNames(data) {
         }
     })
 
-    return `<ul class="list-unstyled">${result}</ul>`
+    return `<ul class="list-unstyled mb-0">${result}</ul>`
 }
 
 function removeEmptyNameAlternatives(personID) {
@@ -71,7 +71,7 @@ if (document.getElementById('datatable-persons')) {
                     const rowIndex = cell.getRow().getIndex()
                     const personId = cell.getValue()
 
-                    let actions = '<ul class="list-unstyled">'
+                    let actions = ''
 
                     actions += `
                     <li>
@@ -86,9 +86,8 @@ if (document.getElementById('datatable-persons')) {
                     <a onclick="deletePerson(${personId}, ${rowIndex})" class="text-danger is-link">Odstranit</a>
                     </li>
                     `
-                    actions += '</ul>'
 
-                    return actions
+                    return `<ul class="list-unstyled mb-0">${actions}</ul>`
                 },
                 headerSort: false,
                 title: '',
@@ -98,7 +97,7 @@ if (document.getElementById('datatable-persons')) {
                 field: 'name',
                 headerFilter: 'input',
                 formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'pre-wrap'
+                    cell.getElement().style.whiteSpace = 'normal'
 
                     const name = cell.getValue()
                     const rowData = cell.getRow().getData()
@@ -118,7 +117,7 @@ if (document.getElementById('datatable-persons')) {
             {
                 field: 'alternatives',
                 formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'pre-wrap'
+                    cell.getElement().style.whiteSpace = 'normal'
 
                     const names = cell.getValue()
                     const rowIndex = cell.getRow().getIndex()
@@ -127,7 +126,7 @@ if (document.getElementById('datatable-persons')) {
                         return ''
                     }
 
-                    let actions = '<ul class="list-unstyled">'
+                    let actions = ''
 
                     names.forEach((name) => {
                         actions += `<li>${name}</li>`
@@ -142,9 +141,7 @@ if (document.getElementById('datatable-persons')) {
                     </li>
                     `
 
-                    actions += '</ul>'
-
-                    return actions
+                    return `<ul class="list-unstyled mb-0">${actions}</ul>`
                 },
                 headerFilter: 'input',
                 title: 'Name as marked',
@@ -154,7 +151,7 @@ if (document.getElementById('datatable-persons')) {
                 field: 'profession_detailed',
                 headerFilter: 'input',
                 formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'pre-wrap'
+                    cell.getElement().style.whiteSpace = 'normal'
                     return getProfessionsNames(cell)
                 },
                 title: 'Professions',
@@ -164,7 +161,7 @@ if (document.getElementById('datatable-persons')) {
                 field: 'profession_short',
                 headerFilter: 'input',
                 formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'pre-wrap'
+                    cell.getElement().style.whiteSpace = 'normal'
                     return getProfessionsNames(cell)
                 },
                 title: 'Palladio',

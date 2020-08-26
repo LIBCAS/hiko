@@ -15,13 +15,12 @@ function listLetterMultiData(data) {
         return data
     }
 
-    let list = '<ul class="list-unstyled">'
+    let list = ''
     data.forEach((author) => {
         list += `<li>${author}</li>`
     })
-    list += '</ul>'
 
-    return list
+    return `<ul class="list-unstyled mb-0">${list}</ul>`
 }
 
 function sortLetterMultiData(aData, bData) {
@@ -97,7 +96,7 @@ if (document.getElementById('datatable-letters')) {
                     const letterId = cell.getRow().getData().ID
 
                     return `
-                    <ul class="list-unstyled">
+                    <ul class="list-unstyled mb-0">
                     <li>
                         <a href="${homeUrl}/${letterTypes['path']}/letters-add/?edit=${letterId}" class="text-info py-1">Upravit</a>
                     </li>
@@ -170,7 +169,7 @@ if (document.getElementById('datatable-letters')) {
                 field: 'author',
                 headerFilter: 'input',
                 formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'pre-wrap'
+                    cell.getElement().style.whiteSpace = 'normal'
                     return listLetterMultiData(cell.getValue())
                 },
                 sorter: function (a, b) {
@@ -183,7 +182,7 @@ if (document.getElementById('datatable-letters')) {
                 field: 'recipient',
                 headerFilter: 'input',
                 formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'pre-wrap'
+                    cell.getElement().style.whiteSpace = 'normal'
                     return listLetterMultiData(cell.getValue())
                 },
                 sorter: function (a, b) {
@@ -196,7 +195,7 @@ if (document.getElementById('datatable-letters')) {
                 field: 'origin',
                 headerFilter: 'input',
                 formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'pre-wrap'
+                    cell.getElement().style.whiteSpace = 'normal'
                     return listLetterMultiData(cell.getValue())
                 },
                 sorter: function (a, b) {
@@ -209,7 +208,7 @@ if (document.getElementById('datatable-letters')) {
                 field: 'dest',
                 headerFilter: 'input',
                 formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'pre-wrap'
+                    cell.getElement().style.whiteSpace = 'normal'
                     return listLetterMultiData(cell.getValue())
                 },
                 sorter: function (a, b) {
@@ -222,7 +221,7 @@ if (document.getElementById('datatable-letters')) {
                 field: 'images',
                 headerFilter: 'input',
                 formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'pre-wrap'
+                    cell.getElement().style.whiteSpace = 'normal'
                     if (cell.getValue()) {
                         return 'ano'
                     }
