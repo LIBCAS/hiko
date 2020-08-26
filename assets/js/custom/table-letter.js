@@ -1,52 +1,13 @@
 /* global Tabulator updateTableHeaders homeUrl Swal axios ajaxUrl getLetterType removeItemAjax getTimestampFromDate */
 
-const letterTypes = getLetterType()
-
 var table
 
-function deletePlace(id, index) {
-    removeItemAjax(id, 'place', letterTypes['path'], () => {
-        table.deleteRow(index)
-    })
-}
-
-function deletePerson(id, index) {
-    removeItemAjax(id, 'person', letterTypes['path'], () => {
-        table.deleteRow(index)
-    })
-}
-
 function deleteLetter(id, index) {
+    const letterTypes = getLetterType()
+
     removeItemAjax(id, 'letter', letterTypes['path'], () => {
         table.deleteRow(index)
     })
-}
-
-function removeEmptyNameAlternatives(personID) {
-    const spinner = event.target.querySelector('.spinner')
-    spinner.classList.remove('d-none')
-
-    axios
-        .get(
-            ajaxUrl +
-                '?action=count_alternate_name&id=' +
-                personID +
-                '&l_type=' +
-                letterTypes['path']
-        )
-        .then(function () {
-            table.replaceData(
-                ajaxUrl +
-                    '?action=persons_table_data&type=' +
-                    letterTypes['personType']
-            )
-        })
-        .catch(function (error) {
-            console.log(error)
-        })
-        .then(function () {
-            spinner.classList.add('d-none')
-        })
 }
 
 function listLetterMultiData(data) {
@@ -83,6 +44,7 @@ function sortLetterMultiData(aData, bData) {
 }
 
 function showHistory(id, event) {
+    const letterTypes = getLetterType()
     const spinner = event.querySelector('.spinner')
     spinner.classList.remove('d-none')
 
@@ -120,6 +82,8 @@ function showHistory(id, event) {
 }
 
 if (document.getElementById('datatable-letters')) {
+    const letterTypes = getLetterType()
+
     table = new Tabulator('#datatable-letters', {
         ajaxResponse: function (url, params, response) {
             document.getElementById('custom-filters').classList.remove('d-none')
@@ -323,204 +287,4 @@ if (document.getElementById('datatable-letters')) {
                 }
             })
     }
-}
-
-if (document.getElementById('datatable-persons')) {
-    table = new Tabulator('#datatable-persons', {
-        columns: [
-            {
-                field: 'id',
-                formatter: function (cell) {
-                    const rowData = cell.getRow().getData()
-                    const rowIndex = cell.getRow().getIndex()
-                    const personId = cell.getValue()
-
-                    let actions = '<ul class="list-unstyled">'
-
-                    actions += `
-                    <li>
-                        <a href="${homeUrl}/${letterTypes['path']}/persons-add/?edit=${personId}" class="text-info is-link py-1">Upravit</a>
-                    </li>
-                    `
-
-                    actions += rowData.relationships
-                        ? ''
-                        : `
-                    <li>
-                    <a onclick="deletePerson(${personId}, ${rowIndex})" class="text-danger is-link">Odstranit</a>
-                    </li>
-                    `
-                    actions += '</ul>'
-
-                    return actions
-                },
-                headerSort: false,
-                title: '',
-            },
-            {
-                field: 'name',
-                headerFilter: 'input',
-                formatter: function (cell) {
-                    const name = cell.getValue()
-                    const rowData = cell.getRow().getData()
-
-                    if (rowData.type != 'person') {
-                        return `<strong>${name}</strong>`
-                    }
-
-                    let resultName = `<strong>${name}</strong> `
-                    resultName += `(${rowData.birth}–${rowData.death})`
-
-                    return resultName
-                },
-                title: 'Name',
-            },
-            {
-                field: 'alternatives',
-                formatter: function (cell) {
-                    const names = cell.getValue()
-                    const rowIndex = cell.getRow().getIndex()
-
-                    if (!Array.isArray(names) || names.length == 0) {
-                        return ''
-                    }
-
-                    let actions = '<ul class="list-unstyled">'
-
-                    names.forEach((name) => {
-                        actions += `<li>${name}</li>`
-                    })
-
-                    actions += `
-                    <li onclick="removeEmptyNameAlternatives(${rowIndex})">
-                        <span class="is-link py-1 is-info">
-                            <span class="spinner spinner-border spinner-border-sm d-none"></span>
-                            Odstranit nepoužité varianty jména
-                        </span>
-                    </li>
-                    `
-
-                    actions += '</ul>'
-
-                    return actions
-                },
-                headerFilter: 'input',
-                title: 'Name as marked',
-            },
-        ],
-        dataFiltered: function (filters, rows) {
-            document.getElementById('search-count').innerHTML = rows.length
-        },
-        dataLoaded: function (data) {
-            document.getElementById('total-count').innerHTML = data.length
-        },
-        footerElement:
-            '<span>Showing <span id="search-count"></span> items from <span id="total-count"></span> total items</span>tooltips: true',
-        height: '600px',
-        groupBy: 'type',
-        groupHeader: function (value, count) {
-            value = value == 'institution' ? 'Institution' : 'Person'
-
-            return `
-            ${value} <span class="text-danger">${count} items</span>
-            `
-        },
-        groupStartOpen: false,
-        layout: 'fitColumns',
-        pagination: 'local',
-        paginationSize: 25,
-        selectable: false,
-        tooltips: true,
-    })
-
-    table.setData(
-        ajaxUrl + '?action=persons_table_data&type=' + letterTypes['personType']
-    )
-
-    updateTableHeaders()
-}
-
-if (document.getElementById('datatable-places')) {
-    table = new Tabulator('#datatable-places', {
-        columns: [
-            {
-                field: 'id',
-                formatter: function (cell) {
-                    const rowData = cell.getRow().getData()
-                    const rowIndex = cell.getRow().getIndex()
-                    const placeId = cell.getValue()
-
-                    let actions = '<ul class="list-unstyled">'
-
-                    actions += `
-                    <li>
-                        <a href="${homeUrl}/${letterTypes['path']}/places-add/?edit=${placeId}" class="text-info is-link py-1">Upravit</a>
-                    </li>
-                    `
-
-                    actions += rowData.relationships
-                        ? ''
-                        : `
-                    <li>
-                    <a onclick="deletePlace(${placeId}, ${rowIndex})" class="text-danger is-link">Odstranit</a>
-                    </li>
-                    `
-                    actions += '</ul>'
-
-                    return actions
-                },
-                headerSort: false,
-                title: '',
-            },
-            {
-                field: 'city',
-                headerFilter: 'input',
-                title: 'City',
-            },
-            {
-                field: 'country',
-                headerFilter: 'input',
-                title: 'Country',
-            },
-            {
-                field: 'latlong',
-                formatter: function (cell) {
-                    const latlong = cell.getValue()
-
-                    if (!latlong) {
-                        return ''
-                    }
-
-                    const coordinates = latlong.split(',')
-                    const link = `https://www.openstreetmap.org/?mlat=${coordinates[0]}&mlon=${coordinates[1]}&zoom=12`
-
-                    return `
-                    <a href="${link}" target="_blank">
-                        ${latlong}
-                    </a>
-                    `
-                },
-                headerFilter: 'input',
-                title: 'Coordinates',
-            },
-        ],
-        dataFiltered: function (filters, rows) {
-            document.getElementById('search-count').innerHTML = rows.length
-        },
-        dataLoaded: function (data) {
-            document.getElementById('total-count').innerHTML = data.length
-        },
-        footerElement:
-            '<span>Showing <span id="search-count"></span> items from <span id="total-count"></span> total items</span>',
-        height: '600px',
-        layout: 'fitColumns',
-        pagination: 'local',
-        paginationSize: 25,
-        selectable: false,
-        tooltips: true,
-    })
-
-    table.setData(JSON.parse(document.querySelector('#places-data').innerHTML))
-
-    updateTableHeaders()
 }
