@@ -9,21 +9,18 @@ $editor = $pods_types['editor'];
 
 require_once get_template_directory() . '/partials/custom-nav.php';
 
-?>
-
-<div class="container mt-5">
-    <div class="row justify-content-center" style="min-height: 75vh;">
-        <div class="col">
-            <?php if (has_user_permission($editor)) : ?>
-                <h1 class="mb-3">Místa</h1>
-                <?php require_once get_template_directory() . '/partials/places.php'; ?>
-            <?php else : ?>
+if (has_user_permission($editor)) :
+    require_once get_template_directory() . '/partials/places.php';
+else : ?>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col">
                 <div class="alert alert-warning mw-400">
                     Pro zobrazení nemáte patřičná oprávnění.
                 </div>
-            <?php endif; ?>
+            </div>
         </div>
     </div>
-</div>
-
-<?php get_footer();
+    <?php
+endif;
+get_footer();

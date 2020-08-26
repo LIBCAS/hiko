@@ -92,11 +92,14 @@ if (document.getElementById('datatable-persons')) {
                 },
                 headerSort: false,
                 title: '',
+                width: 67,
             },
             {
                 field: 'name',
                 headerFilter: 'input',
                 formatter: function (cell) {
+                    cell.getElement().style.whiteSpace = 'pre-wrap'
+
                     const name = cell.getValue()
                     const rowData = cell.getRow().getData()
 
@@ -110,10 +113,13 @@ if (document.getElementById('datatable-persons')) {
                     return resultName
                 },
                 title: 'Name',
+                variableHeight: true,
             },
             {
                 field: 'alternatives',
                 formatter: function (cell) {
+                    cell.getElement().style.whiteSpace = 'pre-wrap'
+
                     const names = cell.getValue()
                     const rowIndex = cell.getRow().getIndex()
 
@@ -142,22 +148,27 @@ if (document.getElementById('datatable-persons')) {
                 },
                 headerFilter: 'input',
                 title: 'Name as marked',
+                variableHeight: true,
             },
             {
                 field: 'profession_detailed',
                 headerFilter: 'input',
                 formatter: function (cell) {
+                    cell.getElement().style.whiteSpace = 'pre-wrap'
                     return getProfessionsNames(cell)
                 },
                 title: 'Professions',
+                variableHeight: true,
             },
             {
                 field: 'profession_short',
                 headerFilter: 'input',
                 formatter: function (cell) {
+                    cell.getElement().style.whiteSpace = 'pre-wrap'
                     return getProfessionsNames(cell)
                 },
                 title: 'Palladio',
+                variableHeight: true,
             },
         ],
         dataFiltered: function (filters, rows) {

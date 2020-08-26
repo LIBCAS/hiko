@@ -128,14 +128,17 @@ if (document.getElementById('datatable-letters')) {
                 field: 'ID',
                 headerFilter: 'input',
                 title: 'ID',
+                width: 41,
             },
             {
                 field: 'signature',
+                formatter: 'textarea',
                 headerFilter: 'input',
                 title: 'Signature',
             },
             {
                 field: 'date',
+                formatter: 'textarea',
                 headerFilter: 'input',
                 mutator: function (value, data) {
                     let year = data.date_year ? data.date_year : 0
@@ -167,50 +170,59 @@ if (document.getElementById('datatable-letters')) {
                 field: 'author',
                 headerFilter: 'input',
                 formatter: function (cell) {
+                    cell.getElement().style.whiteSpace = 'pre-wrap'
                     return listLetterMultiData(cell.getValue())
                 },
                 sorter: function (a, b) {
                     return sortLetterMultiData(a, b)
                 },
                 title: 'Author',
+                variableHeight: true,
             },
             {
                 field: 'recipient',
                 headerFilter: 'input',
                 formatter: function (cell) {
+                    cell.getElement().style.whiteSpace = 'pre-wrap'
                     return listLetterMultiData(cell.getValue())
                 },
                 sorter: function (a, b) {
                     return sortLetterMultiData(a, b)
                 },
                 title: 'Recipient',
+                variableHeight: true,
             },
             {
                 field: 'origin',
                 headerFilter: 'input',
                 formatter: function (cell) {
+                    cell.getElement().style.whiteSpace = 'pre-wrap'
                     return listLetterMultiData(cell.getValue())
                 },
                 sorter: function (a, b) {
                     return sortLetterMultiData(a, b)
                 },
                 title: 'Origin',
+                variableHeight: true,
             },
             {
                 field: 'dest',
                 headerFilter: 'input',
                 formatter: function (cell) {
+                    cell.getElement().style.whiteSpace = 'pre-wrap'
                     return listLetterMultiData(cell.getValue())
                 },
                 sorter: function (a, b) {
                     return sortLetterMultiData(a, b)
                 },
                 title: 'Destination',
+                variableHeight: true,
             },
             {
                 field: 'images',
                 headerFilter: 'input',
                 formatter: function (cell) {
+                    cell.getElement().style.whiteSpace = 'pre-wrap'
                     if (cell.getValue()) {
                         return 'ano'
                     }
@@ -218,9 +230,11 @@ if (document.getElementById('datatable-letters')) {
                     return ''
                 },
                 title: 'Images',
+                variableHeight: true,
             },
             {
                 field: 'status',
+                formatter: 'textarea',
                 headerFilter: 'input',
                 title: 'Status',
             },

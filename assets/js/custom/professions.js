@@ -119,16 +119,6 @@ if (document.getElementById('datatable-profession')) {
     table = new Tabulator('#datatable-profession', {
         columns: [
             {
-                field: 'name',
-                headerFilter: 'input',
-                title: 'EN',
-            },
-            {
-                field: 'namecz',
-                headerFilter: 'input',
-                title: 'CZ',
-            },
-            {
                 field: 'id',
                 formatter: function (cell) {
                     const rowData = cell.getRow().getData()
@@ -151,6 +141,17 @@ if (document.getElementById('datatable-profession')) {
                 },
                 headerSort: false,
                 title: '',
+                width: 67,
+            },
+            {
+                field: 'name',
+                headerFilter: 'input',
+                title: 'EN',
+            },
+            {
+                field: 'namecz',
+                headerFilter: 'input',
+                title: 'CZ',
             },
         ],
         dataFiltered: function (filters, rows) {

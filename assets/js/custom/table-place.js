@@ -43,20 +43,25 @@ if (document.getElementById('datatable-places')) {
                 },
                 headerSort: false,
                 title: '',
+                width: 67,
             },
             {
                 field: 'city',
+                formatter: 'textarea',
                 headerFilter: 'input',
                 title: 'City',
             },
             {
                 field: 'country',
+                formatter: 'textarea',
                 headerFilter: 'input',
                 title: 'Country',
             },
             {
                 field: 'latlong',
                 formatter: function (cell) {
+                    cell.getElement().style.whiteSpace = 'normal'
+
                     const latlong = cell.getValue()
 
                     if (!latlong) {
@@ -74,6 +79,7 @@ if (document.getElementById('datatable-places')) {
                 },
                 headerFilter: 'input',
                 title: 'Coordinates',
+                variableHeight: true,
             },
         ],
         dataFiltered: function (filters, rows) {

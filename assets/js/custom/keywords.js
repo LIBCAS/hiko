@@ -102,16 +102,6 @@ if (document.getElementById('datatable-keywords')) {
     table = new Tabulator('#datatable-keywords', {
         columns: [
             {
-                field: 'name',
-                headerFilter: 'input',
-                title: 'EN',
-            },
-            {
-                field: 'namecz',
-                headerFilter: 'input',
-                title: 'CZ',
-            },
-            {
                 field: 'id',
                 formatter: function (cell) {
                     const rowData = cell.getRow().getData()
@@ -133,6 +123,19 @@ if (document.getElementById('datatable-keywords')) {
                 },
                 headerSort: false,
                 title: '',
+                width: 67,
+            },
+            {
+                field: 'name',
+                formatter: 'textarea',
+                headerFilter: 'input',
+                title: 'EN',
+            },
+            {
+                field: 'namecz',
+                formatter: 'textarea',
+                headerFilter: 'input',
+                title: 'CZ',
             },
         ],
         dataFiltered: function (filters, rows) {
