@@ -179,6 +179,8 @@ function get_persons_table_data($person_type)
         'letter_recipient.id AS re',
         't.birth_year',
         't.death_year',
+        't.profession_detailed',
+        't.profession_short',
         't.id',
         't.name',
         't.persons_meta',
@@ -217,6 +219,8 @@ function get_persons_table_data($person_type)
         $persons_filtered[$index]['name'] = $persons->display('name');
         $persons_filtered[$index]['birth'] = $persons->display('birth_year');
         $persons_filtered[$index]['death'] = $persons->display('death_year');
+        $persons_filtered[$index]['profession_short'] = $persons->display('profession_short');
+        $persons_filtered[$index]['profession_detailed'] = $persons->display('profession_detailed');
         $persons_filtered[$index]['type'] = $type;
         $persons_filtered[$index]['alternatives'] = $alternative_names;
         $persons_filtered[$index]['relationships'] = !is_null($persons->display('au')) || !is_null($persons->display('re')) || !is_null($persons->display('pm'));

@@ -1,6 +1,6 @@
 /* global Tabulator updateTableHeaders homeUrl axios ajaxUrl getLetterType removeItemAjax */
 
-var table
+var table, professions
 
 function deletePerson(id, index) {
     const letterTypes = getLetterType()
@@ -8,6 +8,25 @@ function deletePerson(id, index) {
     removeItemAjax(id, 'person', letterTypes['path'], () => {
         table.deleteRow(index)
     })
+}
+
+function getProfessionsNames(data) {
+    const names = data.getValue()
+    const rowData = data.getRow().getData()
+
+    if (rowData.type != 'person' || names == '') {
+        return ''
+    }
+
+    let result = ''
+
+    names.split(';').map((name) => {
+        if (name != '') {
+            result += `<li>${professions[name]}</li>`
+        }
+    })
+
+    return `<ul class="list-unstyled">${result}</ul>`
 }
 
 function removeEmptyNameAlternatives(personID) {
@@ -41,6 +60,7 @@ function removeEmptyNameAlternatives(personID) {
 
 if (document.getElementById('datatable-persons')) {
     const letterTypes = getLetterType()
+    professions = JSON.parse(document.querySelector('#professions').innerHTML)
 
     table = new Tabulator('#datatable-persons', {
         columns: [
@@ -123,6 +143,22 @@ if (document.getElementById('datatable-persons')) {
                 headerFilter: 'input',
                 title: 'Name as marked',
             },
+            {
+                field: 'profession_detailed',
+                headerFilter: 'input',
+                formatter: function (cell) {
+                    return getProfessionsNames(cell)
+                },
+                title: 'Professions',
+            },
+            {
+                field: 'profession_short',
+                headerFilter: 'input',
+                formatter: function (cell) {
+                    return getProfessionsNames(cell)
+                },
+                title: 'Palladio',
+            },
         ],
         dataFiltered: function (filters, rows) {
             document.getElementById('search-count').innerHTML = rows.length
@@ -131,7 +167,7 @@ if (document.getElementById('datatable-persons')) {
             document.getElementById('total-count').innerHTML = data.length
         },
         footerElement:
-            '<span>Showing <span id="search-count"></span> items from <span id="total-count"></span> total items</span>tooltips: true',
+            '<span>Showing <span id="search-count"></span> items from <span id="total-count"></span> total items</span>',
         height: '600px',
         groupBy: 'type',
         groupHeader: function (value, count) {

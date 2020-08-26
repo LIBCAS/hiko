@@ -87,3 +87,41 @@ function get_professions_table_data($professions_type = false, $ajax = true)
     return $professions_filtered;
 }
 add_action('wp_ajax_professions_table_data', 'get_professions_table_data');
+
+
+function get_professions_list($professions_type = false, $ajax = true)
+{
+    if (!$professions_type) {
+        $professions_type = test_input($_GET['type']);
+    }
+
+    $fields = implode(', ', [
+        't.id',
+        't.name AS name',
+    ]);
+
+    $professions = pods(
+        $professions_type,
+        [
+            'select' => $fields,
+            'orderby' => 't.name ASC',
+            'limit' => -1
+        ]
+    );
+
+    $professions_filtered = [];
+
+    while ($professions->fetch()) {
+        $professions_filtered[$professions->display('id')] = $professions->display('name');
+    }
+
+    $professions_filtered = json_encode($professions_filtered, JSON_UNESCAPED_UNICODE);
+
+    if ($ajax) {
+        header('Content-Type: application/json');
+        wp_die($professions_filtered);
+    }
+
+    return $professions_filtered;
+}
+add_action('wp_ajax_professions_list', 'get_professions_list');

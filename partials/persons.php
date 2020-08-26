@@ -2,6 +2,7 @@
 
 $pods_types = get_hiko_post_types_by_url();
 $path = $pods_types['path'];
+$profession_type = $pods_types['profession'];
 ?>
 
 <div class="mb-3 d-flex justify-content-between">
@@ -16,3 +17,7 @@ $path = $pods_types['path'];
     </div>
 </div>
 <div id="datatable-persons"></div>
+
+<script id="professions" type="application/json">
+    <?= get_professions_list($profession_type, false); ?>
+</script>
