@@ -41,18 +41,31 @@ function public_list_all_letters()
 {
     $types = get_hiko_post_types(test_input($_GET['type']));
 
-    $json_letters = json_encode(
-        get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place'], false),
-        JSON_UNESCAPED_UNICODE
-    );
+    $letters = get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place'], false);
+    $results = [];
+
+    foreach ($letters as $letter) {
+        $results[] = [
+            'id' => $letter['ID'],
+            'sig' => $letter['signature'],
+            'dd' => $letter['date_day'],
+            'mm' => $letter['date_month'],
+            'yy' => $letter['date_year'],
+            'aut' => $letter['author'],
+            'rec' => $letter['recipient'],
+            'ori' => $letter['origin'],
+            'des' => $letter['dest'],
+        ];
+    }
 
     header('Content-Type: application/json');
 
-    wp_die($json_letters);
+    wp_die(json_encode($results, JSON_UNESCAPED_UNICODE));
 }
 add_action('wp_ajax_nopriv_public_list_all_letters', 'public_list_all_letters');
 add_action('wp_ajax_public_list_all_letters', 'public_list_all_letters');
 
+public_list_all_letters();
 
 function list_public_letters_single()
 {
