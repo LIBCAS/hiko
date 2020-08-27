@@ -65,7 +65,6 @@ function public_list_all_letters()
 add_action('wp_ajax_nopriv_public_list_all_letters', 'public_list_all_letters');
 add_action('wp_ajax_public_list_all_letters', 'public_list_all_letters');
 
-public_list_all_letters();
 
 function list_public_letters_single()
 {
