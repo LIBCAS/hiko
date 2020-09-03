@@ -156,6 +156,7 @@ if (document.getElementById('datatable-persons')) {
                 mutator: function (value, data) {
                     return getProfessionsNames(value, data)
                 },
+                sorter: 'array',
                 title: 'Professions',
                 variableHeight: true,
             },
@@ -168,6 +169,7 @@ if (document.getElementById('datatable-persons')) {
                 mutator: function (value, data) {
                     return getProfessionsNames(value, data)
                 },
+                sorter: 'array',
                 title: 'Palladio',
                 variableHeight: true,
             },
