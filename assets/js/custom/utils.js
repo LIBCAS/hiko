@@ -227,3 +227,17 @@ function updateTableHeaders() {
         )
     })
 }
+
+function arrayToList(arr) {
+    if (!Array.isArray(arr)) {
+        return arr
+    }
+
+    let list = ''
+
+    arr.forEach((item) => {
+        list += `<li>${item}</li>`
+    })
+
+    return `<ul class="list-unstyled mb-0">${list}</ul>`
+}

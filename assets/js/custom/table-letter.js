@@ -1,4 +1,4 @@
-/* global Tabulator updateTableHeaders homeUrl Swal axios ajaxUrl getLetterType removeItemAjax getTimestampFromDate */
+/* global Tabulator updateTableHeaders homeUrl Swal axios ajaxUrl getLetterType removeItemAjax getTimestampFromDate arrayToList */
 
 var table
 
@@ -8,19 +8,6 @@ function deleteLetter(id, index) {
     removeItemAjax(id, 'letter', letterTypes['path'], () => {
         table.deleteRow(index)
     })
-}
-
-function listLetterMultiData(data) {
-    if (!Array.isArray(data)) {
-        return data
-    }
-
-    let list = ''
-    data.forEach((author) => {
-        list += `<li>${author}</li>`
-    })
-
-    return `<ul class="list-unstyled mb-0">${list}</ul>`
 }
 
 function sortLetterMultiData(aData, bData) {
@@ -170,7 +157,7 @@ if (document.getElementById('datatable-letters')) {
                 headerFilter: 'input',
                 formatter: function (cell) {
                     cell.getElement().style.whiteSpace = 'normal'
-                    return listLetterMultiData(cell.getValue())
+                    return arrayToList(cell.getValue())
                 },
                 sorter: function (a, b) {
                     return sortLetterMultiData(a, b)
@@ -183,7 +170,7 @@ if (document.getElementById('datatable-letters')) {
                 headerFilter: 'input',
                 formatter: function (cell) {
                     cell.getElement().style.whiteSpace = 'normal'
-                    return listLetterMultiData(cell.getValue())
+                    return arrayToList(cell.getValue())
                 },
                 sorter: function (a, b) {
                     return sortLetterMultiData(a, b)
@@ -196,7 +183,7 @@ if (document.getElementById('datatable-letters')) {
                 headerFilter: 'input',
                 formatter: function (cell) {
                     cell.getElement().style.whiteSpace = 'normal'
-                    return listLetterMultiData(cell.getValue())
+                    return arrayToList(cell.getValue())
                 },
                 sorter: function (a, b) {
                     return sortLetterMultiData(a, b)
@@ -209,7 +196,7 @@ if (document.getElementById('datatable-letters')) {
                 headerFilter: 'input',
                 formatter: function (cell) {
                     cell.getElement().style.whiteSpace = 'normal'
-                    return listLetterMultiData(cell.getValue())
+                    return arrayToList(cell.getValue())
                 },
                 sorter: function (a, b) {
                     return sortLetterMultiData(a, b)
