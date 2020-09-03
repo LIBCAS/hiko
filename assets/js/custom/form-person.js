@@ -222,9 +222,14 @@ if (document.getElementById('person-name')) {
                 if (professions.length == 0) {
                     return []
                 }
+
                 let filtered = professions.filter((profession) => {
                     return profession.value == id
                 })
+
+                if (filtered.length == 0) {
+                    return []
+                }
 
                 return {
                     label: filtered[0].label,

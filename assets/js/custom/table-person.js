@@ -1,4 +1,4 @@
-/* global Tabulator updateTableHeaders homeUrl axios ajaxUrl getLetterType removeItemAjax */
+/* global Tabulator updateTableHeaders homeUrl axios ajaxUrl getLetterType removeItemAjax arrayToList */
 
 var table, professions
 
@@ -10,23 +10,22 @@ function deletePerson(id, index) {
     })
 }
 
-function getProfessionsNames(data) {
-    const names = data.getValue()
-    const rowData = data.getRow().getData()
+function getProfessionsNames(professionList, rowData) {
+    const type = rowData.type
 
-    if (rowData.type != 'person' || names == '') {
-        return ''
+    if (type != 'person' || professionList == '') {
+        return []
     }
 
-    let result = ''
+    let result = []
 
-    names.split(';').map((name) => {
+    professionList.split(';').map((name) => {
         if (name != '') {
-            result += `<li>${professions[name]}</li>`
+            result.push(professions[name])
         }
     })
 
-    return `<ul class="list-unstyled mb-0">${result}</ul>`
+    return result
 }
 
 function removeEmptyNameAlternatives(personID) {
@@ -150,9 +149,12 @@ if (document.getElementById('datatable-persons')) {
             {
                 field: 'profession_detailed',
                 headerFilter: 'input',
+
                 formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'normal'
-                    return getProfessionsNames(cell)
+                    return arrayToList(cell.getValue())
+                },
+                mutator: function (value, data) {
+                    return getProfessionsNames(value, data)
                 },
                 title: 'Professions',
                 variableHeight: true,
@@ -161,8 +163,10 @@ if (document.getElementById('datatable-persons')) {
                 field: 'profession_short',
                 headerFilter: 'input',
                 formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'normal'
-                    return getProfessionsNames(cell)
+                    return arrayToList(cell.getValue())
+                },
+                mutator: function (value, data) {
+                    return getProfessionsNames(value, data)
                 },
                 title: 'Palladio',
                 variableHeight: true,
