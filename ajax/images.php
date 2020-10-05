@@ -22,7 +22,7 @@ function handle_img_uploads()
         wp_send_json_error('Not found', 404);
     }
 
-    if ($type != 'bl_letter' && $type != 'demo_letter' && $type != 'tgm_letter') {
+    if ($type != 'bl_letter' && $type != 'demo_letter' && $type != 'tgm_letter' && $type != 'demo_letter') {
         wp_send_json_error('Not found', 404);
     }
 
@@ -93,6 +93,8 @@ function list_images()
         $url = home_url('/demo/letters-add/?edit=' . $id);
     } elseif ($type == 'tgm_letter') {
         $url = home_url('/tgm/letters-add/?edit=' . $id);
+    } elseif ($type == 'pol_letter') {
+        $url = home_url('/pol/letters-add/?edit=' . $id);
     }
 
     $pod = pods($type, $id);

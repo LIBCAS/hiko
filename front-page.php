@@ -7,6 +7,7 @@ require 'partials/general-nav.php';
 $cardsData = [
     'Korespondence Milady Blekastad' => 'blekastad',
     'Korespondence TGM' => 'tgm',
+    'Korespondence Amanda Polana' => 'pol',
     'Zkušební DB' => 'demo',
 ];
 

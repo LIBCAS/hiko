@@ -24,6 +24,8 @@ if ($letter_type == 'bl_letter') {
     $letter_path = 'demo';
 } elseif ($letter_type == 'tgm_letter') {
     $letter_path = 'tgm';
+} elseif ($letter_type == 'pol_letter') {
+    $letter_path = 'pol';
 } else {
     die('Nenalezeno');
 }

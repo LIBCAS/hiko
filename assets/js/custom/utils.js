@@ -62,6 +62,17 @@ function getLetterType() {
         }
     }
 
+    if (stringContains(url.pathname, 'pol')) {
+        return {
+            letterType: 'pol_letter',
+            personType: 'pol_person',
+            placeType: 'pol_place',
+            path: 'pol',
+            keyword: 'pol_keyword',
+            profession: 'pol_profession',
+        }
+    }
+
     return 'Neplatný typ dopisu'
 }
 

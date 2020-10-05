@@ -372,7 +372,7 @@ function is_in_editor_role()
     $user = wp_get_current_user();
     $roles = (array) $user->roles;
 
-    $editor_roles = ['administrator', 'blekastad_editor', 'tgm_editor', 'demo_editor'];
+    $editor_roles = ['administrator', 'blekastad_editor', 'tgm_editor', 'demo_editor', 'pol_editor'];
 
     $result = array_intersect($roles, $editor_roles);
 
@@ -647,6 +647,15 @@ function get_hiko_post_types($type)
         $data['title'] = 'Korespondence TGM';
         $data['keyword'] = 'tgm_keyword';
         $data['profession'] = 'tgm_profession';
+    } elseif ($type == 'pol') {
+        $data['letter'] = 'pol_letter';
+        $data['place'] = 'pol_place';
+        $data['person'] = 'pol_person';
+        $data['editor'] = 'pol_editor';
+        $data['path'] = 'pol';
+        $data['title'] = 'Korespondence Amanda Polana';
+        $data['keyword'] = 'pol_keyword';
+        $data['profession'] = 'pol_profession';
     }
 
     return $data;
@@ -671,6 +680,10 @@ function get_hiko_post_types_by_url($url = '')
 
     if (strpos($req, 'tgm') !== false) {
         return get_hiko_post_types('tgm');
+    }
+
+    if (strpos($req, 'pol') !== false) {
+        return get_hiko_post_types('pol');
     }
 
     return get_hiko_post_types('');

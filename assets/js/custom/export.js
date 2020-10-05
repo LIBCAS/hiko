@@ -21,7 +21,11 @@ if (document.getElementById('export')) {
                     title: 'Vše',
                 })
 
-                if (this.path == 'blekastad' || this.path == 'tgm') {
+                if (
+                    this.path == 'blekastad' ||
+                    this.path == 'tgm' ||
+                    this.path == 'pol'
+                ) {
                     customActions.push({
                         url:
                             ajaxUrl +
