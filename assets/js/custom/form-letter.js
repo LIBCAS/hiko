@@ -743,24 +743,22 @@ if (document.getElementById('letter-form')) {
                 }
 
                 let self = this
-
                 let result = []
-
-                allMeta = self.cleanCopy(allMeta)
-
                 let l = ids.length
-
+                allMeta = self.cleanCopy(allMeta)
+                console.log(ids)
+                console.log(allMeta)
                 for (let index = 0; index < l; index++) {
                     let placesObj = self.placesData.find(
-                        (place) => place.value === ids[index]
+                        (place) => place.value == ids[index]
                     )
 
                     let placeData = allMeta.find((meta) => {
                         if (meta.hasOwnProperty('type')) {
-                            return meta.id === ids[index] && meta.type === type
+                            return meta.id == ids[index] && meta.type === type
                         }
 
-                        return meta.id === ids[index]
+                        return meta.id == ids[index]
                     })
 
                     let place = {
