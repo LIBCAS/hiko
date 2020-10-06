@@ -786,15 +786,14 @@ if (document.getElementById('letter-form')) {
 
                 let self = this
                 let result = []
-                allMeta = self.cleanCopy(allMeta)
-
                 let l = ids.length
+                allMeta = self.cleanCopy(allMeta)
 
                 for (let index = 0; index < l; index++) {
                     let personObj = self.personsData.find(
-                        (person) => person.value === ids[index]
+                        (person) => person.value == ids[index]
                     )
-                    let personData = allMeta.find((m) => m.id === ids[index])
+                    let personData = allMeta.find((m) => m.id == ids[index])
 
                     let author = {
                         id: self.cleanCopy(personObj),
