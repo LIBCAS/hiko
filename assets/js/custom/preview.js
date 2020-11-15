@@ -90,10 +90,10 @@ if (document.getElementById('letter-preview')) {
                 for (let index = 0; index < ids.length; index++) {
                     let find = metaJSON.filter((obj) => {
                         if (obj.hasOwnProperty('type')) {
-                            return obj.id === ids[index] && obj.type === type
+                            return obj.id == ids[index] && obj.type == type
                         }
 
-                        return obj.id === ids[index]
+                        return obj.id == ids[index]
                     })
                     find[0].title = names[index]
                     results.push(find[0])
