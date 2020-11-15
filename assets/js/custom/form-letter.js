@@ -77,7 +77,7 @@ if (document.getElementById('letter-form')) {
                 { label: 'MS Draft', value: 'D' },
                 { label: 'MS Letter', value: 'ALS' },
                 { label: 'Other', value: 'O' },
-                { label: 'P', value: 'P' }, // TODO: zjistit hodnotu
+                { label: 'Printed', value: 'P' },
             ],
             documentTypes: [
                 { label: 'Letter', value: 'letter' },
