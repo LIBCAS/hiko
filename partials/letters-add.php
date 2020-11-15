@@ -160,9 +160,9 @@ if (array_key_exists('save_post', $_POST)) {
                             </multiselect>
                             <input type="hidden" :value="a.id.value" v-validate="'required'" data-vv-name="'Author'" name="l_author[]">
                         </div>
-                        <div class="form-group" :class="{ required: !letter.author_inferred }">
+                        <div class="form-group">
                             <label for="marked">Author as marked</label>
-                            <input v-validate="letter.author_inferred ? '' : 'required'" data-vv-name="'Author as marked'" :value="decodeHTML(a.marked)" @input="a.marked = $event.target.value" type="text" class="form-control form-control-sm" :required="!letter.author_inferred">
+                            <input data-vv-name="'Author as marked'" :value="decodeHTML(a.marked)" @input="a.marked = $event.target.value" type="text" class="form-control form-control-sm">
                             <small class="form-text text-muted">
                                 author's name as written in letter
                             </small>
@@ -211,9 +211,9 @@ if (array_key_exists('save_post', $_POST)) {
                             <input v-validate="'required'" data-vv-name="'Recipient'" type="hidden" :value="r.id.value" name="recipient[]">
                         </div>
 
-                        <div class="form-group" :class="{ required: !letter.recipient_inferred }">
+                        <div class="form-group">
                             <label for="recipient_as_marked">Recipient as marked</label>
-                            <input v-validate="letter.recipient_inferred ? '' : 'required'" data-vv-name="'Recipient as marked'" :value="decodeHTML(r.marked)" @input="r.marked = $event.target.value" type="text" class="form-control form-control-sm" :required="!letter.recipient_inferred">
+                            <input data-vv-name="'Recipient as marked'" :value="decodeHTML(r.marked)" @input="r.marked = $event.target.value" type="text" class="form-control form-control-sm">
                             <small class="form-text text-muted">
                                 recipient's name as written in letter
                             </small>
@@ -266,9 +266,9 @@ if (array_key_exists('save_post', $_POST)) {
                             </multiselect>
                             <input v-validate="'required'" data-vv-name="'Origin'" type="hidden" :value="o.id.value" name="origin[]">
                         </div>
-                        <div class="form-group" :class="{ required: !letter.origin_inferred }">
+                        <div class="form-group">
                             <label for="marked">Origin as marked</label>
-                            <input v-validate="letter.origin_inferred ? '' : 'required'" data-vv-name="'Origin as marked'" :value="decodeHTML(o.marked)" @input="o.marked = $event.target.value" type="text" class="form-control form-control-sm" :required="!letter.origin_inferred">
+                            <input data-vv-name="'Origin as marked'" :value="decodeHTML(o.marked)" @input="o.marked = $event.target.value" type="text" class="form-control form-control-sm">
                             <small class="form-text text-muted">
                                 origin name as written in letter
                             </small>
@@ -318,9 +318,9 @@ if (array_key_exists('save_post', $_POST)) {
                             </multiselect>
                             <input v-validate="'required'" data-vv-name="'Destination'" type="hidden" :value="d.id.value" name="dest[]">
                         </div>
-                        <div class="form-group" :class="{ required: !letter.dest_inferred }">
+                        <div class="form-group">
                             <label for="marked">Destination as marked</label>
-                            <input v-validate="letter.dest_inferred ? '' : 'required'" data-vv-name="'Destination as marked'" :value="decodeHTML(d.marked)" @input="d.marked = $event.target.value" type="text" class="form-control form-control-sm" :required="!letter.dest_inferred">
+                            <input data-vv-name="'Destination as marked'" :value="decodeHTML(d.marked)" @input="d.marked = $event.target.value" type="text" class="form-control form-control-sm">
                             <small class="form-text text-muted">
                                 destination name as written in letter
                             </small>
