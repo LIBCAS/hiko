@@ -468,6 +468,7 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
     $fields = [
         't.id AS ID',
         't.signature',
+        't.repository',
         't.date_day',
         't.date_month',
         't.date_year',

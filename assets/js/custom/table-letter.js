@@ -121,6 +121,22 @@ if (document.getElementById('datatable-letters')) {
                 formatter: 'textarea',
                 headerFilter: 'input',
                 title: 'Signature',
+                mutator: function (value, data) {
+                    const signature = data.signature
+                    const repository = data.repository
+
+                    let result = signature
+
+                    if (repository && signature) {
+                        result += ' / '
+                    }
+
+                    if (repository) {
+                        result += repository
+                    }
+
+                    return result
+                },
             },
             {
                 field: 'date',
