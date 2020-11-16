@@ -118,7 +118,10 @@ if (document.getElementById('datatable-letters')) {
             },
             {
                 field: 'signature',
-                formatter: 'html',
+                formatter: function (cell) {
+                    cell.getElement().style.whiteSpace = 'normal'
+                    return cell.getValue()
+                },
                 headerFilter: 'input',
                 title: 'Signature',
                 mutator: function (value, data) {
