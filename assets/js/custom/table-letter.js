@@ -118,7 +118,7 @@ if (document.getElementById('datatable-letters')) {
             },
             {
                 field: 'signature',
-                formatter: 'textarea',
+                formatter: 'html',
                 headerFilter: 'input',
                 title: 'Signature',
                 mutator: function (value, data) {
