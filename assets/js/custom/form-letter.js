@@ -84,6 +84,7 @@ if (document.getElementById('letter-form')) {
                 { label: 'Picture postcard', value: 'picture postcard' },
                 { label: 'Postcard', value: 'postcard' },
                 { label: 'Telegram', value: 'telegram' },
+                { label: 'Visiting Card', value: 'visiting card' },
             ],
             preservation: [
                 { label: 'carbon copy', value: 'carbon copy' },
