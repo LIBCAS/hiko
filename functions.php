@@ -619,6 +619,7 @@ function get_hiko_post_types($type)
         'editor' => '',
         'path' => '',
         'title' => '',
+        'default_lang' => ''
     ];
 
     if ($type == 'blekastad') {
@@ -630,6 +631,7 @@ function get_hiko_post_types($type)
         $data['title'] = 'Milada Blekastad';
         $data['keyword'] = 'bl_keyword';
         $data['profession'] = 'bl_profession';
+        $data['default_lang'] = 'en';
     } elseif ($type == 'demo') {
         $data['letter'] = 'demo_letter';
         $data['place'] = 'demo_place';
@@ -639,6 +641,7 @@ function get_hiko_post_types($type)
         $data['title'] = 'Zkušební DB';
         $data['keyword'] = 'demo_keyword';
         $data['profession'] = 'demo_profession';
+        $data['default_lang'] = 'en';
     } elseif ($type == 'tgm') {
         $data['letter'] = 'tgm_letter';
         $data['place'] = 'tgm_place';
@@ -648,6 +651,7 @@ function get_hiko_post_types($type)
         $data['title'] = 'Korespondence TGM';
         $data['keyword'] = 'tgm_keyword';
         $data['profession'] = 'tgm_profession';
+        $data['default_lang'] = 'en';
     } elseif ($type == 'pol') {
         $data['letter'] = 'pol_letter';
         $data['place'] = 'pol_place';
@@ -657,6 +661,7 @@ function get_hiko_post_types($type)
         $data['title'] = 'Korespondence Amanda Polana';
         $data['keyword'] = 'pol_keyword';
         $data['profession'] = 'pol_profession';
+        $data['default_lang'] = 'en';
     } elseif ($type == 'musil') {
         $data['letter'] = 'musil_letter';
         $data['place'] = 'musil_place';
@@ -666,6 +671,7 @@ function get_hiko_post_types($type)
         $data['title'] = 'Korespondence Aloise Musila';
         $data['keyword'] = 'musil_keyword';
         $data['profession'] = 'musil_profession';
+        $data['default_lang'] = 'cs';
     }
 
     return $data;

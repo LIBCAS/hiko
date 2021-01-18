@@ -37,6 +37,7 @@ function getLetterType() {
             path: 'blekastad',
             keyword: 'bl_keyword',
             profession: 'bl_profession',
+            defaultLanguage: 'en',
         }
     }
 
@@ -48,6 +49,7 @@ function getLetterType() {
             path: 'demo',
             keyword: 'demo_keyword',
             profession: 'demo_profession',
+            defaultLanguage: 'en',
         }
     }
 
@@ -59,6 +61,7 @@ function getLetterType() {
             path: 'tgm',
             keyword: 'tgm_keyword',
             profession: 'tgm_profession',
+            defaultLanguage: 'en',
         }
     }
 
@@ -70,6 +73,7 @@ function getLetterType() {
             path: 'pol',
             keyword: 'pol_keyword',
             profession: 'pol_profession',
+            defaultLanguage: 'en',
         }
     }
 
@@ -81,6 +85,7 @@ function getLetterType() {
             path: 'musil',
             keyword: 'musil_keyword',
             profession: 'musil_profession',
+            defaultLanguage: 'cs',
         }
     }
 
