@@ -76,6 +76,7 @@ function list_public_letters_single()
     $destinations = [];
     $keywords = [];
     $l_type = test_input($_GET['l_type']);
+    $lang = test_input($_GET['lang']);
 
     if (!array_key_exists('pods_id', $_GET)) {
         wp_send_json_error('Not found', 404);
@@ -130,7 +131,7 @@ function list_public_letters_single()
 
     if (!empty($keywords_related)) {
         foreach ($keywords_related as $k) {
-            $keywords[$k['id']] = $k['name'];
+            $keywords[$k['id']] = $lang === 'cs' ? $k['namecz'] : $k['name'];
         }
     }
 

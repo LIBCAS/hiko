@@ -91,7 +91,7 @@ if (document.getElementById('datatable-letters')) {
                         <a href="${homeUrl}/${letterTypes['path']}/letters-media/?l_type=${letterTypes['letterType']}&letter=${letterId}" class="py-1 text-primary">Obrazové přílohy</a>
                     </li>
                     <li>
-                        <a href="${homeUrl}/letter-preview/?l_type=${letterTypes['letterType']}&letter=${letterId}" class="py-1 text-primary">Náhled</a>
+                        <a href="${homeUrl}/letter-preview/?l_type=${letterTypes['letterType']}&letter=${letterId}&lang=${letterTypes['defaultLanguage']}" class="py-1 text-primary">Náhled</a>
                     </li>
                     <li>
                         <span onclick="showHistory(${letterId}, this)" class="is-link text-primary py-1">

@@ -30,6 +30,7 @@ if (document.getElementById('letter-form')) {
                 explicit: '',
                 incipit: '',
                 keywords: [],
+                lang: '',
                 l_number: '',
                 languages: [],
                 location_note: '',
@@ -255,7 +256,9 @@ if (document.getElementById('letter-form')) {
                     '/letter-preview/?l_type=' +
                     this.letterType +
                     '&letter=' +
-                    this.letterID
+                    this.letterID +
+                    '&lang=' +
+                    this.lang
                 )
             },
 
@@ -299,9 +302,9 @@ if (document.getElementById('letter-form')) {
             },
         },
         mounted: function () {
-            let self = this
-            let url = new URL(window.location.href)
-            let letterTypes = getLetterType()
+            const self = this
+            const url = new URL(window.location.href)
+            const letterTypes = getLetterType()
 
             if (isString(letterTypes)) {
                 self.error = letterTypes
@@ -314,11 +317,10 @@ if (document.getElementById('letter-form')) {
             self.placeType = letterTypes['placeType']
             self.path = letterTypes['path']
             self.keywordType = letterTypes['keyword']
+            self.lang = letterTypes['defaultLanguage']
 
-            let edit = url.searchParams.get('edit')
-
-            if (edit) {
-                self.letterID = edit
+            if (url.searchParams.get('edit')) {
+                self.letterID = url.searchParams.get('edit')
                 self.edit = true
                 self.getInitialData()
             } else {
@@ -453,7 +455,9 @@ if (document.getElementById('letter-form')) {
                     '?action=list_public_letters_single&pods_id=' +
                     self.letterID +
                     '&l_type=' +
-                    self.letterType
+                    self.letterType +
+                    '&lang=' +
+                    self.lang
 
                 axios
                     .get(url)
@@ -660,7 +664,7 @@ if (document.getElementById('letter-form')) {
             },
 
             getKeywords: function (callback = null) {
-                let self = this
+                const self = this
                 axios
                     .get(
                         ajaxUrl +
@@ -671,8 +675,11 @@ if (document.getElementById('letter-form')) {
                         let keywords = response.data
 
                         keywords.map((kw) => {
+                            const kwName =
+                                self.lang === 'cs' ? kw.namecz : kw.name
+
                             self.keywords.push({
-                                label: self.decodeHTML(kw.name),
+                                label: self.decodeHTML(kwName),
                                 value: kw.id,
                             })
                         })
@@ -747,8 +754,7 @@ if (document.getElementById('letter-form')) {
                 let result = []
                 let l = ids.length
                 allMeta = self.cleanCopy(allMeta)
-                console.log(ids)
-                console.log(allMeta)
+
                 for (let index = 0; index < l; index++) {
                     let placesObj = self.placesData.find(
                         (place) => place.value == ids[index]
