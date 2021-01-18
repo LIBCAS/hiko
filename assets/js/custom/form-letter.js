@@ -81,6 +81,9 @@ if (document.getElementById('letter-form')) {
                 { label: 'Printed', value: 'P' },
             ],
             documentTypes: [
+                { label: 'Calling Card', value: 'calling card' },
+                { label: 'Greeting Card', value: 'greeting card' },
+                { label: 'Invitation Card', value: 'invitation card' },
                 { label: 'Letter', value: 'letter' },
                 { label: 'Picture postcard', value: 'picture postcard' },
                 { label: 'Postcard', value: 'postcard' },
