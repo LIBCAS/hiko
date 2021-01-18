@@ -24,7 +24,7 @@ if (document.getElementById('export')) {
                 if (
                     this.path == 'blekastad' ||
                     this.path == 'tgm' ||
-                    this.path == 'pol'
+                    this.path == 'pol' || this.path == 'musil'
                 ) {
                     customActions.push({
                         url:

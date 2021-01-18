@@ -73,6 +73,17 @@ function getLetterType() {
         }
     }
 
+    if (stringContains(url.pathname, 'musil')) {
+        return {
+            letterType: 'musil_letter',
+            personType: 'musil_person',
+            placeType: 'musil_place',
+            path: 'musil',
+            keyword: 'musil_keyword',
+            profession: 'musil_profession',
+        }
+    }
+
     return 'Neplatný typ dopisu'
 }
 

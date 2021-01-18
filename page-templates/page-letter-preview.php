@@ -26,6 +26,8 @@ if ($letter_type == 'bl_letter') {
     $letter_path = 'tgm';
 } elseif ($letter_type == 'pol_letter') {
     $letter_path = 'pol';
+} elseif ($letter_type == 'musil_letter') {
+    $letter_path = 'musil';
 } else {
     die('Nenalezeno');
 }
@@ -67,7 +69,7 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
 
 <body>
     <div class="container-fluid">
-        <div id="letter-preview" class="row main-content my-5">
+        <div id="letter-preview" class="my-5 row main-content">
             <div class="col-md-9">
                 <div v-if="loading">
                     Načítám
@@ -366,7 +368,7 @@ $question_icon =  get_template_directory_uri() . '/assets/open-iconic/svg/questi
                             </tbody>
                         </table>
                     </div>
-                    <div id="gallery" class="mb-5 d-flex flex-wrap" v-if="images">
+                    <div id="gallery" class="flex-wrap mb-5 d-flex" v-if="images">
                         <div v-for="i in images">
                             <a :href="i.img.large" :data-caption="i.description">
                                 <figure class="figure">
