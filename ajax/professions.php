@@ -89,22 +89,29 @@ function get_professions_table_data($professions_type = false, $ajax = true)
 add_action('wp_ajax_professions_table_data', 'get_professions_table_data');
 
 
-function get_professions_list($professions_type = false, $ajax = true)
+function get_professions_list($professions_type = false, $ajax = true, $lang = 'en')
 {
     if (!$professions_type) {
         $professions_type = test_input($_GET['type']);
     }
 
-    $fields = implode(', ', [
+    $fields = [
         't.id',
-        't.name AS name',
-    ]);
+    ];
+
+    if ($lang === 'cs') {
+        $fields[] = 't.namecz AS name';
+    } else {
+        $fields[] = 't.name AS name';
+    }
+
+    $fields = implode(', ', $fields);
 
     $professions = pods(
         $professions_type,
         [
             'select' => $fields,
-            'orderby' => 't.name ASC',
+            'orderby' => $lang === 'cs' ? 't.namecz ASC' :  't.name ASC',
             'limit' => -1
         ]
     );

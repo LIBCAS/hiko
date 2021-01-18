@@ -11,6 +11,7 @@ if (document.getElementById('person-name')) {
             error: false,
             firstName: '',
             gender: '',
+            lang: '',
             lastName: '',
             loading: true,
             nationality: '',
@@ -48,9 +49,9 @@ if (document.getElementById('person-name')) {
         },
 
         mounted: function () {
-            let letterTypes = getLetterType()
-            let self = this
-            let url = new URL(window.location.href)
+            const letterTypes = getLetterType()
+            const self = this
+            const url = new URL(window.location.href)
 
             if (isString(letterTypes)) {
                 self.error = letterTypes
@@ -59,6 +60,7 @@ if (document.getElementById('person-name')) {
 
             this.personType = letterTypes['personType']
             this.professionsType = letterTypes['profession']
+            this.lang = letterTypes['defaultLanguage']
 
             let initialProfessions = JSON.parse(
                 document.querySelector('#professions').innerHTML
@@ -183,16 +185,19 @@ if (document.getElementById('person-name')) {
             },
 
             mapProfessions: function (rawProfessions) {
-                let self = this
+                const self = this
+
                 rawProfessions.map((profession) => {
+                    const professionName =
+                        self.lang === 'cs' ? profession.namecz : profession.name
                     if (profession.palladio) {
                         self.professionsPalladio.push({
-                            label: self.decodeHTML(profession.name),
+                            label: self.decodeHTML(professionName),
                             value: profession.id,
                         })
                     } else {
                         self.professions.push({
-                            label: self.decodeHTML(profession.name),
+                            label: self.decodeHTML(professionName),
                             value: profession.id,
                         })
                     }
