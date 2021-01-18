@@ -31,5 +31,5 @@ $profession_type = $pods_types['profession'];
     </div>
 </div>
 <script id="professions" type="application/json">
-    <?= get_professions_list($profession_type, false); ?>
+    <?= get_professions_list($profession_type, false, $pods_types['default_lang']); ?>
 </script>

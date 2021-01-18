@@ -3,6 +3,7 @@ $navData = [
     'Blekastad' => 'blekastad',
     'Korespondence TGM' => 'tgm',
     'Amandus Polanus' => 'pol',
+    'Alois Musil' => 'musil',
     'Zkušební DB' => 'demo',
 ];
 ?>

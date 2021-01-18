@@ -31,6 +31,7 @@ if (document.getElementById('letter-preview')) {
             images: [],
             incipit: '',
             keywords: [],
+            lang: '',
             l_number: '',
             languages: [],
             letterID: null,
@@ -61,9 +62,10 @@ if (document.getElementById('letter-preview')) {
         },
 
         mounted: function () {
-            let url = new URL(window.location.href)
+            const url = new URL(window.location.href)
             this.letterID = url.searchParams.get('letter')
             this.letterType = url.searchParams.get('l_type')
+            this.lang = url.searchParams.get('lang')
             this.getLetter(this.letterID)
         },
 
@@ -117,14 +119,16 @@ if (document.getElementById('letter-preview')) {
             },
 
             getLetter: function (id) {
-                let self = this
+                const self = this
                 axios
                     .get(
                         ajaxUrl +
                             '?action=list_public_letters_single&pods_id=' +
                             id +
                             '&l_type=' +
-                            self.letterType
+                            self.letterType +
+                            '&lang=' +
+                            self.lang
                     )
                     .then(function (response) {
                         let rd = response.data
