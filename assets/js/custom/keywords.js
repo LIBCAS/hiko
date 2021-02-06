@@ -30,17 +30,25 @@ function deleteKeyword(id, index) {
     })
 }
 
-function addKeyword(type, action, id, oldKeyword = '', oldKeywordCZ = '') {
+function addKeyword(
+    type,
+    action,
+    id,
+    oldKeyword = '',
+    oldKeywordCZ = '',
+    oldCategory = false
+) {
     let swalConfig = keywordsSwal.confirmSave
 
     swalConfig.title = (id ? 'Upravit' : 'Nové ') + ' klíčové slovo'
     swalConfig.allowOutsideClick = () => !Swal.isLoading()
-    swalConfig.html = getKeywordForm(oldKeyword, oldKeywordCZ)
+    swalConfig.html = getKeywordForm(oldKeyword, oldKeywordCZ, oldCategory)
     swalConfig.focusConfirm = false
 
     swalConfig.preConfirm = () => {
-        let nameen = document.getElementById('nameen').value
-        let namecz = document.getElementById('namecz').value
+        const nameen = document.getElementById('nameen').value
+        const namecz = document.getElementById('namecz').value
+        const category = document.getElementById('category').checked
 
         if (nameen.length < 2) {
             return Swal.showValidationMessage(
@@ -55,6 +63,7 @@ function addKeyword(type, action, id, oldKeyword = '', oldKeywordCZ = '') {
                     ['type']: type,
                     ['nameen']: nameen,
                     ['namecz']: namecz,
+                    ['category']: category,
                     ['action']: action,
                     ['id']: id,
                 },
@@ -85,7 +94,9 @@ function addKeyword(type, action, id, oldKeyword = '', oldKeywordCZ = '') {
     })
 }
 
-function getKeywordForm(en, cs) {
+function getKeywordForm(en, cs, category) {
+    category = category ? 'checked="checked"' : ''
+
     return `
     <div class="form-group">
     <label for="nameen">EN</label>
@@ -94,6 +105,10 @@ function getKeywordForm(en, cs) {
     <div class="form-group">
     <label for="namecz">CZ</label>
     <input value="${cs}" id="namecz" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
+    </div>
+    <div class="form-check">
+    <input type="checkbox" class="form-check-input" id="category" ${category} autocomplete="off">
+    <label class="form-check-label" id="category" for="category">Category</label>
     </div>
     `
 }
@@ -109,7 +124,7 @@ if (document.getElementById('datatable-keywords')) {
                     return `
                     <ul class="list-unstyled mb-0">
                         <li>
-                            <span onclick="addKeyword('${letterTypes['keyword']}', 'edit', ${rowData.id}, '${rowData.name}', '${rowData.namecz}')" class="text-info is-link py-1">
+                            <span onclick="addKeyword('${letterTypes['keyword']}', 'edit', ${rowData.id}, '${rowData.name}', '${rowData.namecz}, ${rowData.category}')" class="text-info is-link py-1">
                                 Upravit
                             </span>
                         </li>
@@ -144,6 +159,15 @@ if (document.getElementById('datatable-keywords')) {
         dataLoaded: function (data) {
             document.getElementById('total-count').innerHTML = data.length
         },
+        groupBy: 'category',
+        groupHeader: function (value, count) {
+            value = value ? 'Category' : 'Keyword'
+
+            return `
+            ${value} <span class="text-danger">${count} items</span>
+            `
+        },
+        groupStartOpen: false,
         footerElement:
             '<span>Showing <span id="search-count"></span> items from <span id="total-count"></span> total items</span>',
         height: '600px',
