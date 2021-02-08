@@ -17,6 +17,7 @@ function insert_keyword()
     $data = [
         'name' => test_input($data->nameen),
         'namecz' => test_input($data->namecz),
+        'category' => (bool) $data->category ? 1 : 0,
     ];
 
     if ($action == 'add') {
@@ -49,6 +50,7 @@ function get_keywords_table_data()
         't.id',
         't.name AS name',
         't.namecz',
+        't.category',
     ];
 
     $fields = implode(', ', $fields);
@@ -68,6 +70,7 @@ function get_keywords_table_data()
         $keywords_filtered[$index]['id'] = $keywords->display('id');
         $keywords_filtered[$index]['name'] = $keywords->display('name');
         $keywords_filtered[$index]['namecz'] = $keywords->display('namecz');
+        $keywords_filtered[$index]['category'] = $keywords->field('category') == 0 ? false : true;
         $index++;
     }
 
