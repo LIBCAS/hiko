@@ -82,28 +82,28 @@ if (array_key_exists('save_post', $_POST)) {
                         <input :value="decodeHTML(letter.date_marked)" @input="letter.date_marked = $event.target.value" type="text" name="date_marked" class="form-control form-control-sm">
                     </div>
 
-                    <div class="form-check mb-3">
+                    <div class="mb-3 form-check">
                         <input v-model="letter.date_uncertain" class="form-check-input" type="checkbox" id="date_uncertain" name="date_uncertain">
                         <label class="form-check-label" for="date_uncertain">
                             Date uncertain
                         </label>
                     </div>
 
-                    <div class="form-check mb-3">
+                    <div class="mb-3 form-check">
                         <input v-model="letter.date_approximate" class="form-check-input" type="checkbox" id="date_approximate" name="date_approximate">
                         <label class="form-check-label" for="date_approximate">
                             Date approximate
                         </label>
                     </div>
 
-                    <div class="form-check mb-3">
+                    <div class="mb-3 form-check">
                         <input v-model="letter.date_inferred" class="form-check-input" type="checkbox" id="date_inferred" name="date_inferred">
                         <label class="form-check-label" for="date_inferred">
                             Date inferred
                         </label>
                     </div>
 
-                    <div class="form-check mb-3">
+                    <div class="mb-3 form-check">
                         <input v-model="letter.date_is_range" class="form-check-input" type="checkbox" id="date_is_range" name="date_is_range">
                         <label class="form-check-label" for="date_is_range">
                             Date is range
@@ -149,13 +149,13 @@ if (array_key_exists('save_post', $_POST)) {
 
                 <fieldset id="a-author">
                     <legend>Author</legend>
-                    <div v-for="(a, index) in letter.author" :data-key="a.id != '' ? 'a-' + a.id.value : a.key" :key="a.id != '' ? 'a-' + a.id.value : a.key" class="border rounded my-2 py-3 px-2">
+                    <div v-for="(a, index) in letter.author" :data-key="a.id != '' ? 'a-' + a.id.value : a.key" :key="a.id != '' ? 'a-' + a.id.value : a.key" class="px-2 py-3 my-2 border rounded">
                         <button @click="removeObjectMeta(index, 'author')" type="button" class="close text-danger" aria-label="Remove author">
                             <span title="Remove author">&times;</span>
                         </button>
                         <div class="form-group required">
                             <label :for="'author-' + index">Author</label>
-                            <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
+                            <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
                             <multiselect v-model="a.id" :options="personsData" label="label" track-by="value" :required="true">
                             </multiselect>
                             <input type="hidden" :value="a.id.value" v-validate="'required'" data-vv-name="'Author'" name="l_author[]">
@@ -169,12 +169,12 @@ if (array_key_exists('save_post', $_POST)) {
                         </div>
                     </div>
 
-                    <button type="button" @click="addPersonMeta('author')" class="btn btn-sm btn-outline-info my-2">
+                    <button type="button" @click="addPersonMeta('author')" class="my-2 btn btn-sm btn-outline-info">
                         <span class="oi oi-plus"></span>
                         Add author
                     </button>
 
-                    <div class="form-check mb-3">
+                    <div class="mb-3 form-check">
                         <input v-model="letter.author_inferred" class="form-check-input" type="checkbox" id="author_inferred" name="author_inferred">
                         <label class="form-check-label" for="author_inferred">
                             Author inferred
@@ -184,7 +184,7 @@ if (array_key_exists('save_post', $_POST)) {
                         </small>
                     </div>
 
-                    <div class="form-check mb-3">
+                    <div class="mb-3 form-check">
                         <input v-model="letter.author_uncertain" class="form-check-input" type="checkbox" id="author_uncertain" name="author_uncertain">
                         <label class="form-check-label" for="author_uncertain">
                             Author uncertain
@@ -199,13 +199,13 @@ if (array_key_exists('save_post', $_POST)) {
 
                 <fieldset id="a-recipient">
                     <legend>Recipient</legend>
-                    <div v-for="(r, index) in letter.recipient" :data-key="r.id != '' ? 'r-' + r.id.value : r.key" :key="r.id != '' ? 'r-' + r.id.value : r.key" class="border rounded my-2 py-3 px-2">
+                    <div v-for="(r, index) in letter.recipient" :data-key="r.id != '' ? 'r-' + r.id.value : r.key" :key="r.id != '' ? 'r-' + r.id.value : r.key" class="px-2 py-3 my-2 border rounded">
                         <button @click="removeObjectMeta(index, 'recipient')" type="button" class="close text-danger" aria-label="Remove author">
                             <span title="Remove recipient">&times;</span>
                         </button>
                         <div class="form-group required">
                             <label :for="'recipient-' + index">Recipient</label>
-                            <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
+                            <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
                             <multiselect v-model="r.id" :options="personsData" label="label" track-by="value" :required="true">
                             </multiselect>
                             <input v-validate="'required'" data-vv-name="'Recipient'" type="hidden" :value="r.id.value" name="recipient[]">
@@ -224,12 +224,12 @@ if (array_key_exists('save_post', $_POST)) {
                             <input :value="decodeHTML(r.salutation)" @input="r.salutation = $event.target.value" type="text" class="form-control form-control-sm">
                         </div>
                     </div>
-                    <button type="button" @click="addPersonMeta('recipient')" class="btn btn-sm btn-outline-info my-2">
+                    <button type="button" @click="addPersonMeta('recipient')" class="my-2 btn btn-sm btn-outline-info">
                         <span class="oi oi-plus"></span>
                         Add recipient
                     </button>
 
-                    <div class="form-check mb-3">
+                    <div class="mb-3 form-check">
                         <input v-model="letter.recipient_inferred" class="form-check-input" type="checkbox" id="recipient_inferred" name="recipient_inferred">
                         <label class="form-check-label" for="recipient_inferred">
                             Recipient inferred
@@ -239,7 +239,7 @@ if (array_key_exists('save_post', $_POST)) {
                         </small>
                     </div>
 
-                    <div class="form-check mb-3">
+                    <div class="mb-3 form-check">
                         <input v-model="letter.recipient_uncertain" class="form-check-input" type="checkbox" id="recipient_uncertain" name="recipient_uncertain">
                         <label class="form-check-label" for="recipient_uncertain">
                             Recipient uncertain
@@ -255,13 +255,13 @@ if (array_key_exists('save_post', $_POST)) {
                 <fieldset id="a-origin">
                     <legend>Origin</legend>
 
-                    <div v-for="(o, index) in letter.origin" :data-key="o.id != '' ? 'o-' + o.id.value : o.key" :key="o.id != '' ? 'o-' + o.id.value : o.key" class="border rounded my-2 py-3 px-2">
+                    <div v-for="(o, index) in letter.origin" :data-key="o.id != '' ? 'o-' + o.id.value : o.key" :key="o.id != '' ? 'o-' + o.id.value : o.key" class="px-2 py-3 my-2 border rounded">
                         <button @click="removeObjectMeta(index, 'origin')" type="button" class="close text-danger" aria-label="Remove origin">
                             <span title="Remove origin">&times;</span>
                         </button>
                         <div class="form-group required">
                             <label :for="'origin-' + index">Origin</label>
-                            <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)" title="Update places"></span>
+                            <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('places', $event)" title="Update places"></span>
                             <multiselect v-model="o.id" :options="placesData" label="label" track-by="value" :required="true">
                             </multiselect>
                             <input v-validate="'required'" data-vv-name="'Origin'" type="hidden" :value="o.id.value" name="origin[]">
@@ -275,12 +275,12 @@ if (array_key_exists('save_post', $_POST)) {
                         </div>
                     </div>
 
-                    <button type="button" @click="addPlaceMeta('origin')" class="btn btn-sm btn-outline-info my-2">
+                    <button type="button" @click="addPlaceMeta('origin')" class="my-2 btn btn-sm btn-outline-info">
                         <span class="oi oi-plus"></span>
                         Add origin
                     </button>
 
-                    <div class="form-check mb-3">
+                    <div class="mb-3 form-check">
                         <input v-model="letter.origin_inferred" class="form-check-input" type="checkbox" id="origin_inferred" name="origin_inferred">
                         <label class="form-check-label" for="origin_inferred">
                             Origin inferred
@@ -290,7 +290,7 @@ if (array_key_exists('save_post', $_POST)) {
                         </small>
                     </div>
 
-                    <div class="form-check mb-3">
+                    <div class="mb-3 form-check">
                         <input v-model="letter.origin_uncertain" class="form-check-input" type="checkbox" id="origin_uncertain" name="origin_uncertain">
                         <label class="form-check-label" for="origin_uncertain">
                             Origin uncertain
@@ -307,13 +307,13 @@ if (array_key_exists('save_post', $_POST)) {
                 <fieldset id="a-destination">
                     <legend>Destination</legend>
 
-                    <div v-for="(d, index) in letter.destination" :data-key="d.id != '' ? 'd-' + d.id.value : d.key" :key="d.id != '' ? 'd-' + d.id.value : d.key" class="border rounded my-2 py-3 px-2">
+                    <div v-for="(d, index) in letter.destination" :data-key="d.id != '' ? 'd-' + d.id.value : d.key" :key="d.id != '' ? 'd-' + d.id.value : d.key" class="px-2 py-3 my-2 border rounded">
                         <button @click="removeObjectMeta(index, 'destination')" type="button" class="close text-danger" aria-label="Remove origin">
                             <span title="Remove destination">&times;</span>
                         </button>
                         <div class="form-group required">
                             <label :for="'destination-' + index">Destination</label>
-                            <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('places', $event)" title="Update places"></span>
+                            <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('places', $event)" title="Update places"></span>
                             <multiselect v-model="d.id" :options="placesData" label="label" track-by="value" :required="true">
                             </multiselect>
                             <input v-validate="'required'" data-vv-name="'Destination'" type="hidden" :value="d.id.value" name="dest[]">
@@ -327,12 +327,12 @@ if (array_key_exists('save_post', $_POST)) {
                         </div>
                     </div>
 
-                    <button type="button" @click="addPlaceMeta('destination')" class="btn btn-sm btn-outline-info my-2">
+                    <button type="button" @click="addPlaceMeta('destination')" class="my-2 btn btn-sm btn-outline-info">
                         <span class="oi oi-plus"></span>
                         Add destination
                     </button>
 
-                    <div class="form-check mb-3">
+                    <div class="mb-3 form-check">
                         <input v-model="letter.dest_inferred" class="form-check-input" type="checkbox" id="dest_inferred" name="dest_inferred">
                         <label class="form-check-label" for="dest_inferred">
                             Destination inferred
@@ -342,7 +342,7 @@ if (array_key_exists('save_post', $_POST)) {
                         </small>
                     </div>
 
-                    <div class="form-check mb-3">
+                    <div class="mb-3 form-check">
                         <input v-model="letter.dest_uncertain" class="form-check-input" type="checkbox" id="dest_uncertain" name="dest_uncertain">
                         <label class="form-check-label" for="dest_uncertain">
                             Destination uncertain
@@ -367,10 +367,17 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                     <div class="form-group">
-                        <label for="keywords">Keywords <span class="pointer oi oi-reload pl-1" @click="regenerateKeywords($event)"></span></label>
+                        <label for="keywords">Keywords <span class="pl-1 pointer oi oi-reload" @click="regenerateKeywords($event)"></span></label>
                         <multiselect v-model="letter.keywords" :options="keywords" label="label" track-by="value" :multiple="true">
                         </multiselect>
                         <input type="hidden" :value="getObjectValues(letter.keywords).join(';')" name="keywords">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category <span class="pl-1 pointer oi oi-reload" @click="regenerateKeywords($event)"></span></label>
+                        <multiselect v-model="letter.category" :options="category" label="label" track-by="value" :multiple="true">
+                        </multiselect>
+                        <input type="hidden" :value="getObjectValues(letter.category).join(';')" name="category">
                     </div>
 
                     <div class="form-group">
@@ -394,7 +401,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                     <div class="form-group">
-                        <label for="people_mentioned">People mentioned <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('persons', $event)"></span></label>
+                        <label for="people_mentioned">People mentioned <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('persons', $event)"></span></label>
                         <multiselect v-model="letter.mentioned" :options="personsData" label="label" track-by="value" :multiple="true">
                         </multiselect>
                         <input type="hidden" :value="getObjectValues(letter.mentioned)" name="people_mentioned">
@@ -425,7 +432,7 @@ if (array_key_exists('save_post', $_POST)) {
                 <fieldset id="a-related-resource">
                     <legend>Related resource</legend>
 
-                    <div v-for="rr, index in letter.related_resources" class="border rounded my-2 py-3 px-2">
+                    <div v-for="rr, index in letter.related_resources" class="px-2 py-3 my-2 border rounded">
                         <button @click="removeObjectMeta(index, 'related_resources')" type="button" class="close text-danger" aria-label="Remove related resource">
                             <span title="Remove related resource">&times;</span>
                         </button>
@@ -445,7 +452,7 @@ if (array_key_exists('save_post', $_POST)) {
                         </div>
                     </div>
 
-                    <button type="button" class="btn btn-sm btn-outline-info mt-2 mb-4" @click="addNewResource">
+                    <button type="button" class="mt-2 mb-4 btn btn-sm btn-outline-info" @click="addNewResource">
                         <span class="oi oi-plus"></span> Add
                     </button>
 
@@ -496,7 +503,7 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                     <div class="form-group">
-                        <label for="repository">Repository <span class="pointer oi oi-reload pl-1" @click="regenerateSelectData('locations', $event)"></span></label>
+                        <label for="repository">Repository <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('locations', $event)"></span></label>
                         <input :value="decodeHTML(letter.repository)" @input="letter.repository = $event.target.value" list="repositories" type="text" name="repository" class="form-control form-control-sm">
                         <datalist id="repositories">
                             <option v-for="rep in repositories" v-html="rep.name"></option>
@@ -534,7 +541,7 @@ if (array_key_exists('save_post', $_POST)) {
                     <legend>Description</legend>
                     <div class="form-group required">
                         <label for="description">Description</label>
-                        <span class="pointer oi oi-transfer pl-1" @click="title = getTitle()"></span>
+                        <span class="pl-1 pointer oi oi-transfer" @click="title = getTitle()"></span>
                         <textarea v-validate="'required'" data-vv-name="'Description'" :value="decodeHTML(title)" @input="title = $event.target.value" name="description" class="form-control form-control-sm" required>{{ title }}</textarea>
                         {{ letter.title }}
 
@@ -566,7 +573,7 @@ if (array_key_exists('save_post', $_POST)) {
                 <input type="hidden" :value="decodeHTML(participantsMeta)" name="authors_meta">
 
                 <div v-if="errors.all().length > 0" class="alert alert-danger">
-                    <ul class="m-0 px-2">
+                    <ul class="px-2 m-0">
                         <li v-for="error in errors.all()">{{ error }}</li>
                     </ul>
                 </div>

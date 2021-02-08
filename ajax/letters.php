@@ -75,6 +75,7 @@ function list_public_letters_single()
     $origins = [];
     $destinations = [];
     $keywords = [];
+    $category = [];
     $l_type = test_input($_GET['l_type']);
     $lang = test_input($_GET['lang']);
 
@@ -98,6 +99,7 @@ function list_public_letters_single()
     $origins_related = $pod->field('origin');
     $dests_related = $pod->field('dest');
     $keywords_related = $pod->field('keywords');
+    $category_related = $pod->field('category');
 
     if (!empty($authors_related)) {
         foreach ($authors_related as $rel_author) {
@@ -135,6 +137,12 @@ function list_public_letters_single()
         }
     }
 
+    if (!empty($category_related)) {
+        foreach ($category_related as $c) {
+            $category[$c['id']] = $lang === 'cs' ? $c['namecz'] : $c['name'];
+        }
+    }
+
     $results['abstract'] = $pod->field('abstract');
     $results['archive'] = $pod->field('archive');
     $results['author_inferred'] = (bool) $pod->field('author_inferred');
@@ -160,6 +168,7 @@ function list_public_letters_single()
     $results['images'] = get_pod_sorted_images($pod, true);
     $results['incipit'] = $pod->field('incipit');
     $results['keywords'] = $keywords;
+    $results['category'] = $category;
     $results['l_author'] = $authors;
     $results['l_number'] = $pod->field('l_number');
     $results['languages'] = $pod->field('languages');
