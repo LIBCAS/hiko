@@ -117,6 +117,7 @@ if (document.getElementById('datatable-keywords')) {
     table = new Tabulator('#datatable-keywords', {
         columns: [
             {
+                download: false,
                 field: 'id',
                 formatter: function (cell) {
                     const rowData = cell.getRow().getData()
@@ -141,16 +142,27 @@ if (document.getElementById('datatable-keywords')) {
                 width: 67,
             },
             {
+                download: true,
                 field: 'name',
                 formatter: 'textarea',
                 headerFilter: 'input',
                 title: 'EN',
             },
             {
+                download: true,
                 field: 'namecz',
                 formatter: 'textarea',
                 headerFilter: 'input',
                 title: 'CZ',
+            },
+            {
+                download: true,
+                field: 'category',
+                title: 'Type',
+                visible: false,
+                accessorDownload: function (value) {
+                    return value ? 'category' : 'keyword'
+                },
             },
         ],
         dataFiltered: function (filters, rows) {
@@ -159,6 +171,7 @@ if (document.getElementById('datatable-keywords')) {
         dataLoaded: function (data) {
             document.getElementById('total-count').innerHTML = data.length
         },
+        downloadRowRange: 'all',
         groupBy: 'category',
         groupHeader: function (value, count) {
             value = value ? 'Category' : 'Keyword'
@@ -183,4 +196,11 @@ if (document.getElementById('datatable-keywords')) {
     )
 
     updateTableHeaders()
+
+    document.getElementById('export-keywords').addEventListener('click', () => {
+        table.download('csv', 'keywords.csv', {
+            bom: true,
+            delimiter: ';',
+        })
+    })
 }
