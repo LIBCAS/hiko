@@ -803,7 +803,6 @@ function save_hiko_letter($letter_type, $action, $path)
     $origins = [];
     $destinations = [];
     $keywords = [];
-    $category = [];
 
     if (array_key_exists('l_author', $_POST)) {
         foreach ($_POST['l_author'] as $author) {
@@ -835,10 +834,6 @@ function save_hiko_letter($letter_type, $action, $path)
 
     if (array_key_exists('keywords', $_POST)) {
         $keywords = explode(';', $_POST['keywords']);
-    }
-
-    if (array_key_exists('category', $_POST)) {
-        $category = explode(';', $_POST['category']);
     }
 
     if ($action == 'new') {
@@ -899,7 +894,6 @@ function save_hiko_letter($letter_type, $action, $path)
     $data['document_type'] = sanitize_slashed_json($_POST['document_type']);
     $data['history'] = $history;
     $data['keywords'] = $keywords;
-    $data['category'] = $category;
     $data['l_author'] = $authors;
     $data['origin'] = $origins;
     $data['origin_inferred'] = get_form_checkbox_val('origin_inferred', $_POST);

@@ -11,7 +11,6 @@ if (document.getElementById('letter-form')) {
                 author_inferred: false,
                 author_note: '',
                 author_uncertain: false,
-                category: [],
                 collection: '',
                 copy: {},
                 date_approximate: false,
@@ -58,7 +57,6 @@ if (document.getElementById('letter-form')) {
                 signature: '',
                 status: 'draft',
             },
-            category: [],
             edit: false,
             error: false,
             formChanged: false,
@@ -489,14 +487,12 @@ if (document.getElementById('letter-form')) {
                         let manifestation = rd.ms_manifestation
                         let languages = rd.languages
                         let keywords = rd.keywords
-                        let category = rd.category
                         let documentTypes = rd.document_type
 
                         self.letter = rd
 
                         self.$set(self.letter, 'languages', []) // set reactive data again
                         self.$set(self.letter, 'keywords', [])
-                        self.$set(self.letter, 'category', [])
                         self.$set(self.letter, 'mentioned', [])
 
                         self.letter.date_year =
@@ -611,15 +607,6 @@ if (document.getElementById('letter-form')) {
                             }
                         }
 
-                        if (!Array.isArray(category)) {
-                            for (var cat in category) {
-                                self.letter.category.push({
-                                    label: self.decodeHTML(category[cat]),
-                                    value: self.decodeHTML(kw),
-                                })
-                            }
-                        }
-
                         self.title = rd.name
                     })
                     .catch(function (error) {
@@ -694,12 +681,7 @@ if (document.getElementById('letter-form')) {
                             const kwName =
                                 self.lang === 'cs' ? kw.namecz : kw.name
 
-                            if (kw.category) {
-                                self.category.push({
-                                    label: self.decodeHTML(kwName),
-                                    value: kw.id,
-                                })
-                            } else {
+                            if (!kw.category) {
                                 self.keywords.push({
                                     label: self.decodeHTML(kwName),
                                     value: kw.id,

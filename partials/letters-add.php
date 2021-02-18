@@ -374,13 +374,6 @@ if (array_key_exists('save_post', $_POST)) {
                     </div>
 
                     <div class="form-group">
-                        <label for="category">Category <span class="pl-1 pointer oi oi-reload" @click="regenerateKeywords($event)"></span></label>
-                        <multiselect v-model="letter.category" :options="category" options-limit="5000" label="label" track-by="value" :multiple="true">
-                        </multiselect>
-                        <input type="hidden" :value="getObjectValues(letter.category).join(';')" name="category">
-                    </div>
-
-                    <div class="form-group">
                         <label for="abstract">Abstract</label>
                         <textarea :value="decodeHTML(letter.abstract)" @input="letter.abstract = $event.target.value" name="abstract" class="form-control form-control-sm"></textarea>
                     </div>
