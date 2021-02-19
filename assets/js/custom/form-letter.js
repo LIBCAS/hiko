@@ -672,7 +672,8 @@ if (document.getElementById('letter-form')) {
                     .get(
                         ajaxUrl +
                             '?action=keywords_table_data&type=' +
-                            self.keywordType
+                            self.keywordType +
+                            '&categories=0'
                     )
                     .then(function (response) {
                         let keywords = response.data
@@ -681,12 +682,10 @@ if (document.getElementById('letter-form')) {
                             const kwName =
                                 self.lang === 'cs' ? kw.namecz : kw.name
 
-                            if (!kw.category) {
-                                self.keywords.push({
-                                    label: self.decodeHTML(kwName),
-                                    value: kw.id,
-                                })
-                            }
+                            self.keywords.push({
+                                label: self.decodeHTML(kwName),
+                                value: kw.id,
+                            })
                         })
                     })
                     .catch(function (error) {

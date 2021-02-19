@@ -17,7 +17,7 @@ function insert_keyword()
     $data = [
         'name' => test_input($data->nameen),
         'namecz' => test_input($data->namecz),
-        'category' => (bool) $data->category ? 1 : 0,
+        'is_category' => (bool) $data->is_category ? 1 : 0,
     ];
 
     if ($action == 'add') {
@@ -44,34 +44,31 @@ add_action('wp_ajax_insert_keyword', 'insert_keyword');
 
 function get_keywords_table_data()
 {
-    $keyword_type = test_input($_GET['type']);
-
     $fields = [
         't.id',
         't.name AS name',
         't.namecz',
-        't.category',
+        't.is_category',
     ];
 
-    $fields = implode(', ', $fields);
-
     $keywords = pods(
-        $keyword_type,
+        test_input($_GET['type']),
         [
-            'select' => $fields,
+            'select' => implode(', ', $fields),
             'orderby' => 't.name ASC',
-            'limit' => -1
+            'limit' => -1,
+            'where' => 't.is_category = ' . (int) $_GET['categories'],
         ]
     );
 
     $keywords_filtered = [];
-    $index = 0;
+
     while ($keywords->fetch()) {
-        $keywords_filtered[$index]['id'] = $keywords->display('id');
-        $keywords_filtered[$index]['name'] = $keywords->display('name');
-        $keywords_filtered[$index]['namecz'] = $keywords->display('namecz');
-        $keywords_filtered[$index]['category'] = $keywords->field('category') == 0 ? false : true;
-        $index++;
+        $keywords_filtered[] = [
+            'id' => $keywords->display('id'),
+            'name' => $keywords->display('name'),
+            'namecz' => $keywords->display('namecz'),
+        ];
     }
 
     echo json_encode(

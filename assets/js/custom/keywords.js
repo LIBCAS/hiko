@@ -12,7 +12,7 @@ const keywordsSwal = {
         type: 'question',
     },
     saveSuccess: {
-        title: 'Klíčové slovo bylo úspěšně upraveno',
+        title: 'Úspěšně upraveno',
         type: 'success',
         buttonsStyling: false,
         confirmButtonText: 'OK',
@@ -22,33 +22,26 @@ const keywordsSwal = {
 
 const letterTypes = getLetterType()
 
-var table
+var keywordTable
+var categoriesTable
 
-function deleteKeyword(id, index) {
+function deleteKeyword(id, index, table) {
     removeItemAjax(id, 'keyword', letterTypes['path'], () => {
         table.deleteRow(index)
     })
 }
 
-function addKeyword(
-    type,
-    action,
-    id,
-    oldKeyword = '',
-    oldKeywordCZ = '',
-    oldCategory = false
-) {
+function addKeyword(type, action, id, oldKeyword = '', oldKeywordCZ = '') {
     let swalConfig = keywordsSwal.confirmSave
 
     swalConfig.title = (id ? 'Upravit' : 'Nové ') + ' klíčové slovo'
     swalConfig.allowOutsideClick = () => !Swal.isLoading()
-    swalConfig.html = getKeywordForm(oldKeyword, oldKeywordCZ, oldCategory)
+    swalConfig.html = getKeywordForm(oldKeyword, oldKeywordCZ)
     swalConfig.focusConfirm = false
 
     swalConfig.preConfirm = () => {
         const nameen = document.getElementById('nameen').value
         const namecz = document.getElementById('namecz').value
-        const category = document.getElementById('category').checked
 
         if (nameen.length < 2) {
             return Swal.showValidationMessage(
@@ -63,7 +56,6 @@ function addKeyword(
                     ['type']: type,
                     ['nameen']: nameen,
                     ['namecz']: namecz,
-                    ['category']: category,
                     ['action']: action,
                     ['id']: id,
                 },
@@ -74,10 +66,11 @@ function addKeyword(
                 }
             )
             .then(function () {
-                table.replaceData(
+                keywordTable.replaceData(
                     ajaxUrl +
                         '?action=keywords_table_data&type=' +
-                        letterTypes['keyword']
+                        letterTypes['keyword'] +
+                        '&categories=0'
                 )
             })
             .catch(function (error) {
@@ -94,9 +87,66 @@ function addKeyword(
     })
 }
 
-function getKeywordForm(en, cs, category) {
-    category = category ? 'checked="checked"' : ''
+// TODO:
+// REFACTOR
+function addCategory(type, action, id, oldKeyword = '', oldKeywordCZ = '') {
+    let swalConfig = keywordsSwal.confirmSave
 
+    swalConfig.title = id ? 'Upravit kategorii' : 'Nová kategorie'
+    swalConfig.allowOutsideClick = () => !Swal.isLoading()
+    swalConfig.html = getCategoryForm(oldKeyword, oldKeywordCZ)
+    swalConfig.focusConfirm = false
+
+    swalConfig.preConfirm = () => {
+        const nameen = document.getElementById('nameen').value
+        const namecz = document.getElementById('namecz').value
+
+        if (nameen.length < 2) {
+            return Swal.showValidationMessage(
+                'Zadané hodnoty nejsou zadané v požadovaném formátu (2-255 znaků)'
+            )
+        }
+
+        return axios
+            .post(
+                ajaxUrl + '?action=insert_keyword',
+                {
+                    ['type']: type,
+                    ['nameen']: nameen,
+                    ['namecz']: namecz,
+                    ['action']: action,
+                    ['id']: id,
+                    ['is_category']: 1,
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json;charset=utf-8',
+                    },
+                }
+            )
+            .then(function () {
+                categoriesTable.replaceData(
+                    ajaxUrl +
+                        '?action=keywords_table_data&type=' +
+                        letterTypes['keyword'] +
+                        '&categories=1'
+                )
+            })
+            .catch(function (error) {
+                Swal.showValidationMessage(
+                    `Při ukládání došlo k chybě: ${error}`
+                )
+            })
+    }
+
+    Swal.fire(swalConfig).then((result) => {
+        if (result.value) {
+            Swal.fire(keywordsSwal.saveSuccess)
+        }
+    })
+}
+
+function getKeywordForm(en, cs) {
     return `
     <div class="form-group">
     <label for="nameen">EN</label>
@@ -106,15 +156,24 @@ function getKeywordForm(en, cs, category) {
     <label for="namecz">CZ</label>
     <input value="${cs}" id="namecz" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
     </div>
-    <div class="form-check">
-    <input type="checkbox" class="form-check-input" id="category" ${category} autocomplete="off">
-    <label class="form-check-label" id="category" for="category">Category</label>
+    `
+}
+
+function getCategoryForm(en, cs) {
+    return `
+    <div class="form-group">
+    <label for="nameen">EN</label>
+    <input value="${en}" id="nameen" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
+    </div>
+    <div class="form-group">
+    <label for="namecz">CZ</label>
+    <input value="${cs}" id="namecz" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
     </div>
     `
 }
 
 if (document.getElementById('datatable-keywords')) {
-    table = new Tabulator('#datatable-keywords', {
+    keywordTable = new Tabulator('#datatable-keywords', {
         columns: [
             {
                 download: false,
@@ -125,12 +184,12 @@ if (document.getElementById('datatable-keywords')) {
                     return `
                     <ul class="list-unstyled mb-0">
                         <li>
-                            <span onclick="addKeyword('${letterTypes['keyword']}', 'edit', ${rowData.id}, '${rowData.name}', '${rowData.namecz}, ${rowData.category}')" class="text-info is-link py-1">
+                            <span onclick="addKeyword('${letterTypes['keyword']}', 'edit', ${rowData.id}, '${rowData.name}', '${rowData.namecz}')" class="text-info is-link py-1">
                                 Upravit
                             </span>
                         </li>
                         <li>
-                            <span onclick="deleteKeyword(${rowData.id}, ${rowIndex})" class="text-danger is-link py-1">
+                            <span onclick="deleteKeyword(${rowData.id}, ${rowIndex}, keywordTable)" class="text-danger is-link py-1">
                                 Odstranit
                             </span>
                         </li>
@@ -155,15 +214,6 @@ if (document.getElementById('datatable-keywords')) {
                 headerFilter: 'input',
                 title: 'CZ',
             },
-            {
-                download: true,
-                field: 'category',
-                title: 'Type',
-                visible: false,
-                accessorDownload: function (value) {
-                    return value ? 'category' : 'keyword'
-                },
-            },
         ],
         dataFiltered: function (filters, rows) {
             document.getElementById('search-count').innerHTML = rows.length
@@ -172,15 +222,6 @@ if (document.getElementById('datatable-keywords')) {
             document.getElementById('total-count').innerHTML = data.length
         },
         downloadRowRange: 'all',
-        groupBy: 'category',
-        groupHeader: function (value, count) {
-            value = value ? 'Category' : 'Keyword'
-
-            return `
-            ${value} <span class="text-danger">${count} items</span>
-            `
-        },
-        groupStartOpen: false,
         footerElement:
             '<span>Showing <span id="search-count"></span> items from <span id="total-count"></span> total items</span>',
         height: '600px',
@@ -191,16 +232,100 @@ if (document.getElementById('datatable-keywords')) {
         tooltips: true,
     })
 
-    table.setData(
-        ajaxUrl + '?action=keywords_table_data&type=' + letterTypes['keyword']
+    keywordTable.setData(
+        ajaxUrl +
+            '?action=keywords_table_data&type=' +
+            letterTypes['keyword'] +
+            '&categories=0'
     )
 
     updateTableHeaders()
 
     document.getElementById('export-keywords').addEventListener('click', () => {
-        table.download('csv', 'keywords.csv', {
+        keywordTable.download('csv', 'keywords.csv', {
             bom: true,
             delimiter: ';',
         })
     })
+}
+
+if (document.getElementById('datatable-categories')) {
+    categoriesTable = new Tabulator('#datatable-categories', {
+        columns: [
+            {
+                download: false,
+                field: 'id',
+                formatter: function (cell) {
+                    const rowData = cell.getRow().getData()
+                    const rowIndex = cell.getRow().getIndex()
+                    return `
+                    <ul class="list-unstyled mb-0">
+                        <li>
+                            <span onclick="addCategory('${letterTypes['keyword']}', 'edit', ${rowData.id}, '${rowData.name}', '${rowData.namecz}')" class="text-info is-link py-1">
+                                Upravit
+                            </span>
+                        </li>
+                        <li>
+                            <span onclick="deleteKeyword(${rowData.id}, ${rowIndex}, categoriesTable)" class="text-danger is-link py-1">
+                                Odstranit
+                            </span>
+                        </li>
+                    </ul>
+                    `
+                },
+                headerSort: false,
+                title: '',
+                width: 67,
+            },
+            {
+                download: true,
+                field: 'name',
+                formatter: 'textarea',
+                headerFilter: 'input',
+                title: 'EN',
+            },
+            {
+                download: true,
+                field: 'namecz',
+                formatter: 'textarea',
+                headerFilter: 'input',
+                title: 'CZ',
+            },
+        ],
+        dataFiltered: function (filters, rows) {
+            document.getElementById('category-search-count').innerHTML =
+                rows.length
+        },
+        dataLoaded: function (data) {
+            document.getElementById('category-total-count').innerHTML =
+                data.length
+        },
+        downloadRowRange: 'all',
+        footerElement:
+            '<span>Showing <span id="category-search-count"></span> items from <span id="category-total-count"></span> total items</span>',
+        height: '600px',
+        layout: 'fitColumns',
+        pagination: 'local',
+        paginationSize: 25,
+        selectable: false,
+        tooltips: true,
+    })
+
+    categoriesTable.setData(
+        ajaxUrl +
+            '?action=keywords_table_data&type=' +
+            letterTypes['keyword'] +
+            '&categories=1'
+    )
+
+    updateTableHeaders()
+
+    document
+        .getElementById('export-categories')
+        .addEventListener('click', () => {
+            categoriesTable.download('csv', 'keywords-categories.csv', {
+                bom: true,
+                delimiter: ';',
+            })
+        })
 }
