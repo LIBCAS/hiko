@@ -31,12 +31,19 @@ function deleteKeyword(id, index, table) {
     })
 }
 
-function addKeyword(type, action, id, oldKeyword = '', oldKeywordCZ = '') {
+function addKeyword(
+    type,
+    action,
+    id,
+    oldKeyword = '',
+    oldKeywordCZ = '',
+    oldCategory = ''
+) {
     let swalConfig = keywordsSwal.confirmSave
 
     swalConfig.title = (id ? 'Upravit' : 'Nové ') + ' klíčové slovo'
     swalConfig.allowOutsideClick = () => !Swal.isLoading()
-    swalConfig.html = getKeywordForm(oldKeyword, oldKeywordCZ)
+    swalConfig.html = getKeywordForm(oldKeyword, oldKeywordCZ, oldCategory)
     swalConfig.focusConfirm = false
 
     swalConfig.preConfirm = () => {
@@ -58,6 +65,7 @@ function addKeyword(type, action, id, oldKeyword = '', oldKeywordCZ = '') {
                     ['namecz']: namecz,
                     ['action']: action,
                     ['id']: id,
+                    ['categories']: document.getElementById('categories').value,
                 },
                 {
                     headers: {
@@ -146,7 +154,11 @@ function addCategory(type, action, id, oldKeyword = '', oldKeywordCZ = '') {
     })
 }
 
-function getKeywordForm(en, cs) {
+function getKeywordForm(en, cs, oldCategory) {
+    const categories = categoriesTable.getData()
+    const categoriesNameField =
+        getLetterType()['defaultLanguage'] === 'en' ? 'name' : 'namecz'
+
     return `
     <div class="form-group">
     <label for="nameen">EN</label>
@@ -155,6 +167,20 @@ function getKeywordForm(en, cs) {
     <div class="form-group">
     <label for="namecz">CZ</label>
     <input value="${cs}" id="namecz" class="form-control" pattern=".{2,255}" required title="2 to 255 characters">
+    </div>
+    <div class="form-group">
+    <label for="categories">Kategorie</label>
+    <select id="categories" class="form-control">
+        <option selected value>---</option>
+        ${categories.map(
+            (category) =>
+                `<option value="${category.id}" ${
+                    category.id == oldCategory ? 'selected' : ''
+                }>
+            ${category[categoriesNameField]}
+            </option>`
+        )}
+    </select>
     </div>
     `
 }
@@ -184,7 +210,7 @@ if (document.getElementById('datatable-keywords')) {
                     return `
                     <ul class="list-unstyled mb-0">
                         <li>
-                            <span onclick="addKeyword('${letterTypes['keyword']}', 'edit', ${rowData.id}, '${rowData.name}', '${rowData.namecz}')" class="text-info is-link py-1">
+                            <span onclick="addKeyword('${letterTypes['keyword']}', 'edit', ${rowData.id}, '${rowData.name}', '${rowData.namecz}', '${rowData.categories}')" class="text-info is-link py-1">
                                 Upravit
                             </span>
                         </li>
@@ -213,6 +239,29 @@ if (document.getElementById('datatable-keywords')) {
                 formatter: 'textarea',
                 headerFilter: 'input',
                 title: 'CZ',
+            },
+            {
+                download: true,
+                field: 'categories',
+                formatter: function (cell) {
+                    const categoryId = cell.getValue()
+                    const categoriesNameField =
+                        getLetterType()['defaultLanguage'] === 'en'
+                            ? 'name'
+                            : 'namecz'
+                    const matchingCategories = categoriesTable
+                        .getData()
+                        .filter((category) => {
+                            return categoryId == category.id
+                        })
+
+                    if (matchingCategories.length === 0) {
+                        return ''
+                    }
+                    return matchingCategories[0][categoriesNameField]
+                },
+                headerFilter: 'input',
+                title: 'Categories',
             },
         ],
         dataFiltered: function (filters, rows) {
@@ -292,6 +341,7 @@ if (document.getElementById('datatable-categories')) {
                 title: 'CZ',
             },
         ],
+        data: JSON.parse(document.getElementById('categories-data').innerHTML),
         dataFiltered: function (filters, rows) {
             document.getElementById('category-search-count').innerHTML =
                 rows.length
@@ -310,13 +360,6 @@ if (document.getElementById('datatable-categories')) {
         selectable: false,
         tooltips: true,
     })
-
-    categoriesTable.setData(
-        ajaxUrl +
-            '?action=keywords_table_data&type=' +
-            letterTypes['keyword'] +
-            '&categories=1'
-    )
 
     updateTableHeaders()
 
