@@ -28,7 +28,7 @@ function list_all_letters_short()
     header('Last-Modified: ' . get_gmdate());
 
     $json_letters = json_encode(
-        get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place'], true, true),
+        get_letters_basic_meta_filtered($types, true, true),
         JSON_UNESCAPED_UNICODE
     );
 
@@ -41,7 +41,8 @@ function public_list_all_letters()
 {
     $types = get_hiko_post_types(test_input($_GET['type']));
 
-    $letters = get_letters_basic_meta_filtered($types['letter'], $types['person'], $types['place'], false);
+    $letters = get_letters_basic_meta_filtered($types, false);
+
     $results = [];
 
     foreach ($letters as $letter) {

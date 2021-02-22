@@ -448,22 +448,24 @@ function merge_unique($array1, $array2)
 }
 
 
-function get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
+function get_letters_basic_meta($meta, $draft)
 {
     global $wpdb;
 
     $podsAPI = new PodsAPI();
-    $pod = $podsAPI->load_pod(['name' => $letter_type]);
+    $pod = $podsAPI->load_pod(['name' => $meta['letter']]);
     $author_field_id = $pod['fields']['l_author']['id'];
     $recipient_field_id = $pod['fields']['recipient']['id'];
     $origin_field_id = $pod['fields']['origin']['id'];
     $dest_field_id = $pod['fields']['dest']['id'];
+    $keyword_field_id = $pod['fields']['keywords']['id'];
     $img_field_id = $pod['fields']['images']['id'];
 
-    $l_prefix = "{$wpdb->prefix}pods_{$letter_type}";
+    $l_prefix = "{$wpdb->prefix}pods_{$meta['letter']}";
     $r_prefix = "{$wpdb->prefix}podsrel";
-    $pl_prefix = "{$wpdb->prefix}pods_{$place_type}";
-    $pe_prefix = "{$wpdb->prefix}pods_{$person_type}";
+    $pl_prefix = "{$wpdb->prefix}pods_{$meta['place']}";
+    $pe_prefix = "{$wpdb->prefix}pods_{$meta['person']}";
+    $kw_prefix = "{$wpdb->prefix}pods_{$meta['keyword']}";
 
     $fields = [
         't.id AS ID',
@@ -478,15 +480,13 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
         'recipient.name AS recipient',
         'origin.name AS origin',
         'dest.name AS dest',
+        $meta['default_lang'] === 'en' ? 'keyword.name AS keyword' : 'keyword.namecz AS keyword',
         'posts.ID as images'
     ];
 
     $fields = implode(', ', $fields);
 
-    $draft_condition = '';
-    if (!$draft) {
-        $draft_condition = 'WHERE t.status = \'publish\'';
-    }
+    $draft_condition = $draft ? '' : 'WHERE t.status = \'publish\'';
 
     $user_name = get_full_name();
 
@@ -511,6 +511,9 @@ function get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
     LEFT JOIN {$r_prefix} AS rel_dest ON rel_dest.field_id = {$dest_field_id}
     AND rel_dest.item_id = t.id
     LEFT JOIN {$pl_prefix} AS dest ON dest.id = rel_dest.related_item_id
+    LEFT JOIN {$r_prefix} AS rel_keyword ON rel_keyword.field_id = {$keyword_field_id}
+    AND rel_keyword.item_id = t.id
+    LEFT JOIN {$kw_prefix} AS keyword ON keyword.id = rel_keyword.related_item_id
     {$draft_condition}
     ORDER BY
     t.created DESC,
@@ -580,10 +583,10 @@ function get_all_objects_by_id($object, $v)
 }
 
 
-function get_letters_basic_meta_filtered($letter_type, $person_type, $place_type, $draft = true, $history = false)
+function get_letters_basic_meta_filtered($meta, $draft = true, $history = false)
 {
     $filtered_letters = merge_distinct_query_result(
-        get_letters_basic_meta($letter_type, $person_type, $place_type, $draft)
+        get_letters_basic_meta($meta, $draft)
     );
 
     $letters = array_values($filtered_letters);
@@ -592,7 +595,7 @@ function get_letters_basic_meta_filtered($letter_type, $person_type, $place_type
         return $letters;
     }
 
-    $history = get_letters_history($letter_type);
+    $history = get_letters_history($meta['letter']);
 
     $result = [];
 
