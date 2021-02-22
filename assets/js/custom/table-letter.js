@@ -67,6 +67,50 @@ function showHistory(id, event) {
         })
 }
 
+const headerMenu = function () {
+    const menu = []
+    const columns = this.getColumns()
+
+    for (let column of columns) {
+        const hiddenFields = ['actions', 'editors', 'my_letter']
+        let checkbox = document.createElement('input')
+        let label = document.createElement('label')
+        let container = document.createElement('div')
+
+        checkbox.classList.add('form-check-input')
+        checkbox.type = 'checkbox'
+        checkbox.checked = column.isVisible()
+        checkbox.value = column.getDefinition().title
+        checkbox.id = column.getField()
+
+        label.classList.add('form-check-label')
+        label.appendChild(document.createTextNode(column.getDefinition().title))
+        label.htmlFor = column.getField()
+
+        container.classList.add('form-check')
+        container.appendChild(checkbox)
+        container.appendChild(label)
+
+        if (hiddenFields.includes(column.getField())) {
+            continue
+        }
+
+        menu.push({
+            action: (e) => {
+                e.stopPropagation()
+            },
+            label: container,
+        })
+
+        checkbox.addEventListener('change', () => {
+            column.toggle()
+            table.redraw()
+        })
+    }
+
+    return menu
+}
+
 if (document.getElementById('datatable-letters')) {
     const letterTypes = getLetterType()
 
@@ -108,6 +152,7 @@ if (document.getElementById('datatable-letters')) {
                     `
                 },
                 headerSort: false,
+                headerMenu: headerMenu,
                 title: '',
             },
             {
@@ -222,6 +267,20 @@ if (document.getElementById('datatable-letters')) {
                 },
                 title: 'Destination',
                 variableHeight: true,
+            },
+            {
+                field: 'keyword',
+                headerFilter: 'input',
+                formatter: function (cell) {
+                    cell.getElement().style.whiteSpace = 'normal'
+                    return arrayToList(cell.getValue())
+                },
+                sorter: function (a, b) {
+                    return sortLetterMultiData(a, b)
+                },
+                title: 'Keywords',
+                variableHeight: true,
+                visible: false,
             },
             {
                 field: 'images',
