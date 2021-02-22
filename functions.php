@@ -372,7 +372,7 @@ function is_in_editor_role()
     $user = wp_get_current_user();
     $roles = (array) $user->roles;
 
-    $editor_roles = ['administrator', 'blekastad_editor', 'tgm_editor', 'musil_editor', 'demo_editor', 'pol_editor'];
+    $editor_roles = ['administrator', 'blekastad_editor', 'tgm_editor', 'musil_editor', 'demo_editor', 'pol_editor', 'sachs_editor'];
 
     $result = array_intersect($roles, $editor_roles);
 

@@ -28,6 +28,8 @@ if ($letter_type == 'bl_letter') {
     $letter_path = 'pol';
 } elseif ($letter_type == 'musil_letter') {
     $letter_path = 'musil';
+} elseif ($letter_type == 'sachs_letter') {
+    $letter_path = 'sachs';
 } else {
     die('Nenalezeno');
 }
