@@ -17,7 +17,8 @@ function insert_keyword()
     $data = [
         'name' => test_input($data->nameen),
         'namecz' => test_input($data->namecz),
-        'category' => (bool) $data->category ? 1 : 0,
+        'is_category' => isset($data->is_category) ? (int) $data->is_category : 0,
+        'categories' => isset($data->categories) ? test_input($data->categories) : null,
     ];
 
     if ($action == 'add') {
@@ -42,43 +43,48 @@ function insert_keyword()
 add_action('wp_ajax_insert_keyword', 'insert_keyword');
 
 
-function get_keywords_table_data()
+function get_keywords_table_data($type = false, $categories = false, $ajax = true)
 {
-    $keyword_type = test_input($_GET['type']);
-
     $fields = [
         't.id',
         't.name AS name',
         't.namecz',
-        't.category',
+
+        't.categories',
     ];
 
-    $fields = implode(', ', $fields);
+    $is_category = $categories ? (int) $categories : (int) $_GET['categories']; // not working directly in pods()
 
     $keywords = pods(
-        $keyword_type,
+        $type ? $type : test_input($_GET['type']),
         [
-            'select' => $fields,
+            'select' => implode(', ', $fields),
             'orderby' => 't.name ASC',
-            'limit' => -1
+            'limit' => -1,
+            'where' => 't.is_category = ' . $is_category,
         ]
     );
 
     $keywords_filtered = [];
-    $index = 0;
+
     while ($keywords->fetch()) {
-        $keywords_filtered[$index]['id'] = $keywords->display('id');
-        $keywords_filtered[$index]['name'] = $keywords->display('name');
-        $keywords_filtered[$index]['namecz'] = $keywords->display('namecz');
-        $keywords_filtered[$index]['category'] = $keywords->field('category') == 0 ? false : true;
-        $index++;
+        $keywords_filtered[] = [
+            'id' => $keywords->display('id'),
+            'name' => $keywords->display('name'),
+            'namecz' => $keywords->display('namecz'),
+            'categories' => $keywords->display('categories'),
+        ];
     }
 
-    echo json_encode(
-        $keywords_filtered,
-        JSON_UNESCAPED_UNICODE
-    );
+    if ($ajax) {
+        header('Content-Type: application/json');
+        wp_die(json_encode(
+            $keywords_filtered,
+            JSON_UNESCAPED_UNICODE
+        ));
+    }
 
-    wp_die();
+    return $keywords_filtered;
+
 }
 add_action('wp_ajax_keywords_table_data', 'get_keywords_table_data');

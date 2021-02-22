@@ -156,7 +156,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="form-group required">
                             <label :for="'author-' + index">Author</label>
                             <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
-                            <multiselect v-model="a.id" :options="personsData" options-limit="5000" label="label" track-by="value" :required="true">
+                            <multiselect v-model="a.id" :options="personsData" :options-limit="5000" label="label" track-by="value" :required="true">
                             </multiselect>
                             <input type="hidden" :value="a.id.value" v-validate="'required'" data-vv-name="'Author'" name="l_author[]">
                         </div>
@@ -206,7 +206,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="form-group required">
                             <label :for="'recipient-' + index">Recipient</label>
                             <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
-                            <multiselect v-model="r.id" :options="personsData" options-limit="5000" label="label" track-by="value" :required="true">
+                            <multiselect v-model="r.id" :options="personsData" :options-limit="5000" label="label" track-by="value" :required="true">
                             </multiselect>
                             <input v-validate="'required'" data-vv-name="'Recipient'" type="hidden" :value="r.id.value" name="recipient[]">
                         </div>
@@ -262,7 +262,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="form-group required">
                             <label :for="'origin-' + index">Origin</label>
                             <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('places', $event)" title="Update places"></span>
-                            <multiselect v-model="o.id" :options="placesData" options-limit="5000" label="label" track-by="value" :required="true">
+                            <multiselect v-model="o.id" :options="placesData" :options-limit="5000" label="label" track-by="value" :required="true">
                             </multiselect>
                             <input v-validate="'required'" data-vv-name="'Origin'" type="hidden" :value="o.id.value" name="origin[]">
                         </div>
@@ -314,7 +314,7 @@ if (array_key_exists('save_post', $_POST)) {
                         <div class="form-group required">
                             <label :for="'destination-' + index">Destination</label>
                             <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('places', $event)" title="Update places"></span>
-                            <multiselect v-model="d.id" :options="placesData" options-limit="5000" label="label" track-by="value" :required="true">
+                            <multiselect v-model="d.id" :options="placesData" :options-limit="5000" label="label" track-by="value" :required="true">
                             </multiselect>
                             <input v-validate="'required'" data-vv-name="'Destination'" type="hidden" :value="d.id.value" name="dest[]">
                         </div>
@@ -361,23 +361,16 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="languages">Languages</label>
-                        <multiselect v-model="letter.languages" :options="languages" options-limit="5000" label="label" track-by="value" :multiple="true">
+                        <multiselect v-model="letter.languages" :options="languages" :options-limit="5000" label="label" track-by="value" :multiple="true">
                         </multiselect>
                         <input type="hidden" :value="getObjectValues(letter.languages).join(';')" name="languages">
                     </div>
 
                     <div class="form-group">
                         <label for="keywords">Keywords <span class="pl-1 pointer oi oi-reload" @click="regenerateKeywords($event)"></span></label>
-                        <multiselect v-model="letter.keywords" :options="keywords" options-limit="5000" label="label" track-by="value" :multiple="true">
+                        <multiselect v-model="letter.keywords" :options="keywords" :options-limit="5000" label="label" track-by="value" :multiple="true">
                         </multiselect>
                         <input type="hidden" :value="getObjectValues(letter.keywords).join(';')" name="keywords">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="category">Category <span class="pl-1 pointer oi oi-reload" @click="regenerateKeywords($event)"></span></label>
-                        <multiselect v-model="letter.category" :options="category" options-limit="5000" label="label" track-by="value" :multiple="true">
-                        </multiselect>
-                        <input type="hidden" :value="getObjectValues(letter.category).join(';')" name="category">
                     </div>
 
                     <div class="form-group">
@@ -402,7 +395,7 @@ if (array_key_exists('save_post', $_POST)) {
 
                     <div class="form-group">
                         <label for="people_mentioned">People mentioned <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('persons', $event)"></span></label>
-                        <multiselect v-model="letter.mentioned" :options="personsData" options-limit="5000" label="label" track-by="value" :multiple="true">
+                        <multiselect v-model="letter.mentioned" :options="personsData" :options-limit="5000" label="label" track-by="value" :multiple="true">
                         </multiselect>
                         <input type="hidden" :value="getObjectValues(letter.mentioned)" name="people_mentioned">
                     </div>
