@@ -675,6 +675,16 @@ function get_hiko_post_types($type)
         $data['keyword'] = 'musil_keyword';
         $data['profession'] = 'musil_profession';
         $data['default_lang'] = 'cs';
+    } elseif ($type == 'sachs') {
+        $data['letter'] = 'sachs_letter';
+        $data['place'] = 'sachs_place';
+        $data['person'] = 'sachs_person';
+        $data['editor'] = 'sachs_editor';
+        $data['path'] = 'sachs';
+        $data['title'] = 'Korespondence Philippa Sachse';
+        $data['keyword'] = 'sachs_keyword';
+        $data['profession'] = 'sachs_profession';
+        $data['default_lang'] = 'en';
     }
 
     return $data;
@@ -707,6 +717,10 @@ function get_hiko_post_types_by_url($url = '')
 
     if (strpos($req, 'musil') !== false) {
         return get_hiko_post_types('musil');
+    }
+
+    if (strpos($req, 'sachs') !== false) {
+        return get_hiko_post_types('sachs');
     }
 
     return get_hiko_post_types('');
