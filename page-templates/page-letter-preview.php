@@ -30,6 +30,8 @@ if ($letter_type == 'bl_letter') {
     $letter_path = 'musil';
 } elseif ($letter_type == 'sachs_letter') {
     $letter_path = 'sachs';
+} elseif ($letter_type == 'marci_letter') {
+    $letter_path = 'marci';
 } else {
     die('Nenalezeno');
 }

@@ -5,6 +5,7 @@ $navData = [
     'Amandus Polanus' => 'pol',
     'Alois Musil' => 'musil',
     'Sachs' => 'sachs',
+    'Marci' => 'marci',
     'Zkušební DB' => 'demo',
 ];
 ?>

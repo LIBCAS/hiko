@@ -26,7 +26,8 @@ if (document.getElementById('export')) {
                     this.path == 'tgm' ||
                     this.path == 'pol' ||
                     this.path == 'musil' ||
-                    this.path == 'sachs'
+                    this.path == 'sachs' ||
+                    this.path == 'marci'
                 ) {
                     customActions.push({
                         url:

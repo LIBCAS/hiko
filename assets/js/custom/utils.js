@@ -101,6 +101,18 @@ function getLetterType() {
         }
     }
 
+    if (stringContains(url.pathname, 'marci')) {
+        return {
+            letterType: 'marci_letter',
+            personType: 'marci_person',
+            placeType: 'marci_place',
+            path: 'marci',
+            keyword: 'marci_keyword',
+            profession: 'marci_profession',
+            defaultLanguage: 'en',
+        }
+    }
+
     return 'Neplatný typ dopisu'
 }
 

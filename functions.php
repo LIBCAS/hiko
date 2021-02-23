@@ -372,7 +372,7 @@ function is_in_editor_role()
     $user = wp_get_current_user();
     $roles = (array) $user->roles;
 
-    $editor_roles = ['administrator', 'blekastad_editor', 'tgm_editor', 'musil_editor', 'demo_editor', 'pol_editor', 'sachs_editor'];
+    $editor_roles = ['administrator', 'blekastad_editor', 'tgm_editor', 'musil_editor', 'demo_editor', 'pol_editor', 'sachs_editor', 'marci_editor'];
 
     $result = array_intersect($roles, $editor_roles);
 
@@ -685,6 +685,16 @@ function get_hiko_post_types($type)
         $data['keyword'] = 'sachs_keyword';
         $data['profession'] = 'sachs_profession';
         $data['default_lang'] = 'en';
+    } elseif ($type == 'marci') {
+        $data['letter'] = 'marci_letter';
+        $data['place'] = 'marci_place';
+        $data['person'] = 'marci_person';
+        $data['editor'] = 'marci_editor';
+        $data['path'] = 'marci';
+        $data['title'] = 'Korespondence Jana Marci';
+        $data['keyword'] = 'marci_keyword';
+        $data['profession'] = 'marci_profession';
+        $data['default_lang'] = 'en';
     }
 
     return $data;
@@ -721,6 +731,10 @@ function get_hiko_post_types_by_url($url = '')
 
     if (strpos($req, 'sachs') !== false) {
         return get_hiko_post_types('sachs');
+    }
+
+    if (strpos($req, 'marci') !== false) {
+        return get_hiko_post_types('marci');
     }
 
     return get_hiko_post_types('');

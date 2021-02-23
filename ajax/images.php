@@ -22,7 +22,9 @@ function handle_img_uploads()
         wp_send_json_error('Not found', 404);
     }
 
-    if ($type != 'bl_letter' && $type != 'demo_letter' && $type != 'tgm_letter' && $type != 'pol_letter' && $type != 'musil_letter' && $type != 'sachs_letter') {
+    // TODO
+    // refactor
+    if ($type != 'bl_letter' && $type != 'demo_letter' && $type != 'tgm_letter' && $type != 'pol_letter' && $type != 'musil_letter' && $type != 'sachs_letter' && $type != 'marci_letter') {
         wp_send_json_error('Not found', 404);
     }
 
@@ -99,6 +101,8 @@ function list_images()
         $url = home_url('/musil/letters-add/?edit=' . $id);
     } elseif ($type == 'sachs_letter') {
         $url = home_url('/sachs/letters-add/?edit=' . $id);
+    } elseif ($type == 'marci_letter') {
+        $url = home_url('/marci/letters-add/?edit=' . $id);
     }
 
     $pod = pods($type, $id);
