@@ -91,7 +91,7 @@ if (document.getElementById('person-name')) {
             },
 
             getInitialData: function (id, callback = null) {
-                let self = this
+                const self = this
                 axios
                     .get(
                         ajaxUrl +
@@ -151,7 +151,7 @@ if (document.getElementById('person-name')) {
                             })
                         }
                     })
-                    .catch(function (error) {
+                    .catch((error) => {
                         self.error = true
                         console.log(error)
                     })
@@ -175,10 +175,10 @@ if (document.getElementById('person-name')) {
                             '?action=professions_table_data&type=' +
                             self.professionsType
                     )
-                    .then(function (response) {
+                    .then((response) => {
                         self.mapProfessions(response.data)
                     })
-                    .catch(function (error) {
+                    .catch((error) => {
                         console.log(error)
                     })
                     .then(callback)
@@ -213,12 +213,19 @@ if (document.getElementById('person-name')) {
             },
 
             removePalladioProfession: function (professionIndex) {
-                this.professionShort = this.professionShort.filter(function (
-                    item,
-                    index
-                ) {
-                    return index !== professionIndex
-                })
+                this.professionShort = this.professionShort.filter(
+                    (item, index) => {
+                        return index !== professionIndex
+                    }
+                )
+            },
+
+            removeProfession: function (professionIndex) {
+                this.professionDetailed = this.professionDetailed.filter(
+                    (item, index) => {
+                        return index !== professionIndex
+                    }
+                )
             },
 
             getProfessionById: function (id, professions) {
