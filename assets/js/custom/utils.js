@@ -89,6 +89,30 @@ function getLetterType() {
         }
     }
 
+    if (stringContains(url.pathname, 'sachs')) {
+        return {
+            letterType: 'sachs_letter',
+            personType: 'sachs_person',
+            placeType: 'sachs_place',
+            path: 'sachs',
+            keyword: 'sachs_keyword',
+            profession: 'sachs_profession',
+            defaultLanguage: 'en',
+        }
+    }
+
+    if (stringContains(url.pathname, 'marci')) {
+        return {
+            letterType: 'marci_letter',
+            personType: 'marci_person',
+            placeType: 'marci_place',
+            path: 'marci',
+            keyword: 'marci_keyword',
+            profession: 'marci_profession',
+            defaultLanguage: 'en',
+        }
+    }
+
     return 'Neplatný typ dopisu'
 }
 

@@ -243,8 +243,7 @@ if (document.getElementById('datatable-keywords')) {
             {
                 download: true,
                 field: 'categories',
-                formatter: function (cell) {
-                    const categoryId = cell.getValue()
+                mutator: function (categoryId) {
                     const categoriesNameField =
                         getLetterType()['defaultLanguage'] === 'en'
                             ? 'name'

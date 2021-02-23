@@ -14,7 +14,7 @@ if (array_key_exists('save_post', $_POST)) {
 
 ?>
 <div id="person-name" v-cloak>
-    <div v-if="loading && !error" class="progress my-3">
+    <div v-if="loading && !error" class="my-3 progress">
         <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 65%">
         </div>
     </div>
@@ -71,34 +71,34 @@ if (array_key_exists('save_post', $_POST)) {
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="profession_short">Palladio Profession <span class="pointer oi oi-reload pl-1" @click="regenerateProfessions($event)"></span></label>
-                        <div v-for="pf, index in professionShort" class="border rounded my-2 py-3 px-2 d-flex align-items-start">
+                        <label for="profession_short">Palladio Profession <span class="pl-1 pointer oi oi-reload" @click="regenerateProfessions($event)"></span></label>
+                        <div v-for="pf, index in professionShort" class="px-2 py-3 my-2 border rounded d-flex align-items-start">
                             <multiselect v-model="professionShort[index]" :options="professionsPalladio" label="label" track-by="value"></multiselect>
                             <button @click="removePalladioProfession(index)" type="button" class="close text-danger" aria-label="Remove palladio profession">
                                 <span title="Remove palladio profession">&times;</span>
                             </button>
                         </div>
-                        <button v-if="professionShort.length < 3" type="button" class="btn btn-sm btn-outline-info d-block mt-2 mb-4" @click="addNewPalladioProfession">
+                        <button v-if="professionShort.length < 3" type="button" class="mt-2 mb-4 btn btn-sm btn-outline-info d-block" @click="addNewPalladioProfession">
                             <span class="oi oi-plus"></span> Add
                         </button>
                         <input type="hidden" :value="getObjectValues(professionShort).join(';')" name="profession_short">
                     </div>
                     <div class="form-group">
-                        <label for="profession_detailed">Professions <span class="pointer oi oi-reload pl-1" @click="regenerateProfessions($event)"></span></label>
-                        <div v-for="pf, index in professionDetailed" class="border rounded my-2 py-3 px-2 d-flex align-items-start">
+                        <label for="profession_detailed">Professions <span class="pl-1 pointer oi oi-reload" @click="regenerateProfessions($event)"></span></label>
+                        <div v-for="pf, index in professionDetailed" class="px-2 py-3 my-2 border rounded d-flex align-items-start">
                             <multiselect v-model="professionDetailed[index]" :options="professions" label="label" track-by="value"></multiselect>
                             <button @click="removeProfession(index)" type="button" class="close text-danger" aria-label="Remove profession">
                                 <span title="Remove profession">&times;</span>
                             </button>
                         </div>
-                        <button type="button" class="btn btn-sm btn-outline-info d-block mt-2 mb-4" @click="addNewprofession">
+                        <button type="button" class="mt-2 mb-4 btn btn-sm btn-outline-info d-block" @click="addNewprofession">
                             <span class="oi oi-plus"></span> Add
                         </button>
                         <input type="hidden" :value="getObjectValues(professionDetailed).join(';')" name="profession_detailed">
                     </div>
                     <div class="form-group">
                         <label for="profession">Profession (deprecated)</label>
-                        <input v-model="profession" type="text" class="form-control form-control-sm" name="profession">
+                        <input v-model="profession" type="text" class="form-control form-control-sm" name="profession" readonly>
                     </div>
                     <div class="form-group">
                         <label for="nationality">Nationality</label>
@@ -136,7 +136,7 @@ if (array_key_exists('save_post', $_POST)) {
                     <?php else : ?>
                         <input type="hidden" name="save_post" value="edit">
                     <?php endif; ?>
-                    <div class="input-group mb-3">
+                    <div class="mb-3 input-group">
                         <input :value="decodeHTML(fullName)" name="fullname" type="text" class="form-control form-control-sm not-allowed" readonly>
                         <div class="input-group-append">
                             <input class="btn btn-primary btn-sm" type="submit" value="Uložit" :disabled="personsFormValidated === false">
