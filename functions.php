@@ -481,6 +481,7 @@ function get_letters_basic_meta($meta, $draft)
         'origin.name AS origin',
         'dest.name AS dest',
         $meta['default_lang'] === 'en' ? 'keyword.name AS keyword' : 'keyword.namecz AS keyword',
+        'keyword.categories AS category',
         'posts.ID as images'
     ];
 

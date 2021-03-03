@@ -26,9 +26,9 @@ if ($is_supervisor) {
                     </div>
                 </div>
             </div>
-            <div id="custom-filters" class="d-none mb-2">
+            <div id="custom-filters" class="mb-2 d-none">
                 <?php if ($is_supervisor) : ?>
-                    <select id="editors-letters-filter" class="custom-select custom-select-sm w-auto" autocomplete="off">
+                    <select id="editors-letters-filter" class="w-auto custom-select custom-select-sm" autocomplete="off">
                         <option selected="true" value="all">Všichni editoři</option>
                         <?php foreach ($editors as $editor) : ?>
                             <option value="<?= $editor->first_name . ' ' . $editor->last_name; ?>">
@@ -39,7 +39,7 @@ if ($is_supervisor) {
                 <?php else : ?>
                     <div id="my-letters-filter">
                         Zobrazit
-                        <div class="form-check form-check-inline ml-2">
+                        <div class="ml-2 form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="letters-filter" id="my" value="my">
                             <label class="form-check-label" for="my">mé dopisy</label>
                         </div>
@@ -60,3 +60,7 @@ if ($is_supervisor) {
         </div>
     </div>
 </div>
+
+<script id="categories-data" type="application/json">
+    <?= json_encode(get_keywords_table_data($pods_types['keyword'], 1, false)); ?>
+</script>

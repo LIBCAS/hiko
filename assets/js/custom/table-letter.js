@@ -67,6 +67,13 @@ function showHistory(id, event) {
         })
 }
 
+const categoriesData = JSON.parse(
+    document.getElementById('categories-data').innerHTML
+)
+
+const categoriesNameField =
+    getLetterType()['defaultLanguage'] === 'en' ? 'name' : 'namecz'
+
 const headerMenu = function () {
     const menu = []
     const columns = this.getColumns()
@@ -281,6 +288,32 @@ if (document.getElementById('datatable-letters')) {
                 title: 'Keywords',
                 variableHeight: true,
                 visible: false,
+            },
+            {
+                field: 'category',
+                formatter: function (cell) {
+                    cell.getElement().style.whiteSpace = 'normal'
+                    return cell.getValue()
+                },
+                headerFilter: 'input',
+                title: 'Categories',
+                mutator: function (categories) {
+                    const uniqueCategories = [...new Set(categories)]
+
+                    let result = '<ul class="list-unstyled mb-0">'
+
+                    uniqueCategories.forEach((category) => {
+                        const categoryMeta = categoriesData.find((item) => {
+                            return item.id == category
+                        })
+
+                        if (categoryMeta) {
+                            result += `<li>${categoryMeta[categoriesNameField]}</li>`
+                        }
+                    })
+
+                    return result + '</ul>'
+                },
             },
             {
                 field: 'images',
