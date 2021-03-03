@@ -67,13 +67,6 @@ function showHistory(id, event) {
         })
 }
 
-const categoriesData = JSON.parse(
-    document.getElementById('categories-data').innerHTML
-)
-
-const categoriesNameField =
-    getLetterType()['defaultLanguage'] === 'en' ? 'name' : 'namecz'
-
 const headerMenu = function () {
     const menu = []
     const columns = this.getColumns()
@@ -120,6 +113,11 @@ const headerMenu = function () {
 
 if (document.getElementById('datatable-letters')) {
     const letterTypes = getLetterType()
+    const categoriesData = JSON.parse(
+        document.getElementById('categories-data').innerHTML
+    )
+    const categoriesNameField =
+        letterTypes['defaultLanguage'] === 'en' ? 'name' : 'namecz'
 
     table = new Tabulator('#datatable-letters', {
         ajaxResponse: function (url, params, response) {
@@ -296,8 +294,9 @@ if (document.getElementById('datatable-letters')) {
                     return cell.getValue()
                 },
                 headerFilter: 'input',
-                title: 'Categories',
                 mutator: function (categories) {
+                    if (typeof categories == 'string') categories = [categories]
+
                     const uniqueCategories = [...new Set(categories)]
 
                     let result = '<ul class="list-unstyled mb-0">'
@@ -314,6 +313,8 @@ if (document.getElementById('datatable-letters')) {
 
                     return result + '</ul>'
                 },
+                title: 'Categories',
+                visible: false,
             },
             {
                 field: 'images',
