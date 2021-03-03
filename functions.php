@@ -217,8 +217,8 @@ function get_persons_table_data($person_type)
 
         $persons_filtered[$index]['id'] = $persons->display('id');
         $persons_filtered[$index]['name'] = $persons->display('name');
-        $persons_filtered[$index]['birth'] = $persons->display('birth_year');
-        $persons_filtered[$index]['death'] = $persons->display('death_year');
+        $persons_filtered[$index]['birth'] = $persons->field('birth_year');
+        $persons_filtered[$index]['death'] = $persons->field('death_year');
         $persons_filtered[$index]['profession_short'] = $persons->display('profession_short');
         $persons_filtered[$index]['profession_detailed'] = $persons->display('profession_detailed');
         $persons_filtered[$index]['type'] = $type;

@@ -106,7 +106,11 @@ if (document.getElementById('datatable-persons')) {
                     }
 
                     let resultName = `<strong>${name}</strong> `
-                    resultName += `(${rowData.birth}–${rowData.death})`
+                    if (rowData.birth || rowData.death) {
+                        resultName += `(${rowData.birth ? rowData.birth : ''}–${
+                            rowData.death ? rowData.death : ''
+                        })`
+                    }
 
                     return resultName
                 },

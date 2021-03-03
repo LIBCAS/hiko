@@ -139,14 +139,13 @@ if (document.getElementById('letter-form')) {
                 let personsData = []
                 self.persons.map((el) => {
                     let label = self.decodeHTML(el.name)
-                    if (el.type != 'institution') {
-                        label += ` (${el.birth_year}`
-
-                        if (el.death_year != 0) {
-                            label += `–${el.death_year})`
-                        } else {
-                            label += ')'
-                        }
+                    if (
+                        el.type != 'institution' &&
+                        (el.birth_year || el.death_year)
+                    ) {
+                        label += ` (${el.birth_year ? el.birth_year : ''}–${
+                            el.death_year ? el.death_year : ''
+                        })`
                     }
 
                     personsData.push({
