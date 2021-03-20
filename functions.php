@@ -2,14 +2,11 @@
 
 date_default_timezone_set('Europe/Prague');
 
-function remove_admin_bar()
-{
+add_action('after_setup_theme', function () {
     if (!current_user_can('administrator') && !is_admin()) {
         show_admin_bar(false);
     }
-}
-add_action('after_setup_theme', 'remove_admin_bar');
-
+});
 
 remove_action('wp_head', 'rsd_link');
 remove_action('wp_head', 'wp_generator');
@@ -34,31 +31,35 @@ remove_action('wp_head', 'wp_resource_hints', 2);
 remove_action('welcome_panel', 'wp_welcome_panel');
 
 
-function wps_deregister_styles()
-{
+add_action('wp_print_styles', function () {
     wp_dequeue_style('wp-block-library');
-}
-add_action('wp_print_styles', 'wps_deregister_styles', 100);
+}, 100);
 
 
-function remove_dashboard_widgets()
-{
+add_action('wp_dashboard_setup', function () {
     remove_meta_box('dashboard_recent_comments', 'dashboard', 'normal');
     remove_meta_box('dashboard_incoming_links', 'dashboard', 'normal');
     remove_meta_box('dashboard_quick_press', 'dashboard', 'side');
     remove_meta_box('dashboard_recent_drafts', 'dashboard', 'side');
     remove_meta_box('dashboard_primary', 'dashboard', 'side');
     remove_meta_box('dashboard_secondary', 'dashboard', 'side');
-}
-add_action('wp_dashboard_setup', 'remove_dashboard_widgets');
+});
 
 
-function custom_menu_page_removing()
-{
+add_action('admin_menu', function () {
     remove_menu_page('edit-comments.php');
     remove_menu_page('edit.php');
-}
-add_action('admin_menu', 'custom_menu_page_removing');
+});
+
+
+add_action('wp_head', function () {
+    $datatypes = json_decode(get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'), true);
+    ob_start(); ?>
+    <script id="datatypes" type="application/json">
+        <?= json_encode($datatypes['types'], JSON_UNESCAPED_UNICODE); ?>
+    </script>
+    <?php echo ob_get_clean();
+});
 
 
 function test_input($input)
@@ -369,18 +370,12 @@ function is_in_editor_role()
         return false;
     }
 
-    $user = wp_get_current_user();
-    $roles = (array) $user->roles;
+    $result = array_intersect(
+        (array) wp_get_current_user()->roles,
+        json_decode(get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'), true)['editors']
+    );
 
-    $editor_roles = ['administrator', 'blekastad_editor', 'tgm_editor', 'musil_editor', 'demo_editor', 'pol_editor', 'sachs_editor', 'marci_editor'];
-
-    $result = array_intersect($roles, $editor_roles);
-
-    if (count($result) > 0) {
-        return true;
-    }
-
-    return false;
+    return count($result) > 0 ? true : false;
 }
 
 
@@ -614,131 +609,54 @@ function get_letters_basic_meta_filtered($meta, $draft = true, $history = false)
 }
 
 
-function get_hiko_post_types($type)
+function get_hiko_post_types($single_type)
 {
-    $data = [
-        'letter' => '',
-        'place' => '',
-        'person' => '',
-        'editor' => '',
-        'path' => '',
-        'title' => '',
-        'default_lang' => ''
-    ];
+    $data = json_decode(
+        get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'),
+        true
+    );
 
-    if ($type == 'blekastad') {
-        $data['letter'] = 'bl_letter';
-        $data['place'] = 'bl_place';
-        $data['person'] = 'bl_person';
-        $data['editor'] = 'blekastad_editor';
-        $data['path'] = 'blekastad';
-        $data['title'] = 'Milada Blekastad';
-        $data['keyword'] = 'bl_keyword';
-        $data['profession'] = 'bl_profession';
-        $data['default_lang'] = 'en';
-    } elseif ($type == 'demo') {
-        $data['letter'] = 'demo_letter';
-        $data['place'] = 'demo_place';
-        $data['person'] = 'demo_person';
-        $data['editor'] = 'demo_editor';
-        $data['path'] = 'demo';
-        $data['title'] = 'Zkušební DB';
-        $data['keyword'] = 'demo_keyword';
-        $data['profession'] = 'demo_profession';
-        $data['default_lang'] = 'en';
-    } elseif ($type == 'tgm') {
-        $data['letter'] = 'tgm_letter';
-        $data['place'] = 'tgm_place';
-        $data['person'] = 'tgm_person';
-        $data['editor'] = 'tgm_editor';
-        $data['path'] = 'tgm';
-        $data['title'] = 'Korespondence TGM';
-        $data['keyword'] = 'tgm_keyword';
-        $data['profession'] = 'tgm_profession';
-        $data['default_lang'] = 'en';
-    } elseif ($type == 'pol') {
-        $data['letter'] = 'pol_letter';
-        $data['place'] = 'pol_place';
-        $data['person'] = 'pol_person';
-        $data['editor'] = 'pol_editor';
-        $data['path'] = 'pol';
-        $data['title'] = 'Korespondence Amanda Polana';
-        $data['keyword'] = 'pol_keyword';
-        $data['profession'] = 'pol_profession';
-        $data['default_lang'] = 'en';
-    } elseif ($type == 'musil') {
-        $data['letter'] = 'musil_letter';
-        $data['place'] = 'musil_place';
-        $data['person'] = 'musil_person';
-        $data['editor'] = 'musil_editor';
-        $data['path'] = 'musil';
-        $data['title'] = 'Korespondence Aloise Musila';
-        $data['keyword'] = 'musil_keyword';
-        $data['profession'] = 'musil_profession';
-        $data['default_lang'] = 'cs';
-    } elseif ($type == 'sachs') {
-        $data['letter'] = 'sachs_letter';
-        $data['place'] = 'sachs_place';
-        $data['person'] = 'sachs_person';
-        $data['editor'] = 'sachs_editor';
-        $data['path'] = 'sachs';
-        $data['title'] = 'Korespondence Philippa Sachse';
-        $data['keyword'] = 'sachs_keyword';
-        $data['profession'] = 'sachs_profession';
-        $data['default_lang'] = 'en';
-    } elseif ($type == 'marci') {
-        $data['letter'] = 'marci_letter';
-        $data['place'] = 'marci_place';
-        $data['person'] = 'marci_person';
-        $data['editor'] = 'marci_editor';
-        $data['path'] = 'marci';
-        $data['title'] = 'Korespondence Jana Marci';
-        $data['keyword'] = 'marci_keyword';
-        $data['profession'] = 'marci_profession';
-        $data['default_lang'] = 'en';
+    if (!isset($data['types'][$single_type])) {
+        return [];
     }
 
-    return $data;
+    return $data['types'][$single_type];
 }
 
 
 function get_hiko_post_types_by_url($url = '')
 {
-    $req = $_SERVER['REQUEST_URI'];
+    $req = $url != '' ? $url : $_SERVER['REQUEST_URI'];
 
-    if ($url != '') {
-        $req = $url;
+    $datatypes = json_decode(
+        get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'),
+        true
+    );
+
+    $type = [];
+
+    foreach (array_keys($datatypes['types']) as $key) {
+        if (strpos($req, $key) !== false) {
+            $type = get_hiko_post_types($key);
+            break;
+        }
     }
 
-    if (strpos($req, 'blekastad') !== false) {
-        return get_hiko_post_types('blekastad');
+    return $type;
+}
+
+
+function get_types_by_letter()
+{
+    $types = json_decode(get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'), true)['types'];
+
+    $result = [];
+    foreach ($types as $type_key => $values) {
+        $values['handle'] = $type_key;
+        $result[$values['letter']] = $values;
     }
 
-    if (strpos($req, 'demo') !== false) {
-        return get_hiko_post_types('demo');
-    }
-
-    if (strpos($req, 'tgm') !== false) {
-        return get_hiko_post_types('tgm');
-    }
-
-    if (strpos($req, 'pol') !== false) {
-        return get_hiko_post_types('pol');
-    }
-
-    if (strpos($req, 'musil') !== false) {
-        return get_hiko_post_types('musil');
-    }
-
-    if (strpos($req, 'sachs') !== false) {
-        return get_hiko_post_types('sachs');
-    }
-
-    if (strpos($req, 'marci') !== false) {
-        return get_hiko_post_types('marci');
-    }
-
-    return get_hiko_post_types('');
+    return $result;
 }
 
 
