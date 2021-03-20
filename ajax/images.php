@@ -15,16 +15,13 @@ function handle_img_uploads()
 
     $id = sanitize_text_field($_GET['letter']);
     $type = sanitize_text_field($_GET['l_type']);
-
     $pod = pods($type, $id);
 
     if (!$pod->exists()) {
         wp_send_json_error('Not found', 404);
     }
 
-    // TODO
-    // refactor
-    if ($type != 'bl_letter' && $type != 'demo_letter' && $type != 'tgm_letter' && $type != 'pol_letter' && $type != 'musil_letter' && $type != 'sachs_letter' && $type != 'marci_letter') {
+    if (!in_array($type, array_keys(get_types_by_letter()))) {
         wp_send_json_error('Not found', 404);
     }
 
@@ -87,23 +84,6 @@ function list_images()
 
     $id = sanitize_text_field($_GET['letter']);
     $type = sanitize_text_field($_GET['l_type']);
-    $url = '';
-
-    if ($type == 'bl_letter') {
-        $url = home_url('/blekastad/letters-add/?edit=' . $id);
-    } elseif ($type == 'demo_letter') {
-        $url = home_url('/demo/letters-add/?edit=' . $id);
-    } elseif ($type == 'tgm_letter') {
-        $url = home_url('/tgm/letters-add/?edit=' . $id);
-    } elseif ($type == 'pol_letter') {
-        $url = home_url('/pol/letters-add/?edit=' . $id);
-    } elseif ($type == 'musil_letter') {
-        $url = home_url('/musil/letters-add/?edit=' . $id);
-    } elseif ($type == 'sachs_letter') {
-        $url = home_url('/sachs/letters-add/?edit=' . $id);
-    } elseif ($type == 'marci_letter') {
-        $url = home_url('/marci/letters-add/?edit=' . $id);
-    }
 
     $pod = pods($type, $id);
 
@@ -111,11 +91,11 @@ function list_images()
         wp_send_json_error('Not found', 404);
     }
 
-    $results['name'] = $pod->field('name');
-    $results['url'] = $url;
-    $results['images'] = get_pod_sorted_images($pod, false);
-
-    wp_send_json_success($results);
+    wp_send_json_success([
+        'images' =>  get_pod_sorted_images($pod, false),
+        'name' => $pod->field('name'),
+        'url' => home_url('/' . get_types_by_letter()[$type]['handle'] .'/letters-add/?edit=' . $id),
+    ]);
 }
 add_action('wp_ajax_list_images', 'list_images');
 
@@ -160,17 +140,11 @@ function change_metadata()
         wp_send_json_error('Not found', 404);
     }
 
-    $img_id = sanitize_text_field($data->img_id);
-    $status = sanitize_text_field($data->img_status);
-    $description = sanitize_text_field(html_entity_decode($data->img_description));
-
-    $post = [
-        'ID' => $img_id,
-        'post_status' => $status,
-        'post_content' => $description
-    ];
-
-    $update = wp_update_post($post);
+    $update = wp_update_post([
+        'ID' => sanitize_text_field($data->img_id),
+        'post_content' => sanitize_text_field(html_entity_decode($data->img_description)),
+        'post_status' => sanitize_text_field($data->img_status),
+    ]);
 
     if (is_wp_error($update)) {
         wp_send_json_error(error_get_last()['message'], 500);

@@ -610,16 +610,6 @@ function get_letters_basic_meta_filtered($meta, $draft = true, $history = false)
 
 function get_hiko_post_types($single_type)
 {
-    $data = [
-        'letter' => '',
-        'place' => '',
-        'person' => '',
-        'editor' => '',
-        'path' => '',
-        'title' => '',
-        'default_lang' => ''
-    ];
-
     $data = json_decode(
         get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'),
         true
@@ -652,6 +642,20 @@ function get_hiko_post_types_by_url($url = '')
     }
 
     return $type;
+}
+
+
+function get_types_by_letter()
+{
+    $types = json_decode(get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'), true)['types'];
+
+    $result = [];
+    foreach ($types as $type_key => $values) {
+        $values['handle'] = $type_key;
+        $result[$values['letter']] = $values;
+    }
+
+    return $result;
 }
 
 

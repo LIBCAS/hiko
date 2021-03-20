@@ -14,28 +14,11 @@ $letter_id = sanitize_text_field($_GET['letter']);
 $letter_type = sanitize_text_field($_GET['l_type']);
 $pod = pods($letter_type, $letter_id);
 
-if (!$pod->exists()) {
+if (!$pod || !$pod->exists()) {
     die('Nepodařilo se načíst požadovaný dopis');
 }
 
-if ($letter_type == 'bl_letter') {
-    $letter_path = 'blekastad';
-} elseif ($letter_type == 'demo_letter') {
-    $letter_path = 'demo';
-} elseif ($letter_type == 'tgm_letter') {
-    $letter_path = 'tgm';
-} elseif ($letter_type == 'pol_letter') {
-    $letter_path = 'pol';
-} elseif ($letter_type == 'musil_letter') {
-    $letter_path = 'musil';
-} elseif ($letter_type == 'sachs_letter') {
-    $letter_path = 'sachs';
-} elseif ($letter_type == 'marci_letter') {
-    $letter_path = 'marci';
-} else {
-    die('Nenalezeno');
-}
-
+$letter_path = get_types_by_letter()[$letter_type]['handle'];
 $link_dashboard = home_url("/{$letter_path}/letters/");
 $link_letter_edit = home_url("/{$letter_path}/letters-add/?edit=$letter_id");
 $link_letter_img = home_url("/{$letter_path}/letters-media/?l_type={$letter_type}&letter={$letter_id}");
