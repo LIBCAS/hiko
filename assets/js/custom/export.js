@@ -10,34 +10,24 @@ if (document.getElementById('export')) {
         },
         computed: {
             actions: function () {
-                let customActions = []
-
-                customActions.push({
-                    url:
-                        ajaxUrl +
-                        '?action=export_letters&type=' +
-                        this.path +
-                        '&format=csv',
-                    title: 'Vše',
-                })
-
-                if (
-                    this.path == 'blekastad' ||
-                    this.path == 'tgm' ||
-                    this.path == 'pol' ||
-                    this.path == 'musil' ||
-                    this.path == 'sachs' ||
-                    this.path == 'marci'
-                ) {
-                    customActions.push({
+                let customActions = [
+                    {
+                        url:
+                            ajaxUrl +
+                            '?action=export_letters&type=' +
+                            this.path +
+                            '&format=csv',
+                        title: 'Vše',
+                    },
+                    {
                         url:
                             ajaxUrl +
                             '?action=export_palladio&type=' +
                             this.path +
                             '&format=csv',
                         title: 'Palladio – vše',
-                    })
-                }
+                    },
+                ]
 
                 if (this.path == 'tgm') {
                     customActions.push({
@@ -54,18 +44,17 @@ if (document.getElementById('export')) {
                         title: ' Palladio – dopisy pro TGM',
                     })
                 }
+
                 return customActions
             },
         },
         mounted: function () {
-            let self = this
-
-            let letterTypes = getLetterType()
+            const letterTypes = getLetterType()
 
             if (isString(letterTypes)) {
-                self.error = letterTypes
+                this.error = letterTypes
             } else {
-                self.path = letterTypes['path']
+                this.path = letterTypes['path']
             }
 
             return
@@ -83,22 +72,20 @@ if (document.getElementById('export-person')) {
         },
         computed: {
             actions: function () {
-                let customActions = []
-
-                customActions.push({
-                    url:
-                        ajaxUrl +
-                        '?action=export_persons&type=' +
-                        this.type +
-                        '&format=csv',
-                    title: 'Lidé a instituce',
-                })
-
-                return customActions
+                return [
+                    {
+                        url:
+                            ajaxUrl +
+                            '?action=export_persons&type=' +
+                            this.type +
+                            '&format=csv',
+                        title: 'Lidé a instituce',
+                    },
+                ]
             },
         },
         mounted: function () {
-            let letterTypes = getLetterType()
+            const letterTypes = getLetterType()
 
             if (isString(letterTypes)) {
                 this.error = letterTypes
@@ -121,22 +108,20 @@ if (document.getElementById('export-place')) {
         },
         computed: {
             actions: function () {
-                let customActions = []
-
-                customActions.push({
-                    url:
-                        ajaxUrl +
-                        '?action=export_places&type=' +
-                        this.type +
-                        '&format=csv',
-                    title: 'Místa',
-                })
-
-                return customActions
+                return [
+                    {
+                        url:
+                            ajaxUrl +
+                            '?action=export_places&type=' +
+                            this.type +
+                            '&format=csv',
+                        title: 'Místa',
+                    },
+                ]
             },
         },
         mounted: function () {
-            let letterTypes = getLetterType()
+            const letterTypes = getLetterType()
 
             if (isString(letterTypes)) {
                 this.error = letterTypes

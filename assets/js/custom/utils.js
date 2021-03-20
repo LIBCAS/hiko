@@ -12,7 +12,7 @@ function errorInfoSwal(error, title = 'Při ukládání došlo k chybě.') {
 }
 
 function getNameById(data, id) {
-    var filtered = data.filter(function (line) {
+    const filtered = data.filter((line) => {
         return line.id == id
     })
 
@@ -137,10 +137,10 @@ function getGeoCoord(callback) {
         preConfirm: function (value) {
             return axios
                 .get(ajaxUrl + '?action=get_geocities_latlng&query=' + value)
-                .then(function (response) {
+                .then((response) => {
                     return response.data.data
                 })
-                .catch(function (error) {
+                .catch((error) => {
                     Swal.showValidationMessage(
                         `Při vyhledávání došlo k chybě: ${error}`
                     )
@@ -168,6 +168,7 @@ function getGeoCoord(callback) {
 
 function geoDataToSelect(geoData) {
     let output = {}
+
     for (let i = 0; i < geoData.length; i++) {
         let latlng = geoData[i].lat + ',' + geoData[i].lng
         output[latlng] =
@@ -178,6 +179,7 @@ function geoDataToSelect(geoData) {
             geoData[i].country +
             ')'
     }
+
     return output
 }
 
