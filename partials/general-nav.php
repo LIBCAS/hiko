@@ -26,7 +26,7 @@ $navData = [
                     </a>
                     <div class="dropdown-menu" aria-labelledby="letters-dd">
                         <?php foreach ($navData as $key => $value) : ?>
-                            <a class="dropdown-item" href="<?= home_url('/' . $value) ?>">
+                            <a class="dropdown-item" href="<?= home_url('#' . $value) ?>">
                                 <?= $key; ?>
                             </a>
                         <?php endforeach; ?>

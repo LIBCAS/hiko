@@ -19,7 +19,7 @@ $cardsData = [
 
 <div class="container mt-5">
     <?php foreach ($cardsData as $key => $value) : ?>
-        <div class="mb-3 mr-3 align-top card d-inline-block" style="width:320px">
+        <div class="mb-3 mr-3 align-top card d-inline-block" style="width:320px" id="<?= $value ?>">
             <h3 class="card-header"><?= $key; ?></h3>
             <ul class="list-group list-group-flush">
                 <li class="list-group-item">
