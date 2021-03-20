@@ -76,6 +76,28 @@
             "keyword": "marci_keyword",
             "profession": "marci_profession",
             "default_lang": "en"
+        },
+        "wirth": {
+            "letter": "wirth_letter",
+            "place": "wirth_place",
+            "person": "wirth_person",
+            "editor": "wirth_editor",
+            "path": "wirth",
+            "title": "Korespondence Zdeňka Wirtha",
+            "keyword": "wirth_keyword",
+            "profession": "wirth_profession",
+            "default_lang": "en"
+        },
+        "jak": {
+            "letter": "jak_letter",
+            "place": "jak_place",
+            "person": "jak_person",
+            "editor": "jak_editor",
+            "path": "jak",
+            "title": "Korespondence JAK",
+            "keyword": "jak_keyword",
+            "profession": "jak_profession",
+            "default_lang": "en"
         }
     },
     "editors": [
@@ -86,6 +108,8 @@
         "demo_editor",
         "pol_editor",
         "sachs_editor",
-        "marci_editor"
+        "marci_editor",
+        "wirth_profession",
+        "jak_profession"
     ]
 }
