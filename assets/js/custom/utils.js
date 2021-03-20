@@ -28,92 +28,22 @@ function stringContains(str, substr) {
 }
 
 function getLetterType() {
-    let url = new URL(window.location.href)
-    if (stringContains(url.pathname, 'blekastad')) {
-        return {
-            letterType: 'bl_letter',
-            personType: 'bl_person',
-            placeType: 'bl_place',
-            path: 'blekastad',
-            keyword: 'bl_keyword',
-            profession: 'bl_profession',
-            defaultLanguage: 'en',
+    const pathname = new URL(window.location.href).pathname
+
+    const dataTypes = JSON.parse(document.querySelector('#datatypes').innerHTML)
+
+    let letterType = []
+
+    for (let index = 0; index < Object.keys(dataTypes).length; index++) {
+        const handle = Object.keys(dataTypes)[index]
+
+        if (stringContains(pathname, handle)) {
+            letterType = dataTypes[handle]
+            break
         }
     }
 
-    if (stringContains(url.pathname, 'demo')) {
-        return {
-            letterType: 'demo_letter',
-            personType: 'demo_person',
-            placeType: 'demo_place',
-            path: 'demo',
-            keyword: 'demo_keyword',
-            profession: 'demo_profession',
-            defaultLanguage: 'en',
-        }
-    }
-
-    if (stringContains(url.pathname, 'tgm')) {
-        return {
-            letterType: 'tgm_letter',
-            personType: 'tgm_person',
-            placeType: 'tgm_place',
-            path: 'tgm',
-            keyword: 'tgm_keyword',
-            profession: 'tgm_profession',
-            defaultLanguage: 'en',
-        }
-    }
-
-    if (stringContains(url.pathname, 'pol')) {
-        return {
-            letterType: 'pol_letter',
-            personType: 'pol_person',
-            placeType: 'pol_place',
-            path: 'pol',
-            keyword: 'pol_keyword',
-            profession: 'pol_profession',
-            defaultLanguage: 'en',
-        }
-    }
-
-    if (stringContains(url.pathname, 'musil')) {
-        return {
-            letterType: 'musil_letter',
-            personType: 'musil_person',
-            placeType: 'musil_place',
-            path: 'musil',
-            keyword: 'musil_keyword',
-            profession: 'musil_profession',
-            defaultLanguage: 'cs',
-        }
-    }
-
-    if (stringContains(url.pathname, 'sachs')) {
-        return {
-            letterType: 'sachs_letter',
-            personType: 'sachs_person',
-            placeType: 'sachs_place',
-            path: 'sachs',
-            keyword: 'sachs_keyword',
-            profession: 'sachs_profession',
-            defaultLanguage: 'en',
-        }
-    }
-
-    if (stringContains(url.pathname, 'marci')) {
-        return {
-            letterType: 'marci_letter',
-            personType: 'marci_person',
-            placeType: 'marci_place',
-            path: 'marci',
-            keyword: 'marci_keyword',
-            profession: 'marci_profession',
-            defaultLanguage: 'en',
-        }
-    }
-
-    return 'Neplatný typ dopisu'
+    return letterType
 }
 
 function getGeoCoord(callback) {
