@@ -104,18 +104,18 @@ add_action('wp_ajax_list_images', 'list_images');
 function delete_hiko_image()
 {
     $data = file_get_contents('php://input');
-    $data = mb_convert_encoding($data, 'UTF-8');
-    $data = json_decode($data);
+    $data = json_decode(mb_convert_encoding($data, 'UTF-8'));
 
-    $letter_id = sanitize_text_field($data->letter);
-    $type = sanitize_text_field($data->l_type);
-    $img_id = sanitize_text_field($data->img);
-
-    $pod = pods($type, $letter_id);
+    $pod = pods(
+        sanitize_text_field($data->l_type),
+        sanitize_text_field($data->letter)
+    );
 
     if (!$pod->exists()) {
         wp_send_json_error('Not found', 404);
     }
+
+    $img_id = sanitize_text_field($data->img);
 
     $pod->remove_from('images', $img_id);
     $pod->save;
@@ -133,8 +133,7 @@ add_action('wp_ajax_delete_hiko_image', 'delete_hiko_image');
 function change_metadata()
 {
     $data = file_get_contents('php://input');
-    $data = mb_convert_encoding($data, 'UTF-8');
-    $data = json_decode($data);
+    $data = json_decode(mb_convert_encoding($data, 'UTF-8'));
 
     if (!property_exists($data, 'img_id') || !property_exists($data, 'img_status') || !property_exists($data, 'img_description')) {
         wp_send_json_error('Not found', 404);
@@ -157,17 +156,17 @@ add_action('wp_ajax_change_metadata', 'change_metadata');
 
 function change_image_order()
 {
-    $data = key($_POST);
-    $data = json_decode($data);
+    $data = json_decode(key($_POST));
 
     if (!property_exists($data, 'img_id') || !property_exists($data, 'img_order')) {
         wp_send_json_error('Not found', 404);
     }
 
-    $img_id = sanitize_text_field($data->img_id);
-    $img_order = sanitize_text_field($data->img_order);
-
-    $update = update_post_meta($img_id, 'order', $img_order);
+    $update = update_post_meta(
+        sanitize_text_field($data->img_id),
+        'order',
+        sanitize_text_field($data->img_order)
+    );
 
     if (is_wp_error($update)) {
         wp_send_json_error(error_get_last()['message'], 500);
