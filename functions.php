@@ -53,25 +53,10 @@ add_action('admin_menu', function () {
 
 
 add_action('wp_head', function () {
-    $datatypes = json_decode(get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'), true)['types'];
-
-    $datatypes_formatted = [];
-
-    foreach ($datatypes as $type) {
-        $datatypes_formatted[] = [
-            'defaultLanguage' => $type['default_lang'],
-            'keyword' => $type['keyword'],
-            'letterType' => $type['letter'],
-            'path' => $type['path'],
-            'personType' => $type['person'],
-            'placeType' => $type['place'],
-            'profession' => $type['profession'],
-        ];
-    }
-
+    $datatypes = json_decode(get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'), true);
     ob_start(); ?>
     <script id="datatypes" type="application/json">
-        <?= json_encode($datatypes_formatted, JSON_UNESCAPED_UNICODE); ?>
+        <?= json_encode($datatypes['types'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php echo ob_get_clean();
 });
