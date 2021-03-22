@@ -28,22 +28,7 @@ function stringContains(str, substr) {
 }
 
 function getLetterType() {
-    const pathname = new URL(window.location.href).pathname
-
-    const dataTypes = JSON.parse(document.querySelector('#datatypes').innerHTML)
-
-    let letterType = []
-
-    for (let index = 0; index < Object.keys(dataTypes).length; index++) {
-        const handle = Object.keys(dataTypes)[index]
-
-        if (stringContains(pathname, handle)) {
-            letterType = dataTypes[handle]
-            break
-        }
-    }
-
-    return letterType
+    return JSON.parse(document.getElementById('datatype').innerHTML)
 }
 
 function getGeoCoord(callback) {

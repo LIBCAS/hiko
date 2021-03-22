@@ -52,16 +52,6 @@ add_action('admin_menu', function () {
 });
 
 
-add_action('wp_head', function () {
-    $datatypes = json_decode(get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'), true);
-    ob_start(); ?>
-    <script id="datatypes" type="application/json">
-        <?= json_encode($datatypes['types'], JSON_UNESCAPED_UNICODE); ?>
-    </script>
-    <?php echo ob_get_clean();
-});
-
-
 function test_input($input)
 {
     $input = trim($input);
@@ -622,6 +612,26 @@ function get_hiko_post_types($single_type)
 
     return $data['types'][$single_type];
 }
+
+
+function output_current_type_script($type)
+{
+    $type_formatted = [
+        'defaultLanguage' => $type['default_lang'],
+        'keyword' => $type['keyword'],
+        'letterType' => $type['letter'],
+        'path' => $type['path'],
+        'personType' => $type['person'],
+        'placeType' => $type['place'],
+        'profession' => $type['profession'],
+    ];
+
+    ob_start(); ?>
+    <script id="datatype" type="application/json">
+        <?= json_encode($type_formatted, JSON_UNESCAPED_UNICODE); ?>
+    </script>
+    <?php echo ob_get_clean();
+};
 
 
 function get_hiko_post_types_by_url($url = '')

@@ -6,7 +6,7 @@ get_header();
 
 $pods_types = get_hiko_post_types_by_url();
 $editor = $pods_types['editor'];
-
+output_current_type_script($pods_types);
 require_once get_template_directory() . '/partials/custom-nav.php'; ?>
 
 <div class="container mt-5">
