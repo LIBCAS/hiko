@@ -28,7 +28,11 @@ function stringContains(str, substr) {
 }
 
 function getLetterType() {
-    return JSON.parse(document.getElementById('datatype').innerHTML)
+    const datatypes = document.getElementById('datatype')
+
+    if (datatypes) {
+        return JSON.parse(document.getElementById('datatype').innerHTML)
+    }
 }
 
 function getGeoCoord(callback) {

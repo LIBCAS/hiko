@@ -47,25 +47,22 @@ if (document.getElementById('repository')) {
             error: false,
         },
         computed: {
-            repositories: function() {
-                let self = this
-                return self.data.filter(function(loc) {
+            repositories: function () {
+                return this.data.filter((loc) => {
                     if (loc.type == 'repository') {
                         return true
                     }
                 })
             },
-            collections: function() {
-                let self = this
-                return self.data.filter(function(loc) {
+            collections: function () {
+                return this.data.filter((loc) => {
                     if (loc.type == 'collection') {
                         return true
                     }
                 })
             },
-            archives: function() {
-                let self = this
-                return self.data.filter(function(loc) {
+            archives: function () {
+                return this.data.filter((loc) => {
                     if (loc.type == 'archive') {
                         return true
                     }
@@ -73,86 +70,92 @@ if (document.getElementById('repository')) {
             },
         },
 
-        mounted: function() {
+        mounted: function () {
             this.getData()
         },
 
         methods: {
-            insertItem: function(type, title, action, id) {
+            insertItem: function (type, title, action, id) {
                 let self = this
-                self.insertLocationItem(type, title, action, id, function() {
+                self.insertLocationItem(type, title, action, id, function () {
                     self.getData()
                 })
             },
-            insertLocationItem: function(type, title, action, id, callback) {
-                let swalConfig = locationSwal.confirmSave
+            insertLocationItem: function (type, title, action, id, callback) {
+                const swalConfig = locationSwal.confirmSave
                 swalConfig.title = title
                 swalConfig.allowOutsideClick = () => !Swal.isLoading()
-                swalConfig.inputValidator = value => {
+                swalConfig.inputValidator = (value) => {
                     if (value.length < 3) {
                         return 'Zadejte hodnotu'
                     }
                 }
-                swalConfig.preConfirm = value => {
+                swalConfig.preConfirm = (value) => {
                     return axios
                         .post(
-                            ajaxUrl + '?action=insert_location_data', {
+                            ajaxUrl + '?action=insert_location_data',
+                            {
                                 ['type']: type,
                                 ['item']: value,
                                 ['action']: action,
                                 ['id']: id,
-                            }, {
+                            },
+                            {
                                 headers: {
-                                    'Content-Type': 'application/json;charset=utf-8',
+                                    'Content-Type':
+                                        'application/json;charset=utf-8',
                                 },
                             }
                         )
-                        .then(function(response) {
+                        .then((response) => {
                             return response.data
                         })
-                        .catch(function(error) {
+                        .catch((error) => {
                             Swal.showValidationMessage(
                                 `Při ukládání došlo k chybě: ${error}`
                             )
                         })
                 }
-                Swal.fire(swalConfig).then(result => {
+                Swal.fire(swalConfig).then((result) => {
                     if (result.value) {
                         Swal.fire(locationSwal.saveSuccess)
                         callback()
                     }
                 })
             },
-            deleteItem: function(name, id) {
+            deleteItem: function (name, id) {
                 let self = this
-                self.deleteLocationItem(name, id, function() {
-                    self.data = self.data.filter(function(item) {
+                self.deleteLocationItem(name, id, function () {
+                    self.data = self.data.filter(function (item) {
                         return item.id !== id
                     })
                 })
             },
 
-            deleteLocationItem: function(name, id, callback) {
-                let swalConfig = locationSwal.confirmDelete
+            deleteLocationItem: function (name, id, callback) {
+                const swalConfig = locationSwal.confirmDelete
                 swalConfig.text = decodeHTML(name)
 
-                Swal.fire(swalConfig).then(result => {
+                Swal.fire(swalConfig).then((result) => {
                     if (result.value) {
                         axios
                             .post(
-                                ajaxUrl + '?action=delete_location_data', {
+                                ajaxUrl + '?action=delete_location_data',
+                                {
                                     ['id']: id,
-                                }, {
+                                },
+                                {
                                     headers: {
-                                        'Content-Type': 'application/json;charset=utf-8',
+                                        'Content-Type':
+                                            'application/json;charset=utf-8',
                                     },
                                 }
                             )
-                            .then(function() {
+                            .then(function () {
                                 Swal.fire(locationSwal.removeInfo)
                                 callback()
                             })
-                            .catch(function(error) {
+                            .catch(function (error) {
                                 Swal.showValidationMessage(
                                     `Při odstraňování došlo k chybě: ${error}`
                                 )
@@ -161,18 +164,18 @@ if (document.getElementById('repository')) {
                 })
             },
 
-            getData: function() {
-                let self = this
+            getData: function () {
+                const self = this
                 self.loading = true
                 axios
                     .get(ajaxUrl + '?action=list_locations')
-                    .then(function(response) {
+                    .then((response) => {
                         self.data = response.data.data
                     })
-                    .catch(function(error) {
+                    .catch((error) => {
                         self.error = error
                     })
-                    .then(function() {
+                    .then(() => {
                         self.loading = false
                     })
             },
