@@ -1,5 +1,7 @@
 <?php
 
+require 'data-types.php';
+
 date_default_timezone_set('Europe/Prague');
 
 add_action('after_setup_theme', function () {
@@ -362,7 +364,7 @@ function is_in_editor_role()
 
     $result = array_intersect(
         (array) wp_get_current_user()->roles,
-        json_decode(get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'), true)['editors']
+        fetch_types()['editors']
     );
 
     return count($result) > 0 ? true : false;
@@ -601,10 +603,7 @@ function get_letters_basic_meta_filtered($meta, $draft = true, $history = false)
 
 function get_hiko_post_types($single_type)
 {
-    $data = json_decode(
-        get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'),
-        true
-    );
+    $data = fetch_types();
 
     if (!isset($data['types'][$single_type])) {
         return [];
@@ -638,10 +637,7 @@ function get_hiko_post_types_by_url($url = '')
 {
     $req = $url != '' ? $url : $_SERVER['REQUEST_URI'];
 
-    $datatypes = json_decode(
-        get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'),
-        true
-    );
+    $datatypes = fetch_types();
 
     $type = [];
 
@@ -658,7 +654,7 @@ function get_hiko_post_types_by_url($url = '')
 
 function get_types_by_letter()
 {
-    $types = json_decode(get_ssl_file(get_template_directory_uri() . '/assets/data/data-types.json'), true)['types'];
+    $types = fetch_types()['types'];
 
     $result = [];
     foreach ($types as $type_key => $values) {
