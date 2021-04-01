@@ -32,7 +32,7 @@ show_alerts(); ?>
                         <label for="country">Country</label>
                         <select x-model="country" id="country" name="country" required>
                             <?php foreach (get_countries() as $country) : ?>
-                                <option value="<?= $country['name'] ?>" <?= $country['name'] === $place['country'] ? 'selected' : ''?>>
+                                <option value="<?= $country['name'] ?>" <?= isset($place['country']) && $country['name'] === $place['country'] ? 'selected' : '' ?>>
                                     <?= $country['name'] ?>
                                 </option>
                             <?php endforeach; ?>
@@ -44,7 +44,17 @@ show_alerts(); ?>
                     </div>
                 </fieldset>
                 <fieldset>
-                    <legend>Coordinates <span class="ml-1 oi oi-map pointer" @click="getCoord" id="coordinates" title="Vyhledat souřadnice"></span></legend>
+                    <legend>
+                        <div class="justify-content-between d-flex">
+                            <span>
+                                Coordinates
+                            </span>
+                            <button @click="getCoordinates()" type="button" class="btn btn-sm btn-link">
+                                <span class="oi oi-map pointer"></span>
+                                Get coordinates
+                            </button>
+                        </div>
+                    </legend>
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
@@ -71,7 +81,7 @@ show_alerts(); ?>
                 </ul>
                 <div class="form-group">
                     <input type="hidden" name="save_post" value="<?= $action ?>">
-                    <input class="btn btn-primary" type="submit" value="Uložit">
+                    <input class="btn btn-primary" type="submit" value="Save">
                 </div>
             </form>
         </div>

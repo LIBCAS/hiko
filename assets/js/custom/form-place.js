@@ -1,4 +1,4 @@
-/* global SlimSelect */
+/* global SlimSelect Swal ajaxUrl axios */
 
 window.placeForm = function () {
     return {
@@ -51,6 +51,81 @@ window.placeForm = function () {
             }
 
             document.getElementById('places-form').submit()
+        },
+
+        getCoordinates: function () {
+            const context = this
+            Swal.fire({
+                buttonsStyling: false,
+                cancelButtonClass: 'btn btn-link text-danger btn-sm ml-1',
+                cancelButtonText: 'Cancel',
+                confirmButtonClass: 'btn btn-primary btn-sm mr-1',
+                confirmButtonText: 'Search',
+                input: 'text',
+                inputValue: context.name,
+                showCancelButton: true,
+                showLoaderOnConfirm: true,
+                title: 'Place name',
+                type: 'question',
+                allowOutsideClick: () => !Swal.isLoading(),
+                inputValidator: (value) => {
+                    if (value.length < 2) {
+                        return 'Place name'
+                    }
+                },
+                preConfirm: (value) => {
+                    return axios
+                        .get(
+                            ajaxUrl +
+                                '?action=get_geocities_latlng&query=' +
+                                value
+                        )
+                        .then((response) => {
+                            return response.data.data
+                        })
+                        .catch((error) => {
+                            Swal.showValidationMessage(
+                                `Při vyhledávání došlo k chybě: ${error}`
+                            )
+                        })
+                },
+            }).then((result) => {
+                if (!result.value) {
+                    return
+                }
+
+                Swal.fire({
+                    buttonsStyling: false,
+                    cancelButtonClass: 'btn btn-link text-danger btn-sm ml-1',
+                    cancelButtonText: 'Zrušit',
+                    confirmButtonClass: 'btn btn-primary btn-sm mr-1',
+                    confirmButtonText: 'Potvrdit',
+                    input: 'select',
+                    inputOptions: context.formatSearchResults(result.value),
+                    showCancelButton: true,
+                    title: 'Vyberte místo',
+                    type: 'question',
+                }).then((result) => {
+                    const latlng = result.value.split(',')
+
+                    context.latitude = latlng[0]
+                    context.longitude = latlng[1]
+                })
+            })
+        },
+
+        formatSearchResults(geoData) {
+            let output = {}
+
+            for (let i = 0; i < geoData.length; i++) {
+                const latlng = geoData[i].lat + ',' + geoData[i].lng
+
+                output[
+                    latlng
+                ] = `${geoData[i].name} (${geoData[i].adminName} – ${geoData[i].country})`
+            }
+
+            return output
         },
     }
 }
