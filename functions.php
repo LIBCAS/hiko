@@ -74,7 +74,9 @@ function test_postdata($associative_array)
 {
     $results = [];
     foreach ($associative_array as $key => $value) {
-        $results[$key] = test_input($_POST[$value]);
+        if (!empty($_POST[$value])) {
+            $results[$key] = test_input($_POST[$value]);
+        }
     }
 
     return $results;
@@ -935,53 +937,6 @@ function get_gmdate($filepath = false)
 }
 
 
-function save_hiko_person($person_type, $action)
-{
-    $data = test_postdata([
-        'birth_year' => 'birth_year',
-        'death_year' => 'death_year',
-        'emlo' => 'emlo',
-        'forename' => 'forename',
-        'gender' => 'gender',
-        'name' => 'fullname',
-        'nationality' => 'nationality',
-        'note' => 'note',
-        'profession' => 'profession',
-        'profession_detailed' => 'profession_detailed',
-        'profession_short' => 'profession_short',
-        'surname' => 'surname',
-        'type' => 'type',
-    ]);
-
-    $new_pod = '';
-
-    if ($action == 'new') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => $person_type,
-            'data' => $data
-        ]);
-    } elseif ($action == 'edit') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => $person_type,
-            'data' => $data,
-            'id' => $_GET['edit']
-        ]);
-    }
-
-    if ($new_pod == '') {
-        return alert('Něco se pokazilo', 'warning');
-    }
-
-    if (is_wp_error($new_pod)) {
-        return alert($new_pod->get_error_message(), 'warning');
-    }
-
-    frontend_refresh();
-
-    return alert('Uloženo', 'success');
-}
-
-
 function hiko_sanitize_file_name($file)
 {
     $file = remove_accents($file);
@@ -1194,6 +1149,8 @@ add_image_size('xl-thumb', 300);
 require 'ajax/common.php';
 require 'ajax/letters.php';
 require 'ajax/people.php';
+require 'helpers/professions.php';
+require 'helpers/entities.php';
 require 'helpers/places.php';
 require 'ajax/images.php';
 require 'ajax/export.php';

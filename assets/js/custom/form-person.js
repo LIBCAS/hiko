@@ -1,262 +1,73 @@
-/* global Vue axios ajaxUrl getLetterType decodeHTML isString getObjectValues */
+/* global decodeHTML */
 
-if (document.getElementById('person-name')) {
-    new Vue({
-        el: '#person-name',
-        data: {
-            alternativeNames: [],
-            dob: '',
-            dod: '',
-            emlo: '',
-            error: false,
-            firstName: '',
-            gender: '',
-            lang: '',
-            lastName: '',
-            loading: true,
-            nationality: '',
-            note: '',
-            personType: '',
-            profession: '',
-            professionDetailed: [{ label: null, value: null }],
-            professionShort: [{ label: null, value: null }],
-            professions: [],
-            professionsPalladio: [],
-            professionsType: '',
-            type: 'person',
-        },
+window.entityForm = function () {
+    return {
+        type: 'person',
+        surname: '',
+        forename: '',
+        note: '',
+        birth_year: null,
+        death_year: null,
+        gender: '',
+        nationality: '',
+        viaf: '',
+        profession_short: [],
+        profession_detailed: [],
+        names: [],
 
-        computed: {
-            fullName: function () {
-                if (this.type == 'institution') {
-                    return this.lastName.trim()
-                }
+        errors: [],
 
-                let fullName = this.capitalize(this.lastName).trim()
+        fetch: function () {
+            const data = JSON.parse(
+                document.getElementById('entity-data').innerHTML
+            )
 
-                if (this.firstName.length > 0) {
-                    fullName += ', ' + this.capitalize(this.firstName).trim()
-                }
-
-                return fullName.trim()
-            },
-            personsFormValidated: function () {
-                if (this.lastName == '' || this.fullName.length < 3) {
-                    return false
-                }
-                return true
-            },
-        },
-
-        mounted: function () {
-            const letterTypes = getLetterType()
-            const self = this
-            const url = new URL(window.location.href)
-
-            if (isString(letterTypes)) {
-                self.error = letterTypes
+            if (data.length === 0) {
                 return
             }
 
-            this.personType = letterTypes['personType']
-            this.professionsType = letterTypes['profession']
-            this.lang = letterTypes['defaultLanguage']
+            this.type = data.type
+            this.surname = decodeHTML(data.surname)
+            this.forename = decodeHTML(data.forename)
+            this.note = data.note
+            this.birth_year = data.birth_year
+            this.death_year = data.death_year
+            this.gender = data.gender
+            this.nationality = data.nationality
+            this.viaf = data.viaf
+            this.profession_short = data.profession_short
+            this.profession_detailed = data.profession_detailed
+            this.names = data.names
+        },
 
-            let initialProfessions = JSON.parse(
-                document.querySelector('#professions').innerHTML
-            )
+        fullName: function () {
+            let name = this.surname
 
-            self.mapProfessions(initialProfessions)
-
-            if (url.searchParams.get('edit')) {
-                this.getInitialData(url.searchParams.get('edit'), () => {
-                    self.loading = false
-                })
-            } else {
-                self.loading = false
+            if (this.forename.length > 0) {
+                name += ', ' + this.forename
             }
+
+            return decodeHTML(name)
         },
 
-        methods: {
-            cleanCopy(obj) {
-                return JSON.parse(JSON.stringify(obj))
-            },
+        handleSubmit: function (event) {
+            event.preventDefault()
 
-            capitalize: function (str) {
-                return str.charAt(0).toUpperCase() + str.slice(1)
-            },
+            this.errors = []
 
-            decodeHTML: function (str) {
-                return decodeHTML(str)
-            },
+            if (this.surname.length === 0) {
+                this.errors.push('Empty name')
+            }
 
-            getInitialData: function (id, callback = null) {
-                const self = this
-                axios
-                    .get(
-                        ajaxUrl +
-                            '?action=list_people_single&pods_id=' +
-                            id +
-                            '&type=' +
-                            self.personType
-                    )
-                    .then(function (response) {
-                        let rd = response.data
+            if (this.type.length === 0) {
+                this.errors.push('Empty type')
+            }
 
-                        if (rd == '404') {
-                            self.error = true
-                            return
-                        }
+            if (this.errors.length > 0) {
+                return
+            }
 
-                        if (Array.isArray(rd.names)) {
-                            self.alternativeNames = rd.names
-                        }
-
-                        self.dob = rd.birth_year
-                        self.dod = rd.death_year
-                        self.emlo = rd.emlo
-                        self.firstName = rd.forename
-                        self.gender = rd.gender
-                        self.lastName = rd.surname
-                        self.nationality = rd.nationality
-                        self.note = rd.note
-                        self.profession = rd.profession
-                        self.type = rd.type ? rd.type : 'person'
-
-                        if (rd.profession_detailed) {
-                            self.professionDetailed = []
-                            rd.profession_detailed.split(';').map((item) => {
-                                if (item != '') {
-                                    self.professionDetailed.push(
-                                        self.getProfessionById(
-                                            item,
-                                            self.professions
-                                        )
-                                    )
-                                }
-                            })
-                        }
-
-                        if (rd.profession_short) {
-                            self.professionShort = []
-                            rd.profession_short.split(';').map((item) => {
-                                if (item != '') {
-                                    self.professionShort.push(
-                                        self.getProfessionById(
-                                            item,
-                                            self.professionsPalladio
-                                        )
-                                    )
-                                }
-                            })
-                        }
-                    })
-                    .catch((error) => {
-                        self.error = true
-                        console.log(error)
-                    })
-                    .then(callback)
-            },
-
-            regenerateProfessions: function (event) {
-                this.professions = []
-                event.target.classList.add('rotate')
-                this.getProfessions(() => {
-                    event.target.classList.remove('rotate')
-                })
-            },
-
-            getProfessions: function (callback = null) {
-                let self = this
-
-                axios
-                    .get(
-                        ajaxUrl +
-                            '?action=professions_table_data&type=' +
-                            self.professionsType
-                    )
-                    .then((response) => {
-                        self.mapProfessions(response.data)
-                    })
-                    .catch((error) => {
-                        console.log(error)
-                    })
-                    .then(callback)
-            },
-
-            mapProfessions: function (rawProfessions) {
-                const self = this
-
-                rawProfessions.map((profession) => {
-                    const professionName =
-                        self.lang === 'cs' ? profession.namecz : profession.name
-                    if (profession.palladio) {
-                        self.professionsPalladio.push({
-                            label: self.decodeHTML(professionName),
-                            value: profession.id,
-                        })
-                    } else {
-                        self.professions.push({
-                            label: self.decodeHTML(professionName),
-                            value: profession.id,
-                        })
-                    }
-                })
-            },
-
-            addNewprofession: function () {
-                this.professionDetailed.push({ label: null, value: null })
-            },
-
-            addNewPalladioProfession: function () {
-                this.professionShort.push({ label: null, value: null })
-            },
-
-            removePalladioProfession: function (professionIndex) {
-                this.professionShort = this.professionShort.filter(
-                    (item, index) => {
-                        return index !== professionIndex
-                    }
-                )
-            },
-
-            removeProfession: function (professionIndex) {
-                this.professionDetailed = this.professionDetailed.filter(
-                    (item, index) => {
-                        return index !== professionIndex
-                    }
-                )
-            },
-
-            getProfessionById: function (id, professions) {
-                professions = this.cleanCopy(professions)
-
-                if (professions.length == 0) {
-                    return []
-                }
-
-                let filtered = professions.filter((profession) => {
-                    return profession.value == id
-                })
-
-                if (filtered.length == 0) {
-                    return []
-                }
-
-                return {
-                    label: filtered[0].label,
-                    value: filtered[0].value,
-                }
-            },
-
-            getObjectValues: function (o) {
-                let values = getObjectValues(o)
-
-                // remove duplicates
-                return values.filter(function (item, pos, self) {
-                    return self.indexOf(item) == pos
-                })
-            },
+            document.getElementById('entity-form').submit()
         },
-    })
+    }
 }

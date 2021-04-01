@@ -42,13 +42,7 @@ function save_place($place_type, $action)
         $save['id'] = (int) $_GET['edit'];
     }
 
-    $new_place = '';
-
     $new_place = pods_api()->save_pod_item($save);
-
-    if ($new_place === '') {
-        $_SESSION['warning'] = 'Něco se pokazilo';
-    }
 
     if (is_wp_error($new_place)) {
         $_SESSION['warning'] = $new_place->get_error_message();
