@@ -89,9 +89,8 @@ gulp.task('customJS', () => {
     return gulp
         .src(
             [
-                paths.jsCustomSRC + 'global.js',
                 paths.jsCustomSRC + 'utils.js',
-                paths.jsCustomSRC + '!(global|utils)*.js',
+                paths.jsCustomSRC + '!(utils)*.js',
             ],
             { since: gulp.lastRun('customJS') }
         )

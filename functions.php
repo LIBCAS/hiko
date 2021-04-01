@@ -1,5 +1,11 @@
 <?php
 
+add_action('init', function () {
+    if (!session_id()) {
+        session_start();
+    }
+}, 1);
+
 require 'data-types.php';
 
 date_default_timezone_set('Europe/Prague');
@@ -77,8 +83,7 @@ function test_postdata($associative_array)
 
 function alert($message, $type = 'info')
 {
-    ob_start();
-    ?>
+    ob_start(); ?>
     <div class="alert alert-<?= $type ?>">
         <?= $message; ?>
     </div>
@@ -89,8 +94,7 @@ function alert($message, $type = 'info')
 
 function frontend_refresh()
 {
-    ob_start();
-    ?>
+    ob_start(); ?>
     <script type="text/javascript">
         console.log('refreshed');
         if (window.history.replaceState) {
@@ -99,6 +103,34 @@ function frontend_refresh()
     </script>
     <?php
     echo ob_get_clean();
+}
+
+
+function get_alert_markup($message, $type = 'info')
+{
+    ob_start(); ?>
+    <div x-data="{ visible: true}">
+        <div class="alert alert-<?= $type; ?>" role="alert" x-show="visible" style="display:block">
+            <?= $message; ?>
+            <button type="button" class="close" aria-label="Close" @click="visible = false">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+
+function show_alerts()
+{
+    if (isset($_SESSION['success'])) {
+        echo get_alert_markup($_SESSION['success'], 'success');
+        unset($_SESSION['success']);
+    } else if (isset($_SESSION['warning'])) {
+        echo get_alert_markup($_SESSION['warning'], 'warning');
+        unset($_SESSION['warning']);
+    }
 }
 
 
@@ -950,45 +982,6 @@ function save_hiko_person($person_type, $action)
 }
 
 
-function save_hiko_place($place_type, $action)
-{
-    $data = test_postdata([
-        'country' => 'country',
-        'latitude' => 'latitude',
-        'longitude' => 'longitude',
-        'name' => 'place',
-        'note' => 'note',
-    ]);
-
-    $new_pod = '';
-
-    if ($action == 'new') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => $place_type,
-            'data' => $data
-        ]);
-    } elseif ($action == 'edit') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => $place_type,
-            'data' => $data,
-            'id' => $_GET['edit']
-        ]);
-    }
-
-    if ($new_pod == '') {
-        return alert('Něco se pokazilo', 'warning');
-    }
-
-    if (is_wp_error($new_pod)) {
-        return alert($new_pod->get_error_message(), 'warning');
-    }
-
-    frontend_refresh();
-
-    return alert('Uloženo', 'success');
-}
-
-
 function hiko_sanitize_file_name($file)
 {
     $file = remove_accents($file);
@@ -1009,23 +1002,9 @@ function get_languages()
 function get_json_languages()
 {
     $languages = get_ssl_file(get_template_directory_uri() . '/assets/data/languages.json');
-    ob_start();
-    ?>
+    ob_start(); ?>
     <script id="languages" type="application/json">
         <?= $languages; ?>
-    </script>
-    <?php
-    return ob_get_clean();
-}
-
-
-function get_json_countries()
-{
-    $countries = get_ssl_file(get_template_directory_uri() . '/assets/data/countries.json');
-    ob_start();
-    ?>
-    <script id="countries" type="application/json">
-        <?= $countries; ?>
     </script>
     <?php
     return ob_get_clean();
@@ -1039,10 +1018,9 @@ function display_persons_and_places($person_type, $place_type)
         JSON_UNESCAPED_UNICODE
     );
 
-    $places = list_places_simple($place_type, false);
+    $places = list_places($place_type, false);
 
-    ob_start();
-    ?>
+    ob_start(); ?>
     <script id="people" type="application/json">
         <?= $persons; ?>
     </script>
@@ -1050,7 +1028,6 @@ function display_persons_and_places($person_type, $place_type)
     <script id="places" type="application/json">
         <?= $places; ?>
     </script>
-
     <?php
     return ob_get_clean();
 }
@@ -1217,7 +1194,7 @@ add_image_size('xl-thumb', 300);
 require 'ajax/common.php';
 require 'ajax/letters.php';
 require 'ajax/people.php';
-require 'ajax/places.php';
+require 'helpers/places.php';
 require 'ajax/images.php';
 require 'ajax/export.php';
 require 'ajax/export-palladio.php';

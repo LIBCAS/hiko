@@ -10,7 +10,7 @@
     <?php if (is_page_template('page-templates/page-images.php')) : ?>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uppy@1.0.0/dist/uppy.min.css">
     <?php endif; ?>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-multiselect@2.1.6/dist/vue-multiselect.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slim-select@1.27.0/dist/slimselect.min.css">
     <link rel="stylesheet" href="<?= get_template_directory_uri() . '/assets/dist/main.css?ver=' . filemtime(get_template_directory() . '/assets/dist/main.css'); ?>">
 
     <script type="text/javascript">

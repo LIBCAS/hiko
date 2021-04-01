@@ -1,95 +1,56 @@
-/* global Vue axios ajaxUrl getLetterType getGeoCoord isString decodeHTML */
+/* global SlimSelect */
 
-if (document.getElementById('places-form')) {
-    new Vue({
-        el: '#places-form',
-        data: {
-            country: {},
-            lat: '',
-            long: '',
-            note: '',
-            place: '',
-            error: false,
-            loading: true,
-        },
-        computed: {
-            countries() {
-                let results = []
+window.placeForm = function () {
+    return {
+        country: '',
+        name: '',
+        latitude: '',
+        longitude: '',
+        note: '',
+        errors: [],
 
-                let countries = JSON.parse(
-                    document.querySelector('#countries').innerHTML
-                )
-
-                let l = countries.length
-                for (let index = 0; index < l; index++) {
-                    results.push({
-                        label: countries[index].name,
-                        value: countries[index].name,
-                    })
-                }
-                return results
-            },
-        },
-        mounted: function () {
-            let letterTypes = getLetterType()
-            let url = new URL(window.location.href)
-            let self = this
-
-            if (isString(letterTypes)) {
-                self.error = letterTypes
+        fetch: function () {
+            const data = JSON.parse(
+                document.getElementById('place-data').innerHTML
+            )
+            if (data.length === 0) {
+                this.initSelect()
                 return
             }
 
-            this.placeType = letterTypes['placeType']
+            this.country = data.country
+            this.name = data.name
+            this.latitude = data.latitude
+            this.longitude = data.longitude
+            this.note = data.note
 
-            if (url.searchParams.get('edit')) {
-                this.getInitialData(url.searchParams.get('edit'), () => {
-                    self.loading = false
-                })
-            } else {
-                self.loading = false
+            this.initSelect()
+        },
+
+        initSelect: function () {
+            new SlimSelect({
+                select: 'select',
+            })
+        },
+
+        handleSubmit: function (event) {
+            event.preventDefault()
+
+            this.errors = []
+
+            if (this.name.length === 0) {
+                this.errors.push('Empty name')
             }
+
+            if (this.country.length === 0) {
+                this.errors.push('Empty country')
+            }
+
+            if (this.errors.length > 0) {
+                return
+            }
+
+            document.getElementById('places-form').submit()
         },
-        methods: {
-            decodeHTML: function (str) {
-                return decodeHTML(str)
-            },
-
-            getCoord: function () {
-                let self = this
-
-                getGeoCoord(function (latlng) {
-                    let coord = latlng.value.split(',')
-                    self.lat = coord[0]
-                    self.long = coord[1]
-                })
-            },
-            getInitialData: function (id, callback = null) {
-                let self = this
-
-                axios
-                    .get(
-                        ajaxUrl +
-                            '?action=list_place_single&pods_id=' +
-                            id +
-                            '&type=' +
-                            self.placeType
-                    )
-                    .then(function (response) {
-                        self.place = response.data.name
-                        self.country = {
-                            value: response.data.country,
-                            label: response.data.country,
-                        }
-                        self.note = response.data.note
-                        self.lat = response.data.latitude
-                        self.long = response.data.longitude
-                    })
-                    .catch(function () {
-                        self.error = true
-                    })
-                    .then(callback)
-            },
-        },
-    })
+    }
 }
