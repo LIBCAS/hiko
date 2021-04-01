@@ -106,6 +106,10 @@ window.placeForm = function () {
                     title: 'Vyberte místo',
                     type: 'question',
                 }).then((result) => {
+                    if (!result.value) {
+                        return
+                    }
+
                     const latlng = result.value.split(',')
 
                     context.latitude = latlng[0]
