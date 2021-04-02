@@ -42,17 +42,17 @@ function removeEmptyNameAlternatives(personID) {
                 '&l_type=' +
                 letterTypes['path']
         )
-        .then(function () {
+        .then(() => {
             table.replaceData(
                 ajaxUrl +
                     '?action=persons_table_data&type=' +
                     letterTypes['personType']
             )
         })
-        .catch(function (error) {
+        .catch((error) => {
             console.log(error)
         })
-        .then(function () {
+        .then(() => {
             spinner.classList.add('d-none')
         })
 }

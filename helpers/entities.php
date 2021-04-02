@@ -107,7 +107,6 @@ function get_grouped_profession_data($professions, $short)
                 'id' => $profession['id'],
             ];
         }
-
     }
 
     return $result;
@@ -130,3 +129,125 @@ function parse_professions_before_save($professions)
 
     return implode(';', $result);
 }
+
+
+add_action('wp_ajax_count_alternate_name', function () {
+    global $wpdb;
+
+    $types = get_hiko_post_types(test_input($_GET['l_type']));
+
+    if (!has_user_permission($types['editor'])) {
+        wp_send_json_error('Not allowed', 403);
+    }
+
+    $person_id = (int) $_GET['id'];
+
+    $person_meta = pods_field($types['person'], $person_id, 'persons_meta');
+
+    if (!$person_meta) {
+        wp_send_json_success([
+            'deleted' => [],
+        ]);
+    }
+
+    $person_meta = json_decode($person_meta);
+
+    if (!$person_meta || !array_key_exists('names', $person_meta)) {
+        wp_send_json_success([
+            'deleted' => [],
+        ]);
+    }
+
+    $table = $wpdb->prefix . 'pods_' . $types['letter'];
+
+    $person_meta->names = [];
+
+    $results = [];
+
+    foreach ($person_meta->names as $name) {
+        $count = $wpdb->get_var(
+            "SELECT COUNT(id) FROM {$table} WHERE authors_meta LIKE '%\"{$name}\"%'"
+        );
+
+        if ((int) $count === 0) {
+            $results['deleted'][] = $name;
+        } else {
+            $person_meta->names[] = $name;
+        }
+    }
+
+    $save = pods_api()->save_pod_item([
+        'pod' => $types['person'],
+        'data' => [
+            'persons_meta' => json_encode($person_meta, JSON_UNESCAPED_UNICODE)
+        ],
+        'id' => $person_id
+    ]);
+
+    $results['save'] = $save;
+
+    wp_send_json_success($results);
+});
+
+
+add_action('wp_ajax_persons_table_data', function () {
+    $fields = implode(', ', [
+        'letter_author.id AS au',
+        'letter_people_mentioned.id AS pm',
+        'letter_recipient.id AS re',
+        't.birth_year',
+        't.death_year',
+        't.profession_detailed',
+        't.profession_short',
+        't.id',
+        't.name',
+        't.persons_meta',
+        't.type',
+    ]);
+
+    $persons = pods(
+        test_input($_GET['type']),
+        [
+            'select' => $fields,
+            'orderby' => 't.name ASC',
+            'limit' => -1,
+            'groupby' => 't.id',
+        ]
+    );
+
+    $persons_filtered = [];
+
+    while ($persons->fetch()) {
+        $persons_meta = json_decode($persons->display('persons_meta'));
+
+        $alternative_names = [];
+        if ($persons_meta && array_key_exists('names', $persons_meta)) {
+            $alternative_names = $persons_meta->names;
+        }
+
+        $persons_filtered[] = [
+            'id' => $persons->display('id'),
+            'name' => $persons->display('name'),
+            'birth' => $persons->field('birth_year'),
+            'death' => $persons->field('death_year'),
+            'profession_short' => $persons->display('profession_short'),
+            'profession_detailed' => $persons->display('profession_detailed'),
+            'type' => empty($persons->display('type')) ? 'person' : $persons->display('type'),
+            'alternatives' => $alternative_names,
+            'relationships' => !is_null($persons->display('au')) || !is_null($persons->display('re')) || !is_null($persons->display('pm')),
+        ];
+    }
+
+    header('Content-Type: application/json');
+    header('Last-Modified: ' . get_gmdate());
+    echo json_encode($persons_filtered, JSON_UNESCAPED_UNICODE);
+    wp_die();
+});
+
+
+add_action('wp_ajax_list_people_simple', function () {
+    wp_die(json_encode(
+        get_pods_name_and_id(test_input($_GET['type']), true),
+        JSON_UNESCAPED_UNICODE
+    ));
+});

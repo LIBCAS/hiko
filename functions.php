@@ -159,67 +159,6 @@ function get_full_name()
 }
 
 
-function get_persons_table_data($person_type)
-{
-    $fields = [
-        'letter_author.id AS au',
-        'letter_people_mentioned.id AS pm',
-        'letter_recipient.id AS re',
-        't.birth_year',
-        't.death_year',
-        't.profession_detailed',
-        't.profession_short',
-        't.id',
-        't.name',
-        't.persons_meta',
-        't.type',
-    ];
-
-    $fields = implode(', ', $fields);
-
-    $persons = pods(
-        $person_type,
-        [
-            'select' => $fields,
-            'orderby' => 't.name ASC',
-            'limit' => -1,
-            'groupby' => 't.id'
-        ]
-    );
-
-    $persons_filtered = [];
-    $index = 0;
-    while ($persons->fetch()) {
-        $alternative_names = json_decode($persons->display('persons_meta'));
-
-        if ($alternative_names && array_key_exists('names', $alternative_names)) {
-            $alternative_names = $alternative_names->names;
-        } else {
-            $alternative_names = [];
-        }
-
-        $type = $persons->display('type');
-        if (empty($type)) {
-            $type = 'person';
-        }
-
-        $persons_filtered[$index]['id'] = $persons->display('id');
-        $persons_filtered[$index]['name'] = $persons->display('name');
-        $persons_filtered[$index]['birth'] = $persons->field('birth_year');
-        $persons_filtered[$index]['death'] = $persons->field('death_year');
-        $persons_filtered[$index]['profession_short'] = $persons->display('profession_short');
-        $persons_filtered[$index]['profession_detailed'] = $persons->display('profession_detailed');
-        $persons_filtered[$index]['type'] = $type;
-        $persons_filtered[$index]['alternatives'] = $alternative_names;
-        $persons_filtered[$index]['relationships'] = !is_null($persons->display('au')) || !is_null($persons->display('re')) || !is_null($persons->display('pm'));
-
-        $index++;
-    }
-
-    return $persons_filtered;
-}
-
-
 function get_places_table_data($place_type)
 {
     $fields = [
@@ -1017,7 +956,6 @@ add_image_size('xl-thumb', 300);
 
 require 'ajax/common.php';
 require 'ajax/letters.php';
-require 'ajax/people.php';
 require 'helpers/professions.php';
 require 'helpers/entities.php';
 require 'helpers/places.php';
