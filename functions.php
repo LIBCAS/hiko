@@ -962,7 +962,7 @@ require 'helpers/places.php';
 require 'ajax/images.php';
 require 'ajax/export.php';
 require 'ajax/export-palladio.php';
-require 'ajax/location.php';
+require 'helpers/location.php';
 require 'ajax/geonames.php';
 require 'ajax/keywords.php';
 require 'ajax/professions.php';
