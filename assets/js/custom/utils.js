@@ -23,10 +23,6 @@ function getNameById(data, id) {
     return filtered[0].name
 }
 
-function stringContains(str, substr) {
-    return str.indexOf(substr) !== -1
-}
-
 function getLetterType() {
     const datatypes = document.getElementById('datatype')
 

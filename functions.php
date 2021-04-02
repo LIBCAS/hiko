@@ -136,51 +136,12 @@ function show_alerts()
 }
 
 
-function get_array_name($value)
-{
-    return is_array($value) ? $value['name'] : '';
-}
-
-
-function get_nonempty_value($value)
-{
-    return $value !== '';
-}
-
-
 function get_form_checkbox_val($name, $array)
 {
     if (array_key_exists($name, $array)) {
         return $array[$name] == 'on' ? 1 : 0;
     }
     return 0;
-}
-
-
-function get_related_name($related_field)
-{
-    $names = [];
-
-    if (empty($related_field)) {
-        return [];
-    }
-
-    foreach ($related_field as $field) {
-        $names[] = $field['name'];
-    }
-
-    return $names;
-}
-
-
-function user_has_role($role)
-{
-    $user = wp_get_current_user();
-    if (in_array($role, (array) $user->roles)) {
-        return true;
-    }
-
-    return false;
 }
 
 
@@ -349,28 +310,6 @@ function get_pods_name_and_id($type, $person = false)
     $result = json_encode($result);
     $result = json_decode($result, true);
     return $result;
-}
-
-
-function parse_json_file($url)
-{
-    $file = file_get_contents($url);
-    $file = json_decode($file);
-    return $file;
-}
-
-
-function sum_array_length($array)
-{
-    $sum = 0;
-    foreach ($array as $el) {
-        if (is_array($el)) {
-            if (count($el) > 0) {
-                $sum++;
-            }
-        }
-    }
-    return $sum;
 }
 
 
@@ -590,18 +529,6 @@ function get_editors_from_history($history)
     }
 
     return $editors;
-}
-
-
-function get_all_objects_by_id($object, $v)
-{
-    $found = [];
-    foreach ($object as $o) {
-        if ($o->id == $v) {
-            $found[] = $o;
-        }
-    }
-    return $found;
 }
 
 
@@ -947,13 +874,6 @@ function hiko_sanitize_file_name($file)
 }
 
 
-function get_languages()
-{
-    return json_decode(
-        get_ssl_file(get_template_directory_uri() . '/assets/data/languages.json')
-    );
-}
-
 function get_json_languages()
 {
     $languages = get_ssl_file(get_template_directory_uri() . '/assets/data/languages.json');
@@ -985,57 +905,6 @@ function display_persons_and_places($person_type, $place_type)
     </script>
     <?php
     return ob_get_clean();
-}
-
-
-function create_hiko_json_cache($name, $json_data)
-{
-    $cache_folder = WP_CONTENT_DIR . '/hiko-cache';
-    $filename = "{$name}.json";
-
-    if (!file_exists($cache_folder)) {
-        wp_mkdir_p($cache_folder);
-    }
-
-    $save = file_put_contents($cache_folder . '/' . $filename, $json_data);
-
-    return $save;
-}
-
-
-function hiko_cache_exists($name)
-{
-    $cache_folder = WP_CONTENT_DIR . '/hiko-cache';
-    $file = "{$name}.json";
-
-    if (file_exists($cache_folder . '/' . $file)) {
-        return true;
-    }
-    return false;
-}
-
-
-function delete_hiko_cache($name)
-{
-    $file = WP_CONTENT_DIR . '/hiko-cache' . '/' . $name . '.json';
-
-    if (file_exists($file)) {
-        unlink($file);
-    }
-    return false;
-}
-
-
-function read_hiko_cache($name)
-{
-    $file = get_hiko_cache_file($name);
-    return file_get_contents($file);
-}
-
-
-function get_hiko_cache_file($name)
-{
-    return WP_CONTENT_DIR . '/hiko-cache' . '/' . $name . '.json';
 }
 
 
