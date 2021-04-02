@@ -26,8 +26,9 @@
     <script src="https://cdn.jsdelivr.net/npm/axios@0.18.0/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tabulator-tables@4.9.3/dist/js/tabulator.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
-
-    <script src="<?= get_template_directory_uri(); ?>/assets/dist/custom.min.js?v=<?= filemtime(get_template_directory() . '/assets/dist/custom.min.js'); ?>"></script>
+    <script src="<?= get_template_directory_uri() . '/assets/vendor/tagify/tagify.min.js' ?>"></script>
+    <script src="<?= get_template_directory_uri() . '/assets/vendor/tagify/dragsort.js' ?>"></script>
+    <script src="<?= get_template_directory_uri() . '/assets/dist/custom.min.js?v=' . filemtime(get_template_directory() . '/assets/dist/custom.min.js'); ?>"></script>
 
     <?php wp_footer(); ?>
 </body>

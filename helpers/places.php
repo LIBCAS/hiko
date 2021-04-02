@@ -49,6 +49,10 @@ function save_place($place_type, $action)
     }
 
     $_SESSION['success'] = 'Uloženo';
+
+    wp_redirect($_SERVER['HTTP_REFERER']);
+
+    die();
 }
 
 

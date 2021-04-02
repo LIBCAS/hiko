@@ -1,19 +1,11 @@
-/* global decodeHTML */
+/* global decodeHTML Tagify DragSort */
 
 window.entityForm = function () {
     return {
         type: 'person',
         surname: '',
         forename: '',
-        note: '',
-        birth_year: null,
-        death_year: null,
-        gender: '',
-        nationality: '',
         viaf: '',
-        profession_short: [],
-        profession_detailed: [],
-        names: [],
 
         errors: [],
 
@@ -23,21 +15,46 @@ window.entityForm = function () {
             )
 
             if (data.length === 0) {
-                return
+                return this.initTagify()
             }
 
             this.type = data.type
             this.surname = decodeHTML(data.surname)
             this.forename = decodeHTML(data.forename)
-            this.note = data.note
-            this.birth_year = data.birth_year
-            this.death_year = data.death_year
-            this.gender = data.gender
-            this.nationality = data.nationality
             this.viaf = data.viaf
-            this.profession_short = data.profession_short
-            this.profession_detailed = data.profession_detailed
-            this.names = data.names
+
+            this.initTagify()
+        },
+
+        initTagify: function () {
+            this.tagifyTemplate('profession_short', 'profession-short-data')
+            this.tagifyTemplate(
+                'profession_detailed',
+                'profession-detailed-data'
+            )
+        },
+
+        tagifyTemplate: function (renderElId, dataElId) {
+            const tags = new Tagify(document.getElementById(renderElId), {
+                delimiters: ';',
+                enforceWhitelist: true,
+                whitelist: JSON.parse(
+                    document.getElementById(dataElId).innerHTML
+                ),
+                dropdown: {
+                    enabled: 0,
+                    maxItems: Infinity,
+                },
+            })
+
+            new DragSort(tags.DOM.scope, {
+                selector: '.' + tags.settings.classNames.tag,
+                callbacks: {
+                    dragEnd: () => {
+                        tags.updateValueByDOMTags()
+                    },
+                },
+            })
         },
 
         fullName: function () {
