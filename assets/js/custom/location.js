@@ -1,7 +1,7 @@
 /* global Swal axios ajaxUrl decodeHTML */
 const commonSwalOptions = {
     buttonsStyling: false,
-    confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+    confirmButtonClass: 'btn btn-primary btn-sn mr-1',
     cancelButtonClass: 'btn btn-link text-danger btn-sm ml-1',
     confirmButtonText: 'OK',
     cancelButtonText: 'Zrušit',

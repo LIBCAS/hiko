@@ -6,9 +6,7 @@ function insert_profession()
         wp_send_json_error('Not allowed', 403);
     }
 
-    $data = file_get_contents('php://input');
-    $data = mb_convert_encoding($data, 'UTF-8');
-    $data = json_decode($data);
+    $data = decode_php_input();
 
     $action = $data->action;
     $id = $data->id;

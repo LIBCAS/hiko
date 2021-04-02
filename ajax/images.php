@@ -103,8 +103,7 @@ add_action('wp_ajax_list_images', 'list_images');
 
 function delete_hiko_image()
 {
-    $data = file_get_contents('php://input');
-    $data = json_decode(mb_convert_encoding($data, 'UTF-8'));
+    $data = decode_php_input();
 
     $pod = pods(
         sanitize_text_field($data->l_type),
@@ -132,8 +131,7 @@ add_action('wp_ajax_delete_hiko_image', 'delete_hiko_image');
 
 function change_metadata()
 {
-    $data = file_get_contents('php://input');
-    $data = json_decode(mb_convert_encoding($data, 'UTF-8'));
+    $data = decode_php_input();
 
     if (!property_exists($data, 'img_id') || !property_exists($data, 'img_status') || !property_exists($data, 'img_description')) {
         wp_send_json_error('Not found', 404);

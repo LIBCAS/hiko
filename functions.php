@@ -83,6 +83,17 @@ function test_postdata($associative_array)
 }
 
 
+function decode_php_input()
+{
+    return json_decode(
+        mb_convert_encoding(
+            file_get_contents('php://input'),
+            'UTF-8'
+        )
+    );
+}
+
+
 function alert($message, $type = 'info')
 {
     ob_start(); ?>
@@ -964,5 +975,5 @@ require 'ajax/export.php';
 require 'ajax/export-palladio.php';
 require 'helpers/location.php';
 require 'ajax/geonames.php';
-require 'ajax/keywords.php';
+require 'helpers/keywords.php';
 require 'ajax/professions.php';

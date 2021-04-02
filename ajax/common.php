@@ -1,9 +1,7 @@
 <?php
 
 add_action('wp_ajax_delete_hiko_pod', function () {
-    $data = file_get_contents('php://input');
-    $data = json_decode(mb_convert_encoding($data, 'UTF-8'));
-
+    $data = decode_php_input();
     $type = test_input($data->pod_type);
     $types = get_hiko_post_types(test_input($data->pod_name));
 

@@ -5,8 +5,7 @@ add_action('wp_ajax_insert_location_data', function () {
         wp_send_json_error('Not allowed', 403);
     }
 
-    $data = file_get_contents('php://input');
-    $data = json_decode(mb_convert_encoding($data, 'UTF-8'));
+    $data = decode_php_input();
 
     $save_data = [
         'pod' => 'location',
@@ -31,8 +30,7 @@ add_action('wp_ajax_delete_location_data', function () {
         wp_send_json_error('Not allowed', 403);
     }
 
-    $data = file_get_contents('php://input');
-    $data = json_decode(mb_convert_encoding($data, 'UTF-8'));
+    $data = decode_php_input();
     $pod = pods('location', $data->id);
 
     wp_send_json_success($pod->delete());
