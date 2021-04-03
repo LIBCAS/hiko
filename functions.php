@@ -379,8 +379,6 @@ function get_letters_basic_meta($meta, $draft)
 
     $fields = [
         't.id AS ID',
-        't.signature',
-        't.repository',
         't.date_day',
         't.date_month',
         't.date_year',
@@ -967,6 +965,7 @@ add_image_size('xl-thumb', 300);
 
 require 'ajax/common.php';
 require 'ajax/letters.php';
+require 'helpers/letters.php';
 require 'helpers/professions.php';
 require 'helpers/entities.php';
 require 'helpers/places.php';
