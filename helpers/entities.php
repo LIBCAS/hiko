@@ -87,7 +87,7 @@ function parse_professions($professions_list, $all_professions)
     foreach (explode(';', $professions_list) as $profession) {
         $meta_index = array_search($profession, array_column($all_professions, 'id'));
 
-        if ($meta_index) {
+        if ($meta_index !== false) {
             $selected[] = $all_professions[$meta_index]['name'];
         }
     }
