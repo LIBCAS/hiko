@@ -113,8 +113,8 @@ function fetch_types()
             "pol_editor",
             "sachs_editor",
             "marci_editor",
-            "wirth_profession",
-            "jak_profession"
+            "wirth_editor",
+            "jak_editor"
         ]
     ];
 }
