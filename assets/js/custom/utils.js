@@ -1,5 +1,14 @@
 /* global Swal axios ajaxUrl */
 
+function normalize(str) {
+    return str
+        .toString()
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+}
+
 function errorInfoSwal(error, title = 'Při ukládání došlo k chybě.') {
     return {
         title: title,
@@ -29,16 +38,6 @@ function getLetterType() {
     if (datatypes) {
         return JSON.parse(document.getElementById('datatype').innerHTML)
     }
-}
-
-function getObjectValues(obj) {
-    let result = []
-    let i
-    let l = obj.length
-    for (i = 0; i < l; i++) {
-        result.push(obj[i].value)
-    }
-    return result
 }
 
 function arrayToSingleObject(data) {
