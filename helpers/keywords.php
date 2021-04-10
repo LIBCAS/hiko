@@ -29,7 +29,7 @@ add_action('wp_ajax_insert_keyword', function () {
 });
 
 
-function get_keywords_table_data($type = false, $categories = false, $ajax = true)
+function list_keywords($type = false, $categories = false, $ajax = true)
 {
     $is_category = $categories ? (int) $categories : (int) $_GET['categories']; // not working directly in pods()
 
@@ -62,12 +62,10 @@ function get_keywords_table_data($type = false, $categories = false, $ajax = tru
 
     if ($ajax) {
         header('Content-Type: application/json');
-        wp_die(json_encode(
-            $keywords_filtered,
-            JSON_UNESCAPED_UNICODE
-        ));
+        echo json_encode($keywords_filtered, JSON_UNESCAPED_UNICODE);
+        die();
     }
 
     return $keywords_filtered;
 }
-add_action('wp_ajax_keywords_table_data', 'get_keywords_table_data');
+add_action('wp_ajax_keywords_table_data', 'list_keywords');

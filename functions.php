@@ -878,10 +878,26 @@ function get_editors_by_role($role)
     ]);
 }
 
+function get_languages()
+{
+    $langs = json_decode(
+        get_ssl_file(get_template_directory_uri() . '/assets/data/languages.json'),
+        true
+    );
+
+    return array_column(array_values($langs), 'name');
+}
+
 
 function input_value($form_data, $field)
 {
     return isset($form_data[$field]) ? $form_data[$field] : '';
+}
+
+
+function input_value_list($form_data, $field)
+{
+    return isset($form_data[$field]) ? implode(';', $form_data[$field]) : '';
 }
 
 
@@ -902,7 +918,6 @@ function input_json_value($form_data, $field)
 
     return htmlspecialchars(json_encode($results, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
 }
-
 
 
 function input_bool($form_data, $field)

@@ -62,5 +62,5 @@ if ($is_supervisor) {
 </div>
 
 <script id="categories-data" type="application/json">
-    <?= json_encode(get_keywords_table_data($pods_types['keyword'], 1, false)); ?>
+    <?= json_encode(list_keywords($pods_types['keyword'], 1, false)); ?>
 </script>

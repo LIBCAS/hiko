@@ -46,5 +46,5 @@ $keyword_type = $pods_types['keyword'];
 </div>
 
 <script id="categories-data" type="application/json">
-    <?= json_encode(get_keywords_table_data($keyword_type, 1, false)); ?>
+    <?= json_encode(list_keywords($keyword_type, 1, false)); ?>
 </script>
