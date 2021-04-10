@@ -215,54 +215,6 @@ function get_places_table_data($place_type)
 }
 
 
-function get_pods_name_and_id($type, $person = false)
-{
-    $fields = [
-        't.id',
-        't.name',
-    ];
-
-    if ($person) {
-        $fields[] = 't.birth_year';
-        $fields[] = 't.death_year';
-        $fields[] = 't.type';
-    }
-
-    $fields = implode(', ', $fields);
-
-    $pod = pods(
-        $type,
-        [
-            'select' => $fields,
-            'orderby' => 't.name ASC',
-            'limit' => -1
-        ]
-    );
-
-    $result = [[
-        'id' => '',
-        'name' => '',
-    ]];
-
-    if ($pod->data()) {
-        $result = $pod->data();
-    } elseif ($person) {
-        $result = [[
-            'id' => '',
-            'name' => '',
-            'birth_year' => '',
-            'death_year' => '',
-            'type' => ''
-        ]];
-    }
-
-    /* convert to array of arrays instead objects */
-    $result = json_encode($result);
-    $result = json_decode($result, true);
-    return $result;
-}
-
-
 function has_user_permission($role)
 {
     if (!is_user_logged_in()) {
@@ -822,40 +774,6 @@ function hiko_sanitize_file_name($file)
 }
 
 
-function get_json_languages()
-{
-    $languages = get_ssl_file(get_template_directory_uri() . '/assets/data/languages.json');
-    ob_start(); ?>
-    <script id="languages" type="application/json">
-        <?= $languages; ?>
-    </script>
-    <?php
-    return ob_get_clean();
-}
-
-
-function display_persons_and_places($person_type, $place_type)
-{
-    $persons = json_encode(
-        get_pods_name_and_id($person_type, true),
-        JSON_UNESCAPED_UNICODE
-    );
-
-    $places = list_places($place_type, false);
-
-    ob_start(); ?>
-    <script id="people" type="application/json">
-        <?= $persons; ?>
-    </script>
-
-    <script id="places" type="application/json">
-        <?= $places; ?>
-    </script>
-    <?php
-    return ob_get_clean();
-}
-
-
 function get_ssl_file($url)
 {
     $ch = curl_init();
@@ -958,6 +876,42 @@ function get_editors_by_role($role)
         'orderby' => 'meta_value',
         'order' => 'asc',
     ]);
+}
+
+
+function input_value($form_data, $field)
+{
+    return isset($form_data[$field]) ? $form_data[$field] : '';
+}
+
+
+function input_json_value($form_data, $field)
+{
+    if (!isset($form_data[$field]) || empty($form_data[$field])) {
+        return '[]';
+    }
+
+    $results = [];
+
+    foreach ($form_data[$field] as $item) {
+        $results[] = [
+            'id' => $item['id'],
+            'value' => $item['name'],
+        ];
+    }
+
+    return htmlspecialchars(json_encode($results, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
+}
+
+
+
+function input_bool($form_data, $field)
+{
+    if (!isset($form_data[$field])) {
+        return '';
+    }
+
+    return $form_data[$field] ? 'checked' : '';
 }
 
 
