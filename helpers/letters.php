@@ -43,7 +43,6 @@ function get_letter($types, $id, $lang, $private, $image)
         'origin_uncertain',
         'recipient_inferred',
         'recipient_uncertain',
-        'related_resources',
     ];
 
     $private_fields = [
@@ -63,6 +62,10 @@ function get_letter($types, $id, $lang, $private, $image)
                     'id' => $field['id'],
                     'name' => $field['name'],
                 ];
+
+                if (in_array($key, ['l_author', 'recipient', 'people_mentioned'])) {
+                    $meta['name'] = format_person_name($field['name'], $field['birth_year'], $field['death_year']);
+                }
 
                 if (in_array($key, ['l_author', 'recipient'])) {
                     $meta = get_field_related_meta($meta, json_decode($pod->field('authors_meta'), true));
@@ -92,6 +95,11 @@ function get_letter($types, $id, $lang, $private, $image)
 
         if ($key === 'languages') {
             $result['languages'] = explode(';', $value);
+            continue;
+        }
+
+        if ($key === 'related_resources') {
+            $result['related_resources'] = empty($value) ? [] : json_decode($value, true);
             continue;
         }
 

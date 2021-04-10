@@ -76,6 +76,45 @@ function save_entity($person_type, $action)
 }
 
 
+function list_entities($type)
+{
+    $data = pods(
+        $type,
+        [
+            'select' => implode(', ', [
+                't.id',
+                't.name',
+                't.birth_year',
+                't.death_year',
+            ]),
+            'orderby' => 't.name ASC',
+            'limit' => -1
+        ]
+    );
+
+    $entities = [];
+
+    while ($data->fetch()) {
+        $entities[] = [
+            'id' => $data->display('id'),
+            'name' => format_person_name($data->display('name'), $data->display('birth_year'), $data->display('death_year')),
+        ];
+    }
+
+    return $entities;
+}
+
+
+function format_person_name($name, $birth, $death)
+{
+    if ($birth != 0 || $death != 0) {
+        $name .= empty($birth) ? ' (–' : ' (' . $birth . '–';
+        $name .= empty($death) ? ')' : $death . ')';
+    }
+
+    return $name;
+}
+
 function parse_professions($professions_list, $all_professions)
 {
     if (empty($professions_list)) {
@@ -246,8 +285,9 @@ add_action('wp_ajax_persons_table_data', function () {
 
 
 add_action('wp_ajax_list_people_simple', function () {
+    header('Content-Type: application/json');
     wp_die(json_encode(
-        get_pods_name_and_id(test_input($_GET['type']), true),
+        list_entities(test_input($_GET['type']), true),
         JSON_UNESCAPED_UNICODE
     ));
 });
