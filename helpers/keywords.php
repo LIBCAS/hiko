@@ -29,16 +29,14 @@ add_action('wp_ajax_insert_keyword', function () {
 });
 
 
-function list_keywords($type = false, $categories = false, $ajax = true)
+function list_keywords($type, $categories)
 {
-    $is_category = $categories ? (int) $categories : (int) $_GET['categories']; // not working directly in pods()
-
     $keywords = pods(
-        $type ? $type : test_input($_GET['type']),
+        $type,
         [
             'limit' => -1,
             'orderby' => 't.name ASC',
-            'where' => 't.is_category = ' . $is_category,
+            'where' => 't.is_category = ' . (int) $categories,
             'select' => implode(', ', [
                 't.id',
                 't.name AS name',
@@ -60,12 +58,12 @@ function list_keywords($type = false, $categories = false, $ajax = true)
         ];
     }
 
-    if ($ajax) {
-        header('Content-Type: application/json');
-        echo json_encode($keywords_filtered, JSON_UNESCAPED_UNICODE);
-        die();
-    }
-
     return $keywords_filtered;
 }
-add_action('wp_ajax_keywords_table_data', 'list_keywords');
+
+add_action('wp_ajax_keywords_table_data', function () {
+    $keywords = list_keywords(test_input($_GET['type']), (int) $_GET['categories']);
+    header('Content-Type: application/json');
+    echo json_encode($keywords, JSON_UNESCAPED_UNICODE);
+    wp_die();
+});

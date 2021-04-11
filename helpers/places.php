@@ -65,10 +65,8 @@ function get_countries()
 }
 
 
-function list_places($type = false, $ajax = true)
+function list_places($type)
 {
-    $type = $type ? $type : test_input($_GET['type']);
-
     $pod = pods(
         $type,
         [
@@ -102,13 +100,11 @@ function list_places($type = false, $ajax = true)
         $places[] = [ 'id' => '', 'name' => '', ];
     }
 
-    $places = json_encode($places, JSON_UNESCAPED_UNICODE);
-
-    if ($ajax) {
-        header('Content-Type: application/json');
-        wp_die($places);
-    }
-
-    return $places;
+    return json_encode($places, JSON_UNESCAPED_UNICODE);
 }
-add_action('wp_ajax_list_places_simple', 'list_places');
+
+
+add_action('wp_ajax_list_places_simple', function () {
+    header('Content-Type: application/json');
+    wp_die(list_places(test_input($_GET['type'])));
+});

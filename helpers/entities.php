@@ -97,7 +97,7 @@ function list_entities($type)
     while ($data->fetch()) {
         $entities[] = [
             'id' => $data->display('id'),
-            'name' => format_person_name($data->display('name'), $data->display('birth_year'), $data->display('death_year')),
+            'name' => format_person_name($data->display('name'), $data->field('birth_year'), $data->field('death_year')),
         ];
     }
 
