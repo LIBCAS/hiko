@@ -21,17 +21,20 @@ function get_place($type, $id)
 
 function save_place($place_type, $action)
 {
+    $country = json_decode(stripslashes($_POST['country']), true);
+
+    if (!$country || !isset($country[0])) {
+        return $_SESSION['warning'] = 'Chybí povinné údaje';
+    }
+
     $data = test_postdata([
-        'country' => 'country',
         'latitude' => 'latitude',
         'longitude' => 'longitude',
         'name' => 'place',
         'note' => 'note',
     ]);
 
-    if (empty($data['country']) || empty($data['name'])) {
-        return $_SESSION['warning'] = 'Chybí povinné údaje';
-    }
+    $data['country'] = test_input($country[0]['value']);
 
     $save = [
         'pod' => $place_type,
@@ -58,10 +61,17 @@ function save_place($place_type, $action)
 
 function get_countries()
 {
-    return json_decode(
+    $countries = json_decode(
         get_ssl_file(get_template_directory_uri() . '/assets/data/countries.json'),
         true
     );
+    return array_map(function ($country) {
+        return [
+            'value' => $country['name'],
+        ];
+    }, $countries);
+
+
 }
 
 

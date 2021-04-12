@@ -1,4 +1,4 @@
-/* global SlimSelect Swal ajaxUrl axios */
+/* global Tagify Swal ajaxUrl axios normalize */
 
 window.placeForm = function () {
     return {
@@ -13,8 +13,9 @@ window.placeForm = function () {
             const data = JSON.parse(
                 document.getElementById('place-data').innerHTML
             )
+
             if (data.length === 0) {
-                this.initSelect()
+                this.initTagify()
                 return
             }
 
@@ -24,12 +25,45 @@ window.placeForm = function () {
             this.longitude = data.longitude
             this.note = data.note
 
-            this.initSelect()
+            this.initTagify()
         },
 
-        initSelect: function () {
-            new SlimSelect({
-                select: 'select',
+        initTagify: function () {
+            const countries = JSON.parse(
+                document.getElementById('countries').innerHTML
+            )
+
+            const t = new Tagify(document.getElementById('country'), {
+                enforceWhitelist: true,
+                whitelist: countries,
+                mode: 'select',
+                dropdown: {
+                    enabled: 0,
+                    highlightFirst: true,
+                    maxItems: Infinity,
+                    placeAbove: false,
+                    searchKeys: ['value'],
+                },
+            })
+
+            // default search not working in single select mode
+            t.on('input', (e) => {
+                const search = normalize(e.detail.value)
+                const results = []
+
+                t.settings.whitelist.length = 0 // reset the whitelist
+                t.loading(true).dropdown.hide.call(t)
+
+                countries.map((option) => {
+                    if (normalize(option.value).includes(search)) {
+                        results.push({
+                            value: option.value,
+                        })
+                    }
+                })
+
+                t.settings.whitelist = results
+                t.loading(false).dropdown.show.call(t, search) // render the suggestions dropdown
             })
         },
 

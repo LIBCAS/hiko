@@ -17,6 +17,9 @@ show_alerts(); ?>
     <script id="place-data" type="application/json">
         <?= json_encode($place, JSON_UNESCAPED_UNICODE) ?>
     </script>
+    <script id="countries" type="application/json">
+        <?= json_encode(get_countries(), JSON_UNESCAPED_UNICODE) ?>
+    </script>
     <div class="card bg-light" x-data="placeForm()" x-init="fetch()" x-cloak>
         <div class="card-body">
             <form id="places-form" method="post" x-on:keydown.enter.prevent x-on:submit="handleSubmit(event)" autocomplete="off">
@@ -30,13 +33,7 @@ show_alerts(); ?>
                     </div>
                     <div class="form-group required">
                         <label for="country">Country</label>
-                        <select x-model="country" id="country" name="country" required>
-                            <?php foreach (get_countries() as $country) : ?>
-                                <option value="<?= $country['name'] ?>" <?= isset($place['country']) && $country['name'] === $place['country'] ? 'selected' : '' ?>>
-                                    <?= $country['name'] ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <input type="text" value="<?= isset($place['country']) ? $place['country'] : '' ?>" id="country" name="country" class="tagify-select hidden-tagify-remove">
                     </div>
                     <div class="form-group">
                         <label for="note">Note on place</label>
