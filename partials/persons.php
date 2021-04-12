@@ -31,5 +31,10 @@ $profession_type = $pods_types['profession'];
     </div>
 </div>
 <script id="professions" type="application/json">
-    <?= get_professions_list($profession_type, false, $pods_types['default_lang']); ?>
+<?php
+echo json_encode(
+    get_professions_list($profession_type, $pods_types['default_lang']),
+    JSON_UNESCAPED_UNICODE
+);
+?>
 </script>
