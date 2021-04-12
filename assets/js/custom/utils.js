@@ -20,18 +20,6 @@ function errorInfoSwal(error, title = 'Při ukládání došlo k chybě.') {
     }
 }
 
-function getNameById(data, id) {
-    const filtered = data.filter((line) => {
-        return line.id == id
-    })
-
-    if (filtered.length == 0) {
-        return false
-    }
-
-    return filtered[0].name
-}
-
 function getLetterType() {
     const datatypes = document.getElementById('datatype')
 
