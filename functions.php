@@ -137,12 +137,12 @@ function get_alert_markup($message, $type = 'info')
 
 function show_alerts()
 {
-    if (isset($_SESSION['success'])) {
-        echo get_alert_markup($_SESSION['success'], 'success');
-        unset($_SESSION['success']);
-    } else if (isset($_SESSION['warning'])) {
-        echo get_alert_markup($_SESSION['warning'], 'warning');
-        unset($_SESSION['warning']);
+    if (isset($_SESSION['hiko']['success'])) {
+        echo get_alert_markup($_SESSION['hiko']['success'], 'success');
+        unset($_SESSION['hiko']['success']);
+    } else if (isset($_SESSION['hiko']['warning'])) {
+        echo get_alert_markup($_SESSION['hiko']['warning'], 'warning');
+        unset($_SESSION['hiko']['warning']);
     }
 }
 

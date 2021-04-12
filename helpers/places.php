@@ -24,7 +24,7 @@ function save_place($place_type, $action)
     $country = json_decode(stripslashes($_POST['country']), true);
 
     if (!$country || !isset($country[0])) {
-        return $_SESSION['warning'] = 'Chybí povinné údaje';
+        return $_SESSION['hiko']['warning'] = 'Chybí povinné údaje';
     }
 
     $data = test_postdata([
@@ -48,10 +48,10 @@ function save_place($place_type, $action)
     $new_place = pods_api()->save_pod_item($save);
 
     if (is_wp_error($new_place)) {
-        $_SESSION['warning'] = $new_place->get_error_message();
+        $_SESSION['hiko']['warning'] = $new_place->get_error_message();
     }
 
-    $_SESSION['success'] = 'Uloženo';
+    $_SESSION['hiko']['success'] = 'Uloženo';
 
     wp_redirect($_SERVER['HTTP_REFERER']);
 

@@ -65,10 +65,10 @@ function save_entity($person_type, $action)
     $new_entity = pods_api()->save_pod_item($save_data);
 
     if (is_wp_error($new_entity)) {
-        $_SESSION['warning'] = $new_entity->get_error_message();
+        $_SESSION['hiko']['warning'] = $new_entity->get_error_message();
     }
 
-    $_SESSION['success'] = 'Uloženo';
+    $_SESSION['hiko']['success'] = 'Uloženo';
 
     wp_redirect($_SERVER['HTTP_REFERER']);
 
