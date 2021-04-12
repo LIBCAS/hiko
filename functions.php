@@ -944,4 +944,3 @@ require 'ajax/export-palladio.php';
 require 'helpers/location.php';
 require 'ajax/geonames.php';
 require 'helpers/keywords.php';
-require 'ajax/professions.php';
