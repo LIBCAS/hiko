@@ -135,23 +135,6 @@ function parse_professions($professions_list, $all_professions)
 }
 
 
-function get_grouped_profession_data($professions, $short)
-{
-    $result = [];
-
-    foreach ($professions as $profession) {
-        if ($profession['palladio'] === $short) {
-            $result[] = [
-                'value' => $profession['name'],
-                'id' => $profession['id'],
-            ];
-        }
-    }
-
-    return $result;
-}
-
-
 function parse_professions_before_save($professions)
 {
     if (!isset($_POST[$professions]) || empty($_POST[$professions])) {

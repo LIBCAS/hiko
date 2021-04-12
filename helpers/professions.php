@@ -120,3 +120,30 @@ add_action('wp_ajax_professions_table_data', function () {
     header('Content-Type: application/json');
     wp_die(json_encode($professions_filtered, JSON_UNESCAPED_UNICODE));
 });
+
+
+add_action('wp_ajax_professions_select_data', function () {
+    $professions = get_professions($_GET['type'], $_GET['default_lang']);
+    $short = [];
+    $detailed = [];
+
+    foreach ($professions as $pr) {
+        if ($pr['palladio'] === true) {
+            $short[] = [ 'value' => $pr['name'], 'id' => $pr['id'], ];
+        } else {
+            $detailed[] = [ 'value' => $pr['name'], 'id' => $pr['id'], ];
+        }
+    }
+
+    header('Content-Type: application/json');
+
+    echo json_encode(
+        [
+            'professions_short' => $short,
+            'professions_detailed' => $detailed,
+        ],
+        JSON_UNESCAPED_UNICODE
+    );
+
+    wp_die();
+});

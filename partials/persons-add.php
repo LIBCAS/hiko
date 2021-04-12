@@ -18,12 +18,6 @@ show_alerts(); ?>
     <script id="entity-data" type="application/json">
         <?= json_encode($entity, JSON_UNESCAPED_UNICODE) ?>
     </script>
-    <script id="profession-short-data" type="application/json">
-        <?= json_encode(get_grouped_profession_data($professions, true), JSON_UNESCAPED_UNICODE) ?>
-    </script>
-    <script id="profession-detailed-data" type="application/json">
-        <?= json_encode(get_grouped_profession_data($professions, false), JSON_UNESCAPED_UNICODE) ?>
-    </script>
     <div class="card bg-light" x-data="entityForm()" x-init="fetch()" x-cloak>
         <div class="card-body">
             <form id="entity-form" action="#" method="post" x-on:keydown.enter.prevent x-on:submit="handleSubmit(event)" autocomplete="off">
@@ -79,16 +73,22 @@ show_alerts(); ?>
                             <input value="<?= isset($entity['gender']) ? $entity['gender'] : '' ?>" list="genders" type="text" class="form-control form-control-sm" id="gender" name="gender">
                         </div>
                         <div class="form-group">
-                            <label for="profession_short">
-                                Palladio Profession <span class="pl-1 pointer oi oi-reload" @click="regenerateProfessions($event)"></span>
+                            <label for="profession_short" class="d-flex justify-content-between">
+                                Palladio Profession <button type="button" class="p-0 pointer oi oi-reload btn btn-sm" @click="regenerateProfessions($event)" aria-label="Reload professions" title="Reload professions"></button>
                             </label>
-                            <input type="text" value="<?= isset($entity['profession_short']) ? $entity['profession_short'] : '' ?>" id="profession_short" name="profession_short" class="">
+                            <input type="text" value="<?= isset($entity['profession_short']) ? $entity['profession_short'] : '' ?>" id="profession_short" name="profession_short" class="tagify-select">
+                            <small class="form-text text-muted">
+                                reorder professions by dragging
+                            </small>
                         </div>
                         <div class="form-group">
-                            <label for="profession_detailed">
-                                Professions <span class="pl-1 pointer oi oi-reload" @click="regenerateProfessions($event)"></span>
+                            <label for="profession_detailed" class="d-flex justify-content-between">
+                                Professions <button type="button" class="p-0 pointer oi oi-reload btn btn-sm" @click="regenerateProfessions($event)" aria-label="Reload professions" title="Reload professions"></button>
                             </label>
-                            <input type="text" value="<?= isset($entity['profession_detailed']) ? $entity['profession_detailed'] : '' ?>" id="profession_detailed" name="profession_detailed" class="">
+                            <input type="text" value="<?= isset($entity['profession_detailed']) ? $entity['profession_detailed'] : '' ?>" id="profession_detailed" name="profession_detailed" class="tagify-select">
+                            <small class="form-text text-muted">
+                                reorder professions by dragging
+                            </small>
                         </div>
                     </fieldset>
                 </div>

@@ -1,4 +1,4 @@
-/* global decodeHTML Tagify DragSort */
+/* global decodeHTML Tagify DragSort ajaxUrl getLetterType axios */
 
 window.entityForm = function () {
     return {
@@ -6,6 +6,10 @@ window.entityForm = function () {
         surname: '',
         forename: '',
         viaf: '',
+        professionsShort: [],
+        professionsDetailed: [],
+        professionsShortTagify: null,
+        professionsDetailedTagify: null,
 
         errors: [],
 
@@ -18,7 +22,7 @@ window.entityForm = function () {
                 return this.initTagify()
             }
 
-            this.type = data.type
+            this.type = data.type ? data.type : 'person'
             this.surname = decodeHTML(data.surname)
             this.forename = decodeHTML(data.forename)
             this.viaf = data.viaf
@@ -27,23 +31,32 @@ window.entityForm = function () {
         },
 
         initTagify: function () {
-            this.tagifyTemplate('profession_short', 'profession-short-data')
-            this.tagifyTemplate(
-                'profession_detailed',
-                'profession-detailed-data'
-            )
+            const context = this
+
+            context.getProfessions(() => {
+                context.tagifyTemplate(
+                    'profession_short',
+                    context.professionsShort,
+                    'professionsShortTagify'
+                )
+                context.tagifyTemplate(
+                    'profession_detailed',
+                    context.professionsDetailed,
+                    'professionsDetailedTagify'
+                )
+            })
         },
 
-        tagifyTemplate: function (renderElId, dataElId) {
+        tagifyTemplate: function (renderElId, whitelist, contextTagify) {
             const tags = new Tagify(document.getElementById(renderElId), {
                 delimiters: ';',
                 enforceWhitelist: true,
-                whitelist: JSON.parse(
-                    document.getElementById(dataElId).innerHTML
-                ),
+                whitelist: JSON.parse(JSON.stringify(whitelist)),
                 dropdown: {
                     enabled: 0,
+                    highlightFirst: true,
                     maxItems: Infinity,
+                    placeAbove: false,
                 },
             })
 
@@ -55,6 +68,8 @@ window.entityForm = function () {
                     },
                 },
             })
+
+            this[contextTagify] = tags
         },
 
         fullName: function () {
@@ -85,6 +100,41 @@ window.entityForm = function () {
             }
 
             document.getElementById('entity-form').submit()
+        },
+
+        regenerateProfessions: function (e) {
+            const context = this
+            e.target.classList.add('rotate')
+            this.getProfessions(() => {
+                context.professionsShortTagify.settings.whitelist =
+                    context.professionsShort
+                context.professionsDetailedTagify.settings.whitelist =
+                    context.professionsDetailed
+                e.target.classList.remove('rotate')
+            })
+        },
+
+        getProfessions: function (callback) {
+            const context = this
+            const types = getLetterType()
+
+            axios
+                .get(
+                    ajaxUrl +
+                        '?action=professions_select_data&type=' +
+                        types['profession'] +
+                        '&lang=' +
+                        types['profession']
+                )
+                .then((response) => {
+                    context.professionsDetailed =
+                        response.data.professions_detailed
+                    context.professionsShort = response.data.professions_short
+                })
+                .catch((error) => {
+                    console.log(error)
+                })
+                .then(callback)
         },
     }
 }
