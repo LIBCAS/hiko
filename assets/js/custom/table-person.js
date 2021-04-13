@@ -137,10 +137,10 @@ if (document.getElementById('datatable-persons')) {
 
                     actions += `
                     <li onclick="removeEmptyNameAlternatives(${rowIndex})">
-                        <span class="is-link py-1 is-info">
+                        <button type="button" class="btn btn-sm btn-link px-0 py-1 is-info text-left">
                             <span class="spinner spinner-border spinner-border-sm d-none"></span>
                             Odstranit nepoužité varianty jména
-                        </span>
+                        </button>
                     </li>
                     `
 

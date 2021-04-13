@@ -167,14 +167,12 @@ add_action('wp_ajax_count_alternate_name', function () {
     $person_meta = pods_field($types['person'], $person_id, 'persons_meta');
 
     if (!$person_meta) {
-        wp_send_json_success([
-            'deleted' => [],
-        ]);
+        wp_send_json_success([ 'deleted' => [], ]);
     }
 
     $person_meta = json_decode($person_meta);
 
-    if (!$person_meta || !array_key_exists('names', $person_meta)) {
+    if (!$person_meta || !isset($person_meta->names)) {
         wp_send_json_success([
             'deleted' => [],
         ]);
@@ -182,26 +180,22 @@ add_action('wp_ajax_count_alternate_name', function () {
 
     $table = $wpdb->prefix . 'pods_' . $types['letter'];
 
-    $person_meta->names = [];
-
-    $results = [];
+    $used_names = [];
 
     foreach ($person_meta->names as $name) {
         $count = $wpdb->get_var(
             "SELECT COUNT(id) FROM {$table} WHERE authors_meta LIKE '%\"{$name}\"%'"
         );
 
-        if ((int) $count === 0) {
-            $results['deleted'][] = $name;
-        } else {
-            $person_meta->names[] = $name;
+        if ((int) $count > 0) {
+            $used_names[] = $name;
         }
     }
 
     $save = pods_api()->save_pod_item([
         'pod' => $types['person'],
         'data' => [
-            'persons_meta' => json_encode($person_meta, JSON_UNESCAPED_UNICODE)
+            'persons_meta' => json_encode(['names' => $used_names], JSON_UNESCAPED_UNICODE)
         ],
         'id' => $person_id
     ]);
