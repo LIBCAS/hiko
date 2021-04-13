@@ -6,7 +6,12 @@ if (array_key_exists('save_post', $_POST)) {
 }
 $letter = isset($_GET['edit']) ? get_letter($pods_types, (int) $_GET['edit'], '', true) : [];
 $locations = list_locations(); ?>
-
+<style>
+    /* TODO: fix regenerate buttons */
+    .oi-reload {
+        display: none;
+    }
+</style>
 <div class="list-group list-group-sm mw-200 sticky-content">
     <a class="list-group-item list-group-item-action" href="#a-dates">Dates</a>
     <a class="list-group-item list-group-item-action" href="#a-author">Author</a>
@@ -28,7 +33,7 @@ $locations = list_locations(); ?>
     <script id="letter-data" type="application/json">
         <?= json_encode($letter, JSON_UNESCAPED_UNICODE) ?>
     </script>
-    <div class="card bg-light" x-data="letterForm()" x-init="fetch()" x-cloak>
+    <div class="card bg-light" x-data="letterForm()" x-init="fetch(), window.addEventListener('beforeunload', (e) => { preventExit(e) });" x-cloak>
         <div class="card-body">
             <form method="post" id="letter-form" x-on:keydown.enter.prevent x-on:submit="handleSubmit(event)" autocomplete="off">
                 <fieldset id="a-dates">
@@ -115,13 +120,13 @@ $locations = list_locations(); ?>
                 <fieldset id="a-author">
                     <legend>Author</legend>
                     <template x-for="(author, index) in authors" :key="author.id && author.id != '' ? author.id : author.key">
-                        <div class="px-2 py-3 my-2 border rounded">
+                        <div class="px-2 py-3 my-2 border rounded bg-light-50">
                             <button @click="removeAuthor(index)" type="button" class="close text-danger" aria-label="Remove author" title="Remove author">
                                 &times;
                             </button>
                             <div class="form-group required">
                                 <label x-bind:for="'author-' + index">Author</label>
-                                <button type="button" class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('persons', $event)" title="Update persons"></button>
+                                <button type="button" class="p-0 ml-1 align-baseline btn btn-sm oi oi-reload" @click="regenerateSelectData('entities', $event)" title="Update persons"></button>
                                 <input type="text" x-bind:value="JSON.stringify([{value: author.name, id: author.id}])" x-bind:id="'author-' + index" class="related-tagify hidden-tagify-remove" data-type="entitiesList" data-mode="select" data-target="authors" x-bind:data-index="index" required>
                             </div>
                             <div class="form-group">
@@ -160,13 +165,13 @@ $locations = list_locations(); ?>
                 <fieldset id="a-recipient">
                     <legend>Recipient</legend>
                     <template x-for="(recipient, index) in recipients" :key="recipient.id && recipient.id != '' ? recipient.id : recipient.key">
-                        <div class="px-2 py-3 my-2 border rounded">
+                        <div class="px-2 py-3 my-2 border rounded bg-light-50">
                             <button @click="removeRecipient(index)" type="button" class="close text-danger" aria-label="Remove author" title="Remove recipient">
                                 &times;
                             </button>
                             <div class="form-group required">
                                 <label x-bind:for="'recipient-' + index">Recipient</label>
-                                <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('persons', $event)" title="Update persons"></span>
+                                <button type="button" class="p-0 ml-1 align-baseline btn btn-sm oi oi-reload" @click="regenerateSelectData('entities', $event)" title="Update persons"></button>
                                 <input type="text" x-bind:value="JSON.stringify([{value: recipient.name, id: recipient.id}])" x-bind:id="'recipient-' + index" class="related-tagify hidden-tagify-remove" data-type="entitiesList" data-mode="select" data-target="recipients" x-bind:data-index="index" required>
                             </div>
                             <div class="form-group">
@@ -210,13 +215,13 @@ $locations = list_locations(); ?>
                 <fieldset id="a-origin">
                     <legend>Origin</legend>
                     <template x-for="(origin, index) in origins" :key="origin.id && origin.id != '' ? origin.id : origin.key">
-                        <div class="px-2 py-3 my-2 border rounded">
+                        <div class="px-2 py-3 my-2 border rounded bg-light-50">
                             <button @click="removeOrigin(index)" type="button" class="close text-danger" aria-label="Remove origin" title="Remove origin">
                                 &times;
                             </button>
                             <div class="form-group required">
                                 <label x-bind:for="'origin-' + index">Origin</label>
-                                <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('places', $event)" title="Update places"></span>
+                                <button type="button" class="p-0 ml-1 align-baseline btn btn-sm oi oi-reload" @click="regenerateSelectData('places', $event)" title="Update places"></button>
                                 <input type="text" x-bind:value="JSON.stringify([{value: origin.name, id: origin.id}])" x-bind:id="'origin-' + index" class="related-tagify hidden-tagify-remove" data-type="placesList" data-mode="select" data-target="origins" x-bind:data-index="index" required>
                             </div>
                             <div class="form-group">
@@ -256,13 +261,13 @@ $locations = list_locations(); ?>
                 <fieldset id="a-destination">
                     <legend>Destination</legend>
                     <template x-for="(destination, index) in destinations" :key="destination.id && destination.id != '' ? destination.id : destination.key">
-                        <div class="px-2 py-3 my-2 border rounded">
+                        <div class="px-2 py-3 my-2 border rounded bg-light-50">
                             <button @click="removeDestination(index)" type="button" class="close text-danger" aria-label="Remove destination" title="Remove destination">
                                 &times;
                             </button>
                             <div class="form-group required">
                                 <label x-bind:for="'destination-' + index">Destination</label>
-                                <span class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('places', $event)" title="Update places"></span>
+                                <button type="button" class="p-0 ml-1 align-baseline btn btn-sm oi oi-reload" @click="regenerateSelectData('places', $event)" title="Update places"></button>
                                 <input type="text" x-bind:value="JSON.stringify([{value: destination.name, id: destination.id}])" x-bind:id="'destination-' + index" class="related-tagify hidden-tagify-remove" data-type="placesList" data-mode="select" data-target="destination" x-bind:data-index="index" required>
                             </div>
                             <div class="form-group">
@@ -307,7 +312,7 @@ $locations = list_locations(); ?>
                     </div>
                     <div class="form-group">
                         <label for="keywords">
-                            Keywords <button type="button" class="pl-1 pointer oi oi-reload" @click="regenerateKeywords($event)"></button>
+                            Keywords <button type="button" class="p-0 ml-1 align-baseline btn btn-sm oi oi-reload" @click="regenerateSelectData('keywords', $event)"></button>
                         </label>
                         <input type="text" value="<?= input_json_value($letter, 'keywords') ?>" id="keywords" name="keywords" class="related-tagify" data-type="keywordsList">
                     </div>
@@ -331,7 +336,7 @@ $locations = list_locations(); ?>
                     </div>
                     <div class="form-group">
                         <label for="people_mentioned">
-                            People mentioned <button type="button" class="pl-1 pointer oi oi-reload" @click="regenerateSelectData('persons', $event)"></button>
+                            People mentioned <button type="button" class="p-0 ml-1 align-baseline btn btn-sm oi oi-reload" @click="regenerateSelectData('entities', $event)"></button>
                         </label>
                         <input type="text" name="people_mentioned" id="people_mentioned" class="related-tagify" data-type="entitiesList" value="<?= input_json_value($letter, 'people_mentioned') ?>">
                     </div>
@@ -357,7 +362,7 @@ $locations = list_locations(); ?>
                 <fieldset id="a-related-resource">
                     <legend>Related resource</legend>
                     <template x-for="rr, index in relatedResources" :key="index">
-                        <div class="px-2 py-3 my-2 border rounded">
+                        <div class="px-2 py-3 my-2 border rounded bg-light-50">
                             <button @click="removeRelatedResource(index)" type="button" class="close text-danger" aria-label="Remove related resource" title="Remove related resource">
                                 &times;
                             </button>
@@ -385,7 +390,7 @@ $locations = list_locations(); ?>
                 <fieldset id="a-copies">
                     <legend>Manifestations and repositories</legend>
                     <template x-for="(c, index) in copies" :key="index">
-                        <div class="px-2 py-1 mt-2 mb-4 border rounded">
+                        <div class="px-2 py-1 mt-2 mb-4 border rounded bg-light-50">
                             <button @click="removeCopy(index)" type="button" class="close text-danger" aria-label="Remove copy" title="Remove copy">
                                 &times;
                             </button>
@@ -500,7 +505,7 @@ $locations = list_locations(); ?>
                     <legend>Description</legend>
                     <div class="form-group required">
                         <label for="description">Description</label>
-                        <button type="button" class="pl-1 pointer oi oi-transfer" @click="generateDescription()"></button>
+                        <button type="button" class="p-0 ml-1 align-baseline btn btn-sm oi oi-transfer" @click="generateDescription()" title="Generate description" aria-label="Generate description"></button>
                         <textarea x-model="description" name="description" class="form-control form-control-sm" required><?= input_value($letter, 'name') ?></textarea>
                         <small class="form-text text-muted">
                             "DD. MM. YYYY Author (Origin) to Recipient (Destination)", vygenerovat pomocí ikonky
@@ -522,13 +527,6 @@ $locations = list_locations(); ?>
                         </label>
                     </div>
                 </fieldset>
-                <div x-show="errors.length > 0" class="alert alert-danger">
-                    <ul class="px-2 m-0">
-                        <template x-for="error, index in errors" :key="index">
-                            <li x-html="error"></li>
-                        </template>
-                    </ul>
-                </div>
                 <input type="hidden" name="save_post" value="<?= $action ?>">
                 <input type="submit" value="Uložit" class="btn btn-primary">
                 <?php if ($action === 'edit') : ?>

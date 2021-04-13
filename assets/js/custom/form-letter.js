@@ -23,7 +23,7 @@ window.letterForm = function () {
         recipients: [],
         relatedResources: [],
         year: null,
-        errors: [],
+        formSubmit: false,
 
         fetch: function () {
             const data = JSON.parse(
@@ -69,6 +69,12 @@ window.letterForm = function () {
             }
 
             this.updateTagify()
+        },
+
+        preventExit(e) {
+            if (!this.formSubmit) {
+                e.preventDefault()
+            }
         },
 
         initTagify: function () {
@@ -314,14 +320,7 @@ window.letterForm = function () {
 
         handleSubmit: function (event) {
             event.preventDefault()
-
-            this.errors = []
-
-            /* TODO: add errors */
-            if (this.errors.length > 0) {
-                return
-            }
-
+            this.formSubmit = true
             document.getElementById('letter-form').submit()
         },
 
