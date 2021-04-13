@@ -3,6 +3,7 @@
 window.letterForm = function () {
     return {
         authors: [],
+        copies: [],
         day: null,
         dateIsRange: false,
         description: '',
@@ -20,7 +21,7 @@ window.letterForm = function () {
             document.getElementById('places-list').innerHTML
         ),
         recipients: [],
-        relatedResources: [{ link: '', title: '' }],
+        relatedResources: [],
         year: null,
         errors: [],
 
@@ -61,6 +62,10 @@ window.letterForm = function () {
 
             if (data.name.length > 0) {
                 this.description = data.name
+            }
+
+            if (data.copies.length > 0) {
+                this.copies = data.copies
             }
 
             this.updateTagify()
@@ -182,6 +187,30 @@ window.letterForm = function () {
             }
         },
 
+        addCopy: function () {
+            this.copies.push({
+                archive: '',
+                collection: '',
+                copy: '',
+                l_number: '',
+                location_note: '',
+                manifestation_notes: '',
+                ms_manifestation: '',
+                preservation: '',
+                repository: '',
+                signature: '',
+                type: '',
+            })
+        },
+
+        removeCopy: function (copyIndex) {
+            const copies = JSON.parse(JSON.stringify(this.copies))
+
+            this.copies = copies.filter((item, index) => {
+                return index !== copyIndex
+            })
+        },
+
         addNewAuthor: function () {
             this.authors.push({
                 id: '',
@@ -288,15 +317,7 @@ window.letterForm = function () {
 
             this.errors = []
 
-            /*
-            if (this.surname.length === 0) {
-                this.errors.push('Empty name')
-            }
-
-            if (this.type.length === 0) {
-                this.errors.push('Empty type')
-            }
-*/
+            /* TODO: add errors */
             if (this.errors.length > 0) {
                 return
             }

@@ -37,11 +37,8 @@ add_action('wp_ajax_delete_location_data', function () {
 });
 
 
-add_action('wp_ajax_list_locations', function () {
-    if (!is_in_editor_role()) {
-        wp_send_json_error('Not allowed', 403);
-    }
-
+function list_locations()
+{
     $pod = pods(
         'location',
         [
@@ -60,5 +57,14 @@ add_action('wp_ajax_list_locations', function () {
         ];
     }
 
-    wp_send_json_success($locations);
+    return $locations;
+}
+
+
+add_action('wp_ajax_list_locations', function () {
+    if (!is_in_editor_role()) {
+        wp_send_json_error('Not allowed', 403);
+    }
+
+    wp_send_json_success(list_locations());
 });

@@ -103,6 +103,11 @@ function get_letter($types, $id, $lang, $private)
             continue;
         }
 
+        if ($key === 'copies') {
+            $result['copies'] = empty($value) ? [] : json_decode($value, true);
+            continue;
+        }
+
         if (in_array($key, $bool_fields)) {
             $result[$key] = (bool) $value;
             continue;
@@ -183,6 +188,7 @@ function save_letter($letter_type, $action, $path)
     $keywords = [];
     $related_resources = [];
     $languages = [];
+    $copies = [];
 
     if (isset($_POST['authors']) && !empty($_POST['authors'])) {
         $authors = sanitize_slashed_json($_POST['authors']);
@@ -220,6 +226,10 @@ function save_letter($letter_type, $action, $path)
         $related_resources = json_decode(stripslashes($_POST['related_resources']), true);
     }
 
+    if (isset($_POST['copies']) && !empty($_POST['copies'])) {
+        $copies = sanitize_slashed_json($_POST['copies']);
+    }
+
     if ($action == 'new') {
         $history = date('Y-m-d H:i:s') . ' – ' . get_full_name() . "\n";
     } elseif ($action == 'edit') {
@@ -252,21 +262,12 @@ function save_letter($letter_type, $action, $path)
         'range_year' => 'range_year',
         'recipient_notes' => 'recipient_notes',
         'status' => 'status',
-
-        //'archive' => 'archive',
-        //'archive' => 'archive',
-        //'collection' => 'collection',
-        //'l_number' => 'l_number',
-        //'location_note' => 'location_note',
-        //'manifestation_notes' => 'manifestation_notes',
-        //'ms_manifestation' => 'ms_manifestation',
-        //'repository' => 'repository',
-        //'signature' => 'signature',
     ]);
 
     $data['author_inferred'] = get_form_checkbox_val('author_inferred', $_POST);
     $data['author_uncertain'] = get_form_checkbox_val('author_uncertain', $_POST);
-    $data['authors_meta'] = json_encode($participant_meta, JSON_UNESCAPED_UNICODE);
+    $data['authors_meta'] = !empty($participant_meta) ? json_encode($participant_meta, JSON_UNESCAPED_UNICODE) : null;
+    $data['copies'] = !empty($copies) ? json_encode($copies, JSON_UNESCAPED_UNICODE) : null;
     $data['date_approximate'] = get_form_checkbox_val('date_approximate', $_POST);
     $data['date_inferred'] = get_form_checkbox_val('date_inferred', $_POST);
     $data['date_is_range'] = get_form_checkbox_val('date_is_range', $_POST);
@@ -274,7 +275,6 @@ function save_letter($letter_type, $action, $path)
     $data['dest'] = array_column($destinations, 'id');
     $data['dest_inferred'] = get_form_checkbox_val('dest_inferred', $_POST);
     $data['dest_uncertain'] = get_form_checkbox_val('dest_uncertain', $_POST);
-    //$data['document_type'] = sanitize_slashed_json($_POST['document_type']);
     $data['history'] = $history;
     $data['keywords'] = $keywords;
     $data['languages'] = implode(';', array_column($languages, 'value'));
@@ -283,11 +283,11 @@ function save_letter($letter_type, $action, $path)
     $data['origin_inferred'] = get_form_checkbox_val('origin_inferred', $_POST);
     $data['origin_uncertain'] = get_form_checkbox_val('origin_uncertain', $_POST);
     $data['people_mentioned'] = array_column($people_mentioned, 'id');
-    $data['places_meta'] = json_encode($places_meta, JSON_UNESCAPED_UNICODE);
+    $data['places_meta'] = !empty($places_meta) ? json_encode($places_meta, JSON_UNESCAPED_UNICODE) : null;
     $data['recipient'] = array_column($recipients, 'id');
     $data['recipient_inferred'] = get_form_checkbox_val('recipient_inferred', $_POST);
     $data['recipient_uncertain'] = get_form_checkbox_val('recipient_uncertain', $_POST);
-    $data['related_resources'] = json_encode($related_resources, JSON_UNESCAPED_UNICODE);
+    $data['related_resources'] = !empty($related_resources) ? json_encode($related_resources, JSON_UNESCAPED_UNICODE) : null;
 
     $new_data = [
         'pod' => $letter_type,

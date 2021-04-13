@@ -1,11 +1,11 @@
 <?php
 $pods_types = get_hiko_post_types_by_url();
 $action = array_key_exists('edit', $_GET) ? 'edit' : 'new';
-
 if (array_key_exists('save_post', $_POST)) {
     echo save_letter($pods_types['letter'], $action, $pods_types['path']);
 }
-$letter = isset($_GET['edit']) ? get_letter($pods_types, (int) $_GET['edit'], '', true) : []; ?>
+$letter = isset($_GET['edit']) ? get_letter($pods_types, (int) $_GET['edit'], '', true) : [];
+$locations = list_locations(); ?>
 
 <div class="list-group list-group-sm mw-200 sticky-content">
     <a class="list-group-item list-group-item-action" href="#a-dates">Dates</a>
@@ -15,6 +15,7 @@ $letter = isset($_GET['edit']) ? get_letter($pods_types, (int) $_GET['edit'], ''
     <a class="list-group-item list-group-item-action" href="#a-destination">Destination</a>
     <a class="list-group-item list-group-item-action" href="#a-content">Content</a>
     <a class="list-group-item list-group-item-action" href="#a-related-resource">Related resource</a>
+    <a class="list-group-item list-group-item-action" href="#a-copies">Manifestations and repositories</a>
     <a class="list-group-item list-group-item-action" href="#a-description">Description</a>
     <a class="list-group-item list-group-item-action" href="#a-status">Status</a>
 </div>
@@ -268,7 +269,7 @@ $letter = isset($_GET['edit']) ? get_letter($pods_types, (int) $_GET['edit'], ''
                                 <label x-bind:for="'destination-marked-' + index">Destination as marked</label>
                                 <input x-bind:id="'destination-marked-' + index" x-model="destinations[index]['marked']" type="text" class="form-control form-control-sm">
                                 <small class="form-text text-muted">
-                                destination name as written in letter
+                                    destination name as written in letter
                                 </small>
                             </div>
                         </div>
@@ -381,6 +382,120 @@ $letter = isset($_GET['edit']) ? get_letter($pods_types, (int) $_GET['edit'], ''
                     </button>
                     <input type="hidden" name="related_resources" x-bind:value="JSON.stringify(relatedResources)">
                 </fieldset>
+                <fieldset id="a-copies">
+                    <legend>Manifestations and repositories</legend>
+                    <template x-for="(c, index) in copies" :key="index">
+                        <div class="px-2 py-1 mt-2 mb-4 border rounded">
+                            <button @click="removeCopy(index)" type="button" class="close text-danger" aria-label="Remove copy" title="Remove copy">
+                                &times;
+                            </button>
+                            <div class="form-group">
+                                <label x-bind:for="'ms_manifestation' + index">MS manifestation (EMLO)</label>
+                                <select x-model="copies[index]['ms_manifestation']" x-bind:id="'ms_manifestation' + index" class="form-control form-control-sm">
+                                    <option value>---</option>
+                                    <option x-bind:value="'E'">Extract</option>
+                                    <option x-bind:value="'S'">MS Copy</option>
+                                    <option x-bind:value="'D'">MS Draft</option>
+                                    <option x-bind:value="'ALS'">MS Letter</option>
+                                    <option x-bind:value="'O'">Other</option>
+                                    <option x-bind:value="'P'">Printed</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label x-bind:for="'type' + index">Document type</label>
+                                <select x-model="copies[index]['type']" x-bind:id="'type' + index" class="form-control form-control-sm">
+                                    <option value>---</option>
+                                    <option x-bind:value="'calling card'">calling card</option>
+                                    <option x-bind:value="'greeting card'">greeting card</option>
+                                    <option x-bind:value="'invitation card'">invitation card</option>
+                                    <option x-bind:value="'letter'">letter</option>
+                                    <option x-bind:value="'picture postcard'">picture postcard</option>
+                                    <option x-bind:value="'postcard'">postcard</option>
+                                    <option x-bind:value="'telegram'">telegram</option>
+                                    <option x-bind:value="'visiting '">visiting </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label x-bind:for="'preservation' + index">Preservation</label>
+                                <select x-model="copies[index]['preservation']" x-bind:id="'preservation' + index" class="form-control form-control-sm">
+                                    <option value>---</option>
+                                    <option x-bind:value="'carbon copy'">carbon copy</option>
+                                    <option x-bind:value="'copy'">copy</option>
+                                    <option x-bind:value="'draft'">draft</option>
+                                    <option x-bind:value="'original'">original</option>
+                                    <option x-bind:value="'photocopy'">photocopy</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label x-bind:for="'copy' + index">Type of copy</label>
+                                <select x-model="copies[index]['copy']" x-bind:id="'copy' + index" class="form-control form-control-sm">
+                                    <option disabled selected value>---</option>
+                                    <option x-bind:value="'handwritten'">handwritten</option>
+                                    <option x-bind:value="'typewritten'">typewritten</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label x-bind:for="'manifestation_notes' + index">Notes on manifestation</label>
+                                <textarea x-model="copies[index]['manifestation_notes']" x-bind:id="'manifestation_notes' + index" class="form-control form-control-sm"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label x-bind:for="'lnumber' + index">Letter number</label>
+                                <input x-model="copies[index]['l_number']" x-id:for="'lnumber' + index" type="text" class="form-control form-control-sm">
+                            </div>
+                            <div class="form-group">
+                                <label x-bind:for="'repository' + index">Repository</label>
+                                <input x-model="copies[index]['repository']" list="repositories" type="text" x-bind:id="'repository' + index" class="form-control form-control-sm">
+                                <datalist id="repositories">
+                                    <?php foreach ($locations as $loc) : ?>
+                                        <?php if ($loc['type'] === 'repository') : ?>
+                                            <option>
+                                                <?= $loc['name'] ?>
+                                            </option>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </datalist>
+                            </div>
+                            <div class="form-group">
+                                <label x-bind:for="'archive' + index">Archive</label>
+                                <input x-model="copies[index]['archive']" list="archives" type="text" x-bind:id="'archive' + index" class="form-control form-control-sm">
+                                <datalist id="archives">
+                                    <?php foreach ($locations as $loc) : ?>
+                                        <?php if ($loc['type'] === 'archive') : ?>
+                                            <option>
+                                                <?= $loc['name'] ?>
+                                            </option>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </datalist>
+                            </div>
+                            <div class="form-group">
+                                <label x-bind:for="'collection' + index">Collection</label>
+                                <input x-model="copies[index]['collection']" list="collections" type="text" x-bind:id="'collection' + index" class="form-control form-control-sm">
+                                <datalist id="collections">
+                                    <?php foreach ($locations as $loc) : ?>
+                                        <?php if ($loc['type'] === 'collection') : ?>
+                                            <option>
+                                                <?= $loc['name'] ?>
+                                            </option>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </datalist>
+                            </div>
+                            <div class="form-group">
+                                <label x-bind:for="'signature' + index">Signature</label>
+                                <input x-model="copies[index]['signature']" x-id:for="'signature' + index" type="text" class="form-control form-control-sm">
+                            </div>
+                            <div class="form-group">
+                                <label x-bind:for="'location_note' + index">Notes on location</label>
+                                <textarea x-model="copies[index]['location_note']" x-id:for="'location_note' + index" class="form-control form-control-sm"></textarea>
+                            </div>
+                        </div>
+                    </template>
+                    <button type="button" @click="addCopy()" class="mt-2 mb-4 btn btn-sm btn-outline-info">
+                        <span class="oi oi-plus"></span> Add letter copy
+                    </button>
+                    <input type="hidden" name="copies" x-bind:value="JSON.stringify(copies)">
+                </fieldset>
                 <fieldset id="a-description">
                     <legend>Description</legend>
                     <div class="form-group required">
@@ -409,7 +524,7 @@ $letter = isset($_GET['edit']) ? get_letter($pods_types, (int) $_GET['edit'], ''
                 </fieldset>
                 <div x-show="errors.length > 0" class="alert alert-danger">
                     <ul class="px-2 m-0">
-                        <template x-for="error, inde in errors" :key="index">
+                        <template x-for="error, index in errors" :key="index">
                             <li x-html="error"></li>
                         </template>
                     </ul>
@@ -446,4 +561,8 @@ $letter = isset($_GET['edit']) ? get_letter($pods_types, (int) $_GET['edit'], ''
 
 <script id="keywords-list" type="application/json">
     <?= json_encode(list_keywords($pods_types['keyword'], 0, false)); ?>
+</script>
+
+<script id="location-list" type="application/json">
+    <?php  ?>
 </script>
