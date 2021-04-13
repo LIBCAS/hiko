@@ -22,9 +22,6 @@ if ($is_supervisor) {
                         Exportovat
                     </button>
                     <div x-bind:class="{ 'd-block': opened }" @click.away="opened = false" class="dropdown-menu dropdown-menu-right">
-                        <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_letters&format=csv&type=' . $path ?>">
-                            Vše
-                        </a>
                         <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_palladio&format=csv&type=' . $path ?>">
                             Palladio – vše
                         </a>
