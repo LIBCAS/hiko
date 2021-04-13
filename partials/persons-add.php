@@ -7,7 +7,6 @@ $entity = isset($_GET['edit']) ? get_entity($entity_type, (int) $_GET['edit'], $
 if (array_key_exists('save_post', $_POST)) {
     echo save_entity($entity_type, $action);
 }
-
 show_alerts(); ?>
 
 <?php if (isset($_GET['edit']) && empty($entity['name'])) : ?>
@@ -90,6 +89,17 @@ show_alerts(); ?>
                                 reorder professions by dragging
                             </small>
                         </div>
+                        <?php if ($action === 'edit' && (!empty($entity['profession']) && empty($entity['profession_detailed']))) : ?>
+                            <div class="form-group">
+                                <label for="professions_deprecated">
+                                    Deprecated professions
+                                </label>
+                                <input type="text" id="professions_deprecated" class="form-control form-control-sm" value="<?= $entity['profession'] ?>" readonly>
+                                <small class="form-text text-muted">
+                                    use professions field
+                                </small>
+                            </div>
+                        <?php endif; ?>
                     </fieldset>
                 </div>
                 <fieldset>
