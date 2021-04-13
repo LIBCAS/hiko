@@ -1,6 +1,6 @@
 <?php
 
-function get_letter($types, $id, $lang, $private, $image)
+function get_letter($types, $id, $lang, $private)
 {
     $pod = pods($types['letter'], $id);
 
@@ -108,8 +108,8 @@ function get_letter($types, $id, $lang, $private, $image)
             continue;
         }
 
-        if ($key === 'images' && $image) {
-            /* TODO handle images */
+        if ($key === 'images') {
+            $result['images'] = get_sorted_images($value);
             continue;
         }
 
@@ -153,8 +153,7 @@ function list_public_letters_single()
         get_types_by_letter()[$_GET['l_type']],
         $_GET['pods_id'],
         isset($_GET['lang']) ? test_input($_GET['lang']) : '',
-        is_user_logged_in(),
-        true
+        is_user_logged_in()
     );
 
     if (empty($letter)) {

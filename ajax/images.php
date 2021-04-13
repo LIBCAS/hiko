@@ -89,7 +89,7 @@ add_action('wp_ajax_list_images', function () {
     }
 
     wp_send_json_success([
-        'images' =>  get_pod_sorted_images($pod, false),
+        'images' =>  get_sorted_images($pod->field('images')),
         'name' => $pod->field('name'),
         'url' => home_url('/' . get_types_by_letter()[$type]['handle'] .'/letters-add/?edit=' . $id),
     ]);
@@ -166,18 +166,21 @@ add_action('wp_ajax_change_image_order', function () {
 });
 
 
-function get_pod_sorted_images($pod, $private)
+
+function get_sorted_images($unsorted_images)
 {
-    $images = $pod->field('images');
+    if (!$unsorted_images) {
+        return [];
+    }
 
-    $images_sorted = [];
+    $images = [];
 
-    foreach ($images as $img) {
-        if ($private && $img['post_status'] == 'private') {
+    foreach ($unsorted_images as $img) {
+        if (!is_user_logged_in() && $img['post_status'] === 'private') {
             continue;
         }
 
-        $images_sorted[] = [
+        $images[] = [
             'id' => $img['ID'],
             'img' => [
                 'large' => $img['guid'],
@@ -189,9 +192,9 @@ function get_pod_sorted_images($pod, $private)
         ];
     }
 
-    usort($images_sorted, function ($a, $b) {
+    usort($images, function ($a, $b) {
         return $a['order'] - $b['order'];
     });
 
-    return $images_sorted;
+    return $images;
 }

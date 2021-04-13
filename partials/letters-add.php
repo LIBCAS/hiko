@@ -5,8 +5,7 @@ $action = array_key_exists('edit', $_GET) ? 'edit' : 'new';
 if (array_key_exists('save_post', $_POST)) {
     echo save_hiko_letter($pods_types['letter'], $action, $pods_types['path']);
 }
-$letter = isset($_GET['edit']) ? get_letter($pods_types, (int) $_GET['edit'], '', true, false) : [];
-?>
+$letter = isset($_GET['edit']) ? get_letter($pods_types, (int) $_GET['edit'], '', true) : []; ?>
 
 <div class="list-group list-group-sm mw-200 sticky-content">
     <a class="list-group-item list-group-item-action" href="#a-dates">Dates</a>
