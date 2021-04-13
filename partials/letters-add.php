@@ -3,7 +3,7 @@ $pods_types = get_hiko_post_types_by_url();
 $action = array_key_exists('edit', $_GET) ? 'edit' : 'new';
 
 if (array_key_exists('save_post', $_POST)) {
-    echo save_hiko_letter($pods_types['letter'], $action, $pods_types['path']);
+    echo save_letter($pods_types['letter'], $action, $pods_types['path']);
 }
 $letter = isset($_GET['edit']) ? get_letter($pods_types, (int) $_GET['edit'], '', true) : []; ?>
 

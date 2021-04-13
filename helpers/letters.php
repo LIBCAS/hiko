@@ -169,3 +169,173 @@ function list_public_letters_single()
 }
 add_action('wp_ajax_list_public_letters_single', 'list_public_letters_single');
 add_action('wp_ajax_nopriv_list_public_letters_single', 'list_public_letters_single');
+
+
+function save_letter($letter_type, $action, $path)
+{
+    $types = get_hiko_post_types($path);
+
+    $authors = [];
+    $recipients = [];
+    $origins = [];
+    $destinations = [];
+    $people_mentioned = [];
+    $keywords = [];
+    $related_resources = [];
+    $languages = [];
+
+    if (isset($_POST['authors']) && !empty($_POST['authors'])) {
+        $authors = sanitize_slashed_json($_POST['authors']);
+    }
+
+    if (isset($_POST['recipients']) && !empty($_POST['recipients'])) {
+        $recipients = sanitize_slashed_json($_POST['recipients']);
+    }
+
+    $participant_meta = array_merge($authors, $recipients);
+
+    if (isset($_POST['origin']) && !empty($_POST['origin'])) {
+        $origins = sanitize_slashed_json($_POST['origin']);
+    }
+
+    if (isset($_POST['dest']) && !empty($_POST['dest'])) {
+        $destinations = sanitize_slashed_json($_POST['dest']);
+    }
+
+    $places_meta = array_merge($origins, $destinations);
+
+    if (isset($_POST['people_mentioned']) && !empty($_POST['people_mentioned'])) {
+        $people_mentioned = sanitize_slashed_json($_POST['people_mentioned']);
+    }
+
+    if (isset($_POST['keywords']) && !empty($_POST['keywords'])) {
+        $keywords = sanitize_slashed_json($_POST['keywords']);
+    }
+
+    if (isset($_POST['languages']) && !empty($_POST['languages'])) {
+        $languages = sanitize_slashed_json($_POST['languages']);
+    }
+
+    if (isset($_POST['related_resources']) && !empty($_POST['related_resources'])) {
+        $related_resources = json_decode(stripslashes($_POST['related_resources']), true);
+    }
+
+    if ($action == 'new') {
+        $history = date('Y-m-d H:i:s') . ' – ' . get_full_name() . "\n";
+    } elseif ($action == 'edit') {
+        $history = get_letter_history($letter_type, $_GET['edit']);
+        if ($history == '') {
+            $created = get_letter_created($letter_type, $_GET['edit']);
+            $history = $created['date'] . ' – ' . $created['author'] . "\n";
+        }
+        $history .= "\n" . date('Y-m-d H:i:s') . ' – ' . get_full_name() . "\n";
+    }
+
+    $data = test_postdata([
+        'abstract' => 'abstract',
+        'author_note' => 'author_note',
+        'date_day' => 'date_day',
+        'date_marked' => 'date_marked',
+        'date_month' => 'date_month',
+        'date_note' => 'date_note',
+        'date_year' => 'date_year',
+        'dest_note' => 'dest_note',
+        'explicit' => 'explicit',
+        'incipit' => 'incipit',
+        'name' => 'description',
+        'notes_private' => 'notes_private',
+        'notes_public' => 'notes_public',
+        'origin_note' => 'origin_note',
+        'people_mentioned_notes' => 'people_mentioned_notes',
+        'range_day' => 'range_day',
+        'range_month' => 'range_month',
+        'range_year' => 'range_year',
+        'recipient_notes' => 'recipient_notes',
+        'status' => 'status',
+
+        //'archive' => 'archive',
+        //'archive' => 'archive',
+        //'collection' => 'collection',
+        //'l_number' => 'l_number',
+        //'location_note' => 'location_note',
+        //'manifestation_notes' => 'manifestation_notes',
+        //'ms_manifestation' => 'ms_manifestation',
+        //'repository' => 'repository',
+        //'signature' => 'signature',
+    ]);
+
+    $data['author_inferred'] = get_form_checkbox_val('author_inferred', $_POST);
+    $data['author_uncertain'] = get_form_checkbox_val('author_uncertain', $_POST);
+    $data['authors_meta'] = json_encode($participant_meta, JSON_UNESCAPED_UNICODE);
+    $data['date_approximate'] = get_form_checkbox_val('date_approximate', $_POST);
+    $data['date_inferred'] = get_form_checkbox_val('date_inferred', $_POST);
+    $data['date_is_range'] = get_form_checkbox_val('date_is_range', $_POST);
+    $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
+    $data['dest'] = array_column($destinations, 'id');
+    $data['dest_inferred'] = get_form_checkbox_val('dest_inferred', $_POST);
+    $data['dest_uncertain'] = get_form_checkbox_val('dest_uncertain', $_POST);
+    //$data['document_type'] = sanitize_slashed_json($_POST['document_type']);
+    $data['history'] = $history;
+    $data['keywords'] = $keywords;
+    $data['languages'] = implode(';', array_column($languages, 'value'));
+    $data['l_author'] = array_column($authors, 'id');
+    $data['origin'] = array_column($origins, 'id');
+    $data['origin_inferred'] = get_form_checkbox_val('origin_inferred', $_POST);
+    $data['origin_uncertain'] = get_form_checkbox_val('origin_uncertain', $_POST);
+    $data['people_mentioned'] = array_column($people_mentioned, 'id');
+    $data['places_meta'] = json_encode($places_meta, JSON_UNESCAPED_UNICODE);
+    $data['recipient'] = array_column($recipients, 'id');
+    $data['recipient_inferred'] = get_form_checkbox_val('recipient_inferred', $_POST);
+    $data['recipient_uncertain'] = get_form_checkbox_val('recipient_uncertain', $_POST);
+    $data['related_resources'] = json_encode($related_resources, JSON_UNESCAPED_UNICODE);
+
+    $new_data = [
+        'pod' => $letter_type,
+        'data' => $data
+    ];
+
+    if ($action == 'edit') {
+        $new_data['id'] = (int) $_GET['edit'];
+    }
+
+    $new_pod = pods_api()->save_pod_item($new_data);
+
+    if (is_wp_error($new_pod)) {
+        return alert($new_pod->get_error_message(), 'warning');
+    }
+
+    save_name_alternatives($participant_meta, $types['person']);
+
+    frontend_refresh();
+
+    return alert('Uloženo', 'success');
+}
+
+
+function save_name_alternatives($persons, $person_type)
+{
+    foreach ($persons as $person) {
+        if ($person['marked'] === '') {
+            continue;
+        }
+
+        $person_meta = pods_field($person_type, $person['id'], 'persons_meta');
+
+        if ($person_meta == null) {
+            $data = [ 'names' => [$person['marked']] ];
+        } else {
+            $old_data = json_decode($person_meta);
+            $data = [
+                'names' => merge_unique($old_data->names, [ $person['marked'] ])
+            ];
+        }
+
+        pods_api()->save_pod_item([
+            'pod' => $person_type,
+            'data' => [
+                'persons_meta' => json_encode($data, JSON_UNESCAPED_UNICODE)
+            ],
+            'id' => $person['id'],
+        ]);
+    }
+}
