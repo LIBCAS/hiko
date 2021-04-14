@@ -3,9 +3,9 @@
 const keywordsSwal = {
     confirmSave: {
         buttonsStyling: false,
-        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
+        cancelButtonClass: 'btn btn-link text-danger btn-sm ml-1',
         cancelButtonText: 'Zrušit',
-        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
+        confirmButtonClass: 'btn btn-primary btn-sn mr-1',
         confirmButtonText: 'Uložit',
         showCancelButton: true,
         showLoaderOnConfirm: true,
@@ -16,7 +16,7 @@ const keywordsSwal = {
         type: 'success',
         buttonsStyling: false,
         confirmButtonText: 'OK',
-        confirmButtonClass: 'btn btn-primary btn-lg',
+        confirmButtonClass: 'btn btn-primary btn-sn mr-1',
     },
 }
 

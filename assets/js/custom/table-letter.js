@@ -175,17 +175,14 @@ if (document.getElementById('datatable-letters')) {
                 headerFilter: 'input',
                 title: 'Signature',
                 mutator: function (value, data) {
-                    const signature = data.signature
-                    const repository = data.repository
+                    let result = data.signature
 
-                    let result = signature
-
-                    if (repository && signature) {
+                    if (data.repository && data.signature) {
                         result += ' / '
                     }
 
-                    if (repository) {
-                        result += repository
+                    if (data.repository) {
+                        result += data.repository
                     }
 
                     return result

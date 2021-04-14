@@ -8,34 +8,48 @@ fieldset {
     margin-bottom: 16px;
 }
 
-.multiselect__tags {
-    @include border-radius($input-border-radius-sm);
-    border: $input-border-width solid $input-border-color;
-    color: $input-color;
-    line-height: $input-line-height-sm;
-    min-height: calc(1.5em + 0.5rem + 2px);
-    padding: $input-padding-y-sm $input-padding-x-sm;
+input.related-tagify,
+input.simple-tagify,
+input.tagify-select {
+  border-radius: .2rem;
+  border: 1px solid #ced4da;
+  display: block;
+  padding: .25rem .5rem;
+  width: 100%;
 }
 
-.multiselect__tag {
-    margin-bottom: 0;
+.tagify {
+  background-color: #fff;
+  border-radius: .2rem;
+  border: 1px solid #ced4da;
 }
 
-.multiselect__input,
-.multiselect__single {
-    background: transparent;
-    @include font-size($input-font-size-sm);
+.tagify__tag {
+  background-color: $blue;
 }
 
-.multiselect__single {
-    margin-bottom: 0;
-    padding: 0;
+.tagify__tag > div {
+  color: #fff;
 }
 
-.multiselect__placeholder {
-    margin-bottom: 2px;
+.tagify__tag > div::before {
+  box-shadow: 0 0 0 1.1em $blue inset;
 }
 
-.multiselect__content-wrapper {
-    border: $input-border-width solid $input-border-color;
+.tagify__tag:hover:not([readonly]) div::before {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  box-shadow: 0 0 0 1.1em $cyan inset;
 }
+
+.tagify__tag__removeBtn {
+  color: #fff;
+}
+
+.hidden-tagify-remove .tagify__tag__removeBtn {
+  display: none;
+}
+
+

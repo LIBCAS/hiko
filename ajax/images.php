@@ -1,7 +1,6 @@
 <?php
 
-function handle_img_uploads()
-{
+add_action('wp_ajax_handle_img_uploads', function () {
     $f = $_FILES['files'];
     $valid = verify_upload_img($f);
 
@@ -72,12 +71,10 @@ function handle_img_uploads()
     $pod->add_to('images', $insert);
     $pod->save;
     wp_send_json_success();
-}
-add_action('wp_ajax_handle_img_uploads', 'handle_img_uploads');
+});
 
 
-function list_images()
-{
+add_action('wp_ajax_list_images', function () {
     if (!array_key_exists('l_type', $_GET) || !array_key_exists('letter', $_GET)) {
         wp_send_json_error('Not found', 404);
     }
@@ -92,19 +89,15 @@ function list_images()
     }
 
     wp_send_json_success([
-        'images' =>  get_pod_sorted_images($pod, false),
+        'images' =>  get_sorted_images($pod->field('images')),
         'name' => $pod->field('name'),
         'url' => home_url('/' . get_types_by_letter()[$type]['handle'] .'/letters-add/?edit=' . $id),
     ]);
-}
-add_action('wp_ajax_list_images', 'list_images');
+});
 
 
-
-function delete_hiko_image()
-{
-    $data = file_get_contents('php://input');
-    $data = json_decode(mb_convert_encoding($data, 'UTF-8'));
+add_action('wp_ajax_delete_hiko_image', function () {
+    $data = decode_php_input();
 
     $pod = pods(
         sanitize_text_field($data->l_type),
@@ -126,14 +119,11 @@ function delete_hiko_image()
     }
 
     wp_send_json_error('Error', 500);
-}
-add_action('wp_ajax_delete_hiko_image', 'delete_hiko_image');
+});
 
 
-function change_metadata()
-{
-    $data = file_get_contents('php://input');
-    $data = json_decode(mb_convert_encoding($data, 'UTF-8'));
+add_action('wp_ajax_change_metadata', function () {
+    $data = decode_php_input();
 
     if (!property_exists($data, 'img_id') || !property_exists($data, 'img_status') || !property_exists($data, 'img_description')) {
         wp_send_json_error('Not found', 404);
@@ -150,12 +140,11 @@ function change_metadata()
     }
 
     wp_send_json_success('saved');
-}
-add_action('wp_ajax_change_metadata', 'change_metadata');
+
+});
 
 
-function change_image_order()
-{
+add_action('wp_ajax_change_image_order', function () {
     $data = json_decode(key($_POST));
 
     if (!property_exists($data, 'img_id') || !property_exists($data, 'img_order')) {
@@ -174,22 +163,24 @@ function change_image_order()
     }
 
     wp_send_json_success('saved');
-}
-add_action('wp_ajax_change_image_order', 'change_image_order');
+});
 
 
-function get_pod_sorted_images($pod, $private)
+
+function get_sorted_images($unsorted_images)
 {
-    $images = $pod->field('images');
+    if (!$unsorted_images) {
+        return [];
+    }
 
-    $images_sorted = [];
+    $images = [];
 
-    foreach ($images as $img) {
-        if ($private && $img['post_status'] == 'private') {
+    foreach ($unsorted_images as $img) {
+        if (!is_user_logged_in() && $img['post_status'] === 'private') {
             continue;
         }
 
-        $images_sorted[] = [
+        $images[] = [
             'id' => $img['ID'],
             'img' => [
                 'large' => $img['guid'],
@@ -201,9 +192,9 @@ function get_pod_sorted_images($pod, $private)
         ];
     }
 
-    usort($images_sorted, function ($a, $b) {
+    usort($images, function ($a, $b) {
         return $a['order'] - $b['order'];
     });
 
-    return $images_sorted;
+    return $images;
 }

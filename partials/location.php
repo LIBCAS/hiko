@@ -1,14 +1,14 @@
-<div id="location" v-cloak>
-    <div v-if="loading" class="progress my-5">
+<div x-data="locationForm()" x-init="fetch()">
+    <div x-show="loading" class="my-5 progress">
         <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 65%">
         </div>
     </div>
-    <div v-if="!loading" class="section my-5" id="repository">
+    <div x-show="!loading" class="my-5 section" id="repository">
         <h3>Instituce / repozitáře</h3>
-        <button @click="insertItem('repository', 'Nový repozitář', 'add', null)" type="button" class="btn btn-primary btn-sm my-2">
+        <button @click="insertItem('repository', 'Nový repozitář', 'add', '', null)" type="button" class="my-2 btn btn-primary btn-sm">
             Přidat novou instituci
         </button>
-        <table class="table-sm table-bordered table-hover table-striped mt-3">
+        <table class="mt-3 table-sm table-bordered table-hover table-striped">
             <thead>
                 <tr>
                     <td style="width:10%">Akce</td>
@@ -16,28 +16,34 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="rep in repositories" :key="rep.id">
-                    <td>
-                        <ul class="list-unstyled mb-0">
-                            <li>
-                                <span @click="insertItem('repository', 'Upravit: ' + rep.name, 'edit', rep.id)" class="text-info pointer py-1">Upravit</span>
-                            </li>
-                            <li>
-                                <span @click="deleteItem(rep.name, rep.id)" class="text-danger pointer py-1">Smazat</span>
-                            </li>
-                        </ul>
-                    </td>
-                    <td v-html="rep.name"></td>
-                </tr>
+                <template x-for="repository in repositories" :key="repository.id">
+                    <tr>
+                        <td>
+                            <ul class="mb-0 list-unstyled">
+                                <li>
+                                    <span @click="insertItem('repository', 'Upravit', 'edit', repository.name, repository.id)" class="py-1 text-info pointer">
+                                        Upravit
+                                    </span>
+                                </li>
+                                <li>
+                                    <span @click="deleteItem(repository.name, repository.id)" class="py-1 text-danger pointer">
+                                        Smazat
+                                    </span>
+                                </li>
+                            </ul>
+                        </td>
+                        <td x-html="repository.name"></td>
+                    </tr>
+                </template>
             </tbody>
         </table>
     </div>
-    <div v-if="!loading" class="section my-5" id="collection">
+    <div x-show="!loading" class="my-5 section" id="collection">
         <h3>Sbírky / fondy</h3>
-        <button @click="insertItem('collection', 'Nová sbírka', 'add', null)" type="button" class="btn btn-primary btn-sm my-2">
+        <button @click="insertItem('collection', 'Nová sbírka', 'add', '', null)" type="button" class="my-2 btn btn-primary btn-sm">
             Přidat novou sbírku
         </button>
-        <table class="table-sm table-bordered table-hover table-striped mt-3">
+        <table class="mt-3 table-sm table-bordered table-hover table-striped">
             <thead>
                 <tr>
                     <td style="width:10%">Akce</td>
@@ -45,28 +51,34 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="coll in collections" :key="coll.id">
-                    <td>
-                        <ul class="list-unstyled mb-0">
-                            <li>
-                                <span @click="insertItem('collection', 'Upravit: ' + coll.name, 'edit', coll.id)" class="text-info pointer py-1">Upravit</span>
-                            </li>
-                            <li>
-                                <span @click="deleteItem(coll.name, coll.id)" class="text-danger pointer py-1">Smazat</span>
-                            </li>
-                        </ul>
-                    </td>
-                    <td v-html="coll.name"></td>
-                </tr>
+                <template x-for="collection in collections" :key="collection.id">
+                    <tr>
+                        <td>
+                            <ul class="mb-0 list-unstyled">
+                                <li>
+                                    <span @click="insertItem('collection', 'Upravit', 'edit', collection.name, collection.id)" class="py-1 text-info pointer">
+                                        Upravit
+                                    </span>
+                                </li>
+                                <li>
+                                    <span @click="deleteItem(collection.name, collection.id)" class="py-1 text-danger pointer">
+                                        Smazat
+                                    </span>
+                                </li>
+                            </ul>
+                        </td>
+                        <td x-html="collection.name"></td>
+                    </tr>
+                </template>
             </tbody>
         </table>
     </div>
-    <div v-if="!loading" class="section my-5" id="archive">
+    <div x-show="!loading" class="my-5 section" id="archive">
         <h3>Archivy</h3>
-        <button @click="insertItem('archive', 'Nový archiv', 'add', null)" type="button" class="btn btn-primary btn-sm my-2">
+        <button @click="insertItem('archive', 'Nový archiv', 'add', '', null)" type="button" class="my-2 btn btn-primary btn-sm">
             Přidat nový archiv
         </button>
-        <table class="table-sm table-bordered table-hover table-striped mt-3">
+        <table class="mt-3 table-sm table-bordered table-hover table-striped">
             <thead>
                 <tr>
                     <td style="width:10%">Akce</td>
@@ -74,23 +86,26 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="a in archives" :key="a.id">
-                    <td>
-                        <ul class="list-unstyled mb-0">
-                            <li>
-                                <span @click="insertItem('archive', 'Upravit: ' + a.name, 'edit', a.id)" class="text-info pointer py-1">Upravit</span>
-                            </li>
-                            <li>
-                                <span @click="deleteItem(a.name, a.id)" class="text-danger pointer py-1">Smazat</span>
-                            </li>
-                        </ul>
-                    </td>
-                    <td v-html="a.name"></td>
-                </tr>
+                <template x-for="archive in archives" :key="archive.id">
+                    <tr>
+                        <td>
+                            <ul class="mb-0 list-unstyled">
+                                <li>
+                                    <span @click="insertItem('archive', 'Upravit', 'edit', archive.name, archive.id)" class="py-1 text-info pointer">
+                                        Upravit
+                                    </span>
+                                </li>
+                                <li>
+                                    <span @click="deleteItem(archive.name, archive.id)" class="py-1 text-danger pointer">
+                                        Smazat
+                                    </span>
+                                </li>
+                            </ul>
+                        </td>
+                        <td x-html="archive.name"></td>
+                    </tr>
+                </template>
             </tbody>
         </table>
-    </div>
-    <div v-if="error" class="alert alert-warning">
-        {{ error }}
     </div>
 </div>

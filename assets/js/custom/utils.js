@@ -1,5 +1,14 @@
 /* global Swal axios ajaxUrl */
 
+function normalize(str) {
+    return str
+        .toString()
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+}
+
 function errorInfoSwal(error, title = 'Při ukládání došlo k chybě.') {
     return {
         title: title,
@@ -11,105 +20,12 @@ function errorInfoSwal(error, title = 'Při ukládání došlo k chybě.') {
     }
 }
 
-function getNameById(data, id) {
-    const filtered = data.filter((line) => {
-        return line.id == id
-    })
-
-    if (filtered.length == 0) {
-        return false
-    }
-
-    return filtered[0].name
-}
-
-function stringContains(str, substr) {
-    return str.indexOf(substr) !== -1
-}
-
 function getLetterType() {
     const datatypes = document.getElementById('datatype')
 
     if (datatypes) {
         return JSON.parse(document.getElementById('datatype').innerHTML)
     }
-}
-
-function getGeoCoord(callback) {
-    Swal.fire({
-        buttonsStyling: false,
-        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
-        cancelButtonText: 'Zrušit',
-        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-        confirmButtonText: 'Vyhledat',
-        input: 'text',
-        showCancelButton: true,
-        showLoaderOnConfirm: true,
-        title: 'Zadejte název místa',
-        type: 'question',
-        allowOutsideClick: () => !Swal.isLoading(),
-        inputValidator: (value) => {
-            if (value.length < 2) {
-                return 'Zadejte název místa'
-            }
-        },
-        preConfirm: function (value) {
-            return axios
-                .get(ajaxUrl + '?action=get_geocities_latlng&query=' + value)
-                .then((response) => {
-                    return response.data.data
-                })
-                .catch((error) => {
-                    Swal.showValidationMessage(
-                        `Při vyhledávání došlo k chybě: ${error}`
-                    )
-                })
-        },
-    }).then((result) => {
-        if (result.value) {
-            Swal.fire({
-                buttonsStyling: false,
-                cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
-                cancelButtonText: 'Zrušit',
-                confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-                confirmButtonText: 'Potvrdit',
-                input: 'select',
-                inputOptions: geoDataToSelect(result.value),
-                showCancelButton: true,
-                title: 'Vyberte místo',
-                type: 'question',
-            }).then((result) => {
-                callback(result)
-            })
-        }
-    })
-}
-
-function geoDataToSelect(geoData) {
-    let output = {}
-
-    for (let i = 0; i < geoData.length; i++) {
-        let latlng = geoData[i].lat + ',' + geoData[i].lng
-        output[latlng] =
-            geoData[i].name +
-            ' (' +
-            geoData[i].adminName +
-            ' – ' +
-            geoData[i].country +
-            ')'
-    }
-
-    return output
-}
-
-function getObjectValues(obj) {
-    let result = []
-    let i
-    let l = obj.length
-    for (i = 0; i < l; i++) {
-        result.push(obj[i].value)
-    }
-    return result
 }
 
 function arrayToSingleObject(data) {

@@ -1,5 +1,11 @@
 <?php
 
+add_action('init', function () {
+    if (!session_id()) {
+        session_start();
+    }
+}, 1);
+
 require 'data-types.php';
 
 date_default_timezone_set('Europe/Prague');
@@ -68,17 +74,29 @@ function test_postdata($associative_array)
 {
     $results = [];
     foreach ($associative_array as $key => $value) {
-        $results[$key] = test_input($_POST[$value]);
+        if (!empty($_POST[$value])) {
+            $results[$key] = test_input($_POST[$value]);
+        }
     }
 
     return $results;
 }
 
 
+function decode_php_input()
+{
+    return json_decode(
+        mb_convert_encoding(
+            file_get_contents('php://input'),
+            'UTF-8'
+        )
+    );
+}
+
+
 function alert($message, $type = 'info')
 {
-    ob_start();
-    ?>
+    ob_start(); ?>
     <div class="alert alert-<?= $type ?>">
         <?= $message; ?>
     </div>
@@ -89,8 +107,7 @@ function alert($message, $type = 'info')
 
 function frontend_refresh()
 {
-    ob_start();
-    ?>
+    ob_start(); ?>
     <script type="text/javascript">
         console.log('refreshed');
         if (window.history.replaceState) {
@@ -102,15 +119,31 @@ function frontend_refresh()
 }
 
 
-function get_array_name($value)
+function get_alert_markup($message, $type = 'info')
 {
-    return is_array($value) ? $value['name'] : '';
+    ob_start(); ?>
+    <div x-data="{ visible: true}">
+        <div class="alert alert-<?= $type; ?>" role="alert" x-show="visible" style="display:block">
+            <?= $message; ?>
+            <button type="button" class="close" aria-label="Close" @click="visible = false">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
 }
 
 
-function get_nonempty_value($value)
+function show_alerts()
 {
-    return $value !== '';
+    if (isset($_SESSION['hiko']['success'])) {
+        echo get_alert_markup($_SESSION['hiko']['success'], 'success');
+        unset($_SESSION['hiko']['success']);
+    } else if (isset($_SESSION['hiko']['warning'])) {
+        echo get_alert_markup($_SESSION['hiko']['warning'], 'warning');
+        unset($_SESSION['hiko']['warning']);
+    }
 }
 
 
@@ -120,33 +153,6 @@ function get_form_checkbox_val($name, $array)
         return $array[$name] == 'on' ? 1 : 0;
     }
     return 0;
-}
-
-
-function get_related_name($related_field)
-{
-    $names = [];
-
-    if (empty($related_field)) {
-        return [];
-    }
-
-    foreach ($related_field as $field) {
-        $names[] = $field['name'];
-    }
-
-    return $names;
-}
-
-
-function user_has_role($role)
-{
-    $user = wp_get_current_user();
-    if (in_array($role, (array) $user->roles)) {
-        return true;
-    }
-
-    return false;
 }
 
 
@@ -161,67 +167,6 @@ function get_full_name()
 {
     $user_data = get_user_meta(get_current_user_id());
     return $user_data['first_name'][0]  . ' ' . $user_data['last_name'][0];
-}
-
-
-function get_persons_table_data($person_type)
-{
-    $fields = [
-        'letter_author.id AS au',
-        'letter_people_mentioned.id AS pm',
-        'letter_recipient.id AS re',
-        't.birth_year',
-        't.death_year',
-        't.profession_detailed',
-        't.profession_short',
-        't.id',
-        't.name',
-        't.persons_meta',
-        't.type',
-    ];
-
-    $fields = implode(', ', $fields);
-
-    $persons = pods(
-        $person_type,
-        [
-            'select' => $fields,
-            'orderby' => 't.name ASC',
-            'limit' => -1,
-            'groupby' => 't.id'
-        ]
-    );
-
-    $persons_filtered = [];
-    $index = 0;
-    while ($persons->fetch()) {
-        $alternative_names = json_decode($persons->display('persons_meta'));
-
-        if ($alternative_names && array_key_exists('names', $alternative_names)) {
-            $alternative_names = $alternative_names->names;
-        } else {
-            $alternative_names = [];
-        }
-
-        $type = $persons->display('type');
-        if (empty($type)) {
-            $type = 'person';
-        }
-
-        $persons_filtered[$index]['id'] = $persons->display('id');
-        $persons_filtered[$index]['name'] = $persons->display('name');
-        $persons_filtered[$index]['birth'] = $persons->field('birth_year');
-        $persons_filtered[$index]['death'] = $persons->field('death_year');
-        $persons_filtered[$index]['profession_short'] = $persons->display('profession_short');
-        $persons_filtered[$index]['profession_detailed'] = $persons->display('profession_detailed');
-        $persons_filtered[$index]['type'] = $type;
-        $persons_filtered[$index]['alternatives'] = $alternative_names;
-        $persons_filtered[$index]['relationships'] = !is_null($persons->display('au')) || !is_null($persons->display('re')) || !is_null($persons->display('pm'));
-
-        $index++;
-    }
-
-    return $persons_filtered;
 }
 
 
@@ -267,76 +212,6 @@ function get_places_table_data($place_type)
     }
 
     return $places_filtered;
-}
-
-
-function get_pods_name_and_id($type, $person = false)
-{
-    $fields = [
-        't.id',
-        't.name',
-    ];
-
-    if ($person) {
-        $fields[] = 't.birth_year';
-        $fields[] = 't.death_year';
-        $fields[] = 't.type';
-    }
-
-    $fields = implode(', ', $fields);
-
-    $pod = pods(
-        $type,
-        [
-            'select' => $fields,
-            'orderby' => 't.name ASC',
-            'limit' => -1
-        ]
-    );
-
-    $result = [[
-        'id' => '',
-        'name' => '',
-    ]];
-
-    if ($pod->data()) {
-        $result = $pod->data();
-    } elseif ($person) {
-        $result = [[
-            'id' => '',
-            'name' => '',
-            'birth_year' => '',
-            'death_year' => '',
-            'type' => ''
-        ]];
-    }
-
-    /* convert to array of arrays instead objects */
-    $result = json_encode($result);
-    $result = json_decode($result, true);
-    return $result;
-}
-
-
-function parse_json_file($url)
-{
-    $file = file_get_contents($url);
-    $file = json_decode($file);
-    return $file;
-}
-
-
-function sum_array_length($array)
-{
-    $sum = 0;
-    foreach ($array as $el) {
-        if (is_array($el)) {
-            if (count($el) > 0) {
-                $sum++;
-            }
-        }
-    }
-    return $sum;
 }
 
 
@@ -390,39 +265,6 @@ function verify_upload_img($img)
 }
 
 
-function save_name_alternatives($persons_string, $person_type)
-{
-    $persons = json_decode(stripslashes($persons_string));
-    foreach ($persons as $person) {
-        $person_meta = pods_field($person_type, $person->id, 'persons_meta');
-        $data = false;
-
-        if ($person->marked == '') {
-            $data = false;
-        } elseif ($person_meta == null) {
-            $data = [
-                'names' => [$person->marked]
-            ];
-        } else {
-            $old_data = json_decode($person_meta);
-            $data = [
-                'names' => merge_unique($old_data->names, [$person->marked])
-            ];
-        }
-
-        if ($data) {
-            pods_api()->save_pod_item([
-                'pod' => $person_type,
-                'data' => [
-                    'persons_meta' => json_encode($data, JSON_UNESCAPED_UNICODE)
-                ],
-                'id' => $person->id
-            ]);
-        }
-    }
-}
-
-
 function merge_unique($array1, $array2)
 {
     if ($array1 == null) {
@@ -456,11 +298,10 @@ function get_letters_basic_meta($meta, $draft)
 
     $fields = [
         't.id AS ID',
-        't.signature',
-        't.repository',
         't.date_day',
         't.date_month',
         't.date_year',
+        't.copies',
         't.status',
         't.created',
         'l_author.name AS author',
@@ -559,18 +400,6 @@ function get_editors_from_history($history)
 }
 
 
-function get_all_objects_by_id($object, $v)
-{
-    $found = [];
-    foreach ($object as $o) {
-        if ($o->id == $v) {
-            $found[] = $o;
-        }
-    }
-    return $found;
-}
-
-
 function get_letters_basic_meta_filtered($meta, $draft = true, $history = false)
 {
     $filtered_letters = merge_distinct_query_result(
@@ -592,8 +421,17 @@ function get_letters_basic_meta_filtered($meta, $draft = true, $history = false)
             return ($h['ID'] == $letter['ID']);
         });
 
-        $letter['editors'] = array_values($letter_history)[0]['editors'];
+        $signature = [];
+        $repository = [];
+        if (!empty($letter['copies'])) {
+            $copies = json_decode($letter['copies'], true);
+            $signature = array_column($copies, 'signature');
+            $repository = array_column($copies, 'repository');
+        }
 
+        $letter['repository'] = empty($repository) ? '' : $repository[0];
+        $letter['signature'] = empty($signature) ? '' : $signature[0];
+        $letter['editors'] = array_values($letter_history)[0]['editors'];
         $result[] = $letter;
     }
 
@@ -746,148 +584,7 @@ function sanitize_slashed_json($data)
         $result[] = $temp;
     }
 
-    return json_encode($result, JSON_UNESCAPED_UNICODE);
-}
-
-
-function save_hiko_letter($letter_type, $action, $path)
-{
-    $types = get_hiko_post_types($path);
-    $people_mentioned = [];
-    $authors = [];
-    $recipients = [];
-    $origins = [];
-    $destinations = [];
-    $keywords = [];
-
-    if (array_key_exists('l_author', $_POST)) {
-        foreach ($_POST['l_author'] as $author) {
-            $authors[] = test_input($author);
-        }
-    }
-
-    if (array_key_exists('recipient', $_POST)) {
-        foreach ($_POST['recipient'] as $recipient) {
-            $recipients[] = test_input($recipient);
-        }
-    }
-
-    if (array_key_exists('origin', $_POST)) {
-        foreach ($_POST['origin'] as $o) {
-            $origins[] = test_input($o);
-        }
-    }
-
-    if (array_key_exists('dest', $_POST)) {
-        foreach ($_POST['dest'] as $d) {
-            $destinations[] = test_input($d);
-        }
-    }
-
-    if (array_key_exists('people_mentioned', $_POST)) {
-        $people_mentioned = explode(',', $_POST['people_mentioned']);
-    }
-
-    if (array_key_exists('keywords', $_POST)) {
-        $keywords = explode(';', $_POST['keywords']);
-    }
-
-    if ($action == 'new') {
-        $history = date('Y-m-d H:i:s') . ' – ' . get_full_name() . "\n";
-    } elseif ($action == 'edit') {
-        $history = get_letter_history($letter_type, $_GET['edit']);
-        if ($history == '') {
-            $created = get_letter_created($letter_type, $_GET['edit']);
-            $history = $created['date'] . ' – ' . $created['author'] . "\n";
-        }
-        $history .= "\n" . date('Y-m-d H:i:s') . ' – ' . get_full_name() . "\n";
-    }
-
-    $participant_meta = sanitize_slashed_json($_POST['authors_meta']);
-
-    $data = test_postdata([
-        'abstract' => 'abstract',
-        'archive' => 'archive',
-        'author_note' => 'author_note',
-        'collection' => 'collection',
-        'date_day' => 'date_day',
-        'date_marked' => 'date_marked',
-        'date_month' => 'date_month',
-        'date_note' => 'date_note',
-        'date_year' => 'date_year',
-        'dest_note' => 'dest_note',
-        'explicit' => 'explicit',
-        'incipit' => 'incipit',
-        'l_number' => 'l_number',
-        'languages' => 'languages',
-        'location_note' => 'location_note',
-        'manifestation_notes' => 'manifestation_notes',
-        'ms_manifestation' => 'ms_manifestation',
-        'name' => 'description',
-        'notes_private' => 'notes_private',
-        'notes_public' => 'notes_public',
-        'origin_note' => 'origin_note',
-        'people_mentioned_notes' => 'people_mentioned_notes',
-        'range_day' => 'range_day',
-        'range_month' => 'range_month',
-        'range_year' => 'range_year',
-        'recipient_notes' => 'recipient_notes',
-        'repository' => 'repository',
-        'signature' => 'signature',
-        'status' => 'status',
-    ]);
-
-    $data['author_inferred'] = get_form_checkbox_val('author_inferred', $_POST);
-    $data['author_uncertain'] = get_form_checkbox_val('author_uncertain', $_POST);
-    $data['authors_meta'] = $participant_meta;
-    $data['date_approximate'] = get_form_checkbox_val('date_approximate', $_POST);
-    $data['date_inferred'] = get_form_checkbox_val('date_inferred', $_POST);
-    $data['date_is_range'] = get_form_checkbox_val('date_is_range', $_POST);
-    $data['date_uncertain'] = get_form_checkbox_val('date_uncertain', $_POST);
-    $data['dest'] = $destinations;
-    $data['dest_inferred'] = get_form_checkbox_val('dest_inferred', $_POST);
-    $data['dest_uncertain'] = get_form_checkbox_val('dest_uncertain', $_POST);
-    $data['document_type'] = sanitize_slashed_json($_POST['document_type']);
-    $data['history'] = $history;
-    $data['keywords'] = $keywords;
-    $data['l_author'] = $authors;
-    $data['origin'] = $origins;
-    $data['origin_inferred'] = get_form_checkbox_val('origin_inferred', $_POST);
-    $data['origin_uncertain'] = get_form_checkbox_val('origin_uncertain', $_POST);
-    $data['people_mentioned'] = $people_mentioned;
-    $data['places_meta'] = sanitize_slashed_json($_POST['places_meta']);
-    $data['recipient'] = $recipients;
-    $data['recipient_inferred'] = get_form_checkbox_val('recipient_inferred', $_POST);
-    $data['recipient_uncertain'] = get_form_checkbox_val('recipient_uncertain', $_POST);
-    $data['related_resources'] = sanitize_slashed_json($_POST['related_resources']);
-
-    $new_pod = '';
-
-    if ($action == 'new') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => $letter_type,
-            'data' => $data
-        ]);
-    } elseif ($action == 'edit') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => $letter_type,
-            'data' => $data,
-            'id' => $_GET['edit']
-        ]);
-    }
-
-    if ($new_pod == '') {
-        return alert('Něco se pokazilo', 'warning');
-    }
-
-    if (is_wp_error($new_pod)) {
-        return alert($new_pod->get_error_message(), 'warning');
-    }
-
-    save_name_alternatives($participant_meta, $types['person']);
-    frontend_refresh();
-
-    return alert('Uloženo', 'success');
+    return $result;
 }
 
 
@@ -903,92 +600,6 @@ function get_gmdate($filepath = false)
 }
 
 
-function save_hiko_person($person_type, $action)
-{
-    $data = test_postdata([
-        'birth_year' => 'birth_year',
-        'death_year' => 'death_year',
-        'emlo' => 'emlo',
-        'forename' => 'forename',
-        'gender' => 'gender',
-        'name' => 'fullname',
-        'nationality' => 'nationality',
-        'note' => 'note',
-        'profession' => 'profession',
-        'profession_detailed' => 'profession_detailed',
-        'profession_short' => 'profession_short',
-        'surname' => 'surname',
-        'type' => 'type',
-    ]);
-
-    $new_pod = '';
-
-    if ($action == 'new') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => $person_type,
-            'data' => $data
-        ]);
-    } elseif ($action == 'edit') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => $person_type,
-            'data' => $data,
-            'id' => $_GET['edit']
-        ]);
-    }
-
-    if ($new_pod == '') {
-        return alert('Něco se pokazilo', 'warning');
-    }
-
-    if (is_wp_error($new_pod)) {
-        return alert($new_pod->get_error_message(), 'warning');
-    }
-
-    frontend_refresh();
-
-    return alert('Uloženo', 'success');
-}
-
-
-function save_hiko_place($place_type, $action)
-{
-    $data = test_postdata([
-        'country' => 'country',
-        'latitude' => 'latitude',
-        'longitude' => 'longitude',
-        'name' => 'place',
-        'note' => 'note',
-    ]);
-
-    $new_pod = '';
-
-    if ($action == 'new') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => $place_type,
-            'data' => $data
-        ]);
-    } elseif ($action == 'edit') {
-        $new_pod = pods_api()->save_pod_item([
-            'pod' => $place_type,
-            'data' => $data,
-            'id' => $_GET['edit']
-        ]);
-    }
-
-    if ($new_pod == '') {
-        return alert('Něco se pokazilo', 'warning');
-    }
-
-    if (is_wp_error($new_pod)) {
-        return alert($new_pod->get_error_message(), 'warning');
-    }
-
-    frontend_refresh();
-
-    return alert('Uloženo', 'success');
-}
-
-
 function hiko_sanitize_file_name($file)
 {
     $file = remove_accents($file);
@@ -996,114 +607,6 @@ function hiko_sanitize_file_name($file)
     $file = sanitize_file_name($file);
 
     return $file;
-}
-
-
-function get_languages()
-{
-    return json_decode(
-        get_ssl_file(get_template_directory_uri() . '/assets/data/languages.json')
-    );
-}
-
-function get_json_languages()
-{
-    $languages = get_ssl_file(get_template_directory_uri() . '/assets/data/languages.json');
-    ob_start();
-    ?>
-    <script id="languages" type="application/json">
-        <?= $languages; ?>
-    </script>
-    <?php
-    return ob_get_clean();
-}
-
-
-function get_json_countries()
-{
-    $countries = get_ssl_file(get_template_directory_uri() . '/assets/data/countries.json');
-    ob_start();
-    ?>
-    <script id="countries" type="application/json">
-        <?= $countries; ?>
-    </script>
-    <?php
-    return ob_get_clean();
-}
-
-
-function display_persons_and_places($person_type, $place_type)
-{
-    $persons = json_encode(
-        get_pods_name_and_id($person_type, true),
-        JSON_UNESCAPED_UNICODE
-    );
-
-    $places = list_places_simple($place_type, false);
-
-    ob_start();
-    ?>
-    <script id="people" type="application/json">
-        <?= $persons; ?>
-    </script>
-
-    <script id="places" type="application/json">
-        <?= $places; ?>
-    </script>
-
-    <?php
-    return ob_get_clean();
-}
-
-
-function create_hiko_json_cache($name, $json_data)
-{
-    $cache_folder = WP_CONTENT_DIR . '/hiko-cache';
-    $filename = "{$name}.json";
-
-    if (!file_exists($cache_folder)) {
-        wp_mkdir_p($cache_folder);
-    }
-
-    $save = file_put_contents($cache_folder . '/' . $filename, $json_data);
-
-    return $save;
-}
-
-
-function hiko_cache_exists($name)
-{
-    $cache_folder = WP_CONTENT_DIR . '/hiko-cache';
-    $file = "{$name}.json";
-
-    if (file_exists($cache_folder . '/' . $file)) {
-        return true;
-    }
-    return false;
-}
-
-
-function delete_hiko_cache($name)
-{
-    $file = WP_CONTENT_DIR . '/hiko-cache' . '/' . $name . '.json';
-
-    if (file_exists($file)) {
-        unlink($file);
-    }
-    return false;
-}
-
-
-function read_hiko_cache($name)
-{
-    $file = get_hiko_cache_file($name);
-    return file_get_contents($file);
-}
-
-
-function get_hiko_cache_file($name)
-{
-    return WP_CONTENT_DIR . '/hiko-cache' . '/' . $name . '.json';
 }
 
 
@@ -1211,17 +714,68 @@ function get_editors_by_role($role)
     ]);
 }
 
+function get_languages()
+{
+    $langs = json_decode(
+        get_ssl_file(get_template_directory_uri() . '/assets/data/languages.json'),
+        true
+    );
+
+    return array_column(array_values($langs), 'name');
+}
+
+
+function input_value($form_data, $field)
+{
+    return isset($form_data[$field]) ? $form_data[$field] : '';
+}
+
+
+function input_value_list($form_data, $field)
+{
+    return isset($form_data[$field]) ? implode(';', $form_data[$field]) : '';
+}
+
+
+function input_json_value($form_data, $field)
+{
+    if (!isset($form_data[$field]) || empty($form_data[$field])) {
+        return '[]';
+    }
+
+    $results = [];
+
+    foreach ($form_data[$field] as $item) {
+        $results[] = [
+            'id' => $item['id'],
+            'value' => $item['name'],
+        ];
+    }
+
+    return htmlspecialchars(json_encode($results, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
+}
+
+
+function input_bool($form_data, $field)
+{
+    if (!isset($form_data[$field])) {
+        return '';
+    }
+
+    return $form_data[$field] ? 'checked' : '';
+}
+
 
 add_image_size('xl-thumb', 300);
 
 require 'ajax/common.php';
-require 'ajax/letters.php';
-require 'ajax/people.php';
-require 'ajax/places.php';
+require 'helpers/letters.php';
+require 'helpers/professions.php';
+require 'helpers/entities.php';
+require 'helpers/places.php';
 require 'ajax/images.php';
 require 'ajax/export.php';
 require 'ajax/export-palladio.php';
-require 'ajax/location.php';
+require 'helpers/location.php';
 require 'ajax/geonames.php';
-require 'ajax/keywords.php';
-require 'ajax/professions.php';
+require 'helpers/keywords.php';

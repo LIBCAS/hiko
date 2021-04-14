@@ -166,19 +166,16 @@ function export_letters()
 add_action('wp_ajax_export_letters', 'export_letters');
 
 
-function export_persons()
-{
+add_action('wp_ajax_export_persons', function () {
     if (!array_key_exists('type', $_GET)) {
         wp_send_json_error('Not found', 404);
     }
 
-    $type = sanitize_text_field($_GET['type']);
-
-    $format = sanitize_text_field($_GET['format']);
-
-    if ($format != 'csv') {
+    if ($_GET['format'] !== 'csv') {
         wp_send_json_error('Format not found', 404);
     }
+
+    $type = sanitize_text_field($_GET['type']);
 
     global $wpdb;
 
@@ -192,23 +189,19 @@ function export_persons()
     );
 
     wp_die();
-}
-add_action('wp_ajax_export_persons', 'export_persons');
+});
 
 
-function export_places()
-{
+add_action('wp_ajax_export_places', function () {
     if (!array_key_exists('type', $_GET)) {
         wp_send_json_error('Not found', 404);
     }
 
-    $type = sanitize_text_field($_GET['type']);
-
-    $format = sanitize_text_field($_GET['format']);
-
-    if ($format != 'csv') {
+    if ($_GET['format'] !== 'csv') {
         wp_send_json_error('Format not found', 404);
     }
+
+    $type = sanitize_text_field($_GET['type']);
 
     global $wpdb;
 
@@ -222,8 +215,7 @@ function export_places()
     );
 
     wp_die();
-}
-add_action('wp_ajax_export_places', 'export_places');
+});
 
 
 function parse_letter_export_data($query_result)

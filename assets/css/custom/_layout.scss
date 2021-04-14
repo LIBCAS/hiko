@@ -8,3 +8,10 @@
         display: none;
     }
 }
+
+[x-cloak] {
+  display: none;
+  & > * {
+      display: none;
+  }
+}

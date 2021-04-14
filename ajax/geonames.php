@@ -1,7 +1,6 @@
 <?php
 
-function get_geocities_latlng()
-{
+add_action('wp_ajax_get_geocities_latlng', function () {
     if (!array_key_exists('query', $_GET)) {
         wp_send_json_error('Not found', 404);
     }
@@ -17,19 +16,16 @@ function get_geocities_latlng()
     }
 
     $result = [];
-    $index = 0;
 
     foreach ($geo_data->geonames as $g) {
-        $result[$index] = [
+        $result[] = [
             'adminName' => $g->adminName1,
             'country' => $g->countryName,
             'lat' => $g->lat,
             'lng' => $g->lng,
             'name' => $g->name,
         ];
-        $index++;
     }
 
     wp_send_json_success($result);
-}
-add_action('wp_ajax_get_geocities_latlng', 'get_geocities_latlng');
+});

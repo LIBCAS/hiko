@@ -25,14 +25,11 @@ const autoprefixer = require('gulp-autoprefixer')
 const concat = require('gulp-concat')
 const uglify = require('gulp-uglify')
 const babel = require('gulp-babel')
-const imagemin = require('gulp-imagemin')
 const rename = require('gulp-rename')
 const lineec = require('gulp-line-ending-corrector')
 const sourcemaps = require('gulp-sourcemaps')
 const notify = require('gulp-notify')
 const browserSync = require('browser-sync').create()
-const wpPot = require('gulp-wp-pot')
-const sort = require('gulp-sort')
 const cache = require('gulp-cache')
 const remember = require('gulp-remember')
 const plumber = require('gulp-plumber')
@@ -89,9 +86,8 @@ gulp.task('customJS', () => {
     return gulp
         .src(
             [
-                paths.jsCustomSRC + 'global.js',
                 paths.jsCustomSRC + 'utils.js',
-                paths.jsCustomSRC + '!(global|utils)*.js',
+                paths.jsCustomSRC + '!(utils)*.js',
             ],
             { since: gulp.lastRun('customJS') }
         )
@@ -126,33 +122,6 @@ gulp.task('customJS', () => {
         .pipe(
             notify({
                 message: '✅  ===> CUSTOM JS — completed!',
-                onLast: true,
-            })
-        )
-})
-
-gulp.task('images', () => {
-    return gulp
-        .src(paths.imgSRC)
-        .pipe(
-            cache(
-                imagemin([
-                    imagemin.gifsicle({ interlaced: true }),
-                    imagemin.jpegtran({ progressive: true }),
-                    imagemin.optipng({ optimizationLevel: 3 }), // 0-7 low-high.
-                    imagemin.svgo({
-                        plugins: [
-                            { removeViewBox: true },
-                            { cleanupIDs: false },
-                        ],
-                    }),
-                ])
-            )
-        )
-        .pipe(gulp.dest(paths.imgDST))
-        .pipe(
-            notify({
-                message: '✅  ===> IMAGES — completed!',
                 onLast: true,
             })
         )
@@ -193,28 +162,6 @@ gulp.task('cleanBuild', function () {
 
 gulp.task('clearCache', function (done) {
     return cache.clearAll(done)
-})
-
-gulp.task('translate', () => {
-    return gulp
-        .src(paths.watchPhp)
-        .pipe(sort())
-        .pipe(
-            wpPot({
-                domain: 'hiko',
-                package: 'hiko',
-                bugReport: 'pachlova@lib.cas.cz',
-                lastTranslator: 'Jarka P <pachlova@lib.cas.cz>',
-                team: 'Jarka P <pachlova@lib.cas.cz>',
-            })
-        )
-        .pipe(gulp.dest('./languages/hiko.pot'))
-        .pipe(
-            notify({
-                message: '✅  ===> TRANSLATE — completed!',
-                onLast: true,
-            })
-        )
 })
 
 gulp.task(

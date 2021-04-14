@@ -1,95 +1,169 @@
-/* global Vue axios ajaxUrl getLetterType getGeoCoord isString decodeHTML */
+/* global Tagify Swal ajaxUrl axios normalize */
 
-if (document.getElementById('places-form')) {
-    new Vue({
-        el: '#places-form',
-        data: {
-            country: {},
-            lat: '',
-            long: '',
-            note: '',
-            place: '',
-            error: false,
-            loading: true,
-        },
-        computed: {
-            countries() {
-                let results = []
+window.placeForm = function () {
+    return {
+        country: '',
+        name: '',
+        latitude: '',
+        longitude: '',
+        note: '',
+        errors: [],
 
-                let countries = JSON.parse(
-                    document.querySelector('#countries').innerHTML
-                )
+        fetch: function () {
+            const data = JSON.parse(
+                document.getElementById('place-data').innerHTML
+            )
 
-                let l = countries.length
-                for (let index = 0; index < l; index++) {
-                    results.push({
-                        label: countries[index].name,
-                        value: countries[index].name,
-                    })
-                }
-                return results
-            },
-        },
-        mounted: function () {
-            let letterTypes = getLetterType()
-            let url = new URL(window.location.href)
-            let self = this
-
-            if (isString(letterTypes)) {
-                self.error = letterTypes
+            if (data.length === 0) {
+                this.initTagify()
                 return
             }
 
-            this.placeType = letterTypes['placeType']
+            this.country = data.country
+            this.name = data.name
+            this.latitude = data.latitude
+            this.longitude = data.longitude
+            this.note = data.note
 
-            if (url.searchParams.get('edit')) {
-                this.getInitialData(url.searchParams.get('edit'), () => {
-                    self.loading = false
+            this.initTagify()
+        },
+
+        initTagify: function () {
+            const countries = JSON.parse(
+                document.getElementById('countries').innerHTML
+            )
+
+            const t = new Tagify(document.getElementById('country'), {
+                enforceWhitelist: true,
+                whitelist: countries,
+                mode: 'select',
+                dropdown: {
+                    enabled: 0,
+                    highlightFirst: true,
+                    maxItems: Infinity,
+                    placeAbove: false,
+                    searchKeys: ['value'],
+                },
+            })
+
+            // default search not working in single select mode
+            t.on('input', (e) => {
+                const search = normalize(e.detail.value)
+                const results = []
+
+                t.settings.whitelist.length = 0 // reset the whitelist
+                t.loading(true).dropdown.hide.call(t)
+
+                countries.map((option) => {
+                    if (normalize(option.value).includes(search)) {
+                        results.push({
+                            value: option.value,
+                        })
+                    }
                 })
-            } else {
-                self.loading = false
+
+                t.settings.whitelist = results
+                t.loading(false).dropdown.show.call(t, search) // render the suggestions dropdown
+            })
+        },
+
+        handleSubmit: function (event) {
+            event.preventDefault()
+
+            this.errors = []
+
+            if (this.name.length === 0) {
+                this.errors.push('Empty name')
             }
+
+            if (this.country.length === 0) {
+                this.errors.push('Empty country')
+            }
+
+            if (this.errors.length > 0) {
+                return
+            }
+
+            document.getElementById('places-form').submit()
         },
-        methods: {
-            decodeHTML: function (str) {
-                return decodeHTML(str)
-            },
 
-            getCoord: function () {
-                let self = this
+        getCoordinates: function () {
+            const context = this
+            Swal.fire({
+                buttonsStyling: false,
+                cancelButtonClass: 'btn btn-link text-danger btn-sm ml-1',
+                cancelButtonText: 'Cancel',
+                confirmButtonClass: 'btn btn-primary btn-sm mr-1',
+                confirmButtonText: 'Search',
+                input: 'text',
+                inputValue: context.name,
+                showCancelButton: true,
+                showLoaderOnConfirm: true,
+                title: 'Place name',
+                type: 'question',
+                allowOutsideClick: () => !Swal.isLoading(),
+                inputValidator: (value) => {
+                    if (value.length < 2) {
+                        return 'Place name'
+                    }
+                },
+                preConfirm: (value) => {
+                    return axios
+                        .get(
+                            ajaxUrl +
+                                '?action=get_geocities_latlng&query=' +
+                                value
+                        )
+                        .then((response) => {
+                            return response.data.data
+                        })
+                        .catch((error) => {
+                            Swal.showValidationMessage(
+                                `Při vyhledávání došlo k chybě: ${error}`
+                            )
+                        })
+                },
+            }).then((result) => {
+                if (!result.value) {
+                    return
+                }
 
-                getGeoCoord(function (latlng) {
-                    let coord = latlng.value.split(',')
-                    self.lat = coord[0]
-                    self.long = coord[1]
+                Swal.fire({
+                    buttonsStyling: false,
+                    cancelButtonClass: 'btn btn-link text-danger btn-sm ml-1',
+                    cancelButtonText: 'Zrušit',
+                    confirmButtonClass: 'btn btn-primary btn-sm mr-1',
+                    confirmButtonText: 'Potvrdit',
+                    input: 'select',
+                    inputOptions: context.formatSearchResults(result.value),
+                    showCancelButton: true,
+                    title: 'Vyberte místo',
+                    type: 'question',
+                }).then((result) => {
+                    if (!result.value) {
+                        return
+                    }
+
+                    const latlng = result.value.split(',')
+
+                    context.latitude = latlng[0]
+                    context.longitude = latlng[1]
                 })
-            },
-            getInitialData: function (id, callback = null) {
-                let self = this
-
-                axios
-                    .get(
-                        ajaxUrl +
-                            '?action=list_place_single&pods_id=' +
-                            id +
-                            '&type=' +
-                            self.placeType
-                    )
-                    .then(function (response) {
-                        self.place = response.data.name
-                        self.country = {
-                            value: response.data.country,
-                            label: response.data.country,
-                        }
-                        self.note = response.data.note
-                        self.lat = response.data.latitude
-                        self.long = response.data.longitude
-                    })
-                    .catch(function () {
-                        self.error = true
-                    })
-                    .then(callback)
-            },
+            })
         },
-    })
+
+        formatSearchResults(geoData) {
+            let output = {}
+
+            for (let i = 0; i < geoData.length; i++) {
+                const latlng = geoData[i].lat + ',' + geoData[i].lng
+
+                output[
+                    latlng
+                ] = `${geoData[i].name} (${geoData[i].adminName} – ${geoData[i].country})`
+            }
+
+            return output
+        },
+    }
 }

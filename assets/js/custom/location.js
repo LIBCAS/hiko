@@ -1,184 +1,145 @@
-/* global Vue Swal axios ajaxUrl decodeHTML */
-
-const locationSwal = {
-    saveSuccess: {
-        title: 'Položka byla úspěšně přidána',
-        type: 'success',
-        buttonsStyling: false,
-        confirmButtonText: 'OK',
-        confirmButtonClass: 'btn btn-primary btn-lg',
-    },
-    removeInfo: {
-        title: 'Položka byla úspěšně odstraněna',
-        type: 'success',
-        buttonsStyling: false,
-        confirmButtonText: 'OK',
-        confirmButtonClass: 'btn btn-primary btn-lg',
-    },
-    confirmSave: {
-        buttonsStyling: false,
-        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
-        cancelButtonText: 'Zrušit',
-        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-        confirmButtonText: 'Uložit',
-        input: 'text',
-        showCancelButton: true,
-        showLoaderOnConfirm: true,
-        type: 'question',
-    },
-    confirmDelete: {
-        buttonsStyling: false,
-        cancelButtonClass: 'btn btn-secondary btn-lg ml-1',
-        cancelButtonText: 'Zrušit',
-        confirmButtonClass: 'btn btn-primary btn-lg mr-1',
-        confirmButtonText: 'Ano',
-        showCancelButton: true,
-        title: 'Opravdu chcete odstranit tuto položku?',
-        type: 'warning',
-    },
+/* global Swal axios ajaxUrl decodeHTML */
+const commonSwalOptions = {
+    buttonsStyling: false,
+    confirmButtonClass: 'btn btn-primary btn-sn mr-1',
+    cancelButtonClass: 'btn btn-link text-danger btn-sm ml-1',
+    confirmButtonText: 'OK',
+    cancelButtonText: 'Zrušit',
 }
 
-if (document.getElementById('repository')) {
-    new Vue({
-        el: '#location',
-        data: {
-            data: [],
-            loading: true,
-            error: false,
-        },
-        computed: {
-            repositories: function () {
-                return this.data.filter((loc) => {
-                    if (loc.type == 'repository') {
-                        return true
-                    }
-                })
-            },
-            collections: function () {
-                return this.data.filter((loc) => {
-                    if (loc.type == 'collection') {
-                        return true
-                    }
-                })
-            },
-            archives: function () {
-                return this.data.filter((loc) => {
-                    if (loc.type == 'archive') {
-                        return true
-                    }
-                })
-            },
-        },
+window.locationForm = function () {
+    return {
+        loading: true,
+        repositories: [],
+        collections: [],
+        archives: [],
 
-        mounted: function () {
-            this.getData()
-        },
+        fetch: function () {
+            const context = this
 
-        methods: {
-            insertItem: function (type, title, action, id) {
-                let self = this
-                self.insertLocationItem(type, title, action, id, function () {
-                    self.getData()
-                })
-            },
-            insertLocationItem: function (type, title, action, id, callback) {
-                const swalConfig = locationSwal.confirmSave
-                swalConfig.title = title
-                swalConfig.allowOutsideClick = () => !Swal.isLoading()
-                swalConfig.inputValidator = (value) => {
-                    if (value.length < 3) {
-                        return 'Zadejte hodnotu'
-                    }
-                }
-                swalConfig.preConfirm = (value) => {
-                    return axios
-                        .post(
-                            ajaxUrl + '?action=insert_location_data',
-                            {
-                                ['type']: type,
-                                ['item']: value,
-                                ['action']: action,
-                                ['id']: id,
-                            },
-                            {
-                                headers: {
-                                    'Content-Type':
-                                        'application/json;charset=utf-8',
-                                },
-                            }
-                        )
-                        .then((response) => {
-                            return response.data
-                        })
-                        .catch((error) => {
-                            Swal.showValidationMessage(
-                                `Při ukládání došlo k chybě: ${error}`
-                            )
-                        })
-                }
-                Swal.fire(swalConfig).then((result) => {
-                    if (result.value) {
-                        Swal.fire(locationSwal.saveSuccess)
-                        callback()
-                    }
-                })
-            },
-            deleteItem: function (name, id) {
-                let self = this
-                self.deleteLocationItem(name, id, function () {
-                    self.data = self.data.filter(function (item) {
-                        return item.id !== id
+            context.repositories = []
+            context.collections = []
+            context.archives = []
+
+            axios
+                .get(ajaxUrl + '?action=list_locations')
+                .then((response) => {
+                    response.data.data.map((location) => {
+                        if (location.type === 'repository') {
+                            context.repositories.push(location)
+                        } else if (location.type === 'collection') {
+                            context.collections.push(location)
+                        } else if (location.type === 'archive') {
+                            context.archives.push(location)
+                        }
                     })
                 })
-            },
-
-            deleteLocationItem: function (name, id, callback) {
-                const swalConfig = locationSwal.confirmDelete
-                swalConfig.text = decodeHTML(name)
-
-                Swal.fire(swalConfig).then((result) => {
-                    if (result.value) {
-                        axios
-                            .post(
-                                ajaxUrl + '?action=delete_location_data',
-                                {
-                                    ['id']: id,
-                                },
-                                {
-                                    headers: {
-                                        'Content-Type':
-                                            'application/json;charset=utf-8',
-                                    },
-                                }
-                            )
-                            .then(function () {
-                                Swal.fire(locationSwal.removeInfo)
-                                callback()
-                            })
-                            .catch(function (error) {
-                                Swal.showValidationMessage(
-                                    `Při odstraňování došlo k chybě: ${error}`
-                                )
-                            })
-                    }
+                .catch((error) => {
+                    console.log(error)
                 })
-            },
+                .then(() => {
+                    context.loading = false
+                })
+        },
 
-            getData: function () {
-                const self = this
-                self.loading = true
-                axios
-                    .get(ajaxUrl + '?action=list_locations')
+        insertItem: function (type, title, action, defaultValue, id) {
+            const context = this
+            const swalConfig = Object.assign({}, commonSwalOptions)
+            swalConfig.showCancelButton = true
+            swalConfig.showLoaderOnConfirm = true
+            swalConfig.type = 'question'
+            swalConfig.title = title
+            swalConfig.input = 'text'
+            swalConfig.inputValue = decodeHTML(defaultValue)
+            swalConfig.inputValidator = (value) => {
+                if (value.length < 3) {
+                    return 'Zadejte hodnotu'
+                }
+            }
+            swalConfig.preConfirm = (value) => {
+                return axios
+                    .post(
+                        ajaxUrl + '?action=insert_location_data',
+                        {
+                            type: type,
+                            item: value,
+                            action: action,
+                            id: id,
+                        },
+                        {
+                            headers: {
+                                'Content-Type':
+                                    'application/json;charset=utf-8',
+                            },
+                        }
+                    )
                     .then((response) => {
-                        self.data = response.data.data
+                        return response.data
                     })
                     .catch((error) => {
-                        self.error = error
+                        Swal.showValidationMessage(
+                            `Při ukládání došlo k chybě: ${error}`
+                        )
                     })
-                    .then(() => {
-                        self.loading = false
+            }
+
+            Swal.fire(swalConfig).then((result) => {
+                if (!result.value) {
+                    return
+                }
+                Swal.fire(
+                    Object.assign(commonSwalOptions, {
+                        title: 'Položka byla úspěšně přidána',
+                        type: 'success',
                     })
-            },
+                )
+                context.fetch()
+            })
         },
-    })
+
+        deleteItem: function (name, id) {
+            const context = this
+
+            const swalConfig = Object.assign(commonSwalOptions, {
+                showCancelButton: true,
+                title: 'Opravdu chcete odstranit tuto položku?',
+                type: 'warning',
+                text: decodeHTML(name),
+            })
+
+            Swal.fire(swalConfig).then((result) => {
+                if (!result.value) {
+                    return
+                }
+
+                axios
+                    .post(
+                        ajaxUrl + '?action=delete_location_data',
+                        {
+                            id: id,
+                        },
+                        {
+                            headers: {
+                                'Content-Type':
+                                    'application/json;charset=utf-8',
+                            },
+                        }
+                    )
+                    .then(() => {
+                        Swal.fire(
+                            Object.assign(commonSwalOptions, {
+                                title: 'Položka byla úspěšně odstraněna',
+                                type: 'success',
+                            })
+                        )
+                        context.fetch()
+                    })
+                    .catch((error) => {
+                        Swal.showValidationMessage(
+                            `Při odstraňování došlo k chybě: ${error}`
+                        )
+                    })
+            })
+        },
+    }
 }
