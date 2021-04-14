@@ -1,6 +1,6 @@
-/* global Tabulator updateTableHeaders homeUrl axios ajaxUrl getLetterType removeItemAjax arrayToList */
+/* global Tabulator updateTableHeaders homeUrl axios ajaxUrl getLetterType removeItemAjax arrayToList normalize */
 
-var table, professions
+var table
 
 function deletePerson(id, index) {
     const letterTypes = getLetterType()
@@ -10,28 +10,9 @@ function deletePerson(id, index) {
     })
 }
 
-function getProfessionsNames(professionList, rowData) {
-    const type = rowData.type
-
-    if (type != 'person' || professionList == '') {
-        return []
-    }
-
-    let result = []
-
-    professionList.split(';').map((name) => {
-        if (name != '') {
-            result.push(professions[name])
-        }
-    })
-
-    return result
-}
-
-function removeEmptyNameAlternatives(personID) {
+function removeEmptyNames(personID) {
     const spinner = event.target.querySelector('.spinner')
     const letterTypes = getLetterType()
-
     spinner.classList.remove('d-none')
 
     axios
@@ -59,7 +40,6 @@ function removeEmptyNameAlternatives(personID) {
 
 if (document.getElementById('datatable-persons')) {
     const letterTypes = getLetterType()
-    professions = JSON.parse(document.querySelector('#professions').innerHTML)
 
     table = new Tabulator('#datatable-persons', {
         columns: [
@@ -95,48 +75,47 @@ if (document.getElementById('datatable-persons')) {
             {
                 field: 'name',
                 headerFilter: 'input',
-                formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'normal'
+                headerFilterFunc: (headerValue, rowValue) => {
+                    return normalize(rowValue.name).includes(
+                        normalize(headerValue)
+                    )
+                },
+                tooltip: (cell) => {
+                    return cell.getValue().name
+                },
+                formatter: (cell) => {
+                    let resultName =
+                        '<strong>' + cell.getValue()['name'] + '</strong>'
 
-                    const name = cell.getValue()
-                    const rowData = cell.getRow().getData()
-
-                    if (rowData.type != 'person') {
-                        return `<strong>${name}</strong>`
-                    }
-
-                    let resultName = `<strong>${name}</strong> `
-                    if (rowData.birth || rowData.death) {
-                        resultName += `(${rowData.birth ? rowData.birth : ''}–${
-                            rowData.death ? rowData.death : ''
-                        })`
+                    if (cell.getValue()['dates']) {
+                        resultName += ' ' + cell.getValue()['dates']
                     }
 
                     return resultName
+                },
+                sorter: (a, b) => {
+                    return a.name.localeCompare(b.name)
                 },
                 title: 'Name',
                 variableHeight: true,
             },
             {
                 field: 'alternatives',
-                formatter: function (cell) {
+                formatter: (cell) => {
                     cell.getElement().style.whiteSpace = 'normal'
 
-                    const names = cell.getValue()
-                    const rowIndex = cell.getRow().getIndex()
-
-                    if (!Array.isArray(names) || names.length == 0) {
+                    if (cell.getValue().length == 0) {
                         return ''
                     }
 
                     let actions = ''
 
-                    names.forEach((name) => {
+                    cell.getValue().forEach((name) => {
                         actions += `<li>${name}</li>`
                     })
 
                     actions += `
-                    <li onclick="removeEmptyNameAlternatives(${rowIndex})">
+                    <li onclick="removeEmptyNames(${cell.getRow().getIndex()})">
                         <button type="button" class="btn btn-sm btn-link px-0 py-1 is-info text-left">
                             <span class="spinner spinner-border spinner-border-sm d-none"></span>
                             Odstranit nepoužité varianty jména
@@ -151,44 +130,37 @@ if (document.getElementById('datatable-persons')) {
                 variableHeight: true,
             },
             {
-                field: 'profession_detailed',
+                field: 'detailed',
                 headerFilter: 'input',
-
-                formatter: function (cell) {
+                formatter: (cell) => {
                     return arrayToList(cell.getValue())
-                },
-                mutator: function (value, data) {
-                    return getProfessionsNames(value, data)
                 },
                 sorter: 'array',
                 title: 'Professions',
                 variableHeight: true,
             },
             {
-                field: 'profession_short',
+                field: 'short',
                 headerFilter: 'input',
-                formatter: function (cell) {
+                formatter: (cell) => {
                     return arrayToList(cell.getValue())
-                },
-                mutator: function (value, data) {
-                    return getProfessionsNames(value, data)
                 },
                 sorter: 'array',
                 title: 'Palladio',
                 variableHeight: true,
             },
         ],
-        dataFiltered: function (filters, rows) {
+        dataFiltered: (filters, rows) => {
             document.getElementById('search-count').innerHTML = rows.length
         },
-        dataLoaded: function (data) {
+        dataLoaded: (data) => {
             document.getElementById('total-count').innerHTML = data.length
         },
         footerElement:
             '<span>Showing <span id="search-count"></span> items from <span id="total-count"></span> total items</span>',
         height: '600px',
         groupBy: 'type',
-        groupHeader: function (value, count) {
+        groupHeader: (value, count) => {
             value = value == 'institution' ? 'Institution' : 'Person'
 
             return `
@@ -204,7 +176,7 @@ if (document.getElementById('datatable-persons')) {
     })
 
     table.setData(
-        ajaxUrl + '?action=persons_table_data&type=' + letterTypes['personType']
+        ajaxUrl + '?action=persons_table_data&type=' + letterTypes['path']
     )
 
     updateTableHeaders()

@@ -29,35 +29,6 @@ function get_professions($professions_type, $lang)
 }
 
 
-function get_professions_list($professions_type, $lang = 'en')
-{
-    $fields = ['t.id',];
-
-    if ($lang === 'cs') {
-        $fields[] = 't.namecz AS name';
-    } else {
-        $fields[] = 't.name AS name';
-    }
-
-    $professions = pods(
-        $professions_type,
-        [
-            'select' => implode(', ', $fields),
-            'orderby' => $lang === 'cs' ? 't.namecz ASC' :  't.name ASC',
-            'limit' => -1
-        ]
-    );
-
-    $professions_filtered = [];
-
-    while ($professions->fetch()) {
-        $professions_filtered[$professions->display('id')] = $professions->display('name');
-    }
-
-    return $professions_filtered;
-}
-
-
 add_action('wp_ajax_insert_profession', function () {
     if (!is_in_editor_role()) {
         wp_send_json_error('Not allowed', 403);

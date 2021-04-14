@@ -168,7 +168,7 @@ add_action('wp_ajax_count_alternate_name', function () {
     $person_meta = pods_field($types['person'], $person_id, 'persons_meta');
 
     if (!$person_meta) {
-        wp_send_json_success([ 'deleted' => [], ]);
+        wp_send_json_success(['deleted' => [],]);
     }
 
     $person_meta = json_decode($person_meta);
@@ -208,29 +208,31 @@ add_action('wp_ajax_count_alternate_name', function () {
 
 
 add_action('wp_ajax_persons_table_data', function () {
-    $fields = implode(', ', [
-        'letter_author.id AS au',
-        'letter_people_mentioned.id AS pm',
-        'letter_recipient.id AS re',
-        't.birth_year',
-        't.death_year',
-        't.profession_detailed',
-        't.profession_short',
-        't.id',
-        't.name',
-        't.persons_meta',
-        't.type',
-    ]);
+    $data_types = get_hiko_post_types($_GET['type']);
 
     $persons = pods(
-        test_input($_GET['type']),
+        $data_types['person'],
         [
-            'select' => $fields,
-            'orderby' => 't.name ASC',
-            'limit' => -1,
             'groupby' => 't.id',
+            'limit' => -1,
+            'orderby' => 't.name ASC',
+            'select' => implode(', ', [
+                'letter_author.id AS au',
+                'letter_people_mentioned.id AS pm',
+                'letter_recipient.id AS re',
+                't.birth_year',
+                't.death_year',
+                't.profession_detailed',
+                't.profession_short',
+                't.id',
+                't.name',
+                't.persons_meta',
+                't.type',
+            ]),
         ]
     );
+
+    $professions = get_professions($data_types['profession'], $data_types['default_lang']);
 
     $persons_filtered = [];
 
@@ -239,16 +241,25 @@ add_action('wp_ajax_persons_table_data', function () {
 
         $alternative_names = [];
         if ($persons_meta && array_key_exists('names', $persons_meta)) {
-            $alternative_names = $persons_meta->names;
+            $alternative_names = (array) $persons_meta->names;
+        }
+
+        $dates = '';
+        $birth = $persons->field('birth_year');
+        $death = $persons->field('death');
+        if ($birth || $death) {
+            $dates = $birth ? '(' . $birth . '–' : '(–';
+            $dates .= $death ? $death . ')' : ')';
         }
 
         $persons_filtered[] = [
             'id' => $persons->display('id'),
-            'name' => $persons->display('name'),
-            'birth' => $persons->field('birth_year'),
-            'death' => $persons->field('death_year'),
-            'profession_short' => $persons->display('profession_short'),
-            'profession_detailed' => $persons->display('profession_detailed'),
+            'name' => [
+                'name' => $persons->display('name'),
+                'dates' => $dates,
+            ],
+            'short' => explode(';', parse_professions($persons->field('profession_short'), $professions)),
+            'detailed' => explode(';', parse_professions($persons->field('profession_detailed'), $professions)),
             'type' => empty($persons->display('type')) ? 'person' : $persons->display('type'),
             'alternatives' => $alternative_names,
             'relationships' => !is_null($persons->display('au')) || !is_null($persons->display('re')) || !is_null($persons->display('pm')),
