@@ -366,15 +366,30 @@ add_action('wp_ajax_list_letter_history', function () {
 
 add_action('wp_ajax_list_all_letters_short', function () {
     $types = get_hiko_post_types(test_input($_GET['type']));
+    $letters = get_letters_basic_meta_filtered($types, true, true);
+    $results = [];
 
-    $json_letters = json_encode(
-        get_letters_basic_meta_filtered($types, true, true),
-        JSON_UNESCAPED_UNICODE
-    );
+    foreach ($letters as $letter) {
+        $signature = $letter['signature'];
+        $signature .= $letter['signature'] && $letter['repository'] ? '/' : '';
+        $signature .= $letter['repository'] ? $letter['repository'] : '';
+        $results[] = [
+            'ID' => $letter['ID'],
+            'signature' => $letter['signature'],
+            'date_formatted' => format_letter_date($letter['date_day'], $letter['date_month'], $letter['date_year']),
+            'timestamp' => get_timestamp($letter['date_day'], $letter['date_month'], $letter['date_year']),
+            'author' => $letter['author'],
+            'recipient' => $letter['recipient'],
+            'origin' => $letter['origin'],
+            'dest' => $letter['dest'],
+            'keyword' => $letter['keyword'],
+            'category' => $letter['category'],
+        ];
+    }
 
     header('Content-Type: application/json');
     header('Last-Modified: ' . get_gmdate());
-    wp_die($json_letters);
+    wp_die(json_encode($results, JSON_UNESCAPED_UNICODE));
 });
 
 

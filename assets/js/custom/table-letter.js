@@ -1,4 +1,4 @@
-/* global Tabulator updateTableHeaders homeUrl Swal axios ajaxUrl getLetterType removeItemAjax getTimestampFromDate arrayToList */
+/* global Tabulator updateTableHeaders homeUrl Swal axios ajaxUrl getLetterType removeItemAjax arrayToList */
 
 var table
 
@@ -168,53 +168,18 @@ if (document.getElementById('datatable-letters')) {
             },
             {
                 field: 'signature',
-                formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'normal'
-                    return cell.getValue()
-                },
-                headerFilter: 'input',
-                title: 'Signature',
-                mutator: function (value, data) {
-                    let result = data.signature
-
-                    if (data.repository && data.signature) {
-                        result += ' / '
-                    }
-
-                    if (data.repository) {
-                        result += data.repository
-                    }
-
-                    return result
-                },
-            },
-            {
-                field: 'date',
                 formatter: 'textarea',
                 headerFilter: 'input',
-                mutator: function (value, data) {
-                    let year = data.date_year ? data.date_year : 0
-                    let month = data.date_month ? data.date_month : 0
-                    let day = data.date_day ? data.date_day : 0
-                    return `${year}/${month}/${day}`
+                title: 'Signature',
+            },
+            {
+                field: 'timestamp',
+                headerFilter: 'input',
+                headerFilterFunc: (headerValue, rowValue, rowData) => {
+                    return rowData.date_formatted.includes(headerValue)
                 },
-                sorter: function (a, b, aRow, bRow) {
-                    let aRowData = aRow.getData()
-                    let bRowData = bRow.getData()
-
-                    a = getTimestampFromDate(
-                        aRowData.date_year,
-                        aRowData.date_month,
-                        aRowData.date_day
-                    )
-
-                    b = getTimestampFromDate(
-                        bRowData.date_year,
-                        bRowData.date_month,
-                        bRowData.date_day
-                    )
-
-                    return a - b
+                formatter: (cell) => {
+                    return cell.getRow().getData().date_formatted
                 },
                 title: 'Date',
             },
@@ -389,7 +354,7 @@ if (document.getElementById('datatable-letters')) {
             .addEventListener('change', (e) => {
                 table.clearFilter()
 
-                let editor = e.target.value
+                const editor = e.target.value
 
                 if (editor != 'all') {
                     table.addFilter('editors', 'like', editor)

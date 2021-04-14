@@ -735,6 +735,15 @@ function format_letter_date($day, $month, $year)
 }
 
 
+function get_timestamp($day, $month, $year)
+{
+    $date = !empty($month) && $month != 0 ? $month . '/' : '1/';
+    $date .= !empty($day) && $day != 0 ? $day . '/' : '1/';
+    $date .= !empty($year) && $year != 0 ? $year : '0';
+    return strtotime($date);
+}
+
+
 function format_letter_object($data)
 {
     $result = "<li class='mb-1'>{$data['name']}";
