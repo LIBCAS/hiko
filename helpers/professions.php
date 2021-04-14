@@ -123,7 +123,8 @@ add_action('wp_ajax_professions_table_data', function () {
 
 
 add_action('wp_ajax_professions_select_data', function () {
-    $professions = get_professions($_GET['type'], $_GET['default_lang']);
+    $professions = get_professions($_GET['type'], $_GET['lang']);
+
     $short = [];
     $detailed = [];
 

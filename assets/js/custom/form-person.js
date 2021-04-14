@@ -124,7 +124,7 @@ window.entityForm = function () {
                         '?action=professions_select_data&type=' +
                         types['profession'] +
                         '&lang=' +
-                        types['profession']
+                        types['defaultLanguage']
                 )
                 .then((response) => {
                     context.professionsDetailed =
