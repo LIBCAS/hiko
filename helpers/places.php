@@ -114,6 +114,52 @@ function list_places($type)
 }
 
 
+function get_places_table_data($place_type)
+{
+    $places = pods(
+        $place_type,
+        [
+            'groupby' => 't.id',
+            'limit' => -1,
+            'orderby' => 't.name ASC',
+            'select' => implode(', ', [
+                't.id',
+                't.name AS city',
+                't.country',
+                't.latitude',
+                't.longitude',
+                'letter_origin.id AS letter_id',
+                'letter_destination.id AS dest_id'
+            ]),
+        ]
+    );
+
+    $places_filtered = [];
+
+    while ($places->fetch()) {
+        $latlong = '';
+        $lat = $places->display('latitude');
+        $long = $places->display('longitude');
+
+        if ($lat&& $long) {
+            $url = 'https://www.openstreetmap.org/?mlat=' . $lat . '&mlon=' . $long . '&zoom=12';
+            $latlong = '<a href="' . $url . '" target="_blank">';
+            $latlong .= $lat . ',' . $long . '</a>';
+        }
+
+        $places_filtered[] = [
+            'id' => $places->display('id'),
+            'city' => $places->display('city'),
+            'country' => $places->display('country'),
+            'latlong' => $latlong,
+            'relationships' => !is_null($places->display('letter_id')) || !is_null($places->display('dest_id'))
+        ];
+    }
+
+    return $places_filtered;
+}
+
+
 add_action('wp_ajax_list_places_simple', function () {
     header('Content-Type: application/json');
     wp_die(list_places(test_input($_GET['type'])));

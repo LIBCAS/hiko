@@ -170,51 +170,6 @@ function get_full_name()
 }
 
 
-function get_places_table_data($place_type)
-{
-    $fields = [
-        't.id',
-        't.name AS city',
-        't.country',
-        't.latitude',
-        't.longitude',
-        'letter_origin.id AS letter_id',
-        'letter_destination.id AS dest_id'
-    ];
-
-    $fields = implode(', ', $fields);
-
-    $places = pods(
-        $place_type,
-        [
-            'select' => $fields,
-            'orderby' => 't.name ASC',
-            'limit' => -1,
-            'groupby' => 't.id'
-        ]
-    );
-
-    $places_filtered = [];
-
-    while ($places->fetch()) {
-        $latlong = '';
-        if ($places->display('latitude') && $places->display('longitude')) {
-            $latlong = $places->display('latitude') . ',' . $places->display('longitude');
-        }
-
-        $places_filtered[] = [
-            'id' => $places->display('id'),
-            'city' => $places->display('city'),
-            'country' => $places->display('country'),
-            'latlong' => $latlong,
-            'relationships' => !is_null($places->display('letter_id')) || !is_null($places->display('dest_id'))
-        ];
-    }
-
-    return $places_filtered;
-}
-
-
 function has_user_permission($role)
 {
     if (!is_user_logged_in()) {

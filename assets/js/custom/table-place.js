@@ -22,9 +22,7 @@ if (document.getElementById('datatable-places')) {
                     const rowIndex = cell.getRow().getIndex()
                     const placeId = cell.getValue()
 
-                    let actions = ''
-
-                    actions += `
+                    let actions = `
                     <li>
                         <a href="${homeUrl}/${letterTypes['path']}/places-add/?edit=${placeId}" class="text-info is-link py-1">Upravit</a>
                     </li>
@@ -58,24 +56,7 @@ if (document.getElementById('datatable-places')) {
             },
             {
                 field: 'latlong',
-                formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'normal'
-
-                    const latlong = cell.getValue()
-
-                    if (!latlong) {
-                        return ''
-                    }
-
-                    const coordinates = latlong.split(',')
-                    const link = `https://www.openstreetmap.org/?mlat=${coordinates[0]}&mlon=${coordinates[1]}&zoom=12`
-
-                    return `
-                    <a href="${link}" target="_blank">
-                        ${latlong}
-                    </a>
-                    `
-                },
+                formatter: 'html',
                 headerFilter: 'input',
                 title: 'Coordinates',
                 variableHeight: true,
