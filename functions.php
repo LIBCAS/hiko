@@ -301,6 +301,7 @@ function get_letters_basic_meta($meta, $draft)
         't.date_day',
         't.date_month',
         't.date_year',
+        't.copies',
         't.status',
         't.created',
         'l_author.name AS author',
@@ -420,8 +421,17 @@ function get_letters_basic_meta_filtered($meta, $draft = true, $history = false)
             return ($h['ID'] == $letter['ID']);
         });
 
-        $letter['editors'] = array_values($letter_history)[0]['editors'];
+        $signature = [];
+        $repository = [];
+        if (!empty($letter['copies'])) {
+            $copies = json_decode($letter['copies'], true);
+            $signature = array_column($copies, 'signature');
+            $repository = array_column($copies, 'repository');
+        }
 
+        $letter['repository'] = empty($repository) ? '' : $repository[0];
+        $letter['signature'] = empty($signature) ? '' : $signature[0];
+        $letter['editors'] = array_values($letter_history)[0]['editors'];
         $result[] = $letter;
     }
 
@@ -759,7 +769,6 @@ function input_bool($form_data, $field)
 add_image_size('xl-thumb', 300);
 
 require 'ajax/common.php';
-require 'ajax/letters.php';
 require 'helpers/letters.php';
 require 'helpers/professions.php';
 require 'helpers/entities.php';
