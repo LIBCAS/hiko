@@ -766,6 +766,38 @@ function input_bool($form_data, $field)
 }
 
 
+function format_letter_date($day, $month, $year)
+{
+    $day = $day && $day != 0 ? $day : '?';
+    $month = $month && $month != 0 ? $month : '?';
+    $year = $year && $year != 0 ? $year : '????';
+
+    if ($year == '????' && $month == '?' && $day == '?') {
+        return '?';
+    }
+
+    return "{$day}/{$month}/{$year}";
+}
+
+
+function format_letter_object($data)
+{
+    $result = "<li class='mb-1'>{$data['name']}";
+
+    if (!empty($data['marked']) && $data['marked'] != $data['name']) {
+        $result .= '<span class="d-block text-secondary">Marked as: ' . $data['marked'] . '</span>';
+    }
+
+    if (isset($data['salutation']) && !empty($data['salutation'])) {
+        $result .= '<span class="d-block text-secondary">Salutation: ' . $data['salutation'] . '</span>';
+    }
+
+    $result .= "</li>";
+
+    return $result;
+}
+
+
 add_image_size('xl-thumb', 300);
 
 require 'ajax/common.php';

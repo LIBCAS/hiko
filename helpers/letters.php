@@ -99,7 +99,13 @@ function get_letter($types, $id, $lang, $private)
         }
 
         if ($key === 'related_resources') {
-            $result['related_resources'] = empty($value) ? [] : json_decode($value, true);
+            if (empty($value)) {
+                $result['related_resources'] = [];
+                continue;
+            }
+
+            $value = json_decode($value, true);
+            $result['related_resources'] = !isset($value['title']) ||empty($value['title']) ? [] : $value;
             continue;
         }
 
