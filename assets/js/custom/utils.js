@@ -9,33 +9,12 @@ function normalize(str) {
         .replace(/[\u0300-\u036f]/g, '')
 }
 
-function errorInfoSwal(error, title = 'Při ukládání došlo k chybě.') {
-    return {
-        title: title,
-        text: error,
-        type: 'error',
-        buttonsStyling: false,
-        confirmButtonText: 'OK',
-        confirmButtonClass: 'btn btn-primary btn-lg',
-    }
-}
-
 function getLetterType() {
     const datatypes = document.getElementById('datatype')
 
     if (datatypes) {
         return JSON.parse(document.getElementById('datatype').innerHTML)
     }
-}
-
-function arrayToSingleObject(data) {
-    let result = {}
-
-    for (let i = 0; i < data.length; i++) {
-        result[Object.keys(data[i])] = Object.values(data[i])[0]
-    }
-
-    return result
 }
 
 function removeItemAjax(id, podType, podName, callback) {
@@ -88,23 +67,10 @@ function removeItemAjax(id, podType, podName, callback) {
     })
 }
 
-function getTimestampFromDate(year, month, day) {
-    let d = new Date()
-    d.setFullYear(year ? year : 0, month ? month - 1 : 0, day ? day : 1)
-    return d.getTime()
-}
-
 function decodeHTML(str) {
     let txt = document.createElement('textarea')
     txt.innerHTML = str
     return txt.value
-}
-
-function isString(data) {
-    if (typeof data === 'string' || data instanceof String) {
-        return true
-    }
-    return false
 }
 
 function updateTableHeaders() {
