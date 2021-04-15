@@ -375,15 +375,16 @@ add_action('wp_ajax_list_all_letters_short', function () {
         $signature .= $letter['repository'] ? $letter['repository'] : '';
         $results[] = [
             'ID' => $letter['ID'],
-            'signature' => $letter['signature'],
-            'date_formatted' => format_letter_date($letter['date_day'], $letter['date_month'], $letter['date_year']),
-            'timestamp' => get_timestamp($letter['date_day'], $letter['date_month'], $letter['date_year']),
             'author' => $letter['author'],
-            'recipient' => $letter['recipient'],
-            'origin' => $letter['origin'],
+            'category' => $letter['category'],
+            'date_formatted' => format_letter_date($letter['date_day'], $letter['date_month'], $letter['date_year']),
             'dest' => $letter['dest'],
             'keyword' => $letter['keyword'],
-            'category' => $letter['category'],
+            'images' => (empty($letter['images'])) ? 0 : count($letter['images']),
+            'origin' => $letter['origin'],
+            'recipient' => $letter['recipient'],
+            'signature' => $letter['signature'],
+            'timestamp' => get_timestamp($letter['date_day'], $letter['date_month'], $letter['date_year']),
         ];
     }
 
