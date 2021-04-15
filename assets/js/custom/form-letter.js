@@ -4,7 +4,7 @@ window.letterForm = function () {
     return {
         authors: [],
         copies: [],
-        day: null,
+        day: '',
         dateIsRange: false,
         description: '',
         destinations: [],
@@ -15,14 +15,14 @@ window.letterForm = function () {
         languagesList: JSON.parse(
             document.getElementById('languages-list').innerHTML
         ),
-        month: null,
+        month: '',
         origins: [],
         placesList: JSON.parse(
             document.getElementById('places-list').innerHTML
         ),
         recipients: [],
         relatedResources: [],
-        year: null,
+        year: '',
         formSubmit: false,
 
         fetch: function () {
@@ -40,9 +40,16 @@ window.letterForm = function () {
                 this.relatedResources = data.related_resources
             }
 
-            this.day = data.date_day.length > 0 ? data.date_day : null
-            this.month = data.date_month.length > 0 ? data.date_month : null
-            this.year = data.date_year.length > 0 ? data.date_year : null
+            this.day =
+                data.date_day && data.date_day.length > 0 ? data.date_day : ''
+            this.month =
+                data.date_month && data.date_month.length > 0
+                    ? data.date_month
+                    : ''
+            this.year =
+                data.date_year && data.date_year.length > 0
+                    ? data.date_year
+                    : ''
 
             if (data.l_author.length > 0) {
                 this.authors = data.l_author
