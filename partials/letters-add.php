@@ -268,7 +268,7 @@ $locations = list_locations(); ?>
                             <div class="form-group required">
                                 <label x-bind:for="'destination-' + index">Destination</label>
                                 <button type="button" class="p-0 ml-1 align-baseline btn btn-sm oi oi-reload" @click="regenerateSelectData('places', $event)" title="Update places"></button>
-                                <input type="text" x-bind:value="JSON.stringify([{value: destination.name, id: destination.id}])" x-bind:id="'destination-' + index" class="related-tagify hidden-tagify-remove" data-type="placesList" data-mode="select" data-target="destination" x-bind:data-index="index" required>
+                                <input type="text" x-bind:value="JSON.stringify([{value: destination.name, id: destination.id}])" x-bind:id="'destination-' + index" class="related-tagify hidden-tagify-remove" data-type="placesList" data-mode="select" data-target="destinations" x-bind:data-index="index" required>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'destination-marked-' + index">Destination as marked</label>
