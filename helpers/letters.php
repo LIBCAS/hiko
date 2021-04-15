@@ -282,7 +282,7 @@ function save_letter($letter_type, $action, $path)
     $data['dest_inferred'] = get_form_checkbox_val('dest_inferred', $_POST);
     $data['dest_uncertain'] = get_form_checkbox_val('dest_uncertain', $_POST);
     $data['history'] = $history;
-    $data['keywords'] = $keywords;
+    $data['keywords'] = array_column($keywords, 'id');
     $data['languages'] = implode(';', array_column($languages, 'value'));
     $data['l_author'] = array_column($authors, 'id');
     $data['origin'] = array_column($origins, 'id');
