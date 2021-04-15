@@ -42,7 +42,7 @@ function showHistory(id, event) {
                 '&l_type=' +
                 letterTypes['path']
         )
-        .then(function (result) {
+        .then((result) => {
             Swal.fire({
                 title: 'Historie úprav',
                 html: result.data.data.replace(/\n/g, '<br>'),
@@ -51,7 +51,7 @@ function showHistory(id, event) {
                 confirmButtonClass: 'btn btn-primary btn-lg mr-1',
             })
         })
-        .catch(function (error) {
+        .catch((error) => {
             Swal.fire({
                 title:
                     'Historii úprav se nepodařilo načíst nebo nebo neexistuje',
@@ -62,7 +62,7 @@ function showHistory(id, event) {
                 confirmButtonClass: 'btn btn-primary btn-lg mr-1',
             })
         })
-        .then(function () {
+        .then(() => {
             spinner.classList.add('d-none')
         })
 }
@@ -120,14 +120,14 @@ if (document.getElementById('datatable-letters')) {
         letterTypes['defaultLanguage'] === 'en' ? 'name' : 'namecz'
 
     table = new Tabulator('#datatable-letters', {
-        ajaxResponse: function (url, params, response) {
+        ajaxResponse: (url, params, response) => {
             document.getElementById('custom-filters').classList.remove('d-none')
             return response
         },
         columns: [
             {
                 field: 'actions',
-                formatter: function (cell) {
+                formatter: (cell) => {
                     const rowIndex = cell.getRow().getIndex()
                     const letterId = cell.getRow().getData().ID
 
@@ -186,11 +186,11 @@ if (document.getElementById('datatable-letters')) {
             {
                 field: 'author',
                 headerFilter: 'input',
-                formatter: function (cell) {
+                formatter: (cell) => {
                     cell.getElement().style.whiteSpace = 'normal'
                     return arrayToList(cell.getValue())
                 },
-                sorter: function (a, b) {
+                sorter: (a, b) => {
                     return sortLetterMultiData(a, b)
                 },
                 title: 'Author',
@@ -199,11 +199,11 @@ if (document.getElementById('datatable-letters')) {
             {
                 field: 'recipient',
                 headerFilter: 'input',
-                formatter: function (cell) {
+                formatter: (cell) => {
                     cell.getElement().style.whiteSpace = 'normal'
                     return arrayToList(cell.getValue())
                 },
-                sorter: function (a, b) {
+                sorter: (a, b) => {
                     return sortLetterMultiData(a, b)
                 },
                 title: 'Recipient',
@@ -212,11 +212,11 @@ if (document.getElementById('datatable-letters')) {
             {
                 field: 'origin',
                 headerFilter: 'input',
-                formatter: function (cell) {
+                formatter: (cell) => {
                     cell.getElement().style.whiteSpace = 'normal'
                     return arrayToList(cell.getValue())
                 },
-                sorter: function (a, b) {
+                sorter: (a, b) => {
                     return sortLetterMultiData(a, b)
                 },
                 title: 'Origin',
@@ -225,11 +225,11 @@ if (document.getElementById('datatable-letters')) {
             {
                 field: 'dest',
                 headerFilter: 'input',
-                formatter: function (cell) {
+                formatter: (cell) => {
                     cell.getElement().style.whiteSpace = 'normal'
                     return arrayToList(cell.getValue())
                 },
-                sorter: function (a, b) {
+                sorter: (a, b) => {
                     return sortLetterMultiData(a, b)
                 },
                 title: 'Destination',
@@ -238,11 +238,11 @@ if (document.getElementById('datatable-letters')) {
             {
                 field: 'keyword',
                 headerFilter: 'input',
-                formatter: function (cell) {
+                formatter: (cell) => {
                     cell.getElement().style.whiteSpace = 'normal'
                     return arrayToList(cell.getValue())
                 },
-                sorter: function (a, b) {
+                sorter: (a, b) => {
                     return sortLetterMultiData(a, b)
                 },
                 title: 'Keywords',
@@ -251,12 +251,12 @@ if (document.getElementById('datatable-letters')) {
             },
             {
                 field: 'category',
-                formatter: function (cell) {
+                formatter: (cell) => {
                     cell.getElement().style.whiteSpace = 'normal'
                     return cell.getValue()
                 },
                 headerFilter: 'input',
-                mutator: function (categories) {
+                mutator: (categories) => {
                     if (typeof categories == 'string') categories = [categories]
 
                     const uniqueCategories = [...new Set(categories)]
@@ -280,15 +280,14 @@ if (document.getElementById('datatable-letters')) {
             },
             {
                 field: 'images',
-                headerFilter: 'input',
-                formatter: function (cell) {
-                    cell.getElement().style.whiteSpace = 'normal'
-                    if (cell.getValue()) {
-                        return 'ano'
+                formatter: (cell) => {
+                    if (cell.getValue() > 0) {
+                        return 'ano (' + cell.getValue() + ')'
                     }
 
-                    return ''
+                    return '0'
                 },
+                headerFilter: 'input',
                 title: 'Images',
                 variableHeight: true,
             },
@@ -311,10 +310,10 @@ if (document.getElementById('datatable-letters')) {
                 visible: false,
             },
         ],
-        dataFiltered: function (filters, rows) {
+        dataFiltered: (filters, rows) => {
             document.getElementById('search-count').innerHTML = rows.length
         },
-        dataLoaded: function (data) {
+        dataLoaded: (data) => {
             document.getElementById('total-count').innerHTML = data.length
         },
         footerElement:
