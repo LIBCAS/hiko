@@ -1,9 +1,12 @@
+<div class="my-3 alert alert-warning mw-400">
+    Seznam uložení je sdílený mezi všemi zapojenými korespondencemi.
+</div>
 <div x-data="locationForm()" x-init="fetch()">
     <div x-show="loading" class="my-5 progress">
         <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 65%">
         </div>
     </div>
-    <div x-show="!loading" class="my-5 section" id="repository">
+    <div x-show="!loading" class="mb-5 section" id="repository">
         <h3>Instituce / repozitáře</h3>
         <button @click="insertItem('repository', 'Nový repozitář', 'add', '', null)" type="button" class="my-2 btn btn-primary btn-sm">
             Přidat novou instituci
