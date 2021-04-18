@@ -367,6 +367,7 @@ add_action('wp_ajax_list_letter_history', function () {
 add_action('wp_ajax_list_all_letters_short', function () {
     $types = get_hiko_post_types(test_input($_GET['type']));
     $letters = get_letters_basic_meta_filtered($types, true, true);
+
     $results = [];
 
     foreach ($letters as $letter) {
@@ -379,8 +380,10 @@ add_action('wp_ajax_list_all_letters_short', function () {
             'category' => $letter['category'],
             'date_formatted' => format_letter_date($letter['date_day'], $letter['date_month'], $letter['date_year']),
             'dest' => $letter['dest'],
+            'editors' => $letter['editors'],
             'keyword' => $letter['keyword'],
             'images' => (empty($letter['images'])) ? 0 : count($letter['images']),
+            'my_letter' => $letter['my_letter'],
             'origin' => $letter['origin'],
             'recipient' => $letter['recipient'],
             'signature' => $letter['signature'],
