@@ -250,6 +250,7 @@ if (document.getElementById('datatable-letters')) {
                 visible: false,
             },
             {
+                // TODO: ověřit, zda vrací správný jazyk
                 field: 'category',
                 formatter: (cell) => {
                     cell.getElement().style.whiteSpace = 'normal'

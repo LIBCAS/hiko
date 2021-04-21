@@ -61,6 +61,35 @@ function list_keywords($type, $categories)
     return $keywords_filtered;
 }
 
+
+function get_keywords_names($type, $lang)
+{
+    $keywords = pods(
+        $type,
+        [
+            'limit' => -1,
+            'orderby' => $lang === 'en' ? 't.name ASC' : 't.namecz ASC',
+            'select' => implode(', ', [
+                't.id',
+                $lang === 'en' ? 't.name AS name' : 't.namecz AS name'
+            ]),
+
+        ]
+    );
+
+    $list = [];
+
+    while ($keywords->fetch()) {
+        $list[] = [
+            'id' => $keywords->display('id'),
+            'name' => $keywords->display('name'),
+        ];
+    }
+
+    return $list;
+}
+
+
 add_action('wp_ajax_keywords_table_data', function () {
     $keywords = list_keywords(test_input($_GET['type']), (int) $_GET['categories']);
     header('Content-Type: application/json');

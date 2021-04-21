@@ -558,7 +558,7 @@ $locations = list_locations(); ?>
 </script>
 
 <script id="keywords-list" type="application/json">
-    <?= json_encode(list_keywords($pods_types['keyword'], 0, false)); ?>
+    <?= json_encode(get_keywords_names($pods_types['keyword'], $pods_types['default_lang'])); ?>
 </script>
 
 <script id="location-list" type="application/json">
