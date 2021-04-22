@@ -398,45 +398,45 @@ $locations = list_locations(); ?>
                                 <label x-bind:for="'ms_manifestation' + index">MS manifestation (EMLO)</label>
                                 <select x-model="copies[index]['ms_manifestation']" x-bind:id="'ms_manifestation' + index" class="form-control form-control-sm">
                                     <option value>---</option>
-                                    <option x-bind:value="'E'">Extract</option>
-                                    <option x-bind:value="'S'">MS Copy</option>
-                                    <option x-bind:value="'D'">MS Draft</option>
-                                    <option x-bind:value="'ALS'">MS Letter</option>
-                                    <option x-bind:value="'O'">Other</option>
-                                    <option x-bind:value="'P'">Printed</option>
+                                    <option x-bind:value="'E'" :selected="copies[index]['ms_manifestation'] === 'E'">Extract</option>
+                                    <option x-bind:value="'S'" :selected="copies[index]['ms_manifestation'] === 'S'">MS Copy</option>
+                                    <option x-bind:value="'D'" :selected="copies[index]['ms_manifestation'] === 'D'">MS Draft</option>
+                                    <option x-bind:value="'ALS'" :selected="copies[index]['ms_manifestation'] === 'ALS'">MS Letter</option>
+                                    <option x-bind:value="'O'" :selected="copies[index]['ms_manifestation'] === 'O'">Other</option>
+                                    <option x-bind:value="'P'" :selected="copies[index]['ms_manifestation'] === 'P'">Printed</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'type' + index">Document type</label>
                                 <select x-model="copies[index]['type']" x-bind:id="'type' + index" class="form-control form-control-sm">
                                     <option value>---</option>
-                                    <option x-bind:value="'calling card'">calling card</option>
-                                    <option x-bind:value="'greeting card'">greeting card</option>
-                                    <option x-bind:value="'invitation card'">invitation card</option>
-                                    <option x-bind:value="'letter'">letter</option>
-                                    <option x-bind:value="'picture postcard'">picture postcard</option>
-                                    <option x-bind:value="'postcard'">postcard</option>
-                                    <option x-bind:value="'telegram'">telegram</option>
-                                    <option x-bind:value="'visiting '">visiting </option>
+                                    <option x-bind:value="'calling card'" :selected="copies[index]['type'] === 'calling card'">calling card</option>
+                                    <option x-bind:value="'greeting card'" :selected="copies[index]['type'] === 'greeting card'">greeting card</option>
+                                    <option x-bind:value="'invitation card'" :selected="copies[index]['type'] === 'invitation card'">invitation card</option>
+                                    <option x-bind:value="'letter'" :selected="copies[index]['type'] === 'letter'">letter</option>
+                                    <option x-bind:value="'picture postcard'" :selected="copies[index]['type'] === 'picture postcard'">picture postcard</option>
+                                    <option x-bind:value="'postcard'" :selected="copies[index]['type'] === 'postcard'">postcard</option>
+                                    <option x-bind:value="'telegram'" :selected="copies[index]['type'] === 'telegram'">telegram</option>
+                                    <option x-bind:value="'visiting'" :selected="copies[index]['type'] === 'visiting'">visiting </option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'preservation' + index">Preservation</label>
                                 <select x-model="copies[index]['preservation']" x-bind:id="'preservation' + index" class="form-control form-control-sm">
                                     <option value>---</option>
-                                    <option x-bind:value="'carbon copy'">carbon copy</option>
-                                    <option x-bind:value="'copy'">copy</option>
-                                    <option x-bind:value="'draft'">draft</option>
-                                    <option x-bind:value="'original'">original</option>
-                                    <option x-bind:value="'photocopy'">photocopy</option>
+                                    <option x-bind:value="'carbon copy'" :selected="copies[index]['preservation'] === 'carbon copy'">carbon copy</option>
+                                    <option x-bind:value="'copy'" :selected="copies[index]['preservation'] === 'copy'">copy</option>
+                                    <option x-bind:value="'draft'" :selected="copies[index]['preservation'] === 'draft'">draft</option>
+                                    <option x-bind:value="'original'" :selected="copies[index]['preservation'] === 'original'">original</option>
+                                    <option x-bind:value="'photocopy'" :selected="copies[index]['preservation'] === 'photocopy'">photocopy</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'copy' + index">Type of copy</label>
                                 <select x-model="copies[index]['copy']" x-bind:id="'copy' + index" class="form-control form-control-sm">
                                     <option disabled selected value>---</option>
-                                    <option x-bind:value="'handwritten'">handwritten</option>
-                                    <option x-bind:value="'typewritten'">typewritten</option>
+                                    <option x-bind:value="'handwritten'" :selected="copies[index]['copy'] === 'handwritten'">handwritten</option>
+                                    <option x-bind:value="'typewritten'" :selected="copies[index]['copy'] === 'typewritten'">typewritten</option>
                                 </select>
                             </div>
                             <div class="form-group">
