@@ -90,7 +90,7 @@ function fetch_types()
                 "title" => "Korespondence Zdeňka Wirtha",
                 "keyword" => "wirth_keyword",
                 "profession" => "wirth_profession",
-                "default_lang" => "cs"
+                "default_lang" => "en"
             ],
             "jak" => [
                 "letter" => "jak_letter",
