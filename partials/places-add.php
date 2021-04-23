@@ -22,7 +22,7 @@ show_alerts(); ?>
     </script>
     <div class="card bg-light" x-data="placeForm()" x-init="fetch()" x-cloak>
         <div class="card-body">
-            <form id="places-form" method="post" x-on:keydown.enter.prevent x-on:submit="handleSubmit(event)" autocomplete="off">
+            <form id="places-form" method="post" x-on:keydown.enter.prevent autocomplete="off">
                 <fieldset>
                     <div class="form-group required">
                         <label for="place">Primary name</label>
@@ -67,15 +67,6 @@ show_alerts(); ?>
                         </div>
                     </div>
                 </fieldset>
-                <template x-if="errors.length > 0">
-                    <ul class="alert alert-danger">
-                        <template x-for="error, index in errors" :key="index">
-                            <li x-text="error"></li>
-                        </template>
-                    </ul>
-                </template>
-                <ul>
-                </ul>
                 <div class="form-group">
                     <input type="hidden" name="save_post" value="<?= $action ?>">
                     <input class="btn btn-primary" type="submit" value="Save">

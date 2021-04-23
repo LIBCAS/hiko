@@ -2,7 +2,6 @@
 
 window.placeForm = function () {
     return {
-        country: '',
         name: '',
         latitude: '',
         longitude: '',
@@ -19,7 +18,6 @@ window.placeForm = function () {
                 return
             }
 
-            this.country = data.country
             this.name = data.name
             this.latitude = data.latitude
             this.longitude = data.longitude
@@ -65,26 +63,6 @@ window.placeForm = function () {
                 t.settings.whitelist = results
                 t.loading(false).dropdown.show.call(t, search) // render the suggestions dropdown
             })
-        },
-
-        handleSubmit: function (event) {
-            event.preventDefault()
-
-            this.errors = []
-
-            if (this.name.length === 0) {
-                this.errors.push('Empty name')
-            }
-
-            if (this.country.length === 0) {
-                this.errors.push('Empty country')
-            }
-
-            if (this.errors.length > 0) {
-                return
-            }
-
-            document.getElementById('places-form').submit()
         },
 
         getCoordinates: function () {
