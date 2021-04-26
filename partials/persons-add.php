@@ -50,14 +50,14 @@ show_alerts(); ?>
                         <div class="d-flex justify-content-between">
                             <div class="pr-3 form-group w-50">
                                 <label for="birth_year">Birth year</label>
-                                <input value="<?= isset($entity['birth_year']) ? $entity['birth_year'] : '' ?>" id="birth_year" type="number" name="birth_year" class="form-control form-control-sm" max="<?= date('Y'); ?>">
+                                <input value="<?= input_value($entity, 'birth_year') ?>" id="birth_year" type="number" name="birth_year" class="form-control form-control-sm" max="<?= date('Y'); ?>">
                                 <small class="form-text text-muted">
                                     format YYYY, e.g. 1660
                                 </small>
                             </div>
                             <div class="pl-3 form-group w-50">
                                 <label for="death_year">Death year</label>
-                                <input value="<?= isset($entity['death_year']) ? $entity['death_year'] : '' ?>" type="number" id="death_year" name="death_year" class="form-control form-control-sm" max="<?= date('Y'); ?>">
+                                <input value="<?= input_value($entity, 'death_year') ?>" type="number" id="death_year" name="death_year" class="form-control form-control-sm" max="<?= date('Y'); ?>">
                                 <small class="form-text text-muted">
                                     format YYYY, e.g. 1660
                                 </small>
@@ -65,17 +65,17 @@ show_alerts(); ?>
                         </div>
                         <div class="form-group">
                             <label for="nationality">Nationality</label>
-                            <input value="<?= isset($entity['nationality']) ? $entity['nationality'] : '' ?>" type="text" class="form-control form-control-sm" id="nationality" name="nationality">
+                            <input value="<?= input_value($entity, 'nationality') ?>" type="text" class="form-control form-control-sm" id="nationality" name="nationality">
                         </div>
                         <div class="form-group">
-                            <label for="nationality">Gender</label>
-                            <input value="<?= isset($entity['gender']) ? $entity['gender'] : '' ?>" list="genders" type="text" class="form-control form-control-sm" id="gender" name="gender">
+                            <label for="gender">Gender</label>
+                            <input value="<?= input_value($entity, 'gender') ?>" type="text" class="form-control form-control-sm" id="gender" name="gender">
                         </div>
                         <div class="form-group">
                             <label for="profession_short" class="d-flex justify-content-between">
                                 Palladio Profession <button type="button" class="p-0 pointer oi oi-reload btn btn-sm" @click="regenerateProfessions($event)" aria-label="Reload professions" title="Reload professions"></button>
                             </label>
-                            <input type="text" value="<?= isset($entity['profession_short']) ? $entity['profession_short'] : '' ?>" id="profession_short" name="profession_short" class="tagify-select">
+                            <input type="text" value="<?= input_value($entity, 'profession_short') ?>" id="profession_short" name="profession_short" class="tagify-select">
                             <small class="form-text text-muted">
                                 reorder professions by dragging
                             </small>
@@ -84,7 +84,7 @@ show_alerts(); ?>
                             <label for="profession_detailed" class="d-flex justify-content-between">
                                 Professions <button type="button" class="p-0 pointer oi oi-reload btn btn-sm" @click="regenerateProfessions($event)" aria-label="Reload professions" title="Reload professions"></button>
                             </label>
-                            <input type="text" value="<?= isset($entity['profession_detailed']) ? $entity['profession_detailed'] : '' ?>" id="profession_detailed" name="profession_detailed" class="tagify-select">
+                            <input type="text" value="<?= input_value($entity, 'profession_detailed') ?>" id="profession_detailed" name="profession_detailed" class="tagify-select">
                             <small class="form-text text-muted">
                                 reorder professions by dragging
                             </small>
@@ -105,11 +105,11 @@ show_alerts(); ?>
                 <fieldset>
                     <div class="form-group">
                         <label for="viaf">VIAF ID</label>
-                        <input x-model="viaf" type="text" class="form-control form-control-sm" name="viaf" id="viaf">
+                        <input x-model="viaf" type="text" class="form-control form-control-sm" name="viaf" id="viaf" <?= input_value($entity, 'viaf') ?>>
                     </div>
                     <div class="form-group">
                         <label for="note">Note on person / institution</label>
-                        <textarea value="<?= isset($entity['note']) ? $entity['note'] : '' ?>" class="form-control form-control-sm" name="note" id="note"></textarea>
+                        <textarea class="form-control form-control-sm" name="note" id="note"><?= input_value($entity, 'note') ?></textarea>
                     </div>
                 </fieldset>
                 <?php if (isset($entity['names'])) : ?>
