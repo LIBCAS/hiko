@@ -38,7 +38,6 @@ function get_letter($types, $id, $lang, $private)
         'date_uncertain',
         'dest_inferred',
         'dest_uncertain',
-        'notes_public',
         'origin_inferred',
         'origin_uncertain',
         'recipient_inferred',
