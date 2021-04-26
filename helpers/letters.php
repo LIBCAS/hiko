@@ -104,7 +104,7 @@ function get_letter($types, $id, $lang, $private)
             }
 
             $value = json_decode($value, true);
-            $result['related_resources'] = !isset($value['title']) ||empty($value['title']) ? [] : $value;
+            $result['related_resources'] = !isset($value[0]['title']) || empty($value[0]['title']) ? [] : $value;
             continue;
         }
 
