@@ -71,7 +71,7 @@ function get_letter($types, $id, $lang, $private)
                 }
 
                 if (in_array($key, ['origin', 'dest'])) {
-                    $meta = get_field_related_meta($meta, json_decode($pod->field('places_meta'), true));
+                    $meta = get_field_related_meta($meta, json_decode($pod->field('places_meta'), true), $key);
                 }
 
                 $result[$key][] = $meta;
@@ -137,16 +137,35 @@ function get_letter($types, $id, $lang, $private)
 }
 
 
-function get_field_related_meta($field_meta, $meta)
+function get_field_related_meta($field_meta, $meta, $item = '')
 {
     if (empty($meta)) {
         return $field_meta;
     }
 
-    $meta_index = array_search((string) $field_meta['id'], array_column($meta, 'id'));
+    $filtered_values =
+        array_filter($meta, function ($element) use ($field_meta) {
+            return $element['id'] == $field_meta['id'];
+        });
 
-    if ($meta_index !== false) {
-        return array_merge($field_meta, $meta[$meta_index]);
+    $filtered_values = array_values($filtered_values);
+
+    if (count($filtered_values) === 1) {
+        return array_merge($field_meta, $filtered_values[0]);
+    }
+
+    if ($item && !empty($filtered_values)) {
+        $item = $item === 'dest' ? 'destination' : 'origin';
+
+        $filtered_places = array_filter($filtered_values, function ($element) use ($item) {
+            return $element['type'] == $item;
+        });
+
+        $filtered_places = array_values($filtered_places);
+
+        if (count($filtered_places) === 1) {
+            return array_merge($field_meta, $filtered_places[0]);
+        }
     }
 
     return $field_meta;
@@ -327,11 +346,11 @@ function save_name_alternatives($persons, $person_type)
         $person_meta = pods_field($person_type, $person['id'], 'persons_meta');
 
         if ($person_meta == null) {
-            $data = [ 'names' => [$person['marked']] ];
+            $data = ['names' => [$person['marked']]];
         } else {
             $old_data = json_decode($person_meta);
             $data = [
-                'names' => merge_unique($old_data->names, [ $person['marked'] ])
+                'names' => merge_unique($old_data->names, [$person['marked']])
             ];
         }
 
