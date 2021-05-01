@@ -72,20 +72,20 @@ $locations = list_locations(); ?>
                         </label>
                     </div>
                     <div class="mb-3 form-check">
-                        <input class="form-check-input" type="checkbox" id="date_approximate" name="date_approximate">
-                        <label class="form-check-label" for="date_approximate" <?= input_bool($letter, 'date_approximate') ?>>
+                        <input class="form-check-input" type="checkbox" id="date_approximate" name="date_approximate" <?= input_bool($letter, 'date_approximate') ?>>
+                        <label class="form-check-label" for="date_approximate">
                             Date approximate
                         </label>
                     </div>
                     <div class="mb-3 form-check">
-                        <input class="form-check-input" type="checkbox" id="date_inferred" name="date_inferred">
-                        <label class="form-check-label" for="date_inferred" <?= input_bool($letter, 'date_inferred') ?>>
+                        <input class="form-check-input" type="checkbox" id="date_inferred" name="date_inferred" <?= input_bool($letter, 'date_inferred') ?>>
+                        <label class="form-check-label" for="date_inferred">
                             Date inferred
                         </label>
                     </div>
                     <div class="mb-3 form-check">
-                        <input x-model="dateIsRange" class="form-check-input" type="checkbox" id="date_is_range" name="date_is_range">
-                        <label class="form-check-label" for="date_is_range" <?= input_bool($letter, 'date_is_range') ?>>
+                        <input x-model="dateIsRange" class="form-check-input" type="checkbox" id="date_is_range" name="date_is_range" <?= input_bool($letter, 'date_is_range') ?>>
+                        <label class="form-check-label" for="date_is_range">
                             Date is range
                         </label>
                     </div>
