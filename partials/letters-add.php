@@ -33,7 +33,7 @@ $locations = list_locations(); ?>
     <script id="letter-data" type="application/json">
         <?= json_encode($letter, JSON_UNESCAPED_UNICODE) ?>
     </script>
-    <div class="card bg-light" x-data="letterForm()" x-init="fetch(), window.addEventListener('beforeunload', (e) => { preventExit(e) });" x-cloak>
+    <div class="card bg-light" x-data="letterForm()" x-init="getInitData(), fetch(), window.addEventListener('beforeunload', (e) => { preventExit(e) });" x-cloak>
         <div class="card-body">
             <form method="post" id="letter-form" x-on:keydown.enter.prevent x-on:submit="handleSubmit(event)" autocomplete="off">
                 <fieldset id="a-dates">
@@ -131,7 +131,7 @@ $locations = list_locations(); ?>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'marked-' + index">Author as marked</label>
-                                <input x-model="authors[index]['marked']" x-bind:id="'marked-' + index" type="text" class="form-control form-control-sm">
+                                <input x-bind:value="decodeHTML(authors[index]['marked'])" @input="authors[index]['marked'] = $event.target.value" x-bind:id="'marked-' + index" type="text" class="form-control form-control-sm">
                                 <small class="form-text text-muted">
                                     author's name as written in letter
                                 </small>
@@ -176,14 +176,14 @@ $locations = list_locations(); ?>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'recipient-marked-' + index">Recipient as marked</label>
-                                <input x-bind:id="'recipient-marked-' + index" x-model="recipients[index]['marked']" type="text" class="form-control form-control-sm">
+                                <input x-bind:value="decodeHTML(recipients[index]['marked'])" @input="recipients[index]['marked'] = $event.target.value" x-bind:id="'recipient-marked-' + index" type="text" class="form-control form-control-sm">
                                 <small class="form-text text-muted">
                                     recipient's name as written in letter
                                 </small>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'salutation-' + index">Salutation</label>
-                                <input x-bind:id="'salutation-' + index" x-model="recipients[index]['salutation']" type="text" class="form-control form-control-sm">
+                                <input x-bind:value="decodeHTML(recipients[index]['salutation'])" @input="recipients[index]['salutation'] = $event.target.value" x-bind:id="'salutation-' + index" type="text" class="form-control form-control-sm">
                             </div>
                         </div>
                     </template>
@@ -226,7 +226,7 @@ $locations = list_locations(); ?>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'origin-marked-' + index">Origin as marked</label>
-                                <input x-bind:id="'origin-marked-' + index" x-model="origins[index]['marked']" type="text" class="form-control form-control-sm">
+                                <input x-bind:value="decodeHTML(origins[index]['marked'])" @input="origins[index]['marked'] = $event.target.value" x-bind:id="'origin-marked-' + index" type="text" class="form-control form-control-sm">
                                 <small class="form-text text-muted">
                                     origin name as written in letter
                                 </small>
@@ -272,7 +272,7 @@ $locations = list_locations(); ?>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'destination-marked-' + index">Destination as marked</label>
-                                <input x-bind:id="'destination-marked-' + index" x-model="destinations[index]['marked']" type="text" class="form-control form-control-sm">
+                                <input x-bind:value="decodeHTML(destinations[index]['marked'])" @input="destinations[index]['marked'] = $event.target.value" x-bind:id="'destination-marked-' + index" type="text" class="form-control form-control-sm">
                                 <small class="form-text text-muted">
                                     destination name as written in letter
                                 </small>
@@ -441,15 +441,15 @@ $locations = list_locations(); ?>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'manifestation_notes' + index">Notes on manifestation</label>
-                                <textarea x-model="copies[index]['manifestation_notes']" x-bind:id="'manifestation_notes' + index" class="form-control form-control-sm"></textarea>
+                                <textarea x-bind:value="decodeHTML(copies[index]['manifestation_notes'])" @input="copies[index]['manifestation_notes'] = $event.target.value" x-bind:id="'manifestation_notes' + index" class="form-control form-control-sm"></textarea>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'lnumber' + index">Letter number</label>
-                                <input x-model="copies[index]['l_number']" x-id:for="'lnumber' + index" type="text" class="form-control form-control-sm">
+                                <input x-bind:value="decodeHTML(copies[index]['l_number'])" @input="copies[index]['l_number'] = $event.target.value" x-id:for="'lnumber' + index" type="text" class="form-control form-control-sm">
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'repository' + index">Repository</label>
-                                <input x-model="copies[index]['repository']" list="repositories" type="text" x-bind:id="'repository' + index" class="form-control form-control-sm">
+                                <input x-bind:value="decodeHTML(copies[index]['repository'])" @input="copies[index]['repository'] = $event.target.value" list="repositories" type="text" x-bind:id="'repository' + index" class="form-control form-control-sm">
                                 <datalist id="repositories">
                                     <?php foreach ($locations as $loc) : ?>
                                         <?php if ($loc['type'] === 'repository') : ?>
@@ -462,7 +462,7 @@ $locations = list_locations(); ?>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'archive' + index">Archive</label>
-                                <input x-model="copies[index]['archive']" list="archives" type="text" x-bind:id="'archive' + index" class="form-control form-control-sm">
+                                <input x-bind:value="decodeHTML(copies[index]['archive'])" @input="copies[index]['archive'] = $event.target.value" list="archives" type="text" x-bind:id="'archive' + index" class="form-control form-control-sm">
                                 <datalist id="archives">
                                     <?php foreach ($locations as $loc) : ?>
                                         <?php if ($loc['type'] === 'archive') : ?>
@@ -475,7 +475,7 @@ $locations = list_locations(); ?>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'collection' + index">Collection</label>
-                                <input x-model="copies[index]['collection']" list="collections" type="text" x-bind:id="'collection' + index" class="form-control form-control-sm">
+                                <input x-bind:value="decodeHTML(copies[index]['collection'])" @input="copies[index]['collection'] = $event.target.value" list="collections" type="text" x-bind:id="'collection' + index" class="form-control form-control-sm">
                                 <datalist id="collections">
                                     <?php foreach ($locations as $loc) : ?>
                                         <?php if ($loc['type'] === 'collection') : ?>
@@ -488,11 +488,11 @@ $locations = list_locations(); ?>
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'signature' + index">Signature</label>
-                                <input x-model="copies[index]['signature']" x-id:for="'signature' + index" type="text" class="form-control form-control-sm">
+                                <input x-bind:value="decodeHTML(copies[index]['signature'])" @input="copies[index]['signature'] = $event.target.value" x-id:for="'signature' + index" type="text" class="form-control form-control-sm">
                             </div>
                             <div class="form-group">
                                 <label x-bind:for="'location_note' + index">Notes on location</label>
-                                <textarea x-model="copies[index]['location_note']" x-id:for="'location_note' + index" class="form-control form-control-sm"></textarea>
+                                <textarea x-bind:value="decodeHTML(copies[index]['location_note'])" @input="copies[index]['location_note'] = $event.target.value" x-id:for="'location_note' + index" class="form-control form-control-sm"></textarea>
                             </div>
                         </div>
                     </template>

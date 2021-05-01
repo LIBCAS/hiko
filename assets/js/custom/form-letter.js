@@ -1,4 +1,4 @@
-/* global Tagify normalize */
+/* global Tagify normalize decodeHTML */
 
 window.letterForm = function () {
     return {
@@ -8,18 +8,14 @@ window.letterForm = function () {
         dateIsRange: false,
         description: '',
         destinations: [],
-        entitiesList: JSON.parse(document.getElementById('entities').innerHTML),
-        keywordsList: JSON.parse(
-            document.getElementById('keywords-list').innerHTML
-        ),
+        entitiesList: [],
+        keywordsList: [],
         languagesList: JSON.parse(
             document.getElementById('languages-list').innerHTML
         ),
         month: '',
         origins: [],
-        placesList: JSON.parse(
-            document.getElementById('places-list').innerHTML
-        ),
+        placesList: [],
         recipients: [],
         relatedResources: [],
         year: '',
@@ -82,6 +78,23 @@ window.letterForm = function () {
             if (!this.formSubmit) {
                 e.preventDefault()
             }
+        },
+
+        getInitData: function () {
+            this.decodeInitData('entities', 'entitiesList')
+            this.decodeInitData('keywords-list', 'keywordsList')
+            this.decodeInitData('places-list', 'placesList')
+        },
+
+        decodeInitData: function (id, holder) {
+            const context = this
+            const data = JSON.parse(document.getElementById(id).innerHTML)
+            data.forEach((item) => {
+                context[holder].push({
+                    id: item.id,
+                    name: decodeHTML(item.name),
+                })
+            })
         },
 
         initTagify: function () {

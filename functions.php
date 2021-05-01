@@ -707,7 +707,9 @@ function input_json_value($form_data, $field)
         ];
     }
 
-    return htmlspecialchars(json_encode($results, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
+    $encoded = htmlspecialchars(json_encode($results, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
+
+    return str_replace('&amp;', '&', $encoded);
 }
 
 
