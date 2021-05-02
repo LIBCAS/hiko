@@ -443,3 +443,152 @@ function public_list_all_letters()
 }
 add_action('wp_ajax_nopriv_public_list_all_letters', 'public_list_all_letters');
 add_action('wp_ajax_public_list_all_letters', 'public_list_all_letters');
+
+
+function list_all_letters_meta($post_types)
+{
+    global $wpdb;
+    $podsAPI = new PodsAPI();
+    $pod = $podsAPI->load_pod(['name' => $post_types['letter']]);
+
+    $fields_id = [
+        'author' => $pod['fields']['l_author']['id'],
+        'recipient' => $pod['fields']['recipient']['id'],
+        'origin' => $pod['fields']['origin']['id'],
+        'dest' => $pod['fields']['dest']['id'],
+        'kw' => $pod['fields']['keywords']['id'],
+        'pm' => $pod['fields']['people_mentioned']['id'],
+    ];
+
+    $prefix = [
+        'letter' => "{$wpdb->prefix}pods_{$post_types['letter']}",
+        'relation' => "{$wpdb->prefix}podsrel",
+        'place' => "{$wpdb->prefix}pods_{$post_types['place']}",
+        'person' => "{$wpdb->prefix}pods_{$post_types['person']}",
+        'kw' => "{$wpdb->prefix}pods_{$post_types['keyword']}",
+        'pm' => "{$wpdb->prefix}pods_{$post_types['person']}",
+    ];
+
+    $fields = implode(', ', [
+        't.id AS ID',
+        't.copies',
+        't.date_year',
+        't.date_month',
+        't.date_day',
+        't.date_marked',
+        't.date_uncertain',
+        't.date_approximate',
+        't.date_is_range',
+        't.range_year',
+        't.range_month',
+        't.range_day',
+        't.date_note',
+        't.languages',
+        't.author_inferred',
+        't.author_uncertain',
+        't.recipient_inferred',
+        't.recipient_uncertain',
+        't.origin_inferred',
+        't.origin_uncertain',
+        't.dest_inferred',
+        't.dest_uncertain',
+        't.name',
+        't.recipient_notes',
+        't.languages',
+        't.abstract',
+        't.incipit',
+        't.explicit',
+        't.people_mentioned_notes',
+        't.notes_public',
+        't.notes_private',
+        't.related_resources',
+        't.status',
+        't.author_note',
+        't.origin_note',
+        't.dest_note',
+        't.authors_meta',
+        't.places_meta',
+        't.date_inferred',
+        'l_author.id AS a_id',
+        'l_author.name AS a_name',
+        't.author_inferred',
+        'recipient.id AS r_id',
+        'recipient.name AS r_name',
+        'origin.id AS o_id',
+        'origin.name AS o_name',
+        'dest.id AS d_id',
+        'dest.name AS d_name',
+        'keywords.name AS keyword',
+        'people_mentioned.name AS pm',
+    ]);
+
+    $query = "
+    SELECT {$fields}
+    FROM {$prefix['letter']} AS t
+    LEFT JOIN {$prefix['relation']} AS rel_l_author ON
+        rel_l_author.field_id = {$fields_id['author']}
+        AND rel_l_author.item_id = t.id
+    LEFT JOIN {$prefix['person']} AS l_author ON
+        l_author.id = rel_l_author.related_item_id
+    LEFT JOIN {$prefix['relation']} AS rel_recipient ON
+        rel_recipient.field_id = {$fields_id['recipient']}
+        AND rel_recipient.item_id = t.id
+    LEFT JOIN {$prefix['person']} AS recipient ON
+        recipient.id = rel_recipient.related_item_id
+    LEFT JOIN {$prefix['relation']} AS rel_origin ON
+        rel_origin.field_id = {$fields_id['origin']}
+        AND rel_origin.item_id = t.id
+    LEFT JOIN {$prefix['place']} AS origin ON
+        origin.id = rel_origin.related_item_id
+    LEFT JOIN {$prefix['relation']} AS rel_dest ON
+        rel_dest.field_id = {$fields_id['dest']}
+        AND rel_dest.item_id = t.id
+    LEFT JOIN {$prefix['place']} AS dest ON
+        dest.id = rel_dest.related_item_id
+    LEFT JOIN {$prefix['relation']} AS rel_keywords ON
+        rel_keywords.field_id = {$fields_id['kw']}
+        AND rel_keywords.item_id = t.id
+    LEFT JOIN {$prefix['kw']} AS keywords ON
+        keywords.id = rel_keywords.related_item_id
+    LEFT JOIN {$prefix['relation']} AS rel_people_mentioned ON
+    rel_people_mentioned.field_id = {$fields_id['pm']}
+        AND rel_people_mentioned.item_id = t.id
+    LEFT JOIN {$prefix['pm']} AS people_mentioned ON
+        people_mentioned.id = rel_people_mentioned.related_item_id
+    ";
+
+    $query_result = $wpdb->get_results($query, ARRAY_A);
+    $letters = merge_distinct_query_result($query_result);
+
+    foreach ($letters as $key => $letter) {
+        $related_resources = [];
+
+        if (!empty($letter['related_resources'])) {
+            $related_resources = json_decode($letter['related_resources'], true);
+            $related_resources = !isset($related_resources[0]['title']) || empty($related_resources[0]['title']) ? [] : $related_resources;
+        }
+
+        $letters[$key]['authors'] = add_field_related_data($letter['a_id'], $letter['a_name'], json_decode($letter['authors_meta'], true), '');
+        $letters[$key]['recipients'] = add_field_related_data($letter['r_id'], $letter['r_name'], json_decode($letter['authors_meta'], true), '');
+        $letters[$key]['origins'] = add_field_related_data($letter['o_id'], $letter['o_name'], json_decode($letter['places_meta'], true), 'origin');
+        $letters[$key]['destinations'] = add_field_related_data($letter['d_id'], $letter['d_name'], json_decode($letter['places_meta'], true), 'dest');
+        $letters[$key]['related_resources'] = $related_resources;
+        $letters[$key]['copies'] = json_decode($letter['copies'], true);
+    }
+
+    return $letters;
+}
+
+
+function add_field_related_data($ids, $names, $all_meta, $key)
+{
+    $items = empty($ids) ? [] : array_combine((array) $ids, (array) $names);
+
+    $result = [];
+
+    foreach ($items as $id => $name) {
+        $result[] = get_field_related_meta(['id' => $id, 'name' => $name,], $all_meta, $key);
+    }
+
+    return $result;
+}
