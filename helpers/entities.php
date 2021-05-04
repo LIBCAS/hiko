@@ -236,7 +236,7 @@ add_action('wp_ajax_persons_table_data', function () {
 
         $dates = '';
         $birth = $persons->field('birth_year');
-        $death = $persons->field('death');
+        $death = $persons->field('death_year');
         if ($birth || $death) {
             $dates = $birth ? '(' . $birth . '–' : '(–';
             $dates .= $death ? $death . ')' : ')';
