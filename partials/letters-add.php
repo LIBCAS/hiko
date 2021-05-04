@@ -417,7 +417,7 @@ $locations = list_locations(); ?>
                                     <option x-bind:value="'picture postcard'" :selected="copies[index]['type'] === 'picture postcard'">picture postcard</option>
                                     <option x-bind:value="'postcard'" :selected="copies[index]['type'] === 'postcard'">postcard</option>
                                     <option x-bind:value="'telegram'" :selected="copies[index]['type'] === 'telegram'">telegram</option>
-                                    <option x-bind:value="'visiting'" :selected="copies[index]['type'] === 'visiting'">visiting </option>
+                                    <option x-bind:value="'visiting card'" :selected="copies[index]['type'] === 'visiting card'">visiting card</option>
                                 </select>
                             </div>
                             <div class="form-group">
