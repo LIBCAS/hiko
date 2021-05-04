@@ -18,7 +18,7 @@ function removeEmptyNames(personID) {
     axios
         .get(
             ajaxUrl +
-                '?action=count_alternate_name&id=' +
+                '?action=regenerate_alternate_name&id=' +
                 personID +
                 '&l_type=' +
                 letterTypes['path']
@@ -27,7 +27,7 @@ function removeEmptyNames(personID) {
             table.replaceData(
                 ajaxUrl +
                     '?action=persons_table_data&type=' +
-                    letterTypes['personType']
+                    letterTypes['path']
             )
         })
         .catch((error) => {
@@ -104,10 +104,6 @@ if (document.getElementById('datatable-persons')) {
                 formatter: (cell) => {
                     cell.getElement().style.whiteSpace = 'normal'
 
-                    if (cell.getValue().length == 0) {
-                        return ''
-                    }
-
                     let actions = ''
 
                     cell.getValue().forEach((name) => {
@@ -118,7 +114,7 @@ if (document.getElementById('datatable-persons')) {
                     <li onclick="removeEmptyNames(${cell.getRow().getIndex()})">
                         <button type="button" class="btn btn-sm btn-link px-0 py-1 is-info text-left">
                             <span class="spinner spinner-border spinner-border-sm d-none"></span>
-                            Odstranit nepoužité varianty jména
+                            Přegenerovat jména
                         </button>
                     </li>
                     `

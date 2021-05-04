@@ -154,7 +154,7 @@ function parse_professions_before_save($professions)
 }
 
 
-add_action('wp_ajax_count_alternate_name', function () {
+add_action('wp_ajax_regenerate_alternate_name', function () {
     global $wpdb;
 
     $types = get_hiko_post_types(test_input($_GET['l_type']));
@@ -165,33 +165,23 @@ add_action('wp_ajax_count_alternate_name', function () {
 
     $person_id = (int) $_GET['id'];
 
-    $person_meta = pods_field($types['person'], $person_id, 'persons_meta');
-
-    if (!$person_meta) {
-        wp_send_json_success(['deleted' => [],]);
-    }
-
-    $person_meta = json_decode($person_meta);
-
-    if (!$person_meta || !isset($person_meta->names)) {
-        wp_send_json_success([
-            'deleted' => [],
-        ]);
-    }
-
     $table = $wpdb->prefix . 'pods_' . $types['letter'];
 
     $used_names = [];
 
-    foreach ($person_meta->names as $name) {
-        $count = $wpdb->get_var(
-            "SELECT COUNT(id) FROM {$table} WHERE authors_meta LIKE '%\"{$name}\"%'"
-        );
+    $metas = $wpdb->get_col("SELECT authors_meta FROM {$table} WHERE authors_meta LIKE '%\"\id\":\"{$person_id}\"%'");
 
-        if ((int) $count > 0) {
-            $used_names[] = $name;
+    foreach ($metas as $meta) {
+        $meta = json_decode($meta, true);
+        $key = array_search($person_id, array_column($meta, 'id'));
+
+        if ($key !== false && !empty($meta[$key]['marked'])) {
+            $used_names[] = $meta[$key]['marked'];
         }
     }
+
+    $used_names = array_unique($used_names);
+    sort($used_names);
 
     $save = pods_api()->save_pod_item([
         'pod' => $types['person'],
