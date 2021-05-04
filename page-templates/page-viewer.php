@@ -6,7 +6,7 @@ if (!isset($_GET['l_type'])) {
 }
 
 $letter_type = sanitize_text_field($_GET['l_type']);
-$post_types = get_types_by_letter()['tgm_letter'];
+$post_types = get_types_by_letter()[$letter_type];
 
 if (!has_user_permission($post_types['editor'])) {
     die('Nemáte oprávnění zobrazit tuto stránku');
