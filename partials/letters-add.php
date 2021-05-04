@@ -434,7 +434,7 @@ $locations = list_locations(); ?>
                             <div class="form-group">
                                 <label x-bind:for="'copy' + index">Type of copy</label>
                                 <select x-model="copies[index]['copy']" x-bind:id="'copy' + index" class="form-control form-control-sm">
-                                    <option disabled selected value>---</option>
+                                    <option value>---</option>
                                     <option x-bind:value="'handwritten'" :selected="copies[index]['copy'] === 'handwritten'">handwritten</option>
                                     <option x-bind:value="'typewritten'" :selected="copies[index]['copy'] === 'typewritten'">typewritten</option>
                                 </select>
