@@ -24,7 +24,6 @@ function get_entity($type, $id, $professions)
         'death_year' => $entity->field('death_year'),
         'viaf' => $entity->field('viaf'),
         'note' => $entity->field('note'),
-        'profession' => $entity->field('profession'),
         'profession_short' => parse_professions($entity->field('profession_short'), $professions),
         'profession_detailed' => parse_professions($entity->field('profession_detailed'), $professions),
         'nationality' => $entity->field('nationality'),
@@ -46,7 +45,6 @@ function save_entity($person_type, $action)
         'name' => 'fullname',
         'nationality' => 'nationality',
         'note' => 'note',
-        'profession' => 'profession',
         'surname' => 'surname',
         'type' => 'type',
     ]);
