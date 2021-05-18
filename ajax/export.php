@@ -175,19 +175,21 @@ add_action('wp_ajax_export_persons', function () {
         wp_send_json_error('Format not found', 404);
     }
 
-    $type = sanitize_text_field($_GET['type']);
-
     global $wpdb;
+    $type = get_hiko_post_types($_GET['type']);
+    $professions = get_professions($type['profession'], $type['default_lang']);
+    $query = "SELECT `name`, `surname`, `forename`, `birth_year`, `death_year`, `profession_detailed` AS profession, `profession_short` AS category, `nationality`, `gender`, `note`, `type`
+        FROM {$wpdb->prefix}pods_{$type['person']}
+        ORDER BY `name`";
 
-    $fields = 'name, surname, forename, birth_year, death_year, note, profession, nationality, gender, type';
+    $persons = $wpdb->get_results($query, ARRAY_A);
 
-    $query = "SELECT {$fields} FROM {$wpdb->prefix}pods_{$type} ORDER BY `name`";
+    foreach ($persons as $key => $person) {
+        $persons[$key]['profession'] = implode('|', explode(';', parse_professions($person['profession'], $professions)));
+        $persons[$key]['category'] = implode('|', explode(';', parse_professions($person['category'], $professions)));
+    }
 
-    array_to_csv_download(
-        $wpdb->get_results($query, ARRAY_A),
-        "export-$type.csv"
-    );
-
+    array_to_csv_download($persons, "export-{$type['person']}.csv");
     wp_die();
 });
 

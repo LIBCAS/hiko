@@ -16,7 +16,7 @@ $profession_type = $pods_types['profession'];
                         Exportovat
                     </button>
                     <div x-bind:class="{ 'd-block': opened }" @click.away="opened = false" class="dropdown-menu dropdown-menu-right">
-                        <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_persons&format=csv&type=' . $pods_types['person'] ?>">
+                        <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_persons&format=csv&type=' . $pods_types['path'] ?>">
                             Lidé a instituce
                         </a>
                     </div>

@@ -91,13 +91,13 @@ function get_palladio_data($type)
         'l_author.surname AS a_surname',
         'l_author.forename AS a_forename',
         'l_author.birth_year AS a_birth_year',
-        'l_author.profession AS a_profession',
+        'l_author.profession_detailed AS a_profession',
         'l_author.nationality AS a_nationality',
         'l_author.gender AS a_gender',
         'recipient.surname AS r_surname',
         'recipient.forename AS r_forename',
         'recipient.birth_year AS r_birth_year',
-        'recipient.profession AS r_profession',
+        'recipient.profession_detailed AS r_profession',
         'recipient.nationality AS r_nationality',
         'recipient.gender AS r_gender',
         'origin.name AS o_name',
@@ -151,7 +151,7 @@ function get_palladio_data($type)
 
     $query_result = $wpdb->get_results($query, ARRAY_A);
 
-    $data = parse_palladio_data($query_result);
+    $data = parse_palladio_data($query_result, get_professions($post_types['profession'], $post_types['default_lang']));
 
     $order_keys = [
         'Name (A)', 'Gender (A)', 'Nationality (A)', 'Age (A)', 'Profession (A)',
@@ -174,7 +174,7 @@ function get_palladio_data($type)
 }
 
 
-function parse_palladio_data($query_result)
+function parse_palladio_data($query_result, $professions)
 {
     $query_result = merge_distinct_query_result($query_result);
 
@@ -248,16 +248,16 @@ function parse_palladio_data($query_result)
 
         $result[$index]['Profession (A)'] = '';
         if (is_array($row['a_profession'])) {
-            $result[$index]['Profession (A)'] = separate_by_vertibar($row['a_profession'][0]);
+            $result[$index]['Profession (A)'] =  separate_by_vertibar(parse_professions($row['a_profession'][0], $professions));
         } else {
-            $result[$index]['Profession (A)'] = separate_by_vertibar($row['a_profession']);
+            $result[$index]['Profession (A)'] =  separate_by_vertibar(parse_professions($row['a_profession'], $professions));
         }
 
         $result[$index]['Profession (R)'] = '';
         if (is_array($row['r_profession'])) {
-            $result[$index]['Profession (R)'] = separate_by_vertibar($row['r_profession'][0]);
+            $result[$index]['Profession (R)'] = separate_by_vertibar(parse_professions($row['r_profession'][0], $professions));
         } else {
-            $result[$index]['Profession (R)'] = separate_by_vertibar($row['r_profession']);
+            $result[$index]['Profession (R)'] = separate_by_vertibar(parse_professions($row['r_profession'], $professions));
         }
 
         foreach ($row as $field_key => $field) {
