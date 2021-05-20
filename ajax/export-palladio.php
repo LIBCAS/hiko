@@ -56,7 +56,7 @@ function get_palladio_data($type)
     *
     * author: First name (A); Last Name (A); Gender (A); Nationality (A); Age (A); Profession (A); Profession Category (A);
     * recipient: First name (R); Last name (R); Gender (RA); Nationality (R); Age (R); Profession (R); Profession Category (R);
-    * letter: Date of dispatch; Place of dispatch; Place of dispatch (coordinates); Place of arrival; Place of arrival (coordinates); Languages; Keywords;Keywords Categories
+    * letter: Date of dispatch; Place of dispatch; Place of dispatch (coordinates); Place of arrival; Place of arrival (coordinates); Languages; Keywords;Keywords Categories; People Mentioned
     */
 
     global $wpdb;
@@ -72,6 +72,7 @@ function get_palladio_data($type)
         'origin' => $pod['fields']['origin']['id'],
         'dest' => $pod['fields']['dest']['id'],
         'kw' => $pod['fields']['keywords']['id'],
+        'pm' => $pod['fields']['people_mentioned']['id'],
     ];
 
     $prefix = [
@@ -110,51 +111,44 @@ function get_palladio_data($type)
         'dest.latitude AS d_latitude',
         'keywords.name AS keyword',
         'keywords.categories AS kw_categories',
+        'people_mentioned.name AS people_mentioned',
     ]);
 
-    $query = "
-    SELECT {$fields}
+    $query = "SELECT {$fields}
     FROM {$prefix['letter']} AS t
     LEFT JOIN {$prefix['relation']} AS rel_l_author ON
         rel_l_author.field_id = {$fields_id['author']}
         AND rel_l_author.item_id = t.id
-
     LEFT JOIN {$prefix['person']} AS l_author ON
         l_author.id = rel_l_author.related_item_id
-
     LEFT JOIN {$prefix['relation']} AS rel_recipient ON
         rel_recipient.field_id = {$fields_id['recipient']}
         AND rel_recipient.item_id = t.id
-
     LEFT JOIN {$prefix['person']} AS recipient ON
         recipient.id = rel_recipient.related_item_id
-
     LEFT JOIN {$prefix['relation']} AS rel_origin ON
         rel_origin.field_id = {$fields_id['origin']}
         AND rel_origin.item_id = t.id
-
     LEFT JOIN {$prefix['place']} AS origin ON
         origin.id = rel_origin.related_item_id
-
     LEFT JOIN {$prefix['relation']} AS rel_dest ON
         rel_dest.field_id = {$fields_id['dest']}
         AND rel_dest.item_id = t.id
-
     LEFT JOIN {$prefix['place']} AS dest ON
         dest.id = rel_dest.related_item_id
-
     LEFT JOIN {$prefix['relation']} AS rel_keywords ON
         rel_keywords.field_id = {$fields_id['kw']}
         AND rel_keywords.item_id = t.id
-
     LEFT JOIN {$prefix['kw']} AS keywords ON
         keywords.id = rel_keywords.related_item_id
-    ";
-
-    $query_result = $wpdb->get_results($query, ARRAY_A);
+    LEFT JOIN {$prefix['relation']} AS rel_people_mentioned ON
+    rel_people_mentioned.field_id = {$fields_id['pm']}
+        AND rel_people_mentioned.item_id = t.id
+    LEFT JOIN {$prefix['person']} AS people_mentioned ON
+        people_mentioned.id = rel_people_mentioned.related_item_id";
 
     $data = parse_palladio_data(
-        $query_result,
+        $wpdb->get_results($query, ARRAY_A),
         get_professions($post_types['profession'], $post_types['default_lang']),
         list_keywords($post_types['keyword'], 1),
         $post_types['default_lang']
@@ -164,17 +158,15 @@ function get_palladio_data($type)
         'Name (A)', 'Gender (A)', 'Nationality (A)', 'Age (A)', 'Profession (A)', 'Profession Category (A)',
         'Name (R)', 'Gender (R)', 'Nationality (R)', 'Age (R)', 'Profession (R)', 'Profession Category (R)',
         'Date of dispatch', 'Place of dispatch', 'Place of dispatch (coordinates)', 'Place of arrival',
-        'Place of arrival (coordinates)', 'Languages', 'Keywords', 'Keywords Categories'
+        'Place of arrival (coordinates)', 'Languages', 'Keywords', 'Keywords Categories', 'People Mentioned'
     ];
 
     $ordered_data = [];
 
-    $index = 0;
-    foreach ($data as $row) {
+    foreach ($data as $index => $row) {
         foreach ($order_keys as $key) {
             $ordered_data[$index][$key] = $row[$key];
         }
-        $index++;
     }
 
     return $ordered_data;
@@ -261,32 +253,34 @@ function parse_palladio_data($query_result, $professions, $kw_categories, $lang)
             $result[$index]['Age (R)'] = $row['date_year'] - $row['r_birth_year'];
         }
 
-        $result[$index]['Profession (A)'] = '';
         if (is_array($row['a_profession'])) {
             $result[$index]['Profession (A)'] =  separate_by_vertibar(parse_professions($row['a_profession'][0], $professions));
         } else {
             $result[$index]['Profession (A)'] =  separate_by_vertibar(parse_professions($row['a_profession'], $professions));
         }
 
-        $result[$index]['Profession Category (A)'] = '';
         if (is_array($row['a_category'])) {
             $result[$index]['Profession Category (A)'] =  separate_by_vertibar(parse_professions($row['a_category'][0], $professions));
         } else {
             $result[$index]['Profession Category (A)'] =  separate_by_vertibar(parse_professions($row['a_category'], $professions));
         }
 
-        $result[$index]['Profession (R)'] = '';
         if (is_array($row['r_profession'])) {
             $result[$index]['Profession (R)'] = separate_by_vertibar(parse_professions($row['r_profession'][0], $professions));
         } else {
             $result[$index]['Profession (R)'] = separate_by_vertibar(parse_professions($row['r_profession'], $professions));
         }
 
-        $result[$index]['Profession Category (R)'] = '';
         if (is_array($row['r_category'])) {
             $result[$index]['Profession Category (R)'] =  separate_by_vertibar(parse_professions($row['r_category'][0], $professions));
         } else {
             $result[$index]['Profession Category (R)'] =  separate_by_vertibar(parse_professions($row['r_category'], $professions));
+        }
+
+        if (is_array($row['people_mentioned'])) {
+            $result[$index]['People Mentioned'] =  implode('|', $row['people_mentioned']);
+        } else {
+            $result[$index]['People Mentioned'] =  (string) $row['people_mentioned'];
         }
 
         foreach ($row as $field_key => $field) {
@@ -348,6 +342,5 @@ function get_masaryk_name()
         ]
     );
 
-    return trim($data->display('forename') . ' '. $data->display('surname'));
+    return trim($data->display('forename') . ' ' . $data->display('surname'));
 }
-
