@@ -90,6 +90,22 @@ function get_keywords_names($type, $lang)
 }
 
 
+function get_keyword_category_by_name($id, $categories, $lang)
+{
+    if (empty($id)) {
+        return '';
+    }
+
+    $kw_index = array_search($id, array_column($categories, 'id'));
+
+    if ($kw_index !== false) {
+        return $categories[$kw_index][$lang === 'en' ? 'name' : 'namecz'];
+    }
+
+    return '';
+}
+
+
 add_action('wp_ajax_keywords_table_data', function () {
     $keywords = list_keywords(test_input($_GET['type']), (int) $_GET['categories']);
     header('Content-Type: application/json');

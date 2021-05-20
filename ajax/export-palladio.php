@@ -56,7 +56,7 @@ function get_palladio_data($type)
     *
     * author: First name (A); Last Name (A); Gender (A); Nationality (A); Age (A); Profession (A); Profession Category (A);
     * recipient: First name (R); Last name (R); Gender (RA); Nationality (R); Age (R); Profession (R); Profession Category (R);
-    * letter: Date of dispatch; Place of dispatch; Place of dispatch (coordinates); Place of arrival; Place of arrival (coordinates); Languages; Keywords
+    * letter: Date of dispatch; Place of dispatch; Place of dispatch (coordinates); Place of arrival; Place of arrival (coordinates); Languages; Keywords;Keywords Categories
     */
 
     global $wpdb;
@@ -109,6 +109,7 @@ function get_palladio_data($type)
         'dest.longitude AS d_longitude',
         'dest.latitude AS d_latitude',
         'keywords.name AS keyword',
+        'keywords.categories AS kw_categories',
     ]);
 
     $query = "
@@ -152,13 +153,18 @@ function get_palladio_data($type)
 
     $query_result = $wpdb->get_results($query, ARRAY_A);
 
-    $data = parse_palladio_data($query_result, get_professions($post_types['profession'], $post_types['default_lang']));
+    $data = parse_palladio_data(
+        $query_result,
+        get_professions($post_types['profession'], $post_types['default_lang']),
+        list_keywords($post_types['keyword'], 1),
+        $post_types['default_lang']
+    );
 
     $order_keys = [
         'Name (A)', 'Gender (A)', 'Nationality (A)', 'Age (A)', 'Profession (A)', 'Profession Category (A)',
         'Name (R)', 'Gender (R)', 'Nationality (R)', 'Age (R)', 'Profession (R)', 'Profession Category (R)',
         'Date of dispatch', 'Place of dispatch', 'Place of dispatch (coordinates)', 'Place of arrival',
-        'Place of arrival (coordinates)', 'Languages', 'Keywords'
+        'Place of arrival (coordinates)', 'Languages', 'Keywords', 'Keywords Categories'
     ];
 
     $ordered_data = [];
@@ -175,7 +181,7 @@ function get_palladio_data($type)
 }
 
 
-function parse_palladio_data($query_result, $professions)
+function parse_palladio_data($query_result, $professions, $kw_categories, $lang)
 {
     $query_result = merge_distinct_query_result($query_result);
 
@@ -205,6 +211,14 @@ function parse_palladio_data($query_result, $professions)
             $result[$index]['Keywords'] = implode('|', $row['keyword']);
         } else {
             $result[$index]['Keywords'] =  $row['keyword'];
+        }
+
+        if (is_array($row['kw_categories'])) {
+            $result[$index]['Keywords Categories'] = implode('|', array_map(function ($category) use ($kw_categories, $lang) {
+                return get_keyword_category_by_name($category, $kw_categories, $lang);
+            }, $row['kw_categories']));
+        } else {
+            $result[$index]['Keywords Categories'] = get_keyword_category_by_name($row['kw_categories'], $kw_categories, $lang);
         }
 
         $result[$index]['Place of dispatch (coordinates)'] = '';
@@ -336,3 +350,4 @@ function get_masaryk_name()
 
     return trim($data->display('forename') . ' '. $data->display('surname'));
 }
+
