@@ -54,8 +54,8 @@ function get_palladio_data($type)
     /*
     * needed data:
     *
-    * author: First name (A); Last Name (A); Gender (A); Nationality (A); Age (A); Profession (A);
-    * recipient: First name (R); Last name (R); Gender (RA); Nationality (R); Age (R); Profession (R);
+    * author: First name (A); Last Name (A); Gender (A); Nationality (A); Age (A); Profession (A); Profession Category (A);
+    * recipient: First name (R); Last name (R); Gender (RA); Nationality (R); Age (R); Profession (R); Profession Category (R);
     * letter: Date of dispatch; Place of dispatch; Place of dispatch (coordinates); Place of arrival; Place of arrival (coordinates); Languages; Keywords
     */
 
@@ -82,7 +82,7 @@ function get_palladio_data($type)
         'kw' => "{$wpdb->prefix}pods_{$post_types['keyword']}",
     ];
 
-    $fields = [
+    $fields = implode(', ', [
         't.ID',
         't.date_day',
         't.date_month',
@@ -92,12 +92,14 @@ function get_palladio_data($type)
         'l_author.forename AS a_forename',
         'l_author.birth_year AS a_birth_year',
         'l_author.profession_detailed AS a_profession',
+        'l_author.profession_short AS a_category',
         'l_author.nationality AS a_nationality',
         'l_author.gender AS a_gender',
         'recipient.surname AS r_surname',
         'recipient.forename AS r_forename',
         'recipient.birth_year AS r_birth_year',
         'recipient.profession_detailed AS r_profession',
+        'recipient.profession_short AS r_category',
         'recipient.nationality AS r_nationality',
         'recipient.gender AS r_gender',
         'origin.name AS o_name',
@@ -107,8 +109,7 @@ function get_palladio_data($type)
         'dest.longitude AS d_longitude',
         'dest.latitude AS d_latitude',
         'keywords.name AS keyword',
-    ];
-    $fields = implode(', ', $fields);
+    ]);
 
     $query = "
     SELECT {$fields}
@@ -154,8 +155,8 @@ function get_palladio_data($type)
     $data = parse_palladio_data($query_result, get_professions($post_types['profession'], $post_types['default_lang']));
 
     $order_keys = [
-        'Name (A)', 'Gender (A)', 'Nationality (A)', 'Age (A)', 'Profession (A)',
-        'Name (R)', 'Gender (R)', 'Nationality (R)', 'Age (R)', 'Profession (R)',
+        'Name (A)', 'Gender (A)', 'Nationality (A)', 'Age (A)', 'Profession (A)', 'Profession Category (A)',
+        'Name (R)', 'Gender (R)', 'Nationality (R)', 'Age (R)', 'Profession (R)', 'Profession Category (R)',
         'Date of dispatch', 'Place of dispatch', 'Place of dispatch (coordinates)', 'Place of arrival',
         'Place of arrival (coordinates)', 'Languages', 'Keywords'
     ];
@@ -253,11 +254,25 @@ function parse_palladio_data($query_result, $professions)
             $result[$index]['Profession (A)'] =  separate_by_vertibar(parse_professions($row['a_profession'], $professions));
         }
 
+        $result[$index]['Profession Category (A)'] = '';
+        if (is_array($row['a_category'])) {
+            $result[$index]['Profession Category (A)'] =  separate_by_vertibar(parse_professions($row['a_category'][0], $professions));
+        } else {
+            $result[$index]['Profession Category (A)'] =  separate_by_vertibar(parse_professions($row['a_category'], $professions));
+        }
+
         $result[$index]['Profession (R)'] = '';
         if (is_array($row['r_profession'])) {
             $result[$index]['Profession (R)'] = separate_by_vertibar(parse_professions($row['r_profession'][0], $professions));
         } else {
             $result[$index]['Profession (R)'] = separate_by_vertibar(parse_professions($row['r_profession'], $professions));
+        }
+
+        $result[$index]['Profession Category (R)'] = '';
+        if (is_array($row['r_category'])) {
+            $result[$index]['Profession Category (R)'] =  separate_by_vertibar(parse_professions($row['r_category'][0], $professions));
+        } else {
+            $result[$index]['Profession Category (R)'] =  separate_by_vertibar(parse_professions($row['r_category'], $professions));
         }
 
         foreach ($row as $field_key => $field) {
