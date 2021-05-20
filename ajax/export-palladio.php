@@ -54,9 +54,9 @@ function get_palladio_data($type)
     /*
     * needed data:
     *
-    * author: First name (A); Last Name (A); Gender (A); Nationality (A); Age (A); Profession (A); Profession Category (A);
-    * recipient: First name (R); Last name (R); Gender (RA); Nationality (R); Age (R); Profession (R); Profession Category (R);
-    * letter: Date of dispatch; Place of dispatch; Place of dispatch (coordinates); Place of arrival; Place of arrival (coordinates); Languages; Keywords;Keywords Categories; People Mentioned
+    * author: First name (A); Last Name (A); Gender (A); Nationality (A); Age (A); Profession (A); Profession category (A);
+    * recipient: First name (R); Last name (R); Gender (RA); Nationality (R); Age (R); Profession (R); Profession category (R);
+    * letter: Date of dispatch; Place of dispatch; Place of dispatch (coordinates); Place of arrival; Place of arrival (coordinates); Languages; Keywords;Keywords categories; People mentioned; Document type, Preservation, Type of copy
     */
 
     global $wpdb;
@@ -89,6 +89,7 @@ function get_palladio_data($type)
         't.date_month',
         't.date_year',
         't.languages',
+        't.copies',
         'l_author.surname AS a_surname',
         'l_author.forename AS a_forename',
         'l_author.birth_year AS a_birth_year',
@@ -155,10 +156,11 @@ function get_palladio_data($type)
     );
 
     $order_keys = [
-        'Name (A)', 'Gender (A)', 'Nationality (A)', 'Age (A)', 'Profession (A)', 'Profession Category (A)',
-        'Name (R)', 'Gender (R)', 'Nationality (R)', 'Age (R)', 'Profession (R)', 'Profession Category (R)',
+        'Name (A)', 'Gender (A)', 'Nationality (A)', 'Age (A)', 'Profession (A)', 'Profession category (A)',
+        'Name (R)', 'Gender (R)', 'Nationality (R)', 'Age (R)', 'Profession (R)', 'Profession category (R)',
         'Date of dispatch', 'Place of dispatch', 'Place of dispatch (coordinates)', 'Place of arrival',
-        'Place of arrival (coordinates)', 'Languages', 'Keywords', 'Keywords Categories', 'People Mentioned'
+        'Place of arrival (coordinates)', 'Languages', 'Keywords', 'Keywords categories', 'People mentioned',
+        'Document type', 'Preservation', 'Type of copy'
     ];
 
     $ordered_data = [];
@@ -188,12 +190,10 @@ function parse_palladio_data($query_result, $professions, $kw_categories, $lang)
         'd_name' => 'Place of arrival',
     ];
 
-    $index = 0;
-    foreach ($query_result as $row) {
-        $date = '';
-        $date .= ($row['date_year'] != 0 ? $row['date_year'] : '');
-        $date .= ($row['date_month'] != 0 ? '-' . $row['date_month'] : '');
-        $date .= ($row['date_day'] != 0 ? '-' . $row['date_day'] : '');
+    foreach ($query_result as $index => $row) {
+        $date = $row['date_year'] != 0 ? $row['date_year'] : '';
+        $date .= $row['date_month'] != 0 ? '-' . $row['date_month'] : '';
+        $date .= $row['date_day'] != 0 ? '-' . $row['date_day'] : '';
 
         $result[$index]['Date of dispatch'] = $date;
 
@@ -206,11 +206,11 @@ function parse_palladio_data($query_result, $professions, $kw_categories, $lang)
         }
 
         if (is_array($row['kw_categories'])) {
-            $result[$index]['Keywords Categories'] = implode('|', array_map(function ($category) use ($kw_categories, $lang) {
+            $result[$index]['Keywords categories'] = implode('|', array_map(function ($category) use ($kw_categories, $lang) {
                 return get_keyword_category_by_name($category, $kw_categories, $lang);
             }, $row['kw_categories']));
         } else {
-            $result[$index]['Keywords Categories'] = get_keyword_category_by_name($row['kw_categories'], $kw_categories, $lang);
+            $result[$index]['Keywords categories'] = get_keyword_category_by_name($row['kw_categories'], $kw_categories, $lang);
         }
 
         $result[$index]['Place of dispatch (coordinates)'] = '';
@@ -260,9 +260,9 @@ function parse_palladio_data($query_result, $professions, $kw_categories, $lang)
         }
 
         if (is_array($row['a_category'])) {
-            $result[$index]['Profession Category (A)'] =  separate_by_vertibar(parse_professions($row['a_category'][0], $professions));
+            $result[$index]['Profession category (A)'] =  separate_by_vertibar(parse_professions($row['a_category'][0], $professions));
         } else {
-            $result[$index]['Profession Category (A)'] =  separate_by_vertibar(parse_professions($row['a_category'], $professions));
+            $result[$index]['Profession category (A)'] =  separate_by_vertibar(parse_professions($row['a_category'], $professions));
         }
 
         if (is_array($row['r_profession'])) {
@@ -272,16 +272,28 @@ function parse_palladio_data($query_result, $professions, $kw_categories, $lang)
         }
 
         if (is_array($row['r_category'])) {
-            $result[$index]['Profession Category (R)'] =  separate_by_vertibar(parse_professions($row['r_category'][0], $professions));
+            $result[$index]['Profession category (R)'] =  separate_by_vertibar(parse_professions($row['r_category'][0], $professions));
         } else {
-            $result[$index]['Profession Category (R)'] =  separate_by_vertibar(parse_professions($row['r_category'], $professions));
+            $result[$index]['Profession category (R)'] =  separate_by_vertibar(parse_professions($row['r_category'], $professions));
         }
 
         if (is_array($row['people_mentioned'])) {
-            $result[$index]['People Mentioned'] =  implode('|', $row['people_mentioned']);
+            $result[$index]['People mentioned'] =  implode('|', $row['people_mentioned']);
         } else {
-            $result[$index]['People Mentioned'] =  (string) $row['people_mentioned'];
+            $result[$index]['People mentioned'] =  (string) $row['people_mentioned'];
         }
+
+        if (!empty($row['copies'])) {
+            $copies = json_decode($row['copies'], true);
+            $type = array_column($copies, 'type');
+            $preservation = array_column($copies, 'preservation');
+            $copy = array_column($copies, 'copy');
+        }
+
+        $result[$index]['Document type'] = !isset($type) || empty($type) ? '' : $type[0];
+        $result[$index]['Preservation'] = !isset($preservation) || empty($preservation) ? '' : $preservation[0];
+        $result[$index]['Type of copy'] = !isset($copy) || empty($copy) ? '' : $copy[0];
+
 
         foreach ($row as $field_key => $field) {
             if (array_key_exists($field_key, $to_flat_fields)) {
@@ -292,7 +304,6 @@ function parse_palladio_data($query_result, $professions, $kw_categories, $lang)
                 }
             }
         }
-        $index++;
     }
 
     return $result;
