@@ -17,28 +17,30 @@ if ($is_supervisor) {
             <h1 class="mb-3">Dopisy</h1>
             <div class="d-flex justify-content-between align-items-start">
                 <a href="<?= home_url($path . '/letters-add'); ?>" class="btn btn-lg btn-primary">Přidat nový dopis</a>
-                <div x-data="{ opened: false }" class="dropdown d-inline-block" x-cloak>
-                    <button @click="opened = !opened" class="btn btn-outline-primary btn-lg dropdown-toggle" type="button">
-                        Exportovat
-                    </button>
-                    <div class="d-flex">
-                        <div x-bind:class="{ 'd-block': opened }" @click.away="opened = false" class="dropdown-menu dropdown-menu-right">
-                            <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_palladio&format=csv&type=' . $path ?>">
-                                Palladio – vše
-                            </a>
-                            <?php if ($path === 'tgm') : ?>
-                                <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_palladio_masaryk&format=csv&from=1' ?>">
-                                    Palladio – dopisy od TGM
+                <div class="flex-column d-flex align-items-end">
+                    <div x-data="{ opened: false }" class="dropdown d-inline-block" x-cloak>
+                        <button @click="opened = !opened" class="btn btn-outline-primary btn-lg dropdown-toggle" type="button">
+                            Exportovat
+                        </button>
+                        <div class="d-flex">
+                            <div x-bind:class="{ 'd-block': opened }" @click.away="opened = false" class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_palladio&format=csv&type=' . $path ?>">
+                                    Palladio – vše
                                 </a>
-                                <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_palladio_masaryk&format=csv&from=0' ?>">
-                                    Palladio – dopisy pro TGM
-                                </a>
-                            <?php endif; ?>
+                                <?php if ($path === 'tgm') : ?>
+                                    <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_palladio_masaryk&format=csv&from=1' ?>">
+                                        Palladio – dopisy od TGM
+                                    </a>
+                                    <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_palladio_masaryk&format=csv&from=0' ?>">
+                                        Palladio – dopisy pro TGM
+                                    </a>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                        <a href="<?= home_url('browse-letters/?l_type=' . $letter_type) ?>" class="mt-2">
-                            Zobrazit všechny dopisy
-                        </a>
                     </div>
+                    <a href="<?= home_url('browse-letters/?l_type=' . $letter_type) ?>" class="mt-2">
+                        Zobrazit všechny dopisy
+                    </a>
                 </div>
             </div>
             <div id="custom-filters" class="mb-2 d-none">
