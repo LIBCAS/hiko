@@ -53,9 +53,7 @@ function save_place($place_type, $action)
 
     $_SESSION['hiko']['success'] = 'Uloženo';
 
-    wp_redirect($_SERVER['HTTP_REFERER']);
-
-    die();
+    frontend_refresh();
 }
 
 

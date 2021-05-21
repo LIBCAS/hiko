@@ -69,9 +69,7 @@ function save_entity($person_type, $action)
 
     $_SESSION['hiko']['success'] = 'Uloženo';
 
-    wp_redirect($_SERVER['HTTP_REFERER']);
-
-    die();
+    frontend_refresh();
 }
 
 
