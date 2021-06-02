@@ -192,8 +192,10 @@ function parse_palladio_data($query_result, $professions, $kw_categories, $lang)
 
     foreach ($query_result as $index => $row) {
         $date = $row['date_year'] != 0 ? $row['date_year'] : '';
-        $date .= $row['date_month'] != 0 ? '-' . $row['date_month'] : '';
-        $date .= $row['date_day'] != 0 ? '-' . $row['date_day'] : '';
+
+        if ($row['date_month'] != 0 && !empty($row['date_month']) && $row['date_day'] != 0  && !empty($row['date_day'])) {
+            $date .= '-' . $row['date_month'] . '-' . $row['date_day'];
+        }
 
         $result[$index]['Date of dispatch'] = $date;
 
