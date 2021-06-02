@@ -197,7 +197,7 @@ function parse_palladio_data($query_result, $professions, $kw_categories, $lang)
 
         $result[$index]['Date of dispatch'] = $date;
 
-        $result[$index]['Languages'] = str_replace(';', '|', $row['languages']);
+        $result[$index]['Languages'] = strtolower(str_replace(';', '|', $row['languages']));
 
         if (is_array($row['keyword'])) {
             $result[$index]['Keywords'] = implode('|', $row['keyword']);
