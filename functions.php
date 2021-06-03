@@ -775,6 +775,7 @@ require 'helpers/places.php';
 require 'ajax/images.php';
 require 'ajax/export.php';
 require 'ajax/export-palladio.php';
+require 'ajax/export-palladio-tgm.php';
 require 'helpers/location.php';
 require 'ajax/geonames.php';
 require 'helpers/keywords.php';

@@ -296,7 +296,6 @@ function parse_palladio_data($query_result, $professions, $kw_categories, $lang)
         $result[$index]['Preservation'] = !isset($preservation) || empty($preservation) ? '' : $preservation[0];
         $result[$index]['Type of copy'] = !isset($copy) || empty($copy) ? '' : $copy[0];
 
-
         foreach ($row as $field_key => $field) {
             if (array_key_exists($field_key, $to_flat_fields)) {
                 if (is_array($field)) {
