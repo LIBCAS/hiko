@@ -102,7 +102,18 @@ function fetch_types()
                 "keyword" => "jak_keyword",
                 "profession" => "jak_profession",
                 "default_lang" => "en"
-            ]
+            ],
+            "pbu" => [
+                "letter" => "pbu_letter",
+                "place" => "pbu_place",
+                "person" => "pbu_person",
+                "editor" => "pbu_editor",
+                "path" => "pbu",
+                "title" => "Pobělohorští učenci",
+                "keyword" => "pbu_keyword",
+                "profession" => "pbu_profession",
+                "default_lang" => "en"
+            ],
         ],
         "editors" => [
             "administrator",
@@ -114,7 +125,8 @@ function fetch_types()
             "sachs_editor",
             "marci_editor",
             "wirth_editor",
-            "jak_editor"
+            "jak_editor",
+            "pbu_editor",
         ]
     ];
 }
