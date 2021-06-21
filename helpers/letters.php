@@ -425,9 +425,12 @@ function public_list_all_letters()
     $results = [];
 
     foreach ($letters as $letter) {
+        $copies = json_decode($letter['copies'], true);
+        $signature = array_column($copies, 'signature');
+
         $results[] = [
             'id' => $letter['ID'],
-            'sig' => $letter['signature'],
+            'sig' => !isset($signature) || empty($signature) ? '' : $signature[0],
             'dd' => $letter['date_day'],
             'mm' => $letter['date_month'],
             'yy' => $letter['date_year'],
