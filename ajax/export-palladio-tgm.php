@@ -19,11 +19,12 @@ function get_palladio_tgm_data()
     Profession category (O): kategorie profesí korespondenčního partnera
     Date of dispatch: datum odeslání dopisu
     Year of dispatch: rok odeslání dopisu
+    Month of dispatch: měsíc odeslání dopisu
     Place of M: místo pobytu Masaryka
     Place of M (coordinates): to samé jako výše
     Place of O: místo korespondenčního partnera
     Place of O (coordinates): to samé jako výše
-    Languages, Keywords, Keywords categories, People mentioned, Document type, Preservation, Type of copy,
+    Languages, Keywords, Keywords categories, People mentioned, Document type, Preservation, Repository, Archive, Collection, Signature, Type of copy,
     Received/Sent
     */
 
@@ -124,8 +125,9 @@ function get_palladio_tgm_data()
     );
 
     $order_keys = [
-        'Age (M)', 'Name (O)', 'Gender (O)', 'Nationality (O)', 'Age (O)', 'Profession (O)', 'Profession category (O)', 'Date of dispatch', 'Year of dispatch', 'Place of M', 'Place of M (coordinates)', 'Place of O', 'Place of O (coordinates)', 'Languages', 'Keywords', 'Keywords categories',
-        'People mentioned', 'Document type', 'Preservation', 'Type of copy', 'Received/Sent'
+        'Age (M)', 'Name (O)', 'Gender (O)', 'Nationality (O)', 'Age (O)', 'Profession (O)', 'Profession category (O)', 'Date of dispatch', 'Year of dispatch', 'Month of dispatch', 'Place of M', 'Place of M (coordinates)', 'Place of O', 'Place of O (coordinates)', 'Languages', 'Keywords', 'Keywords categories',
+        'People mentioned', 'Document type', 'Preservation', 'Repository', 'Archive', 'Collection', 'Signature',
+        'Type of copy', 'Received/Sent'
     ];
 
     $ordered_data = [];
@@ -164,6 +166,7 @@ function parse_palladio_tgm_data($query_result, $professions, $kw_categories, $l
 
         $result[$index]['Date of dispatch'] = $date;
         $result[$index]['Year of dispatch'] = $row['date_year'] != 0 ? $row['date_year'] : '';
+        $result[$index]['Month of dispatch'] = $row['date_month'] != 0 ? $row['date_month'] : '';
         $result[$index]['Languages'] = strtolower(str_replace(';', '|', $row['languages']));
         $result[$index]['Keywords'] = is_array($row['keyword']) ? implode('|', $row['keyword']) : $row['keyword'];
 
@@ -182,11 +185,20 @@ function parse_palladio_tgm_data($query_result, $professions, $kw_categories, $l
             $type = array_column($copies, 'type');
             $preservation = array_column($copies, 'preservation');
             $copy = array_column($copies, 'copy');
+            $repository = array_column($copies, 'repository');
+            $archive = array_column($copies, 'archive');
+            $collection = array_column($copies, 'collection');
+            $collection = array_column($copies, 'collection');
+            $signature = array_column($copies, 'signature');
         }
 
         $result[$index]['Document type'] = !isset($type) || empty($type) ? '' : $type[0];
         $result[$index]['Preservation'] = !isset($preservation) || empty($preservation) ? '' : $preservation[0];
         $result[$index]['Type of copy'] = !isset($copy) || empty($copy) ? '' : $copy[0];
+        $result[$index]['Repository'] = !isset($repository) || empty($repository) ? '' : $repository[0];
+        $result[$index]['Archive'] = !isset($archive) || empty($archive) ? '' : $archive[0];
+        $result[$index]['Collection'] = !isset($collection) || empty($collection) ? '' : $collection[0];
+        $result[$index]['Signature'] = !isset($signature) || empty($signature) ? '' : $signature[0];
 
         if ($tgm_name === $author) {
             $result[$index]['Age (M)'] = get_person_age($row['a_birth_year'], $row['date_year']);
