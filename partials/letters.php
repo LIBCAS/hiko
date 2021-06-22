@@ -39,7 +39,9 @@ if ($is_supervisor) {
                                         Palladio – vše
                                     </a>
                                 <?php endif; ?>
-
+                                    <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_letters&type=' . $path ?>">
+                                        Obecný export
+                                    </a>
                             </div>
                         </div>
                     </div>

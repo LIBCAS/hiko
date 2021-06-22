@@ -28,7 +28,7 @@ function get_letter_export_data($type)
         'pm' => "{$wpdb->prefix}pods_{$post_types['person']}",
     ];
 
-    $fields = [
+    $fields = implode(', ', [
         't.ID',
         't.date_year',
         't.date_month',
@@ -71,24 +71,18 @@ function get_letter_export_data($type)
         't.notes_public',
         't.notes_private',
         't.related_resources',
-        't.ms_manifestation',
         't.repository',
         't.status',
         't.author_note',
         't.origin_note',
         't.dest_note',
-        't.signature',
-        't.collection',
-        't.archive',
-        't.location_note',
+        't.copies',
         't.authors_meta',
         't.places_meta',
         't.document_type',
         't.date_inferred',
         't.manifestation_notes'
-    ];
-
-    $fields = implode(', ', $fields);
+    ]);
 
     $query = "
     SELECT {$fields}
@@ -136,25 +130,18 @@ function get_letter_export_data($type)
         people_mentioned.id = rel_people_mentioned.related_item_id
     ";
 
-    $query_result = $wpdb->get_results($query, ARRAY_A);
-
-    return parse_letter_export_data($query_result);
+    return parse_letter_export_data(
+        $wpdb->get_results($query, ARRAY_A)
+    );
 }
 
 
-function export_letters()
-{
+add_action('wp_ajax_export_letters', function () {
     if (!array_key_exists('type', $_GET)) {
         wp_send_json_error('Not found', 404);
     }
 
     $type = sanitize_text_field($_GET['type']);
-
-    $format = sanitize_text_field($_GET['format']);
-
-    if ($format != 'csv') {
-        wp_send_json_error('Format not found', 404);
-    }
 
     array_to_csv_download(
         get_letter_export_data($type),
@@ -162,8 +149,7 @@ function export_letters()
     );
 
     wp_die();
-}
-add_action('wp_ajax_export_letters', 'export_letters');
+});
 
 
 add_action('wp_ajax_export_persons', function () {
@@ -222,14 +208,12 @@ add_action('wp_ajax_export_places', function () {
 
 function parse_letter_export_data($query_result)
 {
-    $query_result = merge_distinct_query_result($query_result);
-
     $result = [];
 
-    foreach ($query_result as $row) {
+    foreach (merge_distinct_query_result($query_result) as $row) {
         $authors_meta = json_decode($row['authors_meta'], true);
         $places_meta = json_decode($row['places_meta'], true);
-        $doc_meta = get_export_letter_doc_meta(json_decode($row['document_type'], true));
+        $copies = get_export_letter_copies_meta($row['copies']);
 
         $result[] = [
             'Date' => get_export_letter_date($row, false),
@@ -265,19 +249,17 @@ function parse_letter_export_data($query_result)
             'Notes on people mentioned' => $row['people_mentioned_notes'],
             'Notes on letter for public display' => $row['notes_public'],
             'Editor\'s notes' => $row['notes_private'],
-            'Related resources' => get_export_letter_related_resources(json_decode($row['related_resources'], true)),
-            'MS manifestation' => $row['ms_manifestation'],
-            'Document type' => $doc_meta['type'],
-            'Preservation' => $doc_meta['preservation'],
-            'Type of copy' => $doc_meta['copy'],
-            'Notes on manifestation' => $row['manifestation_notes'],
-            'Letter number' => $row['l_number'],
-            'Repository' => $row['repository'],
-            'Archive' => $row['archive'],
-            'Collection' => $row['collection'],
-            'Signature' => $row['signature'],
-            'Notes on location' => $row['location_note'],
-            'Title' => $row['name'],
+            'Related resources' => get_export_letter_related_resources($row['related_resources']),
+            'MS manifestation' => $copies['ms_manifestation'],
+            'Notes on manifestation' => $copies['manifestation_notes'],
+            'Document type' => $copies['type'],
+            'Preservation' => $copies['preservation'],
+            'Type of copy' => $copies['copy'],
+            'Repository' => $copies['repository'],
+            'Archive' => $copies['Archive'],
+            'Collection' => $copies['collection'],
+            'Signature' => $copies['signature'],
+            'Notes on location' => $copies['location_note'],
             'Status' => $row['status'],
         ];
     }
@@ -294,8 +276,7 @@ function get_export_letter_date($letter, $is_range)
         'day' => $is_range ? 'range_day' : 'date_day',
     ];
 
-    $date = '';
-    $date .= intval($letter[$dates['year']]) . '-';
+    $date = intval($letter[$dates['year']]) . '-';
     $date .= intval($letter[$dates['month']]) . '-';
     $date .= intval($letter[$dates['day']]);
 
@@ -353,6 +334,8 @@ function get_export_letter_join_list($data)
 
 function get_export_letter_related_resources($data)
 {
+    $data = json_decode($data, true);
+
     if (!$data || empty($data)) {
         return '';
     }
@@ -375,21 +358,33 @@ function get_export_letter_related_resources($data)
     return implode('|', $result);
 }
 
-function get_export_letter_doc_meta($data)
+function get_export_letter_copies_meta($data)
 {
-    $result = [
-        'copy' => '',
-        'preservation' => '',
-        'type' => '',
+    $copies = json_decode($data, true);
+
+    $type = array_column($copies, 'type');
+    $preservation = array_column($copies, 'preservation');
+    $copy = array_column($copies, 'copy');
+    $repository = array_column($copies, 'repository');
+    $archive = array_column($copies, 'archive');
+    $collection = array_column($copies, 'collection');
+    $collection = array_column($copies, 'collection');
+    $signature = array_column($copies, 'signature');
+    $ms_manifestation = array_column($copies, 'ms_manifestation');
+    $manifestation_notes = array_column($copies, 'manifestation_notes');
+    $location_note = array_column($copies, 'location_note');
+
+    return [
+        'type' => !isset($type) || empty($type) ? '' : $type[0],
+        'preservation' => !isset($preservation) || empty($preservation) ? '' : $preservation[0],
+        'copy' => !isset($copy) || empty($copy) ? '' : $copy[0],
+        'repository' => !isset($repository) || empty($repository) ? '' : $repository[0],
+        'archive' => !isset($archive) || empty($archive) ? '' : $archive[0],
+        'collection' => !isset($collection) || empty($collection) ? '' : $collection[0],
+        'signature' => !isset($signature) || empty($signature) ? '' : $signature[0],
+        'ms_manifestation' => !isset($ms_manifestation) || empty($ms_manifestation) ? '' : $ms_manifestation[0],
+        'manifestation_notes' => !isset($manifestation_notes) || empty($manifestation_notes) ? '' : $manifestation_notes[0],
+        'location_note' => !isset($location_note) || empty($location_note) ? '' : $location_note[0],
     ];
-
-    if (!is_array($data)) {
-        return $result;
-    }
-
-    foreach ($data as $item) {
-        $result[key($item)] = $item[key($item)];
-    }
-
-    return $result;
 }
+
