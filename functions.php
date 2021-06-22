@@ -252,11 +252,15 @@ function get_letters_basic_meta($meta, $draft)
     $pe_prefix = "{$wpdb->prefix}pods_{$meta['person']}";
     $kw_prefix = "{$wpdb->prefix}pods_{$meta['keyword']}";
 
-    $fields = [
+    $fields = implode(', ', [
         't.id AS ID',
         't.date_day',
         't.date_month',
         't.date_year',
+        't.date_is_range',
+        't.range_day',
+        't.range_month',
+        't.range_year',
         't.copies',
         't.status',
         't.created',
@@ -267,20 +271,14 @@ function get_letters_basic_meta($meta, $draft)
         $meta['default_lang'] === 'en' ? 'keyword.name AS keyword' : 'keyword.namecz AS keyword',
         'keyword.categories AS category',
         'posts.ID as images'
-    ];
-
-    $fields = implode(', ', $fields);
+    ]);
 
     $draft_condition = $draft ? '' : 'WHERE t.status = \'publish\'';
 
     $user_name = get_full_name();
 
-    $query = "
-    SELECT
-    LOCATE('{$user_name}', t.history) AS my_letter,
-    {$fields}
-    FROM
-    $l_prefix AS t
+    $query = "SELECT LOCATE('{$user_name}', t.history) AS my_letter, {$fields}
+    FROM $l_prefix AS t
     LEFT JOIN {$r_prefix} AS rel_l_author ON rel_l_author.field_id = {$author_field_id}
     AND rel_l_author.item_id = t.id
     LEFT JOIN {$pe_prefix} AS l_author ON l_author.id = rel_l_author.related_item_id
@@ -300,11 +298,7 @@ function get_letters_basic_meta($meta, $draft)
     AND rel_keyword.item_id = t.id
     LEFT JOIN {$kw_prefix} AS keyword ON keyword.id = rel_keyword.related_item_id
     {$draft_condition}
-    ORDER BY
-    t.created DESC,
-    t.name,
-    t.id
-    ";
+    ORDER BY t.created DESC, t.name, t.id";
 
     return $wpdb->get_results($query, ARRAY_A);
 }
@@ -312,15 +306,13 @@ function get_letters_basic_meta($meta, $draft)
 
 function get_letters_history($letter_type)
 {
-    $fields = implode(', ', [
-        't.id AS ID',
-        't.history',
-    ]);
-
     $letters = pods(
         $letter_type,
         [
-            'select' => $fields,
+            'select' => implode(', ', [
+                't.id AS ID',
+                't.history',
+            ]),
             'limit' => -1,
         ]
     );

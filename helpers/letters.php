@@ -392,15 +392,20 @@ add_action('wp_ajax_list_all_letters_short', function () {
         $signature = $letter['signature'];
         $signature .= $letter['signature'] && $letter['repository'] ? '/' : '';
         $signature .= $letter['repository'] ? $letter['repository'] : '';
+        $date = format_letter_date($letter['date_day'], $letter['date_month'], $letter['date_year']);
+        if ($letter['date_is_range']) {
+            $date .= ' – ' . format_letter_date($letter['range_day'], $letter['range_month'], $letter['range_year']);
+        }
+
         $results[] = [
             'ID' => $letter['ID'],
             'author' => $letter['author'],
             'category' => $letter['category'],
-            'date_formatted' => format_letter_date($letter['date_day'], $letter['date_month'], $letter['date_year']),
+            'date_formatted' => $date,
             'dest' => $letter['dest'],
             'editors' => $letter['editors'],
             'keyword' => $letter['keyword'],
-            'images' => (empty($letter['images'])) ? 0 : count($letter['images']),
+            'images' => empty($letter['images']) ? 0 : count($letter['images']),
             'my_letter' => $letter['my_letter'],
             'origin' => $letter['origin'],
             'recipient' => $letter['recipient'],
