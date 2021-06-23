@@ -369,17 +369,8 @@ function get_letters_basic_meta_filtered($meta, $draft = true, $history = false)
             return ($h['ID'] == $letter['ID']);
         });
 
-        $signature = [];
-        $repository = [];
-        if (!empty($letter['copies'])) {
-            $copies = json_decode($letter['copies'], true);
-            $signature = array_column($copies, 'signature');
-            $repository = array_column($copies, 'repository');
-        }
-
-        $letter['repository'] = empty($repository) ? '' : $repository[0];
-        $letter['signature'] = empty($signature) ? '' : $signature[0];
         $letter['editors'] = array_values($letter_history)[0]['editors'];
+        $letter['copies'] = empty($letter['copies']) ? [] : json_decode($letter['copies'], true);
         $result[] = $letter;
     }
 

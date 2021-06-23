@@ -389,9 +389,25 @@ add_action('wp_ajax_list_all_letters_short', function () {
     $results = [];
 
     foreach ($letters as $letter) {
-        $signature = $letter['signature'];
-        $signature .= $letter['signature'] && $letter['repository'] ? '/' : '';
-        $signature .= $letter['repository'] ? $letter['repository'] : '';
+        $signature = [];
+        foreach ($letter['copies'] as $copy) {
+            $meta = [];
+
+            if (!empty($copy['signature'])) {
+                $meta[] = $copy['signature'];
+            }
+
+            if (!empty($copy['repository'])) {
+                $meta[] = $copy['repository'];
+            }
+
+            if (!empty($copy['archive'])) {
+                $meta[] = $copy['archive'];
+            }
+
+            $signature[] = implode('/', $meta);
+        }
+
         $date = format_letter_date($letter['date_day'], $letter['date_month'], $letter['date_year']);
         if ($letter['date_is_range']) {
             $date .= ' – ' . format_letter_date($letter['range_day'], $letter['range_month'], $letter['range_year']);
@@ -409,7 +425,7 @@ add_action('wp_ajax_list_all_letters_short', function () {
             'my_letter' => $letter['my_letter'],
             'origin' => $letter['origin'],
             'recipient' => $letter['recipient'],
-            'signature' => $letter['signature'],
+            'signature' => implode('<br>', $signature),
             'timestamp' => get_timestamp($letter['date_day'], $letter['date_month'], $letter['date_year']),
         ];
     }
@@ -430,8 +446,8 @@ function public_list_all_letters()
     $results = [];
 
     foreach ($letters as $letter) {
-        $copies = json_decode($letter['copies'], true);
-        $signature = array_column($copies, 'signature');
+        $letter['copies'] = empty($letter['copies']) ? [] : json_decode($letter['copies'], true);
+        $signature = array_column($letter['copies'], 'signature');
 
         $results[] = [
             'id' => $letter['ID'],

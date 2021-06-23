@@ -53,8 +53,7 @@ function showHistory(id, event) {
         })
         .catch((error) => {
             Swal.fire({
-                title:
-                    'Historii úprav se nepodařilo načíst nebo nebo neexistuje',
+                title: 'Historii úprav se nepodařilo načíst nebo nebo neexistuje',
                 text: error,
                 type: 'error',
                 buttonsStyling: false,
@@ -168,7 +167,7 @@ if (document.getElementById('datatable-letters')) {
             },
             {
                 field: 'signature',
-                formatter: 'textarea',
+                formatter: 'html',
                 headerFilter: 'input',
                 title: 'Signature',
             },
