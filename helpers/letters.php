@@ -268,6 +268,7 @@ function save_letter($letter_type, $action, $path)
     $data = test_postdata([
         'abstract' => 'abstract',
         'author_note' => 'author_note',
+        'copyright' => 'copyright',
         'date_day' => 'date_day',
         'date_marked' => 'date_marked',
         'date_month' => 'date_month',

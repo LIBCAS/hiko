@@ -420,6 +420,16 @@ $letters = list_all_letters_meta($post_types); ?>
                         <?php endif; ?>
                     </ul>
                 <?php endif; ?>
+                <?php if ($letter['copyright']) : ?>
+                    <h3>
+                        Copyright
+                    </h3>
+                    <ul>
+                        <li>
+                            <?= $letter['copyright']; ?>
+                        </li>
+                    </ul>
+                <?php endif; ?>
                 <h3>
                     Status: <?= $letter['status']; ?>
                 </h3>
