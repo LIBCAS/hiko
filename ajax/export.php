@@ -1,6 +1,6 @@
 <?php
 
-function get_letter_export_data($type)
+function get_letter_export_data($type, $ids)
 {
     global $wpdb;
 
@@ -84,9 +84,9 @@ function get_letter_export_data($type)
         't.manifestation_notes'
     ]);
 
-    $query = "
-    SELECT {$fields}
-    FROM {$prefix['letter']} AS t
+    $where = empty($ids) ? '' : 'WHERE t.ID in (' . implode(',', $ids) . ')';
+
+    $query = "SELECT {$fields} FROM {$prefix['letter']} AS t
     LEFT JOIN {$prefix['relation']} AS rel_l_author ON
         rel_l_author.field_id = {$fields_id['author']}
         AND rel_l_author.item_id = t.id
@@ -128,7 +128,7 @@ function get_letter_export_data($type)
 
     LEFT JOIN {$prefix['pm']} AS people_mentioned ON
         people_mentioned.id = rel_people_mentioned.related_item_id
-    ";
+    {$where}";
 
     return parse_letter_export_data(
         $wpdb->get_results($query, ARRAY_A)
@@ -144,8 +144,20 @@ add_action('wp_ajax_export_letters', function () {
     $type = sanitize_text_field($_GET['type']);
 
     array_to_csv_download(
-        get_letter_export_data($type),
+        get_letter_export_data($type, []),
         "export-$type.csv"
+    );
+
+    wp_die();
+});
+
+
+add_action('wp_ajax_export_selected_letters', function () {
+    $data = decode_php_input();
+
+    array_to_csv_download(
+        get_letter_export_data($data->type, $data->ids),
+        "export-selected-{$data->type}.csv"
     );
 
     wp_die();

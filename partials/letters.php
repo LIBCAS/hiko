@@ -25,22 +25,25 @@ if ($is_supervisor) {
                         <div class="d-flex">
                             <div x-bind:class="{ 'd-block': opened }" @click.away="opened = false" class="dropdown-menu dropdown-menu-right">
                                 <?php if ($path === 'tgm') : ?>
-                                    <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_palladio_tgm' ?>">
+                                    <a class="dropdown-item" href="<?= admin_url('admin-ajax.php') . '?action=export_palladio_tgm' ?>">
                                         Palladio – vše
                                     </a>
-                                    <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_palladio_masaryk&format=csv&from=1' ?>">
+                                    <a class="dropdown-item" href="<?= admin_url('admin-ajax.php') . '?action=export_palladio_masaryk&format=csv&from=1' ?>">
                                         Palladio – dopisy od TGM
                                     </a>
-                                    <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_palladio_masaryk&format=csv&from=0' ?>">
+                                    <a class="dropdown-item" href="<?= admin_url('admin-ajax.php') . '?action=export_palladio_masaryk&format=csv&from=0' ?>">
                                         Palladio – dopisy pro TGM
                                     </a>
                                 <?php else : ?>
-                                    <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_palladio&format=csv&type=' . $path ?>">
+                                    <a class="dropdown-item" href="<?= admin_url('admin-ajax.php') . '?action=export_palladio&format=csv&type=' . $path ?>">
                                         Palladio – vše
                                     </a>
                                 <?php endif; ?>
-                                    <a class="dropdown-item" href=" <?= admin_url('admin-ajax.php') . '?action=export_letters&type=' . $path ?>">
+                                    <a class="dropdown-item" href="<?= admin_url('admin-ajax.php') . '?action=export_letters&type=' . $path ?>">
                                         Obecný export
+                                    </a>
+                                    <a class="dropdown-item" href="#" @click="exportLetters('<?= $path ?>')">
+                                        Export výběru
                                     </a>
                             </div>
                         </div>

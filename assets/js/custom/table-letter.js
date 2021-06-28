@@ -361,3 +361,26 @@ if (document.getElementById('datatable-letters')) {
             })
     }
 }
+
+window.exportLetters = function (type) {
+    if (!table) {
+        return
+    }
+
+    axios
+        .post(ajaxUrl + '?action=export_selected_letters', {
+            ids: table.getData('active').map((a) => a.ID),
+            type: type,
+        })
+        .then((response) => {
+            const url = window.URL.createObjectURL(new Blob([response.data]))
+            const link = document.createElement('a')
+            link.href = url
+            link.setAttribute('download', 'export-selected-' + type + '.csv')
+            document.body.appendChild(link)
+            link.click()
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+}
