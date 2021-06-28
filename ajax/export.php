@@ -228,7 +228,7 @@ function parse_letter_export_data($query_result)
         $copies = get_export_letter_copies_meta($row['copies']);
 
         $result[] = [
-            'ID' => $row['ID'],
+            'Id' => $row['ID'],
             'Date' => get_export_letter_date($row, false),
             'Date as marked' => $row['date_marked'],
             'Date uncertain' => (bool) $row['date_uncertain'],
