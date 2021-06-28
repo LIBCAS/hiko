@@ -375,7 +375,9 @@ window.exportLetters = function (type) {
         .then((response) => {
             const link = document.createElement('a')
             link.href = window.URL.createObjectURL(
-                new Blob([response.data], { type: 'text/csv;charset=utf-8;' })
+                new Blob(['\ufeff' + response.data], {
+                    type: 'text/csv;charset=utf-8;',
+                })
             )
             link.setAttribute('download', 'export-selected-' + type + '.csv')
             document.body.appendChild(link)
