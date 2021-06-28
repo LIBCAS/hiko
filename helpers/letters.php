@@ -427,6 +427,7 @@ add_action('wp_ajax_list_all_letters_short', function () {
             'origin' => $letter['origin'],
             'recipient' => $letter['recipient'],
             'signature' => implode('<br>', $signature),
+            'status' => $letter['status'],
             'timestamp' => get_timestamp($letter['date_day'], $letter['date_month'], $letter['date_year']),
         ];
     }
