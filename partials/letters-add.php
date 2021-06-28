@@ -21,6 +21,7 @@ $locations = list_locations(); ?>
     <a class="list-group-item list-group-item-action" href="#a-content">Content</a>
     <a class="list-group-item list-group-item-action" href="#a-related-resource">Related resource</a>
     <a class="list-group-item list-group-item-action" href="#a-copies">Manifestations and repositories</a>
+    <a class="list-group-item list-group-item-action" href="#a-description">Copyright</a>
     <a class="list-group-item list-group-item-action" href="#a-description">Description</a>
     <a class="list-group-item list-group-item-action" href="#a-status">Status</a>
 </div>
@@ -500,6 +501,13 @@ $locations = list_locations(); ?>
                         <span class="oi oi-plus"></span> Add letter copy
                     </button>
                     <input type="hidden" name="copies" x-bind:value="JSON.stringify(copies)">
+                </fieldset>
+                <fieldset id="a-copyright">
+                    <legend>Copyright</legend>
+                    <div class="form-group">
+                        <label for="copyright">Copyright</label>
+                        <textarea id="copyright" name="copyright" class="form-control form-control-sm"><?= input_value($letter, 'copyright') ?></textarea>
+                    </div>
                 </fieldset>
                 <fieldset id="a-description">
                     <legend>Description</legend>

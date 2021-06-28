@@ -268,6 +268,7 @@ function save_letter($letter_type, $action, $path)
     $data = test_postdata([
         'abstract' => 'abstract',
         'author_note' => 'author_note',
+        'copyright' => 'copyright',
         'date_day' => 'date_day',
         'date_marked' => 'date_marked',
         'date_month' => 'date_month',
@@ -426,6 +427,7 @@ add_action('wp_ajax_list_all_letters_short', function () {
             'origin' => $letter['origin'],
             'recipient' => $letter['recipient'],
             'signature' => implode('<br>', $signature),
+            'status' => $letter['status'],
             'timestamp' => get_timestamp($letter['date_day'], $letter['date_month'], $letter['date_year']),
         ];
     }
