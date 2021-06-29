@@ -346,7 +346,7 @@ if (empty($letter)) {
                             <?php endif; ?>
                             <?php if ($c['manifestation_notes']) : ?>
                                 <tr class="align-baseline">
-                                    <td class="py-2 w-25">Notes on nanifestation</td>
+                                    <td class="py-2 w-25">Notes on manifestation</td>
                                     <td class="py-2"><?= $c['manifestation_notes']; ?></td>
                                 </tr>
                             <?php endif; ?>

@@ -306,7 +306,7 @@ $letters = list_all_letters_meta($post_types); ?>
                         <?php endif; ?>
                         <?php if ($copy['manifestation_notes']) : ?>
                             <li>
-                                Notes on nanifestation: <?= $copy['manifestation_notes']; ?>
+                                Notes on manifestation: <?= $copy['manifestation_notes']; ?>
                             </li>
                         <?php endif; ?>
                     <?php endforeach; ?>
