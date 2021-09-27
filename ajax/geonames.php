@@ -5,7 +5,7 @@ add_action('wp_ajax_get_geocities_latlng', function () {
         wp_send_json_error('Not found', 404);
     }
 
-    $query = test_input($_GET['query']);
+    $query = urlencode(test_input($_GET['query']));
 
     $api_url = "https://secure.geonames.org/searchJSON?maxRows=10&username=jarka&q={$query}";
 
