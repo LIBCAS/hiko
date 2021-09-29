@@ -1,40 +1,24 @@
 {
-    "name": "hiko",
-    "version": "1.0.0",
     "private": true,
-    "author": "Jarka P",
-    "license": "MIT",
-    "devDependencies": {
-        "@babel/core": "^7.12.17",
-        "@babel/preset-env": "^7.12.17",
-        "@babel/register": "^7.12.13",
-        "beepbeep": "^1.3.0",
-        "browser-sync": "^2.26.14",
-        "del": "^5.1.0",
-        "eslint": "^5.16.0",
-        "eslint-plugin-vue": "^5.2.3",
-        "gulp": "^4.0.2",
-        "gulp-autoprefixer": "^6.1.0",
-        "gulp-babel": "^8.0.0",
-        "gulp-cache": "^1.1.3",
-        "gulp-concat": "^2.5.2",
-        "gulp-line-ending-corrector": "^1.0.1",
-        "gulp-notify": "^3.0.0",
-        "gulp-plumber": "^1.2.0",
-        "gulp-remember": "^1.0.1",
-        "gulp-rename": "^1.2.0",
-        "gulp-sass": "^4.1.0",
-        "gulp-sourcemaps": "^2.6.5",
-        "gulp-uglify": "^3.0.2",
-        "gulp-uglifycss": "^1.0.6"
-    },
     "scripts": {
-        "start": "gulp",
-        "styles": "gulp styles",
-        "customJS": "gulp customJS",
-        "clearCache": "gulp clearCache"
+        "dev": "npm run development",
+        "development": "mix",
+        "watch": "mix watch",
+        "watch-poll": "mix watch -- --watch-options-poll=1000",
+        "hot": "mix watch --hot",
+        "prod": "npm run production",
+        "production": "mix --production"
     },
-    "dependencies": {
-        "bootstrap": "4.3.1"
+    "devDependencies": {
+        "@tailwindcss/forms": "^0.2.1",
+        "@tailwindcss/typography": "^0.4.0",
+        "alpinejs": "^2.7.3",
+        "autoprefixer": "^10.1.0",
+        "axios": "^0.21",
+        "laravel-mix": "^6.0.6",
+        "lodash": "^4.17.19",
+        "postcss": "^8.2.1",
+        "postcss-import": "^12.0.1",
+        "tailwindcss": "^2.0.2"
     }
 }
