@@ -49,4 +49,9 @@ class User extends Authenticatable
 
         return in_array($ability, explode(',', $role->abilities));
     }
+
+    public function isDeactivated()
+    {
+        return is_null($this->deactivated_at) ? false : true;
+    }
 }
