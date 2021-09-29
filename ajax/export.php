@@ -61,7 +61,6 @@ function get_letter_export_data($type, $ids)
         'keywords.name AS keyword',
         'people_mentioned.name AS pm',
         't.name',
-        't.l_number',
         't.recipient_notes',
         't.languages',
         't.abstract',
@@ -72,7 +71,6 @@ function get_letter_export_data($type, $ids)
         't.notes_private',
         't.copyright',
         't.related_resources',
-        't.repository',
         't.status',
         't.author_note',
         't.origin_note',
@@ -80,9 +78,7 @@ function get_letter_export_data($type, $ids)
         't.copies',
         't.authors_meta',
         't.places_meta',
-        't.document_type',
         't.date_inferred',
-        't.manifestation_notes'
     ]);
 
     $where = empty($ids) ? '' : 'WHERE t.ID in (' . implode(',', $ids) . ')';
@@ -321,7 +317,12 @@ function get_export_letter_meta($ids, $names, $meta)
         $meta_row = array_values(array_filter($meta_row)); // reindex
         $meta_row = $meta_row[0];
 
-        $item = 'Name: ' . $names[$i] . ', marked as: ' . $meta_row['marked'];
+        $item = 'Name: ' . $names[$i];
+
+        if (isset($meta_row['marked']) && !empty($meta_row['marked'])) {
+            $item .= ', marked as: ' . $meta_row['marked'];
+        }
+
         if (isset($meta_row['salutation']) && !empty($meta_row['salutation'])) {
             $item .= ', salutation: ' . $meta_row['salutation'];
         }
