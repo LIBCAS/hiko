@@ -311,6 +311,17 @@ $letters = list_all_letters_meta($post_types); ?>
                         <?php endif; ?>
                     <?php endforeach; ?>
                 </ul>
+                <?php if ($letter['copyright']) : ?>
+                    <h3>
+                        Copyright
+                    </h3>
+                    <ul>
+                        <li>
+                            <?= $letter['copyright'] ?>
+
+                        </li>
+                    </ul>
+                <?php endif; ?>
                 <?php if ($letter['abstract']) : ?>
                     <h3>
                         Abstract

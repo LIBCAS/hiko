@@ -535,6 +535,7 @@ function list_all_letters_meta($post_types)
         't.authors_meta',
         't.places_meta',
         't.date_inferred',
+        't.copyright',
         'l_author.id AS a_id',
         'l_author.name AS a_name',
         't.author_inferred',
