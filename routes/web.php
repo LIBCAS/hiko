@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
 
 /*
@@ -19,5 +20,9 @@ Route::redirect('/', '/dashboard');
 Route::get('/dashboard', DashboardController::class)
     ->name('dashboard')
     ->middleware('auth');
+
+Route::get('/users', [UserController::class, 'index'])
+    ->name('users')
+    ->middleware(['auth', 'can:manage-users']);
 
 require __DIR__.'/auth.php';
