@@ -1,32 +1,18 @@
 <x-guest-layout>
-    <x-auth-card>
-
-
+    <x-auth-card title="{{ __('Zapomenuté heslo') }}">
         <div class="mb-4 text-sm text-gray-600">
-            {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+            {{ __('Zapomněli jste heslo? Zadejte svou e-mailovou adresu, na kterou vám přijde e-mail s odkazem na resetování hesla.') }}
         </div>
-
-        <!-- Session Status -->
         <x-auth-session-status class="mb-4" :status="session('status')" />
-
-        <!-- Validation Errors -->
         <x-auth-validation-errors class="mb-4" :errors="$errors" />
-
         <form method="POST" action="{{ route('password.email') }}">
             @csrf
-
-            <!-- Email Address -->
-            <div>
-                <x-label for="email" :value="__('Email')" />
-
-                <x-input id="email" class="block w-full mt-1" type="email" name="email" :value="old('email')" required autofocus />
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <x-button>
-                    {{ __('Email Password Reset Link') }}
-                </x-button>
-            </div>
+            <x-label for="email" :value="__('E-mail')" />
+            <x-input id="email" class="block w-full mt-1" type="email" name="email" :value="old('email')" required
+                autofocus />
+            <x-button-simple class="w-full mt-4">
+                {{ __('Odeslat žádost o změnu hesla') }}
+            </x-button-simple>
         </form>
     </x-auth-card>
 </x-guest-layout>
