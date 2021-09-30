@@ -25,4 +25,24 @@ Route::get('/users', [UserController::class, 'index'])
     ->name('users')
     ->middleware(['auth', 'can:manage-users']);
 
-require __DIR__.'/auth.php';
+Route::get('/users/create', [UserController::class, 'create'])
+    ->name('users.create')
+    ->middleware(['auth', 'can:manage-users']);
+
+Route::get('/users/{user}/edit', [UserController::class, 'edit'])
+    ->name('users.edit')
+    ->middleware(['auth', 'can:manage-users']);
+
+Route::post('/users', [UserController::class, 'store'])
+    ->name('users.store')
+    ->middleware(['auth', 'can:manage-users']);
+
+Route::put('/users/{user}', [UserController::class, 'update'])
+    ->name('users.update')
+    ->middleware(['auth', 'can:manage-users']);
+
+Route::delete('/users/{user}', [UserController::class, 'destroy'])
+    ->name('users.destroy')
+    ->middleware(['auth', 'can:manage-users']);
+
+require __DIR__ . '/auth.php';
