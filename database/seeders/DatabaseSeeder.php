@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Location;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -30,6 +31,21 @@ class DatabaseSeeder extends Seeder
             'name' => 'Zkušební Divák',
             'email' => 'guest@example.com',
             'role' => 'guest',
+        ]);
+
+        Location::factory()->create([
+            'name' => 'Národní Archiv',
+            'type' => 'archive',
+        ]);
+
+        Location::factory()->create([
+            'name' => 'Národní muzeum',
+            'type' => 'repository',
+        ]);
+
+        Location::factory()->create([
+            'name' => 'Handschriften',
+            'type' => 'collection',
         ]);
     }
 }

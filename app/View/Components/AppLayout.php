@@ -45,7 +45,7 @@ class AppLayout extends Component
                 'ability' => 'view-metadata',
             ],
             [
-                'route' => 'dashboard',
+                'route' => 'locations',
                 'name' => __('Uložení'),
                 'icon' => 'heroicon-o-archive',
                 'ability' => 'view-metadata',

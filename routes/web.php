@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\DashboardController;
 
 /*
@@ -21,6 +22,7 @@ Route::get('/dashboard', DashboardController::class)
     ->name('dashboard')
     ->middleware('auth');
 
+// users
 Route::get('/users', [UserController::class, 'index'])
     ->name('users')
     ->middleware(['auth', 'can:manage-users']);
@@ -44,5 +46,30 @@ Route::put('/users/{user}', [UserController::class, 'update'])
 Route::delete('/users/{user}', [UserController::class, 'destroy'])
     ->name('users.destroy')
     ->middleware(['auth', 'can:manage-users']);
+
+// locations
+Route::get('/locations', [LocationController::class, 'index'])
+    ->name('locations')
+    ->middleware(['auth', 'can:manage-metadata']);
+
+Route::get('/locations/create', [LocationController::class, 'create'])
+    ->name('locations.create')
+    ->middleware(['auth', 'can:manage-metadata']);
+
+Route::get('/locations/{location}/edit', [LocationController::class, 'edit'])
+    ->name('locations.edit')
+    ->middleware(['auth', 'can:manage-metadata']);
+
+Route::post('/locations', [LocationController::class, 'store'])
+    ->name('locations.store')
+    ->middleware(['auth', 'can:manage-metadata']);
+
+Route::put('/locations/{location}', [LocationController::class, 'update'])
+    ->name('locations.update')
+    ->middleware(['auth', 'can:manage-metadata']);
+
+Route::delete('/locations/{location}', [LocationController::class, 'destroy'])
+    ->name('locations.destroy')
+    ->middleware(['auth', 'can:manage-metadata']);
 
 require __DIR__ . '/auth.php';
