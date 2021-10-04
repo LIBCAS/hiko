@@ -45,13 +45,14 @@
             {{ $label }}
         </x-button-simple>
     </form>
-    <form action="{{ route('users.destroy', $user->id) }}" method="post" class="max-w-sm mt-8">
-        @csrf
-        @method('DELETE')
-        <x-button-danger class="w-full" x-data="" x-on:click="return confirm('Odstraní všechna data účtu! Pokračovat?')">
-            {{ __('Odstranit účet') }}
-        </x-button-danger>
-
-    </form>
-
+    @if ($user->id)
+        <form action="{{ route('users.destroy', $user->id) }}" method="post" class="max-w-sm mt-8">
+            @csrf
+            @method('DELETE')
+            <x-button-danger class="w-full" x-data=""
+                x-on:click="return confirm('Odstraní všechna data účtu! Pokračovat?')">
+                {{ __('Odstranit účet') }}
+            </x-button-danger>
+        </form>
+    @endif
 </x-app-layout>
