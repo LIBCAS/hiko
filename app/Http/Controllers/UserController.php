@@ -20,9 +20,6 @@ class UserController extends Controller
     {
         return view('pages.users.index', [
             'title' => __('Uživatelé'),
-            'users' => User::select('id', 'name', 'role', 'deactivated_at')
-                ->orderBy('name', 'asc')
-                ->get(),
         ]);
     }
 
