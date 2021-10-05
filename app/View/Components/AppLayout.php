@@ -39,7 +39,7 @@ class AppLayout extends Component
                 'ability' => 'view-metadata',
             ],
             [
-                'route' => 'dashboard',
+                'route' => 'professions',
                 'name' => __('Profese'),
                 'icon' => 'heroicon-o-academic-cap',
                 'ability' => 'view-metadata',
