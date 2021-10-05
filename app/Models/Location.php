@@ -9,5 +9,5 @@ class Location extends Model
 {
     use HasFactory;
 
-    protected $hidden = [];
+    protected $guarded = ['id'];
 }

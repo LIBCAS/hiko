@@ -7,70 +7,79 @@ use Illuminate\Http\Request;
 
 class LocationController extends Controller
 {
+    protected $rules = [
+        'name' => ['required', 'string', 'max:255'],
+        'type' => ['required', 'string'],
+    ];
+
     public function index()
     {
         return view('pages.locations.index', [
             'title' => __('Uložení'),
-            'labels' => [
-                'repository' => __('Instituce / repozitáře'),
-                'collection' => __('Sbírky / fondy'),
-                'archive' => __('Archivy'),
-            ],
+            'labels' => $this->getTypes(),
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        //
+        return view('pages.locations.form', [
+            'title' => __('Nové místo uložení'),
+            'location' => new Location(),
+            'action' => route('locations.store'),
+            'label' => __('Vytvořit'),
+            'types' => $this->getTypes(),
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate($this->rules);
+
+        $location = Location::create([
+            'name' => $validated['name'],
+            'type' => $validated['type'],
+        ]);
+
+        return redirect()->route('locations.edit', $location->id)->with('success', __('Místo uložení bylo vytvořeno.'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Location  $location
-     * @return \Illuminate\Http\Response
-     */
     public function edit(Location $location)
     {
-        //
+        return view('pages.locations.form', [
+            'title' => __('Místo uložení: ') . $location->name,
+            'location' => $location,
+            'action' => route('locations.update', $location),
+            'method' => 'PUT',
+            'label' => __('Upravit'),
+            'types' => $this->getTypes(),
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Location  $location
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, Location $location)
     {
-        //
+        $validated = $request->validate($this->rules);
+
+        $location->update([
+            'name' => $validated['name'],
+            'type' => $validated['type'],
+        ]);
+
+        return redirect()->route('locations.edit', $location->id)->with('success', __('Místo uložení bylo upravené.'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Location  $location
-     * @return \Illuminate\Http\Response
-     */
     public function destroy(Location $location)
     {
-        //
+        $location->delete();
+
+        return redirect()->route('locations')->with('success', 'Odstraněno');
+    }
+
+    protected function getTypes()
+    {
+        return [
+            'repository' => __('Instituce / repozitáře'),
+            'collection' => __('Sbírky / fondy'),
+            'archive' => __('Archivy'),
+        ];
     }
 }
