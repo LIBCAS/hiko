@@ -11,9 +11,11 @@ class LocationController extends Controller
     {
         return view('pages.locations.index', [
             'title' => __('Uložení'),
-            'locations' => Location::select('id', 'name', 'type')
-                ->orderBy('name', 'asc')
-                ->get(),
+            'labels' => [
+                'repository' => __('Instituce / repozitáře'),
+                'collection' => __('Sbírky / fondy'),
+                'archive' => __('Archivy'),
+            ],
         ]);
     }
 
