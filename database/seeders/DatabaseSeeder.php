@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Location;
+use App\Models\Profession;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -46,6 +47,20 @@ class DatabaseSeeder extends Seeder
         Location::factory()->create([
             'name' => 'Handschriften',
             'type' => 'collection',
+        ]);
+
+        Profession::factory()->create([
+            'name' => [
+                'cs' => 'umělec',
+                'en' => 'artist',
+            ]
+        ]);
+
+        Profession::factory()->create([
+            'name' => [
+                'cs' => 'knihovník',
+                'en' => 'librarian',
+            ]
         ]);
     }
 }
