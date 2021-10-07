@@ -13,12 +13,27 @@ class ProfessionsTable extends LivewireDatatable
     public function columns()
     {
         return [
-            Column::name('name->en')
+            Column::callback(['id'], function ($id) {
+                return "<a href='" . route('professions.edit', $id) . "' class='font-semibold text-primary'>" . __('Upravit') . "</a>";
+            }),
+
+            Column::callback(['name->en'], function ($name) {
+                if (empty($name) || $name === 'null') {
+                    return '';
+                }
+                return $name;
+            })
                 ->defaultSort('asc')
                 ->filterable()
                 ->filterOn("JSON_EXTRACT(name, '$.en')")
                 ->label('en'),
-            Column::name('name->cs')
+
+            Column::callback(['name->cs'], function ($name) {
+                if (empty($name) || $name === 'null') {
+                    return '';
+                }
+                return $name;
+            })
                 ->filterable()
                 ->filterOn("JSON_EXTRACT(name, '$.cs')")
                 ->label('cs'),
