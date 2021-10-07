@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class ProfessionController extends Controller
 {
+    protected $rules = [
+        'cs' => ['max:255', 'required_without:en'],
+        'en' => ['max:255', 'required_without:cs'],
+    ];
+
     public function index()
     {
         return view('pages.professions.index', [
@@ -14,58 +19,59 @@ class ProfessionController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        //
+        return view('pages.professions.form', [
+            'title' => __('Nová profese'),
+            'profession' => new Profession(),
+            'action' => route('professions.store'),
+            'label' => __('Vytvořit'),
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate($this->rules);
+
+        $profession = Profession::create([
+            'name' => [
+                'cs' => $validated['cs'],
+                'en' => $validated['en'],
+            ],
+        ]);
+
+        return redirect()->route('professions.edit', $profession->id)->with('success', __('Uloženo.'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Profession  $profession
-     * @return \Illuminate\Http\Response
-     */
     public function edit(Profession $profession)
     {
-        //
+        return view('pages.professions.form', [
+            'title' => __('Profese: '),
+            'profession' => $profession,
+            'method' => 'PUT',
+            'action' => route('professions.update', $profession),
+            'label' => __('Upravit'),
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Profession  $profession
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, Profession $profession)
     {
-        //
+        $validated = $request->validate($this->rules);
+
+        $profession->update([
+            'name' => [
+                'cs' => $validated['cs'],
+                'en' => $validated['en'],
+            ],
+        ]);
+
+        return redirect()->route('professions.edit', $profession->id)->with('success', __('Uloženo.'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Profession  $profession
-     * @return \Illuminate\Http\Response
-     */
     public function destroy(Profession $profession)
     {
-        //
+        $profession->delete();
+
+        return redirect()->route('professions')->with('success', __('Odstraněno'));
     }
 }

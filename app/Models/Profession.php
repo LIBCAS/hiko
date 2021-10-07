@@ -12,4 +12,6 @@ class Profession extends Model
     use HasFactory;
 
     public $translatable = ['name'];
+
+    protected $guarded = ['id'];
 }
