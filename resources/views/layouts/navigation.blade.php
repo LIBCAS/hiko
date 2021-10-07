@@ -50,7 +50,7 @@
         @foreach ($menuItems as $item)
             @can($item['ability'])
                 <a href="{{ route($item['route']) }}"
-                class="inline-flex items-center text-sm border-b-2 focus:border-primary-dark hover:border-primary pb-1 px-1 @if (request()->routeIs($item['route'])) border-primary-light @else
+                class="inline-flex items-center text-sm border-b-2 focus:border-primary-dark hover:border-primary pb-1 px-1 @if ($item['active']) border-primary-light @else
                     border-transparent @endif">
                     <x-dynamic-component :component="$item['icon']" class="w-4 h-4 mr-2" />
                     <span>
@@ -64,7 +64,7 @@
         <div class="pt-2 pb-3 space-y-1">
             @foreach ($menuItems as $item)
                 <a href="{{ route($item['route']) }}"
-                    class="block py-2 pl-3 pr-4 border-l-4  hover:bg-primary hover:bg-opacity-10 @if (request()->routeIs($item['route'])) border-primary-light bg-primary bg-opacity-5
+                    class="block py-2 pl-3 pr-4 border-l-4  hover:bg-primary hover:bg-opacity-10 @if ($item['active']) border-primary-light bg-primary bg-opacity-5
                 @else border-transparent @endif">
                     {{ $item['name'] }}
                 </a>
