@@ -15,10 +15,13 @@ class ProfessionsTable extends LivewireDatatable
         // TODO: syntax error in mysql
         return [
             Column::name('name->en')
+                ->defaultSort('asc')
                 ->filterable()
+                ->filterOn("JSON_EXTRACT(name, '$.en')")
                 ->label('en'),
             Column::name('name->cs')
                 ->filterable()
+                ->filterOn("JSON_EXTRACT(name, '$.cs')")
                 ->label('cs'),
         ];
     }
