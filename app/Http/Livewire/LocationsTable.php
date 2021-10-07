@@ -26,10 +26,9 @@ class LocationsTable extends LivewireDatatable
                 ->filterable('name'),
 
             Column::callback(['type'], function ($type) {
-
                 return $this->labels[$type];
             })
-                ->label(__('Role'))
+                ->label(__('Typ'))
                 ->filterable(array_values($labels)),
         ];
     }
