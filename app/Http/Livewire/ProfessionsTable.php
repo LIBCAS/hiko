@@ -12,7 +12,6 @@ class ProfessionsTable extends LivewireDatatable
 
     public function columns()
     {
-        // TODO: syntax error in mysql
         return [
             Column::name('name->en')
                 ->defaultSort('asc')
