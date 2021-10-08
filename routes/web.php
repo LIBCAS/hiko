@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\KeywordCategoryController;
 use App\Http\Controllers\ProfessionCategoryController;
+use App\Http\Controllers\Ajax\KeywordCategoryController as AjaxKeywordCategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -179,6 +180,13 @@ Route::prefix('keywords/category')->group(function () {
 
     Route::delete('/{keywordCategory}', [KeywordCategoryController::class, 'destroy'])
         ->name('keywords.category.destroy')
+        ->middleware(['auth', 'can:manage-metadata']);
+});
+
+
+Route::prefix('ajax')->group(function () {
+    Route::get('/keyword-category', AjaxKeywordCategoryController::class)
+        ->name('ajax.keywords.category')
         ->middleware(['auth', 'can:manage-metadata']);
 });
 
