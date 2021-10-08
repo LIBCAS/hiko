@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 class CreateKeywordsTable extends Migration
 {
@@ -17,6 +17,7 @@ class CreateKeywordsTable extends Migration
             $table->id();
             $table->timestamps();
             $table->json('name');
+            $table->foreignId('keyword_category_id')->nullable()->constrained();
         });
     }
 

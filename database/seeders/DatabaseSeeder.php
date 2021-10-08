@@ -73,39 +73,48 @@ class DatabaseSeeder extends Seeder
             ]
         ]);
 
-        Keyword::factory()->create([
-            'name' => [
-                'cs' => 'antropologie',
-                'en' => 'anthropology',
-            ]
-        ]);
-
-        KeywordCategory::factory()->create([
+        $category_one = KeywordCategory::factory()->create([
             'name' => [
                 'cs' => 'ideologie',
                 'en' => 'ideology',
             ]
         ]);
 
-        KeywordCategory::factory()->create([
+        $category_two = KeywordCategory::factory()->create([
             'name' => [
                 'cs' => 'věda a umění',
                 'en' => 'sciences and arts',
             ]
         ]);
 
-        Keyword::factory()->create([
+        $keyword = Keyword::factory()->create([
             'name' => [
                 'cs' => 'estetika',
                 'en' => 'aesthetics',
-            ]
+            ],
         ]);
 
-        Keyword::factory()->create([
+        $keyword->keyword_category()->associate($category_two);
+        $keyword->save();
+
+        $keyword = Keyword::factory()->create([
             'name' => [
                 'cs' => 'humanismus',
                 'en' => 'humanism',
-            ]
+            ],
         ]);
+
+        $keyword->keyword_category()->associate($category_one);
+        $keyword->save();
+
+        $keyword = Keyword::factory()->create([
+            'name' => [
+                'cs' => 'antropologie',
+                'en' => 'anthropology',
+            ],
+        ]);
+
+        $keyword->keyword_category()->associate($category_two);
+        $keyword->save();
     }
 }
