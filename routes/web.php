@@ -5,6 +5,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfessionController;
+use App\Http\Controllers\ProfessionCategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -98,6 +99,32 @@ Route::prefix('professions')->group(function () {
 
     Route::delete('/{profession}', [ProfessionController::class, 'destroy'])
         ->name('professions.destroy')
+        ->middleware(['auth', 'can:manage-metadata']);
+});
+
+Route::prefix('professions/category')->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('professions');
+    });
+
+    Route::get('/create', [ProfessionCategoryController::class, 'create'])
+        ->name('professions.category.create')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/{professionCategory}/edit', [ProfessionCategoryController::class, 'edit'])
+        ->name('professions.category.edit')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::post('/', [ProfessionCategoryController::class, 'store'])
+        ->name('professions.category.store')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::put('/{professionCategory}', [ProfessionCategoryController::class, 'update'])
+        ->name('professions.category.update')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::delete('/{professionCategory}', [ProfessionCategoryController::class, 'destroy'])
+        ->name('professions.category.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
 });
 

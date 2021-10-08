@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Location;
 use App\Models\Profession;
+use App\Models\ProfessionCategory;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -60,6 +61,13 @@ class DatabaseSeeder extends Seeder
             'name' => [
                 'cs' => 'knihovník',
                 'en' => 'librarian',
+            ]
+        ]);
+
+        ProfessionCategory::factory()->create([
+            'name' => [
+                'cs' => 'humanitní vědy',
+                'en' => 'humanities ',
             ]
         ]);
     }
