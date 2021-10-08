@@ -28,7 +28,7 @@ trait MenuTrait
                 'ability' => 'view-metadata',
             ],
             [
-                'route' => 'dashboard',
+                'route' => 'keywords',
                 'name' => __('Klíčová slova'),
                 'icon' => 'heroicon-o-annotation',
                 'ability' => 'view-metadata',

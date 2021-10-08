@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\KeywordController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfessionController;
@@ -125,6 +126,32 @@ Route::prefix('professions/category')->group(function () {
 
     Route::delete('/{professionCategory}', [ProfessionCategoryController::class, 'destroy'])
         ->name('professions.category.destroy')
+        ->middleware(['auth', 'can:manage-metadata']);
+});
+
+Route::prefix('keywords')->group(function () {
+    Route::get('/', [KeywordController::class, 'index'])
+        ->name('keywords')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/create', [KeywordController::class, 'create'])
+        ->name('keywords.create')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/{keyword}/edit', [KeywordController::class, 'edit'])
+        ->name('keywords.edit')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::post('/', [KeywordController::class, 'store'])
+        ->name('keywords.store')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::put('/{keyword}', [KeywordController::class, 'update'])
+        ->name('keywords.update')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::delete('/{keyword}', [KeywordController::class, 'destroy'])
+        ->name('keywords.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
 });
 

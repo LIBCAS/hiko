@@ -2,11 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
+use App\Models\Keyword;
 use App\Models\Location;
 use App\Models\Profession;
-use App\Models\ProfessionCategory;
-use App\Models\User;
 use Illuminate\Database\Seeder;
+use App\Models\ProfessionCategory;
 
 class DatabaseSeeder extends Seeder
 {
@@ -68,6 +69,27 @@ class DatabaseSeeder extends Seeder
             'name' => [
                 'cs' => 'humanitní vědy',
                 'en' => 'humanities ',
+            ]
+        ]);
+
+        Keyword::factory()->create([
+            'name' => [
+                'cs' => 'antropologie',
+                'en' => 'anthropology',
+            ]
+        ]);
+
+        Keyword::factory()->create([
+            'name' => [
+                'cs' => 'estetika',
+                'en' => 'aesthetics',
+            ]
+        ]);
+
+        Keyword::factory()->create([
+            'name' => [
+                'cs' => 'humanismus',
+                'en' => 'humanism',
             ]
         ]);
     }
