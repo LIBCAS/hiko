@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Keyword;
 use App\Models\Location;
 use App\Models\Profession;
+use App\Models\KeywordCategory;
 use Illuminate\Database\Seeder;
 use App\Models\ProfessionCategory;
 
@@ -76,6 +77,20 @@ class DatabaseSeeder extends Seeder
             'name' => [
                 'cs' => 'antropologie',
                 'en' => 'anthropology',
+            ]
+        ]);
+
+        KeywordCategory::factory()->create([
+            'name' => [
+                'cs' => 'ideologie',
+                'en' => 'ideology',
+            ]
+        ]);
+
+        KeywordCategory::factory()->create([
+            'name' => [
+                'cs' => 'věda a umění',
+                'en' => 'sciences and arts',
             ]
         ]);
 

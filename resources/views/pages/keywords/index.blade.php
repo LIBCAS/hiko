@@ -4,4 +4,9 @@
         + {{ __('Nové klíčové slovo') }}
     </a>
     <livewire:keywords-table />
+    <a href="{{ route('keywords.category.create') }}"
+        class="block max-w-sm px-2 py-1 mt-16 font-bold text-primary hover:underline">
+        + {{ __('Nová kategorie klíčových slov') }}
+    </a>
+    <livewire:keywords-categories-table />
 </x-app-layout>
