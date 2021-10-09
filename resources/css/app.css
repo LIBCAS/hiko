@@ -20,5 +20,5 @@ html {
 }
 
 .ts-control {
-    @apply h-1;
+    @apply h-10;
 }

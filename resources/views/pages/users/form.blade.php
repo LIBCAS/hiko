@@ -1,6 +1,6 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
+    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
@@ -41,7 +41,7 @@
             <x-checkbox name="deactivated_at" label="{{ __('Aktivní uživatel') }}"
                 :checked="old('deactivated_at') == 'on' || $active" />
         @endif
-        <x-button-simple class="w-full">
+        <x-button-simple type="button" @click="form.submit()" class="w-full">
             {{ $label }}
         </x-button-simple>
     </form>

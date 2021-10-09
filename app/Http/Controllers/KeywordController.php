@@ -11,7 +11,7 @@ class KeywordController extends Controller
     protected $rules = [
         'cs' => ['max:255', 'required_without:en'],
         'en' => ['max:255', 'required_without:cs'],
-        'category'  => ['nullable', 'exists:keyword_categories,id'],
+        'category' => ['nullable', 'exists:keyword_categories,id'],
     ];
 
     public function index()
