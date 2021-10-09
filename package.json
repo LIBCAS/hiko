@@ -19,6 +19,6 @@
         "tailwindcss": "^2.0.2"
     },
     "dependencies": {
-        "@yaireo/tagify": "^4.8.1"
+        "tom-select": "^2.0.0-rc.4"
     }
 }

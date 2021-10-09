@@ -1,3 +1,4 @@
+@import './../../node_modules/tom-select/dist/css/tom-select.default.min.css';
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
@@ -12,4 +13,12 @@ html {
 
 :focus {
     @apply outline-primary;
+}
+
+.ts-wrapper {
+    @apply px-0 !important;
+}
+
+.ts-control {
+    @apply h-1;
 }

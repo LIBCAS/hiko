@@ -19,6 +19,7 @@ class KeywordCategoryController extends Controller
         $categories = KeywordCategory::whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ["%$search%"])
             ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ["%$search%"])
             ->select('id', 'name')
+            ->take(15)
             ->get();
 
         return $categories->map(function ($category) {

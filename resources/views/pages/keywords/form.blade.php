@@ -21,6 +21,19 @@
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
+        <div>
+            <x-label for="category" :value="__('Kategorie')" />
+            <x-select name="category" id="category" class="block w-full mt-1"
+                x-data="ajaxSelect({url: '{{ route('ajax.keywords.category') }}', element: $el })"
+                x-init="initSelect()">
+                @if (isset($category) && $category)
+                    <option value="{{ $category['id'] }}">{{ $category['name'] }}</option>
+                @endif
+            </x-select>
+            @error('category')
+                <div class="text-red-600">{{ $message }}</div>
+            @enderror
+        </div>
         <x-button-simple class="w-full">
             {{ $label }}
         </x-button-simple>

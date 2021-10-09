@@ -37,6 +37,15 @@ class KeywordsTable extends LivewireDatatable
                 ->filterable()
                 ->filterOn("JSON_EXTRACT(name, '$.cs')")
                 ->label('cs'),
+
+            Column::callback(['keyword_category.name'], function ($keyword_category) {
+                if (empty($keyword_category)) {
+                    return '';
+                }
+                return implode(' | ', array_values(json_decode($keyword_category, true)));
+            })
+                ->filterable()
+                ->label(__('Kategorie')),
         ];
     }
 }

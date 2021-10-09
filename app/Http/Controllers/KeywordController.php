@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Keyword;
+use App\Models\KeywordCategory;
 use Illuminate\Http\Request;
 
 class KeywordController extends Controller
@@ -10,6 +11,7 @@ class KeywordController extends Controller
     protected $rules = [
         'cs' => ['max:255', 'required_without:en'],
         'en' => ['max:255', 'required_without:cs'],
+        'category'  => ['nullable', 'exists:keyword_categories,id'],
     ];
 
     public function index()
@@ -21,11 +23,14 @@ class KeywordController extends Controller
 
     public function create()
     {
+        $keyword = new Keyword();
+
         return view('pages.keywords.form', [
             'title' => __('Nové klíčové slovo'),
-            'keyword' => new Keyword(),
+            'keyword' => $keyword,
             'action' => route('keywords.store'),
             'label' => __('Vytvořit'),
+            'category' => $this->getCategory($keyword),
         ]);
     }
 
@@ -40,6 +45,10 @@ class KeywordController extends Controller
             ],
         ]);
 
+        $keyword->keyword_category()->associate($validated['category']);
+
+        $keyword->save();
+
         return redirect()->route('keywords.edit', $keyword->id)->with('success', __('Uloženo.'));
     }
 
@@ -51,6 +60,7 @@ class KeywordController extends Controller
             'method' => 'PUT',
             'action' => route('keywords.update', $keyword),
             'label' => __('Upravit'),
+            'category' => $this->getCategory($keyword),
         ]);
     }
 
@@ -65,6 +75,10 @@ class KeywordController extends Controller
             ],
         ]);
 
+        $keyword->keyword_category()->associate($validated['category']);
+
+        $keyword->save();
+
         return redirect()->route('keywords.edit', $keyword->id)->with('success', __('Uloženo.'));
     }
 
@@ -73,5 +87,27 @@ class KeywordController extends Controller
         $keyword->delete();
 
         return redirect()->route('keywords')->with('success', __('Odstraněno'));
+    }
+
+    protected function getCategory(Keyword $keyword)
+    {
+        $category = null;
+
+        if ($keyword && $keyword->keyword_category) {
+            $category = [
+                'id' => $keyword->keyword_category->id,
+                'name' => implode(' | ', array_values($keyword->keyword_category->getTranslations('name'))),
+            ];
+        }
+
+        if (request()->old('category')) {
+            $category = KeywordCategory::where('id', '=', request()->old('category'))->get()[0];
+            $category = [
+                'id' => request()->old('category'),
+                'name' => implode(' | ', array_values($category->getTranslations('name'))),
+            ];
+        }
+
+        return $category;
     }
 }
