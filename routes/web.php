@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\KeywordController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\DashboardController;
@@ -183,6 +184,31 @@ Route::prefix('keywords/category')->group(function () {
         ->middleware(['auth', 'can:manage-metadata']);
 });
 
+Route::prefix('places')->group(function () {
+    Route::get('/', [PlaceController::class, 'index'])
+        ->name('places')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/create', [PlaceController::class, 'create'])
+        ->name('places.create')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/{place}/edit', [PlaceController::class, 'edit'])
+        ->name('places.edit')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::post('/', [PlaceController::class, 'store'])
+        ->name('places.store')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::put('/{place}', [PlaceController::class, 'update'])
+        ->name('places.update')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::delete('/{place}', [PlaceController::class, 'destroy'])
+        ->name('places.destroy')
+        ->middleware(['auth', 'can:manage-metadata']);
+});
 
 Route::prefix('ajax')->group(function () {
     Route::get('/keyword-category', AjaxKeywordCategoryController::class)

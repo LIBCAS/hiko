@@ -22,7 +22,7 @@ trait MenuTrait
                 'ability' => 'view-metadata',
             ],
             [
-                'route' => 'dashboard',
+                'route' => 'places',
                 'name' => __('Místa'),
                 'icon' => 'heroicon-o-location-marker',
                 'ability' => 'view-metadata',

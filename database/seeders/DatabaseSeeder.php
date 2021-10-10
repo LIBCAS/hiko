@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Place;
 use App\Models\Keyword;
 use App\Models\Location;
 use App\Models\Profession;
@@ -116,5 +117,22 @@ class DatabaseSeeder extends Seeder
 
         $keyword->keyword_category()->associate($category_two);
         $keyword->save();
+
+        Place::factory()->create([
+            'name' => 'Prague',
+            'country' => 'Czech Republic',
+            'longitude' => 14.42076,
+            'latitude' => 50.08804,
+            'geoname_id' => 3067696,
+        ]);
+
+        Place::factory()->create([
+            'name' => 'Tartu',
+            'country' => 'Estonia',
+            'longitude' => 26.716666666667,
+            'latitude' => 58.383333333333,
+            'geoname_id' => 588335,
+            'note' => 'on this time the Russian Empire; historical name Dorpat or Děrpt'
+        ]);
     }
 }
