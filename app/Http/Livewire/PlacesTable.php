@@ -12,6 +12,27 @@ class PlacesTable extends LivewireDatatable
 
     public function columns()
     {
-        //
+        return [
+            Column::callback(['name', 'id'], function ($name, $id) {
+                return "<a href='" . route('places.edit', $id) . "' class='font-semibold text-primary'>$name</a>";
+            })
+                ->defaultSort('asc')
+                ->label(__('Jméno'))
+                ->filterable('name'),
+
+            Column::name('country')
+                ->label(__('Země'))
+                ->filterable(),
+
+            Column::callback(['longitude', 'latitude'], function ($longitude, $latitude) {
+                if (empty($longitude) || empty($latitude)) {
+                    return '';
+                }
+
+                $url = "https://www.openstreetmap.org/?mlat=$latitude&mlon=$longitude&zoom=12";
+                return "<a href='$url' target='_blank' class=''>$latitude,$longitude &#10697;</a>";
+            })
+                ->label(__('Souřadnice')),
+        ];
     }
 }
