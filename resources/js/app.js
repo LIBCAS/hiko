@@ -5,3 +5,4 @@ window.Alpine = Alpine
 Alpine.start()
 
 import './src/ajax-select'
+import './src/select'

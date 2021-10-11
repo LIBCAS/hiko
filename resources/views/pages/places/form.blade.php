@@ -1,6 +1,7 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
+    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3"
+        autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
@@ -10,6 +11,57 @@
             <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $place->name)"
                 required />
             @error('name')
+                <div class="text-red-600">{{ $message }}</div>
+            @enderror
+        </div>
+        <div>
+            <x-label for="country" :value="__('Země')" />
+            <x-select x-data="select({element: $el })" x-init="initSelect()" id="country" class="block w-full mt-1"
+                name="country" required>
+                @foreach ($countries as $country)
+                    <option value="{{ $country->name }}"
+                        {{ old('country', $place->country) == $country->name ? 'selected' : '' }}>
+                        {{ $country->name }}
+                    </option>
+                @endforeach
+            </x-select>
+        </div>
+        <div>
+            <x-label for="note" :value="__('Poznámka')" />
+            <x-textarea name="note" id="note" class="block w-full mt-1">{{ old('note', $place->note) }}</x-textarea>
+            @error('note')
+                <div class="text-red-600">{{ $message }}</div>
+            @enderror
+        </div>
+        <div>
+            <x-label for="latitude" :value="__('Zeměpisná šířka')" />
+            <x-input id="latitude" class="block w-full mt-1" type="text" name="latitude"
+                :value="old('name', $place->latitude)" />
+            @error('latitude')
+                <div class="text-red-600">{{ $message }}</div>
+            @enderror
+        </div>
+        <div>
+            <x-label for="longitude" :value="__('Zeměpisná délka')" />
+            <x-input id="longitude" class="block w-full mt-1" type="text" name="longitude"
+                :value="old('name', $place->longitude)" />
+            @error('longitude')
+                <div class="text-red-600">{{ $message }}</div>
+            @enderror
+        </div>
+        <div>
+            <x-label for="geoname_id" :value="__('Geoname ID')" />
+            <x-input id="geoname_id" class="block w-full mt-1" type="text" name="geoname_id"
+                :value="old('name', $place->geoname_id)" />
+            @error('geoname_id')
+                <div class="text-red-600">{{ $message }}</div>
+            @enderror
+        </div>
+        <div>
+            <x-label for="geoname_id" :value="__('Geoname ID')" />
+            <x-input id="geoname_id" class="block w-full mt-1" type="text" name="geoname_id"
+                :value="old('name', $place->geoname_id)" />
+            @error('geoname_id')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>

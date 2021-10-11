@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Place;
+use App\Models\Country;
 use Illuminate\Http\Request;
 
 class PlaceController extends Controller
@@ -16,6 +17,13 @@ class PlaceController extends Controller
 
     public function create()
     {
+        return view('pages.places.form', [
+            'title' => __('Nové místo'),
+            'place' => new Place(),
+            'action' => route('places.store'),
+            'label' => __('Vytvořit'),
+            'countries' => Country::all(),
+        ]);
     }
 
     public function store(Request $request)
