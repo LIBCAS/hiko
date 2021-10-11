@@ -22,7 +22,10 @@ class ProfessionCategoryFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'name' => [
+                'cs' => $this->faker->word(),
+                'en' => $this->faker->word(),
+            ],
         ];
     }
 }

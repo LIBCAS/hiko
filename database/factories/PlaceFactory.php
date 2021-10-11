@@ -22,7 +22,10 @@ class PlaceFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'name' => $this->faker->city(),
+            'country' => $this->faker->country(),
+            'longitude' => $this->faker->longitude(),
+            'latitude' => $this->faker->latitude(),
         ];
     }
 }
