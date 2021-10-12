@@ -18,8 +18,8 @@ class GeonamesController extends Controller
         // TODO: handle errors
         $result = json_decode(file_get_contents($url));
 
-        if ($result->totalResultsCount < 1) {
-            return response()->json(['message' => __('Nenalezeno')], 404);
+        if ($result->totalResultsCount === 1) {
+            return response()->json('', 404);
         }
 
         return collect($result->geonames)->map(function ($place) {
@@ -29,6 +29,7 @@ class GeonamesController extends Controller
                 'latitude' => $place->lat,
                 'longitude' => $place->lng,
                 'name' => $place->name,
+                'id' => $place->geonameId,
             ];
         });
     }

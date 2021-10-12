@@ -12,8 +12,9 @@
                     <ul>
                         @foreach ($searchResults as $city)
                             <li class="border border-primary-dark">
-                                <button type="button" class="w-full p-2 text-left">
-                                    {{ $city }}
+                                <button type="button" class="w-full p-2 text-left"
+                                    wire:click="selectCity({{ $city->id }}, {{ $city->latitude }}, {{ $city->longitude }})">
+                                    {{ $city->name }} ({{ $city->country }})
                                 </button>
                             </li>
                         @endforeach
@@ -24,4 +25,13 @@
             </div>
         @endif
     </div>
+    @push('scripts')
+        <script>
+            Livewire.on('citySelected', data => {
+                document.getElementById('latitude').value = data.latitude;
+                document.getElementById('longitude').value = data.longitude;
+                document.getElementById('geoname_id').value = data.id;
+            })
+        </script>
+    @endpush
 </div>

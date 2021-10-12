@@ -7,7 +7,6 @@ use App\Http\Controllers\KeywordController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfessionController;
-use App\Http\Controllers\Ajax\GeonamesController;
 use App\Http\Controllers\KeywordCategoryController;
 use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\Ajax\KeywordCategoryController as AjaxKeywordCategoryController;
@@ -214,10 +213,6 @@ Route::prefix('places')->group(function () {
 Route::prefix('ajax')->group(function () {
     Route::get('/keyword-category', AjaxKeywordCategoryController::class)
         ->name('ajax.keywords.category')
-        ->middleware(['auth', 'can:manage-metadata']);
-
-    Route::get('/geonames', GeonamesController::class)
-        ->name('ajax.geonames')
         ->middleware(['auth', 'can:manage-metadata']);
 });
 
