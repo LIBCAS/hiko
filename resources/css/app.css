@@ -22,3 +22,9 @@ html {
 .ts-control {
     @apply h-10;
 }
+
+.required label::after {
+    content: " *";
+
+    @apply text-red-700;
+}

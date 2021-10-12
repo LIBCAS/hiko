@@ -6,7 +6,7 @@
         @isset($method)
             @method($method)
         @endisset
-        <div>
+        <div class="required">
             <x-label for="name" :value="__('Jméno')" />
             <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $place->name)"
                 required />
@@ -14,7 +14,7 @@
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
-        <div>
+        <div class="required">
             <x-label for="country" :value="__('Země')" />
             <x-select x-data="select({element: $el })" x-init="initSelect()" id="country" class="block w-full mt-1"
                 name="country" required>

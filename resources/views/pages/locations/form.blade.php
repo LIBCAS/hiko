@@ -5,7 +5,7 @@
         @isset($method)
             @method($method)
         @endisset
-        <div>
+        <div class="required">
             <x-label for="name" :value="__('Jméno')" />
             <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $location->name)"
                 required />
@@ -13,7 +13,7 @@
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
-        <div>
+        <div class="required">
             <x-label for="type" :value="__('Typ')" />
             <x-select id="type" class="block w-full mt-1" name="type" required>
                 @foreach ($types as $key => $type)
