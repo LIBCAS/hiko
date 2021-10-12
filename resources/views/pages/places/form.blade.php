@@ -25,6 +25,9 @@
                     </option>
                 @endforeach
             </x-select>
+            @error('country')
+            <div class="text-red-600">{{ $message }}</div>
+        @enderror
         </div>
         <div>
             <x-label for="note" :value="__('Poznámka')" />
@@ -34,7 +37,8 @@
             @enderror
         </div>
         <div x-data="{ open: false }" class="p-2 border rounded-md border-primary-light">
-            <button type="button" @click="open = !open" class="inline-flex items-center font-semibold text-primary hover:underline">
+            <button type="button" @click="open = !open"
+                class="inline-flex items-center font-semibold text-primary hover:underline">
                 <x-heroicon-o-location-marker class="h-5 mr-2" /> <span>{{ __('Vyhledat souřadnice') }}</span>
             </button>
             <span x-show="open" x-transition.duration.500ms>
@@ -44,7 +48,7 @@
         <div>
             <x-label for="latitude" :value="__('Zeměpisná šířka')" />
             <x-input id="latitude" class="block w-full mt-1" type="text" name="latitude"
-                :value="old('name', $place->latitude)" />
+                :value="old('latitude', $place->latitude)" />
             @error('latitude')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
@@ -52,7 +56,7 @@
         <div>
             <x-label for="longitude" :value="__('Zeměpisná délka')" />
             <x-input id="longitude" class="block w-full mt-1" type="text" name="longitude"
-                :value="old('name', $place->longitude)" />
+                :value="old('longitude', $place->longitude)" />
             @error('longitude')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
@@ -60,7 +64,7 @@
         <div>
             <x-label for="geoname_id" :value="__('Geoname ID')" />
             <x-input id="geoname_id" class="block w-full mt-1" type="text" name="geoname_id"
-                :value="old('name', $place->geoname_id)" />
+                :value="old('geoname_id', $place->geoname_id)" />
             @error('geoname_id')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror

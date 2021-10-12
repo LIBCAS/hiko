@@ -19,8 +19,8 @@ class CreatePlacesTable extends Migration
             $table->string('name');
             $table->string('country')->nullable();
             $table->text('note')->nullable();
-            $table->decimal('latitude', 11, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
+            $table->double('latitude')->nullable();
+            $table->double('longitude')->nullable();
             $table->integer('geoname_id')->nullable();
         });
     }
