@@ -1,6 +1,7 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
+    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3"
+        autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
@@ -25,14 +26,22 @@
             {{ $label }}
         </x-button-simple>
     </form>
+
     @if ($keywordCategory->id)
-        <form action="{{ route('keywords.category.destroy', $keywordCategory->id) }}" method="post" class="max-w-sm mt-8">
-            @csrf
-            @method('DELETE')
-            <x-button-danger class="w-full" x-data=""
-                x-on:click="return confirm('Odstraní klíčové slovo! Pokračovat?')">
-                {{ __('Odstranit klíčové slovo') }}
-            </x-button-danger>
-        </form>
+        @if ($keywordCategory->keywords->count() > 0)
+            <p class="mt-6 text-sm">
+                {{ __('Počet závislých klíčových slov:') }} {{ $keywordCategory->keywords->count() }}
+            </p>
+        @else
+            <form action="{{ route('keywords.category.destroy', $keywordCategory->id) }}" method="post"
+                class="max-w-sm mt-8">
+                @csrf
+                @method('DELETE')
+                <x-button-danger class="w-full" x-data=""
+                    x-on:click="return confirm('Odstraní klíčové slovo! Pokračovat?')">
+                    {{ __('Odstranit klíčové slovo') }}
+                </x-button-danger>
+            </form>
+        @endif
     @endif
 </x-app-layout>
