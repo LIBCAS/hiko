@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\KeywordController;
+use App\Http\Controllers\IdentityController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfessionController;
@@ -207,6 +208,32 @@ Route::prefix('places')->group(function () {
 
     Route::delete('/{place}', [PlaceController::class, 'destroy'])
         ->name('places.destroy')
+        ->middleware(['auth', 'can:manage-metadata']);
+});
+
+Route::prefix('identities')->group(function () {
+    Route::get('/', [IdentityController::class, 'index'])
+        ->name('identities')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/create', [IdentityController::class, 'create'])
+        ->name('identities.create')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/{identity}/edit', [IdentityController::class, 'edit'])
+        ->name('identities.edit')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::post('/', [IdentityController::class, 'store'])
+        ->name('identities.store')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::put('/{identity}', [IdentityController::class, 'update'])
+        ->name('identities.update')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::delete('/{identity}', [IdentityController::class, 'destroy'])
+        ->name('identities.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
 });
 

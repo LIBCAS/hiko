@@ -16,7 +16,7 @@ trait MenuTrait
                 'ability' => 'view-metadata',
             ],
             [
-                'route' => 'dashboard',
+                'route' => 'identities',
                 'name' => __('Lidé a instituce'),
                 'icon' => 'heroicon-o-user-group',
                 'ability' => 'view-metadata',
