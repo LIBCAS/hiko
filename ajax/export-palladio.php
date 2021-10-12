@@ -171,7 +171,7 @@ function get_palladio_data($type)
         }
     }
 
-    return $ordered_data;
+    return array_values($ordered_data);
 }
 
 
