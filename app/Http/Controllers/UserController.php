@@ -51,7 +51,7 @@ class UserController extends Controller
 
         $user->notify(new NewUserPasswordCreate($user));
 
-        return redirect()->route('users.edit', $user->id)->with('success', __('Účet byl vytvořen.'));
+        return redirect()->route('users.edit', $user->id)->with('success', __('Uloženo.'));
     }
 
     public function edit(User $user)
@@ -79,7 +79,7 @@ class UserController extends Controller
             'deactivated_at' => isset($validated['deactivated_at']) && $validated['deactivated_at'] === 'on' ? null : now()->format('Y-m-d H:i:s'),
         ]);
 
-        return redirect()->route('users.edit', $user->id)->with('success', __('Účet byl upravený.'));
+        return redirect()->route('users.edit', $user->id)->with('success', __('Uloženo.'));
     }
 
     public function destroy(User $user)

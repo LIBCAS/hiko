@@ -40,7 +40,7 @@ class LocationController extends Controller
             'type' => $validated['type'],
         ]);
 
-        return redirect()->route('locations.edit', $location->id)->with('success', __('Místo uložení bylo vytvořeno.'));
+        return redirect()->route('locations.edit', $location->id)->with('success', __('Uloženo.'));
     }
 
     public function edit(Location $location)
@@ -64,7 +64,7 @@ class LocationController extends Controller
             'type' => $validated['type'],
         ]);
 
-        return redirect()->route('locations.edit', $location->id)->with('success', __('Místo uložení bylo upravené.'));
+        return redirect()->route('locations.edit', $location->id)->with('success', __('Uloženo.'));
     }
 
     public function destroy(Location $location)
