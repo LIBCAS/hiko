@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Identity;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Profession extends Model
 {
@@ -14,4 +15,9 @@ class Profession extends Model
     public $translatable = ['name'];
 
     protected $guarded = ['id'];
+
+    public function identities()
+    {
+        return $this->belongsToMany(Identity::class);
+    }
 }
