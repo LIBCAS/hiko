@@ -17,8 +17,9 @@ class CreateIdentitiesTable extends Migration
             $table->id();
             $table->timestamps();
             $table->string('name');
-            $table->string('surname')->nullable();;
-            $table->string('forename')->nullable();;
+            $table->string('surname')->nullable();
+            $table->string('forename')->nullable();
+            $table->json('alternative_names')->nullable();
             $table->string('type');
             $table->string('nationality')->nullable();
             $table->string('gender')->nullable();
