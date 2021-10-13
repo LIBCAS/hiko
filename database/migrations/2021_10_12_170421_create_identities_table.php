@@ -23,6 +23,7 @@ class CreateIdentitiesTable extends Migration
             $table->string('type');
             $table->string('nationality')->nullable();
             $table->string('gender')->nullable();
+            $table->string('viaf_id')->nullable();
             $table->text('note')->nullable();
         });
     }

@@ -17,6 +17,13 @@ class IdentityController extends Controller
 
     public function create()
     {
+        return view('pages.identities.form', [
+            'title' => __('Nová osoba / instituce'),
+            'identity' => new Identity(),
+            'action' => route('identities.store'),
+            'label' => __('Vytvořit'),
+            'types' => $this->getTypes(),
+        ]);
     }
 
     public function store(Request $request)
@@ -25,6 +32,14 @@ class IdentityController extends Controller
 
     public function edit(Identity $identity)
     {
+        return view('pages.identities.form', [
+            'title' => __('Nová osoba / instituce'),
+            'identity' => $identity,
+            'method' => 'PUT',
+            'action' => route('identities.update', $identity),
+            'label' => __('Upravit'),
+            'types' => $this->getTypes(),
+        ]);
     }
 
     public function update(Request $request, Identity $identity)
