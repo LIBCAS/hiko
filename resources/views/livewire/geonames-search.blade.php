@@ -14,13 +14,13 @@
                             <li class="border border-primary-dark">
                                 <button type="button" class="w-full p-2 text-left"
                                     wire:click="selectCity({{ $city->id }}, {{ $city->latitude }}, {{ $city->longitude }})">
-                                    {{ $city->name }} ({{ $city->country }})
+                                    {{ $city->name }} ({{ $city->adminName }} – {{ $city->country }})
                                 </button>
                             </li>
                         @endforeach
                     </ul>
                 @else
-                    <div class="px-3 py-3">No results for "{{ $search }}"</div>
+                    <div class="px-3 py-3">{{ __('Nebyly nalezeny žádné výsledky')}}</div>
                 @endif
             </div>
         @endif
