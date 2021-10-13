@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Identity;
 use App\Models\User;
 use App\Models\Place;
 use App\Models\Keyword;
@@ -67,12 +68,24 @@ class DatabaseSeeder extends Seeder
             ]
         ]);
 
-        ProfessionCategory::factory()->create([
+        $profession_category = ProfessionCategory::factory()->create([
             'name' => [
                 'cs' => 'humanitní vědy',
                 'en' => 'humanities ',
             ]
         ]);
+
+        $identities = Identity::factory()->count(5)->create();
+
+        $professions = Profession::all();
+
+        $identities->each(function ($identity) use ($professions, $profession_category) {
+            $identity->professions()->attach(
+                $professions->random(rand(1, 2))->pluck('id')->toArray()
+            );
+
+            $identity->profession_categories()->attach(1);
+        });
 
         $category_one = KeywordCategory::factory()->create([
             'name' => [
