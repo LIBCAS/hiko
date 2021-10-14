@@ -54,7 +54,7 @@ class IdentityController extends Controller
     {
         return [
             'person' => __('Osoba'),
-            'institute' => __('Instituce'),
+            'institution' => __('Instituce'),
         ];
     }
 }
