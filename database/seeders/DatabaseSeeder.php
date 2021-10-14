@@ -68,7 +68,7 @@ class DatabaseSeeder extends Seeder
             ]
         ]);
 
-        $profession_category = ProfessionCategory::factory()->create([
+        ProfessionCategory::factory()->create([
             'name' => [
                 'cs' => 'humanitní vědy',
                 'en' => 'humanities ',
@@ -79,7 +79,7 @@ class DatabaseSeeder extends Seeder
 
         $professions = Profession::all();
 
-        $identities->each(function ($identity) use ($professions, $profession_category) {
+        $identities->each(function ($identity) use ($professions) {
             $identity->professions()->attach(
                 $professions->random(rand(1, 2))->pluck('id')->toArray()
             );
