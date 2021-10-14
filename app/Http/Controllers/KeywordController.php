@@ -93,7 +93,7 @@ class KeywordController extends Controller
     {
         $category = null;
 
-        if ($keyword && $keyword->keyword_category) {
+        if ($keyword->keyword_category) {
             $category = [
                 'id' => $keyword->keyword_category->id,
                 'name' => implode(' | ', array_values($keyword->keyword_category->getTranslations('name'))),

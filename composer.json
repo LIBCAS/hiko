@@ -22,10 +22,12 @@
         "barryvdh/laravel-debugbar": "^3.6",
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",
+        "fossbarrow/laravel-phpcs": "dev-main",
         "laravel/breeze": "^1.4",
         "laravel/sail": "^1.0.1",
         "mockery/mockery": "^1.4.2",
         "nunomaduro/collision": "^5.0",
+        "nunomaduro/larastan": "^0.7.13",
         "phpunit/phpunit": "^9.3.3"
     },
     "autoload": {

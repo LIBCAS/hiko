@@ -3,7 +3,7 @@
 namespace App\Http\Livewire;
 
 use Livewire\Component;
-use Illuminate\Support\Facades\Request;
+use Symfony\Component\HttpFoundation\Request;
 
 class GeonamesSearch extends Component
 {
