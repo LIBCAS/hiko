@@ -102,8 +102,6 @@
                         {{ __('Přidat další') }}
                     </button>
                 </div>
-
-
                 <div x-data="{ categories: JSON.parse(document.getElementById('selectedCategories').innerHTML) }"
                     class="p-2 space-y-3 border rounded-md border-primary-light">
                     <p>
@@ -133,14 +131,6 @@
                         x-on:click="categories.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
                         {{ __('Přidat další') }}
                     </button>
-                </div>
-                <div>
-                    <x-label for="profession_category" :value="__('Profese – kategorie')" />
-                    <x-input id="profession_category" class="block w-full mt-1" type="text" name="profession_category"
-                        :value="old('profession_category', $identity->_category)" />
-                    @error('profession_category')
-                        <div class="text-red-600">{{ $message }}</div>
-                    @enderror
                 </div>
             </div>
         </template>
