@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PlaceController;
@@ -245,6 +246,10 @@ Route::prefix('ajax')->group(function () {
 
     Route::get('/professions', AjaxProfessionController::class)
         ->name('ajax.professions')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/profession-category', AjaxProfessionCategoryController::class)
+        ->name('ajax.professions.category')
         ->middleware(['auth', 'can:manage-metadata']);
 });
 

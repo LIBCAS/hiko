@@ -102,6 +102,38 @@
                         {{ __('Přidat další') }}
                     </button>
                 </div>
+
+
+                <div x-data="{ categories: JSON.parse(document.getElementById('selectedCategories').innerHTML) }"
+                    class="p-2 space-y-3 border rounded-md border-primary-light">
+                    <p>
+                        {{ __('Profese – kategorie') }}
+                    </p>
+                    @error('category')
+                        <div class="text-red-600">{{ $message }}</div>
+                    @enderror
+                    <template x-for="category, index in categories" :key="category.key ? category.key : category.id">
+                        <div class="flex">
+                            <x-select name="category[]" class="block w-full mt-1" aria-label="{{ __('Profese') }}"
+                                x-data="ajaxSelect({url: '{{ route('ajax.professions.category') }}', element: $el, options: { id: category.id, name: category.name } })"
+                                x-init="initSelect()">
+                            </x-select>
+                            <button type="button" class="ml-6 text-red-600"
+                                aria-label="{{ __('Odstranit kategorii') }}"
+                                title="{{ __('Odstranit kategorii') }}" x-on:click="
+                            categories = categories.filter((item, categoryIndex) => {
+                            return categoryIndex !== index
+                        })
+                        ">
+                                <x-heroicon-o-trash class="h-5" />
+                            </button>
+                        </div>
+                    </template>
+                    <button type="button" class="text-sm font-bold text-primary hover:underline"
+                        x-on:click="categories.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
+                        {{ __('Přidat další') }}
+                    </button>
+                </div>
                 <div>
                     <x-label for="profession_category" :value="__('Profese – kategorie')" />
                     <x-input id="profession_category" class="block w-full mt-1" type="text" name="profession_category"
@@ -152,10 +184,12 @@
             </x-button-danger>
         </form>
     @endif
-
     @push('scripts')
         <script id="selectedProfessions">
             @json($selectedProfessions)
+        </script>
+        <script id="selectedCategories">
+            @json($selectedCategories)
         </script>
     @endpush
 </x-app-layout>

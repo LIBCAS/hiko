@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Identity;
 use App\Models\Profession;
+use App\Models\ProfessionCategory;
 use Illuminate\Http\Request;
 
 class IdentityController extends Controller
@@ -27,6 +28,7 @@ class IdentityController extends Controller
             'label' => __('Vytvořit'),
             'types' => $this->getTypes(),
             'selectedProfessions' => $this->getProfessions($identity),
+            'selectedCategories' => $this->getCategories($identity),
         ]);
     }
 
@@ -44,6 +46,7 @@ class IdentityController extends Controller
             'label' => __('Upravit'),
             'types' => $this->getTypes(),
             'selectedProfessions' => $this->getProfessions($identity),
+            'selectedCategories' => $this->getCategories($identity),
         ]);
     }
 
@@ -68,7 +71,7 @@ class IdentityController extends Controller
         if (request()->old('profession')) {
             $professions = Profession::whereIn('id', request()->old('profession'))->get();
 
-            return $$professions->map(function ($profession) {
+            return $professions->map(function ($profession) {
                 return [
                     'id' => $profession->id,
                     'name' => implode(' | ', array_values($profession->getTranslations('name'))),
@@ -81,6 +84,29 @@ class IdentityController extends Controller
                 return [
                     'id' => $profession->id,
                     'name' => implode(' | ', array_values($profession->getTranslations('name'))),
+                ];
+            });
+        }
+    }
+
+    protected function getCategories(Identity $identity)
+    {
+        if (request()->old('category')) {
+            $categories = ProfessionCategory::whereIn('id', request()->old('category'))->get();
+
+            return $categories->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => implode(' | ', array_values($category->getTranslations('name'))),
+                ];
+            });
+        }
+
+        if ($identity->profession_categories) {
+            return $identity->profession_categories->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => implode(' | ', array_values($category->getTranslations('name'))),
                 ];
             });
         }
