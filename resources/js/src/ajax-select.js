@@ -3,7 +3,7 @@ import TomSelect from 'tom-select/dist/esm/tom-select.complete'
 window.ajaxSelect = function (data) {
     return {
         initSelect: function () {
-            new TomSelect(data.element, {
+            const select = new TomSelect(data.element, {
                 plugins: ['checkbox_options'],
                 allowEmptyOption: true,
                 create: false,
@@ -26,7 +26,12 @@ window.ajaxSelect = function (data) {
                             callback()
                         })
                 },
+                options: data.options ? [data.options] : [],
             })
+
+            if (data.options) {
+                select.setValue(data.options.id)
+            }
         },
     }
 }
