@@ -80,11 +80,13 @@ class DatabaseSeeder extends Seeder
         $professions = Profession::all();
 
         $identities->each(function ($identity) use ($professions) {
-            $identity->professions()->attach(
-                $professions->random(rand(1, 2))->pluck('id')->toArray()
-            );
+            $selected_professions = $professions->random(rand(1, 2))->pluck('id')->toArray();
 
-            $identity->profession_categories()->attach(1);
+            collect($selected_professions)->each(function ($selected, $index) use ($identity) {
+                $identity->professions()->attach($selected, ['position' => $index]);
+            });
+
+            $identity->profession_categories()->attach(1, ['position' => 1]);
         });
 
         $category_one = KeywordCategory::factory()->create([

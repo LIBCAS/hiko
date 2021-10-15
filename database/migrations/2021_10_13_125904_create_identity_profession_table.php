@@ -23,6 +23,7 @@ class CreateIdentityProfessionTable extends Migration
             $table->foreignId('profession_id')
                 ->constrained()
                 ->onDelete('cascade');
+            $table->integer('position')->nullable();
         });
     }
 
