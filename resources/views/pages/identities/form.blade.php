@@ -71,13 +71,36 @@
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>
-                <div>
-                    <x-label for="profession" :value="__('Profese')" />
-                    <x-input id="profession" class="block w-full mt-1" type="text" name="profession"
-                        :value="old('profession', $identity->profession)" />
+                <div x-data="{ professions: JSON.parse(document.getElementById('selectedProfessions').innerHTML) }"
+                    class="p-2 space-y-3 border rounded-md border-primary-light">
+                    <p>
+                        {{ __('Profese') }}
+                    </p>
                     @error('profession')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
+                    <template x-for="profession, index in professions"
+                        :key="profession.key ? profession.key : profession.id">
+                        <div class="flex">
+                            <x-select name="profession[]" class="block w-full mt-1" aria-label="{{ __('Profese') }}"
+                                x-data="ajaxSelect({url: '{{ route('ajax.professions') }}', element: $el, options: { id: profession.id, name: profession.name } })"
+                                x-init="initSelect()">
+                            </x-select>
+                            <button type="button" class="ml-6 text-red-600"
+                                aria-label="{{ __('Odstranit profesi') }}" title="{{ __('Odstranit profesi') }}"
+                                x-on:click="
+                            professions = professions.filter((item, professionIndex) => {
+                                return professionIndex !== index
+                            })
+                            ">
+                                <x-heroicon-o-trash class="h-5" />
+                            </button>
+                        </div>
+                    </template>
+                    <button type="button" class="text-sm font-bold text-primary hover:underline"
+                        x-on:click="professions.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
+                        {{ __('Přidat další') }}
+                    </button>
                 </div>
                 <div>
                     <x-label for="profession_category" :value="__('Profese – kategorie')" />
@@ -109,7 +132,8 @@
         </div>
         <div>
             <x-label for="note" :value="__('Poznámka')" />
-            <x-textarea name="note" id="note" class="block w-full mt-1">{{ old('note', $identity->note) }}</x-textarea>
+            <x-textarea name="note" id="note" class="block w-full mt-1">{{ old('note', $identity->note) }}
+            </x-textarea>
             @error('note')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
@@ -128,4 +152,10 @@
             </x-button-danger>
         </form>
     @endif
+
+    @push('scripts')
+        <script id="selectedProfessions">
+            @json($selectedProfessions)
+        </script>
+    @endpush
 </x-app-layout>
