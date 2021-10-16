@@ -189,6 +189,10 @@ Route::prefix('keywords/category')->group(function () {
     Route::delete('/{keywordCategory}', [KeywordCategoryController::class, 'destroy'])
         ->name('keywords.category.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/export', [KeywordCategoryController::class, 'export'])
+        ->name('keywords.category.export')
+        ->middleware(['auth', 'can:manage-metadata']);
 });
 
 Route::prefix('places')->group(function () {

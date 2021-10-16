@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\KeywordCategory;
 use Illuminate\Http\Request;
+use App\Models\KeywordCategory;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\KeywordCategoriesExport;
 
 class KeywordCategoryController extends Controller
 {
@@ -66,5 +68,10 @@ class KeywordCategoryController extends Controller
         $keywordCategory->delete();
 
         return redirect()->route('keywords')->with('success', __('Odstraněno'));
+    }
+
+    public function export()
+    {
+        return Excel::download(new KeywordCategoriesExport, 'keywords-categories.xlsx');
     }
 }
