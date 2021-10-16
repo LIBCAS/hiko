@@ -1,6 +1,7 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
+    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3"
+        autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
@@ -31,11 +32,12 @@
         </x-button-simple>
     </form>
     @if ($location->id)
-        <form action="{{ route('locations.destroy', $location->id) }}" method="post" class="max-w-sm mt-8">
+        <form x-data="{ form: $el }" action="{{ route('locations.destroy', $location->id) }}" method="post"
+            class="max-w-sm mt-8">
             @csrf
             @method('DELETE')
-            <x-button-danger class="w-full" x-data=""
-                x-on:click="return confirm('Odstraní místo uložení! Pokračovat?')">
+            <x-button-danger class="w-full"
+                x-on:click.prevent="if (confirm('Odstraní místo uložení! Pokračovat?')) form.submit()">
                 {{ __('Odstranit místo uložení') }}
             </x-button-danger>
         </form>

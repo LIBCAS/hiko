@@ -32,12 +32,12 @@
                 {{ __('Počet připojených osob:') }} {{ $professionCategory->identities->count() }}
             </p>
         @else
-            <form action="{{ route('professions.category.destroy', $professionCategory->id) }}" method="post"
-                class="max-w-sm mt-8">
+            <form x-data="{ form: $el }" action="{{ route('professions.category.destroy', $professionCategory->id) }}"
+                method="post" class="max-w-sm mt-8">
                 @csrf
                 @method('DELETE')
-                <x-button-danger class="w-full" x-data=""
-                    x-on:click="return confirm('Odstraní profesi! Pokračovat?')">
+                <x-button-danger class="w-full"
+                    x-on:click.prevent="if (confirm('Odstraní profesi! Pokračovat?')) form.submit()">
                     {{ __('Odstranit profesi') }}
                 </x-button-danger>
             </form>

@@ -165,11 +165,12 @@
         </x-button-simple>
     </form>
     @if ($identity->id)
-        <form action="{{ route('identities.destroy', $identity->id) }}" method="post" class="max-w-sm mt-8">
+        <form x-data="{ form: $el }" action="{{ route('identities.destroy', $identity->id) }}" method="post"
+            class="max-w-sm mt-8">
             @csrf
             @method('DELETE')
-            <x-button-danger class="w-full" x-data=""
-                x-on:click="return confirm('Odstraní osobu / instituci! Pokračovat?')">
+            <x-button-danger class="w-full"
+                x-on:click.prevent="if (confirm('Odstraní osobu / instituci! Pokračovat?')) form.submit()">
                 {{ __('Odstranit osobu / instituci?') }}
             </x-button-danger>
         </form>

@@ -26,8 +26,8 @@
                 @endforeach
             </x-select>
             @error('country')
-            <div class="text-red-600">{{ $message }}</div>
-        @enderror
+                <div class="text-red-600">{{ $message }}</div>
+            @enderror
         </div>
         <div>
             <x-label for="note" :value="__('Poznámka')" />
@@ -74,11 +74,12 @@
         </x-button-simple>
     </form>
     @if ($place->id)
-        <form action="{{ route('places.destroy', $place->id) }}" method="post" class="max-w-sm mt-8">
+        <form x-data="{ form: $el }" action="{{ route('places.destroy', $place->id) }}" method="post"
+            class="max-w-sm mt-8">
             @csrf
             @method('DELETE')
-            <x-button-danger class="w-full" x-data=""
-                x-on:click="return confirm('Odstraní místo! Pokračovat?')">
+            <x-button-danger class="w-full"
+                x-on:click.prevent="if (confirm('Odstraní místo! Pokračovat?')) form.submit()">
                 {{ __('Odstranit místo') }}
             </x-button-danger>
         </form>

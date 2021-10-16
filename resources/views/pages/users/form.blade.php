@@ -1,6 +1,7 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
+    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3"
+        autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
@@ -46,11 +47,12 @@
         </x-button-simple>
     </form>
     @if ($user->id)
-        <form action="{{ route('users.destroy', $user->id) }}" method="post" class="max-w-sm mt-8">
+        <form x-data="{ form: $el }" action="{{ route('users.destroy', $user->id) }}" method="post"
+            class="max-w-sm mt-8">
             @csrf
             @method('DELETE')
-            <x-button-danger class="w-full" x-data=""
-                x-on:click="return confirm('Odstraní všechna data účtu! Pokračovat?')">
+            <x-button-danger class="w-full"
+                x-on:click.prevent="if (confirm('Odstraní všechna data účtu! Pokračovat?')) form.submit()">
                 {{ __('Odstranit účet') }}
             </x-button-danger>
         </form>

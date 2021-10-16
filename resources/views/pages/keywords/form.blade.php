@@ -1,6 +1,7 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
+    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3"
+        autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
@@ -40,11 +41,12 @@
     </form>
 
     @if ($keyword->id)
-        <form action="{{ route('keywords.destroy', $keyword->id) }}" method="post" class="max-w-sm mt-8">
+        <form x-data="{ form: $el }" action="{{ route('keywords.destroy', $keyword->id) }}" method="post"
+            class="max-w-sm mt-8">
             @csrf
             @method('DELETE')
-            <x-button-danger class="w-full" x-data=""
-                x-on:click="return confirm('Odstraní klíčové slovo! Pokračovat?')">
+            <x-button-danger class="w-full"
+                x-on:click.prevent="if (confirm('Odstraní klíčové slovo! Pokračovat?')) form.submit()">
                 {{ __('Odstranit klíčové slovo') }}
             </x-button-danger>
         </form>
