@@ -175,10 +175,10 @@
         </form>
     @endif
     @push('scripts')
-        <script id="selectedProfessions">
+        <script id="selectedProfessions" type="application/json">
             @json($selectedProfessions)
         </script>
-        <script id="selectedCategories">
+        <script id="selectedCategories" type="application/json">
             @json($selectedCategories)
         </script>
     @endpush

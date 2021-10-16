@@ -11,13 +11,15 @@ class Identity extends Model
 {
     use HasFactory;
 
+    protected $guarded = ['id'];
+
     public function professions()
     {
-        return $this->belongsToMany(Profession::class);
+        return $this->belongsToMany(Profession::class)->withPivot('position');
     }
 
     public function profession_categories()
     {
-        return $this->belongsToMany(ProfessionCategory::class);
+        return $this->belongsToMany(ProfessionCategory::class)->withPivot('position');
     }
 }

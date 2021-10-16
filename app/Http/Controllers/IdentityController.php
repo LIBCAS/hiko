@@ -9,6 +9,27 @@ use Illuminate\Http\Request;
 
 class IdentityController extends Controller
 {
+    protected $person_rules = [
+        'surname' => ['required', 'string', 'max:255'],
+        'forename' => ['nullable', 'string', 'max:255'],
+        'birth_year' => ['nullable', 'string', 'max:255'],
+        'death_year' => ['nullable', 'string', 'max:255'],
+        'nationality' => ['nullable', 'string', 'max:255'],
+        'gender' => ['nullable', 'string', 'max:255'],
+        'note' => ['nullable'],
+        'viaf_id' => ['nullable', 'integer', 'numeric'],
+        'type' => ['required', 'string', 'max:255'],
+        'category' => ['nullable', 'exists:profession_categories,id'],
+        'profession' => ['nullable', 'exists:professions,id'],
+    ];
+
+    protected $institution_rules = [
+        'name' => ['required', 'string', 'max:255'],
+        'note' => ['nullable'],
+        'viaf_id' => ['nullable', 'integer', 'numeric'],
+        'type' => ['required', 'string', 'max:255'],
+    ];
+
     public function index()
     {
         return view('pages.identities.index', [
@@ -34,6 +55,13 @@ class IdentityController extends Controller
 
     public function store(Request $request)
     {
+        $validated = $this->validateRequest($request);
+
+        $identity = Identity::create($validated);
+
+        $this->attachProfessionsAndCategories($identity, $validated);
+
+        return redirect()->route('identities.edit', $identity->id)->with('success', __('Uloženo.'));
     }
 
     public function edit(Identity $identity)
@@ -52,10 +80,63 @@ class IdentityController extends Controller
 
     public function update(Request $request, Identity $identity)
     {
+        $validated = $this->validateRequest($request);
+
+        $identity->update($validated);
+
+        $this->attachProfessionsAndCategories($identity, $validated);
+
+        return redirect()->route('identities.edit', $identity->id)->with('success', __('Uloženo.'));
     }
 
     public function destroy(Identity $identity)
     {
+        $identity->delete();
+
+        return redirect()->route('identities')->with('success', __('Odstraněno'));
+    }
+
+    protected function validateRequest(Request $request)
+    {
+        $validated = null;
+
+        if ($request->type === 'institution') {
+            $validated = $request->validate($this->institution_rules);
+        }
+
+        if ($request->type === 'person') {
+            // odstraní null, nutné pro správnou validaci
+            $category = empty($request->category) ? null : array_filter($request->category);
+            $request->request->set('category', empty($category) ? null : $category);
+
+            $profession = empty($request->profession) ? null : array_filter($request->profession);
+            $request->request->set('profession', empty($profession) ? null : $profession);
+
+            $validated = $request->validate($this->person_rules);
+            $name = $validated['surname'];
+            $name .= $validated['forename'] ? ', ' . $validated['forename'] : '';
+            $validated['name'] = $name;
+        }
+
+        return $validated;
+    }
+
+    protected function attachProfessionsAndCategories(Identity $identity, $validated)
+    {
+        $identity->professions()->detach();
+        $identity->profession_categories()->detach();
+
+        if (isset($validated['profession']) && !empty($validated['profession'])) {
+            collect($validated['profession'])->each(function ($profession, $index) use ($identity) {
+                $identity->professions()->attach($profession, ['position' => $index]);
+            });
+        }
+
+        if (isset($validated['category']) && !empty($validated['category'])) {
+            collect($validated['category'])->each(function ($category, $index) use ($identity) {
+                $identity->profession_categories()->attach($category, ['position' => $index]);
+            });
+        }
     }
 
     protected function getTypes()
@@ -69,7 +150,10 @@ class IdentityController extends Controller
     protected function getProfessions(Identity $identity)
     {
         if (request()->old('profession')) {
-            $professions = Profession::whereIn('id', request()->old('profession'))->get();
+            $ids = request()->old('profession');
+            $professions = Profession::whereIn('id', $ids)
+                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
+                ->get();
 
             return $professions->map(function ($profession) {
                 return [
@@ -80,19 +164,26 @@ class IdentityController extends Controller
         }
 
         if ($identity->professions) {
-            return $identity->professions->map(function ($profession) {
-                return [
-                    'id' => $profession->id,
-                    'name' => implode(' | ', array_values($profession->getTranslations('name'))),
-                ];
-            });
+            return $identity->professions
+                ->sortBy('pivot.position')
+                ->map(function ($profession) {
+                    return [
+                        'id' => $profession->id,
+                        'name' => implode(' | ', array_values($profession->getTranslations('name'))),
+                    ];
+                })
+                ->values()
+                ->toArray();
         }
     }
 
     protected function getCategories(Identity $identity)
     {
         if (request()->old('category')) {
-            $categories = ProfessionCategory::whereIn('id', request()->old('category'))->get();
+            $ids = request()->old('category');
+            $categories = ProfessionCategory::whereIn('id', $ids)
+                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
+                ->get();
 
             return $categories->map(function ($category) {
                 return [
@@ -103,12 +194,16 @@ class IdentityController extends Controller
         }
 
         if ($identity->profession_categories) {
-            return $identity->profession_categories->map(function ($category) {
-                return [
-                    'id' => $category->id,
-                    'name' => implode(' | ', array_values($category->getTranslations('name'))),
-                ];
-            });
+            return $identity->profession_categories
+                ->sortBy('pivot.position')
+                ->map(function ($category) {
+                    return [
+                        'id' => $category->id,
+                        'name' => implode(' | ', array_values($category->getTranslations('name'))),
+                    ];
+                })
+                ->values()
+                ->toArray();
         }
     }
 }
