@@ -1,12 +1,12 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3"
+    <form onkeydown="return event.key != 'Enter';" action="{{ $action }}" method="post" class="max-w-sm space-y-3"
         autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
         @endisset
-        <div>
+        <div class="required">
             <x-label for="name" :value="__('Jméno')" />
             <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $user->name)"
                 required />
@@ -15,7 +15,7 @@
             @enderror
         </div>
         @if ($editEmail)
-            <div>
+            <div class="required">
                 <x-label for="email" :value="__('E-mail')" />
                 <x-input id="email" class="block w-full mt-1" type="email" name="email"
                     :value="old('email', $user->email)" required />
@@ -24,7 +24,7 @@
                 @enderror
             </div>
         @endif
-        <div>
+        <div class="required">
             <x-label for="role" :value="__('Role')" />
             <x-select id="role" class="block w-full mt-1" name="role" required>
                 @foreach ($roles as $role)
@@ -42,7 +42,7 @@
             <x-checkbox name="deactivated_at" label="{{ __('Aktivní uživatel') }}"
                 :checked="old('deactivated_at') == 'on' || $active" />
         @endif
-        <x-button-simple type="button" @click="form.submit()" class="w-full">
+        <x-button-simple class="w-full">
             {{ $label }}
         </x-button-simple>
     </form>

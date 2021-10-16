@@ -25,11 +25,8 @@
         <div>
             <x-label for="category" :value="__('Kategorie')" />
             <x-select name="category" id="category" class="block w-full mt-1"
-                x-data="ajaxSelect({url: '{{ route('ajax.keywords.category') }}', element: $el })"
+                x-data="ajaxSelect({url: '{{ route('ajax.keywords.category') }}', element: $el, options: JSON.parse(document.getElementById('selectedCategory').innerHTML) })"
                 x-init="initSelect()">
-                @if (isset($category) && $category)
-                    <option value="{{ $category['id'] }}">{{ $category['name'] }}</option>
-                @endif
             </x-select>
             @error('category')
                 <div class="text-red-600">{{ $message }}</div>
@@ -39,7 +36,6 @@
             {{ $label }}
         </x-button-simple>
     </form>
-
     @if ($keyword->id)
         <form x-data="{ form: $el }" action="{{ route('keywords.destroy', $keyword->id) }}" method="post"
             class="max-w-sm mt-8">
@@ -51,4 +47,9 @@
             </x-button-danger>
         </form>
     @endif
+    @push('scripts')
+    <script id="selectedCategory" type="application/json">
+        @json($category)
+    </script>
+@endpush
 </x-app-layout>
