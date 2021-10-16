@@ -19,8 +19,10 @@ class IdentitiesTable extends LivewireDatatable
         })->toArray();
 
         return [
-            Column::callback(['name', 'id'], function ($name, $id) {
-                return "<a href='" . route('identities.edit', $id) . "' class='font-semibold text-primary'>$name</a>";
+            Column::callback(['name', 'id', 'birth_year', 'death_year'], function ($name, $id, $birth_year, $death_year) {
+                $dates = $this->formatDate($birth_year, $death_year);
+
+                return "<a href='" . route('identities.edit', $id) . "' class='font-semibold text-primary'>$name $dates</a>";
             })
                 ->defaultSort('asc')
                 ->label(__('Jméno'))
@@ -32,6 +34,45 @@ class IdentitiesTable extends LivewireDatatable
                 ->label(__('Typ'))
                 ->filterable(array_values($labels)),
 
+            Column::callback(['alternative_names->variants'], function ($variants) {
+                if (empty($variants) || $variants === 'null') {
+                    return '';
+                }
+
+                $list = '<li>' . implode('</li><li>', json_decode($variants, true)) . '</li>';
+
+                return "<ul>$list</ul>";
+            })
+                ->filterable()
+                ->filterOn("JSON_EXTRACT(alternative_names, '$.variants')")
+                ->label(__('Další jména')),
+
+            Column::name('professions.name')
+                ->label(__('Profese'))
+                ->filterable(),
+
+            Column::name('profession_categories.name')
+                ->label(__('Kategorie'))
+                ->filterable(),
         ];
+    }
+
+    protected function formatDate($birth, $death)
+    {
+        if (empty($birth) && empty($death)) {
+            return '';
+        }
+
+        if ($birth && $death) {
+            return "({$birth}–{$death})";
+        }
+
+        if ($birth) {
+            return "({$birth}–)";
+        }
+
+        if ($death) {
+            return "(–{$death})";
+        }
     }
 }
