@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\IdentitiesExport;
 use App\Models\Identity;
 use App\Models\Profession;
-use App\Models\ProfessionCategory;
 use Illuminate\Http\Request;
+use App\Models\ProfessionCategory;
+use Maatwebsite\Excel\Facades\Excel;
 
 class IdentityController extends Controller
 {
@@ -94,6 +96,11 @@ class IdentityController extends Controller
         $identity->delete();
 
         return redirect()->route('identities')->with('success', __('Odstraněno'));
+    }
+
+    public function export()
+    {
+        return Excel::download(new IdentitiesExport, 'identities.xlsx');
     }
 
     protected function validateRequest(Request $request)

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Location;
 use Illuminate\Http\Request;
+use App\Exports\LocationsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class LocationController extends Controller
 {
@@ -72,6 +74,11 @@ class LocationController extends Controller
         $location->delete();
 
         return redirect()->route('locations')->with('success', 'Odstraněno');
+    }
+
+    public function export()
+    {
+        return Excel::download(new LocationsExport, 'locations.xlsx');
     }
 
     protected function getTypes()

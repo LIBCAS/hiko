@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProfessionCategory;
 use Illuminate\Http\Request;
+use App\Models\ProfessionCategory;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ProfessionCategoriesExport;
 
 class ProfessionCategoryController extends Controller
 {
@@ -66,5 +68,10 @@ class ProfessionCategoryController extends Controller
         $professionCategory->delete();
 
         return redirect()->route('professions')->with('success', __('Odstraněno'));
+    }
+
+    public function export()
+    {
+        return Excel::download(new ProfessionCategoriesExport, 'profession-categories.xlsx');
     }
 }

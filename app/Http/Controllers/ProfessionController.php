@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Profession;
 use Illuminate\Http\Request;
+use App\Exports\ProfessionsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProfessionController extends Controller
 {
@@ -73,5 +75,10 @@ class ProfessionController extends Controller
         $profession->delete();
 
         return redirect()->route('professions')->with('success', __('Odstraněno'));
+    }
+
+    public function export()
+    {
+        return Excel::download(new ProfessionsExport, 'professions.xlsx');
     }
 }

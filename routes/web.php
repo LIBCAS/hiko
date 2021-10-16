@@ -81,6 +81,10 @@ Route::prefix('locations')->group(function () {
     Route::delete('/{location}', [LocationController::class, 'destroy'])
         ->name('locations.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/export', [LocationController::class, 'export'])
+        ->name('locations.export')
+        ->middleware(['auth', 'can:manage-metadata']);
 });
 
 Route::prefix('professions')->group(function () {
@@ -107,6 +111,10 @@ Route::prefix('professions')->group(function () {
     Route::delete('/{profession}', [ProfessionController::class, 'destroy'])
         ->name('professions.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/export', [ProfessionController::class, 'export'])
+        ->name('professions.export')
+        ->middleware(['auth', 'can:manage-metadata']);
 });
 
 Route::prefix('professions/category')->group(function () {
@@ -132,6 +140,10 @@ Route::prefix('professions/category')->group(function () {
 
     Route::delete('/{professionCategory}', [ProfessionCategoryController::class, 'destroy'])
         ->name('professions.category.destroy')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/export', [ProfessionCategoryController::class, 'export'])
+        ->name('professions.category.export')
         ->middleware(['auth', 'can:manage-metadata']);
 });
 
@@ -219,6 +231,10 @@ Route::prefix('places')->group(function () {
     Route::delete('/{place}', [PlaceController::class, 'destroy'])
         ->name('places.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/export', [PlaceController::class, 'export'])
+        ->name('places.export')
+        ->middleware(['auth', 'can:manage-metadata']);
 });
 
 Route::prefix('identities')->group(function () {
@@ -244,6 +260,10 @@ Route::prefix('identities')->group(function () {
 
     Route::delete('/{identity}', [IdentityController::class, 'destroy'])
         ->name('identities.destroy')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/export', [IdentityController::class, 'export'])
+        ->name('identities.export')
         ->middleware(['auth', 'can:manage-metadata']);
 });
 

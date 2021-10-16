@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Place;
 use App\Models\Country;
 use Illuminate\Http\Request;
+use App\Exports\PlacesExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PlaceController extends Controller
 {
@@ -84,5 +86,10 @@ class PlaceController extends Controller
         $place->delete();
 
         return redirect()->route('places')->with('success', 'Odstraněno');
+    }
+
+    public function export()
+    {
+        return Excel::download(new PlacesExport, 'places.xlsx');
     }
 }
