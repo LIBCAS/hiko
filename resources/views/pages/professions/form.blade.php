@@ -1,6 +1,7 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
+    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3"
+        autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
@@ -26,13 +27,19 @@
         </x-button-simple>
     </form>
     @if ($profession->id)
-        <form action="{{ route('professions.destroy', $profession->id) }}" method="post" class="max-w-sm mt-8">
-            @csrf
-            @method('DELETE')
-            <x-button-danger class="w-full" x-data=""
-                x-on:click="return confirm('Odstraní profesi! Pokračovat?')">
-                {{ __('Odstranit profesi') }}
-            </x-button-danger>
-        </form>
+        @if ($profession->identities->count() > 0)
+            <p class="mt-6 text-sm">
+                {{ __('Počet připojených osob:') }} {{ $profession->identities->count() }}
+            </p>
+        @else
+            <form action="{{ route('professions.destroy', $profession->id) }}" method="post" class="max-w-sm mt-8">
+                @csrf
+                @method('DELETE')
+                <x-button-danger class="w-full" x-data=""
+                    x-on:click="return confirm('Odstraní profesi! Pokračovat?')">
+                    {{ __('Odstranit profesi') }}
+                </x-button-danger>
+            </form>
+        @endif
     @endif
 </x-app-layout>
