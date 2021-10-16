@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Keyword;
-use App\Models\KeywordCategory;
 use Illuminate\Http\Request;
+use App\Exports\KeywordsExport;
+use App\Models\KeywordCategory;
+use Maatwebsite\Excel\Facades\Excel;
 
 class KeywordController extends Controller
 {
@@ -87,6 +89,11 @@ class KeywordController extends Controller
         $keyword->delete();
 
         return redirect()->route('keywords')->with('success', __('Odstraněno'));
+    }
+
+    public function export()
+    {
+        return Excel::download(new KeywordsExport, 'keywords.xlsx');
     }
 
     protected function getCategory(Keyword $keyword)
