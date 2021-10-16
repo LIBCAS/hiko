@@ -1,6 +1,6 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="{ form: $el }" @submit.prevent action="{{ $action }}" method="post" class="max-w-sm space-y-3"
+    <form onkeydown="return event.key != 'Enter';" action="{{ $action }}" method="post" class="max-w-sm space-y-3"
         autocomplete="off">
         @csrf
         @isset($method)
@@ -27,7 +27,7 @@
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
-        <x-button-simple type="button" @click="form.submit()" class="w-full">
+        <x-button-simple class="w-full">
             {{ $label }}
         </x-button-simple>
     </form>

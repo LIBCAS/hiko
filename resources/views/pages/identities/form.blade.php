@@ -1,7 +1,7 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="{ form: $el, type: '{{ $identity->type ? $identity->type : 'person' }}' }" @submit.prevent
-        action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
+    <form x-data="{ type: '{{ $identity->type ? $identity->type : 'person' }}' }" action="{{ $action }}"
+        method="post" onkeydown="return event.key != 'Enter';" class="max-w-sm space-y-3" autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
@@ -147,7 +147,7 @@
         <div>
             <x-label for="viaf_id" :value="__('VIAF ID')" />
             <x-input id="viaf_id" class="block w-full mt-1" type="text" name="viaf_id"
-                :value="old('viaf_id', $identity->viaf_id)" required />
+                :value="old('viaf_id', $identity->viaf_id)" />
             @error('viaf_id')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
@@ -160,7 +160,7 @@
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
-        <x-button-simple type="button" @click="form.submit()" class="w-full">
+        <x-button-simple class="w-full">
             {{ $label }}
         </x-button-simple>
     </form>
