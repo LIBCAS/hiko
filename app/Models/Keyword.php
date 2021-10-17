@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Letter;
 use App\Models\KeywordCategory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
@@ -19,5 +20,10 @@ class Keyword extends Model
     public function keyword_category()
     {
         return $this->belongsTo(KeywordCategory::class);
+    }
+
+    public function letters()
+    {
+        return $this->belongsTo(Letter::class);
     }
 }

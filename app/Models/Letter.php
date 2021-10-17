@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Keyword;
 use App\Models\Identity;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,11 @@ class Letter extends Model
     {
         return $this->belongsToMany(Identity::class)
             ->withPivot('position', 'role', 'marked', 'salutation');
+    }
+
+    public function keywords()
+    {
+        return $this->belongsToMany(Keyword::class);
     }
 
     public function authors()
