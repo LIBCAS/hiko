@@ -20,7 +20,7 @@ html {
 }
 
 .ts-control {
-    @apply h-10;
+    min-height: 2.5rem;
 }
 
 .required label::after {

@@ -1,10 +1,22 @@
 import TomSelect from 'tom-select/dist/esm/tom-select.complete'
 
 window.ajaxSelect = function (data) {
+    let options = []
+
+    if (Array.isArray(data.options) && data.options.length > 0) {
+        options = data.options
+    } else if (data.options) {
+        options = [data.options]
+    }
+
     return {
         initSelect: function () {
             const select = new TomSelect(data.element, {
-                plugins: ['checkbox_options'],
+                plugins: [
+                    'checkbox_options',
+                    'caret_position',
+                    'input_autogrow',
+                ],
                 allowEmptyOption: true,
                 create: false,
                 sortField: {
@@ -26,12 +38,10 @@ window.ajaxSelect = function (data) {
                             callback()
                         })
                 },
-                options: data.options ? [data.options] : [],
+                options: options,
             })
 
-            if (data.options) {
-                select.setValue(data.options.id)
-            }
+            select.setValue(options.map((obj) => obj.id))
         },
     }
 }

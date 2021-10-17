@@ -29,7 +29,7 @@
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-content">
-                        {{ __('Obsah') }}
+                        {{ __('Popis obsahu') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
@@ -313,7 +313,7 @@
                         </button>
                     </div>
                     <div>
-                        <x-checkbox name="origin_inferred" label="{{ __('Místo odeslání je odvozená') }}"
+                        <x-checkbox name="origin_inferred" label="{{ __('Místo odeslání je odvozené') }}"
                             :checked="boolval(old('origin_inferred', $letter->origin_inferred))" />
                         <small class="block text-gray-600">
                             {{ __('Jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
@@ -370,7 +370,7 @@
                         </button>
                     </div>
                     <div>
-                        <x-checkbox name="destination_inferred" label="{{ __('Místo určení je odvozená') }}"
+                        <x-checkbox name="destination_inferred" label="{{ __('Místo určení je odvozené') }}"
                             :checked="boolval(old('destination_inferred', $letter->destination_inferred))" />
                         <small class="block text-gray-600">
                             {{ __('Jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
@@ -395,7 +395,7 @@
                 </div>
                 <fieldset id="a-content" class="space-y-3">
                     <legend class="text-lg font-semibold">
-                        {{ __('Obsah') }}
+                        {{ __('Popis obsahu') }}
                     </legend>
                     <div>
                         <x-label for="languages" :value="__('Jazyk')" />
@@ -411,6 +411,18 @@
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
+
+                    <div>
+                        <x-label for="keyword" :value="__('Klíčová slova')" />
+                        <x-select name="keyword[]" class="block w-full mt-1" id="keyword"
+                            x-data="ajaxSelect({url: '{{ route('ajax.keywords') }}', element: $el, options: JSON.parse(document.getElementById('selectedKeywords').innerHTML) })"
+                            x-init="initSelect()" multiple>
+                        </x-select>
+                        @error('keyword')
+                        <div class="text-red-600">{{ $message }}</div>
+                    @enderror
+                    </div>
+
                 </fieldset>
                 <div>
                     <hr class="my-6">
@@ -444,6 +456,12 @@
         </script>
         <script id="selectedDestinations" type="application/json">
             @json($selectedDestinations)
+        </script>
+        <script id="selectedKeywords" type="application/json">
+            @json($selectedKeywords)
+        </script>
+        <script id="selectedKeywords" type="application/json">
+            @json($selectedKeywords)
         </script>
     @endpush
 </x-app-layout>

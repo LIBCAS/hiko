@@ -8,6 +8,7 @@ use App\Models\Identity;
 use App\Models\Language;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
+use App\Models\Keyword;
 
 // TODO: refaktorovat metody pro získání přidružených dat
 
@@ -38,6 +39,7 @@ class LetterController extends Controller
             'selectedOrigins' => $this->getOrigins($letter),
             'selectedDestinations' => $this->getDestinations($letter),
             'selectedLanguages' => $this->getLanguages($letter),
+            'selectedKeywords' => $this->getKeywords($letter),
             'languages' => Language::all(),
         ]);
     }
@@ -63,6 +65,7 @@ class LetterController extends Controller
             'selectedOrigins' => $this->getOrigins($letter),
             'selectedDestinations' => $this->getDestinations($letter),
             'selectedLanguages' => $this->getLanguages($letter),
+            'selectedKeywords' => $this->getKeywords($letter),
             'languages' => Language::all()
         ]);
     }
@@ -209,6 +212,36 @@ class LetterController extends Controller
                         'id' => $destination->id,
                         'name' => $destination->name,
                         'marked' => $destination->pivot->marked,
+                    ];
+                })
+                ->values()
+                ->toArray();
+        }
+    }
+
+    protected function getKeywords(Letter $letter)
+    {
+        if (request()->old('keyword')) {
+            $ids = request()->old('keyword');
+
+            $keywords = Keyword::whereIn('id', $ids)
+                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
+                ->get();
+
+            return $keywords->map(function ($keyword) {
+                return [
+                    'id' => $keyword->id,
+                    'name' => implode(' | ', array_values($keyword->name)),
+                ];
+            });
+        }
+
+        if ($letter->keywords) {
+            return $letter->keywords
+                ->map(function ($keyword) {
+                    return [
+                        'id' => $keyword->id,
+                        'name' => implode(' | ', array_values($keyword->getTranslations('name'))),
                     ];
                 })
                 ->values()

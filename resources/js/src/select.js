@@ -4,7 +4,7 @@ window.select = function (data) {
     return {
         initSelect: function () {
             new TomSelect(data.element, {
-                plugins: ['checkbox_options'],
+                plugins: ['checkbox_options', 'input_autogrow'],
                 allowEmptyOption: true,
                 create: false,
             })
