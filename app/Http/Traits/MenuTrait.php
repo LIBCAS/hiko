@@ -10,7 +10,7 @@ trait MenuTrait
     {
         $items = [
             [
-                'route' => 'dashboard',
+                'route' => 'letters',
                 'name' => __('Dopisy'),
                 'icon' => 'heroicon-o-mail-open',
                 'ability' => 'view-metadata',

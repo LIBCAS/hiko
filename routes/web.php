@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PlaceController;
+use App\Http\Controllers\LetterController;
 use App\Http\Controllers\KeywordController;
 use App\Http\Controllers\IdentityController;
 use App\Http\Controllers\LocationController;
@@ -12,6 +12,7 @@ use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\KeywordCategoryController;
 use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionController;
+use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
 use App\Http\Controllers\Ajax\KeywordCategoryController as AjaxKeywordCategoryController;
 
 /*
@@ -264,6 +265,40 @@ Route::prefix('identities')->group(function () {
 
     Route::get('/export', [IdentityController::class, 'export'])
         ->name('identities.export')
+        ->middleware(['auth', 'can:manage-metadata']);
+});
+
+Route::prefix('letters')->group(function () {
+    Route::get('/', [LetterController::class, 'index'])
+        ->name('letters')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/create', [LetterController::class, 'create'])
+        ->name('letters.create')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/{letter}/edit', [LetterController::class, 'edit'])
+        ->name('letters.edit')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::post('/', [LetterController::class, 'store'])
+        ->name('letters.store')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::post('/{letter}', [LetterController::class, 'show'])
+        ->name('letters.show')
+        ->middleware(['auth', 'can:view-metadata']);
+
+    Route::put('/{letter}', [LetterController::class, 'update'])
+        ->name('letters.update')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::delete('/{letter}', [LetterController::class, 'destroy'])
+        ->name('letters.destroy')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/export', [LetterController::class, 'export'])
+        ->name('letters.export')
         ->middleware(['auth', 'can:manage-metadata']);
 });
 
