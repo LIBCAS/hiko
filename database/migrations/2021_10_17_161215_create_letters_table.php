@@ -44,7 +44,7 @@ class CreateLettersTable extends Migration
             $table->mediumText('people_mentioned_note')->nullable();
             $table->json('copies')->nullable();
             $table->json('related_resources')->nullable();
-            $table->longText('abstract')->nullable();
+            $table->json('abstract')->nullable();
             $table->text('explicit')->nullable();
             $table->text('incipit')->nullable();
             $table->longText('content')->nullable();

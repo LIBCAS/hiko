@@ -76,7 +76,10 @@ class LetterFactory extends Factory
             'incipit' => $this->faker->sentence(),
             'copyright' => $this->faker->sentence(),
             'status' => 'draft',
-            'abstract' => $this->faker->paragraph(),
+            'abstract' => [
+                'cs' => $this->faker->paragraph(),
+                'en' => $this->faker->paragraph(),
+            ],
             'content' => $this->faker->paragraph(),
             'languages' => 'Czech;Latin',
             'notes_private' => $this->faker->paragraph(),

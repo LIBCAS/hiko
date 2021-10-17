@@ -400,9 +400,9 @@
                     <div>
                         <x-label for="languages" :value="__('Jazyk')" />
                         <x-select x-data="select({element: $el })" x-init="initSelect()" id="languages"
-                            class="block w-full mt-1" name="languages[]" multiple >
+                            class="block w-full mt-1" name="languages[]" multiple>
                             @foreach ($languages as $language)
-                                <option value="{{ $language->name }}" @if (in_array($language->name, $selectedLanguages)) selected @endif >
+                                <option value="{{ $language->name }}" @if (in_array($language->name, $selectedLanguages)) selected @endif>
                                     {{ $language->name }}
                                 </option>
                             @endforeach
@@ -411,7 +411,6 @@
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
-
                     <div>
                         <x-label for="keyword" :value="__('Klíčová slova')" />
                         <x-select name="keyword[]" class="block w-full mt-1" id="keyword"
@@ -419,10 +418,27 @@
                             x-init="initSelect()" multiple>
                         </x-select>
                         @error('keyword')
-                        <div class="text-red-600">{{ $message }}</div>
-                    @enderror
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
                     </div>
-
+                    <div>
+                        <x-label for="abstract_cs" :value="__('Abstrakt CS')" />
+                        <x-textarea name="abstract_cs" id="abstract_cs" class="block w-full mt-1">
+                            {{ old('abstract_cs', $letter->translations['abstract']['cs'] ?? '') }}
+                        </x-textarea>
+                        @error('abstract_cs')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div>
+                        <x-label for="abstract_en" :value="__('Abstrakt EN')" />
+                        <x-textarea name="abstract_en" id="abstract_en" class="block w-full mt-1">
+                            {{ old('abstract_en', $letter->translations['abstract']['en'] ?? '') }}
+                        </x-textarea>
+                        @error('abstract_en')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </fieldset>
                 <div>
                     <hr class="my-6">
