@@ -24,7 +24,7 @@
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-destination">
-                        Destination
+                        {{ __('Místo určení') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
@@ -160,7 +160,7 @@
                     </div>
                 </fieldset>
                 <div>
-                    <hr class="my-3">
+                    <hr class="my-6">
                 </div>
                 <fieldset id="a-author" class="space-y-3"
                     x-data="{ authors: JSON.parse(document.getElementById('selectedAuthors').innerHTML) }">
@@ -216,7 +216,7 @@
                     </div>
                 </fieldset>
                 <div>
-                    <hr class="my-3">
+                    <hr class="my-6">
                 </div>
                 <fieldset id="a-recipient" class="space-y-3"
                     x-data="{ recipients: JSON.parse(document.getElementById('selectedRecipients').innerHTML) }">
@@ -278,7 +278,7 @@
                     </div>
                 </fieldset>
                 <div>
-                    <hr class="my-3">
+                    <hr class="my-6">
                 </div>
                 <fieldset id="a-origin" class="space-y-3"
                     x-data="{ origins: JSON.parse(document.getElementById('selectedOrigins').innerHTML) }">
@@ -302,7 +302,7 @@
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
                                 x-on:click="origins = origins.filter((item, originIndex) => { return originIndex !== index })">
                                 <x-heroicon-o-trash class="h-5" />
-                                {{ __('Odstranit místo') }}
+                                {{ __('Odstranit místo odeslání') }}
                             </button>
                         </div>
                     </template>
@@ -313,14 +313,14 @@
                         </button>
                     </div>
                     <div>
-                        <x-checkbox name="origin_inferred" label="{{ __('Místo je odvozená') }}"
+                        <x-checkbox name="origin_inferred" label="{{ __('Místo odeslání je odvozená') }}"
                             :checked="boolval(old('origin_inferred', $letter->origin_inferred))" />
                         <small class="block text-gray-600">
                             {{ __('Jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
                         </small>
                     </div>
                     <div>
-                        <x-checkbox name="origin_uncertain" label="{{ __('Místo je nejistý') }}"
+                        <x-checkbox name="origin_uncertain" label="{{ __('Místo odeslání je nejisté') }}"
                             :checked="boolval(old('origin_uncertain', $letter->origin_uncertain))" />
                     </div>
                     <div>
@@ -334,7 +334,64 @@
                     </div>
                 </fieldset>
                 <div>
-                    <hr class="my-3">
+                    <hr class="my-6">
+                </div>
+                <fieldset id="a-destination" class="space-y-3"
+                    x-data="{ destinations: JSON.parse(document.getElementById('selectedDestinations').innerHTML) }">
+                    <legend class="text-lg font-semibold">
+                        {{ __('Místo určení') }}
+                    </legend>
+                    <template x-for="destination, index in destinations"
+                        :key="destination.key ? destination.key : destination.id">
+                        <div class="p-3 space-y-3 border border-primary-light">
+                            <div>
+                                <x-label x-bind:for="'name' + index" :value="__('Jméno')" />
+                                <x-select name="destination[]" class="block w-full mt-1" x-bind:id="'name' + index"
+                                    x-data="ajaxSelect({url: '{{ route('ajax.places') }}', element: $el, options: { id: destination.id, name: destination.name } })"
+                                    x-init="initSelect()">
+                                </x-select>
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'marked' + index" :value="__('Jméno použité v dopise')" />
+                                <x-input x-bind:id="'marked' + index" x-bind:value="destination.marked"
+                                    class="block w-full mt-1" type="text" name="destination_marked[]" />
+                            </div>
+                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
+                                x-on:click="destinations = destinations.filter((item, destinationIndex) => { return destinationIndex !== index })">
+                                <x-heroicon-o-trash class="h-5" />
+                                {{ __('Odstranit místo určení') }}
+                            </button>
+                        </div>
+                    </template>
+                    <div>
+                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
+                            x-on:click="destinations.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
+                            {{ __('Přidat další') }}
+                        </button>
+                    </div>
+                    <div>
+                        <x-checkbox name="destination_inferred" label="{{ __('Místo určení je odvozená') }}"
+                            :checked="boolval(old('destination_inferred', $letter->destination_inferred))" />
+                        <small class="block text-gray-600">
+                            {{ __('Jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
+                        </small>
+                    </div>
+                    <div>
+                        <x-checkbox name="destination_uncertain" label="{{ __('Místo určení je nejisté') }}"
+                            :checked="boolval(old('destination_uncertain', $letter->destination_uncertain))" />
+                    </div>
+                    <div>
+                        <x-label for="destination_note" :value="__('Poznámka k místu určení')" />
+                        <x-textarea name="destination_note" id="destination_note" class="block w-full mt-1">
+                            {{ old('destination_note', $letter->destination_note) }}
+                        </x-textarea>
+                        @error('destination_note')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </fieldset>
+                <div>
+                    <hr class="my-6">
                 </div>
                 <x-button-simple class="w-full">
                     {{ $label }}
@@ -362,6 +419,9 @@
         </script>
         <script id="selectedOrigins" type="application/json">
             @json($selectedOrigins)
+        </script>
+        <script id="selectedDestinations" type="application/json">
+            @json($selectedDestinations)
         </script>
     @endpush
 </x-app-layout>

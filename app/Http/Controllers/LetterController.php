@@ -8,6 +8,8 @@ use App\Models\Identity;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
 
+// TODO: refaktorovat metody pro získání přidružených dat
+
 class LetterController extends Controller
 {
     protected $rules = [
@@ -33,6 +35,7 @@ class LetterController extends Controller
             'selectedAuthors' => $this->getAuthors($letter),
             'selectedRecipients' => $this->getRecipients($letter),
             'selectedOrigins' => $this->getOrigins($letter),
+            'selectedDestinations' => $this->getDestinations($letter),
         ]);
     }
 
@@ -55,6 +58,7 @@ class LetterController extends Controller
             'selectedAuthors' => $this->getAuthors($letter),
             'selectedRecipients' => $this->getRecipients($letter),
             'selectedOrigins' => $this->getOrigins($letter),
+            'selectedDestinations' => $this->getDestinations($letter),
         ]);
     }
 
@@ -167,6 +171,39 @@ class LetterController extends Controller
                         'id' => $origin->id,
                         'name' => $origin->name,
                         'marked' => $origin->pivot->marked,
+                    ];
+                })
+                ->values()
+                ->toArray();
+        }
+    }
+
+    protected function getDestinations(Letter $letter)
+    {
+        if (request()->old('destination')) {
+            $ids = request()->old('destination');
+            $names = request()->old('destination_marked');
+
+            $destinations = Place::whereIn('id', $ids)
+                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
+                ->get();
+
+            return $destinations->map(function ($destination, $index) use ($names) {
+                return [
+                    'id' => $destination->id,
+                    'name' => $destination->name,
+                    'marked' => $names[$index],
+                ];
+            });
+        }
+
+        if ($letter->destinations) {
+            return $letter->destinations
+                ->map(function ($destination) {
+                    return [
+                        'id' => $destination->id,
+                        'name' => $destination->name,
+                        'marked' => $destination->pivot->marked,
                     ];
                 })
                 ->values()
