@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Place;
 use App\Models\Letter;
 use App\Models\Identity;
+use App\Models\Language;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
 
@@ -36,6 +37,8 @@ class LetterController extends Controller
             'selectedRecipients' => $this->getRecipients($letter),
             'selectedOrigins' => $this->getOrigins($letter),
             'selectedDestinations' => $this->getDestinations($letter),
+            'selectedLanguages' => $this->getLanguages($letter),
+            'languages' => Language::all(),
         ]);
     }
 
@@ -59,6 +62,8 @@ class LetterController extends Controller
             'selectedRecipients' => $this->getRecipients($letter),
             'selectedOrigins' => $this->getOrigins($letter),
             'selectedDestinations' => $this->getDestinations($letter),
+            'selectedLanguages' => $this->getLanguages($letter),
+            'languages' => Language::all()
         ]);
     }
 
@@ -209,5 +214,18 @@ class LetterController extends Controller
                 ->values()
                 ->toArray();
         }
+    }
+
+    protected function getLanguages(Letter $letter)
+    {
+        if (request()->old('languages')) {
+            return request()->old('languages');
+        }
+
+        if (empty($letter->languages)) {
+            return [];
+        }
+
+        return explode(';', $letter->languages);
     }
 }

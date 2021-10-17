@@ -29,7 +29,7 @@
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-content">
-                        Content
+                        {{ __('Obsah') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
@@ -386,6 +386,28 @@
                             {{ old('destination_note', $letter->destination_note) }}
                         </x-textarea>
                         @error('destination_note')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </fieldset>
+                <div>
+                    <hr class="my-6">
+                </div>
+                <fieldset id="a-content" class="space-y-3">
+                    <legend class="text-lg font-semibold">
+                        {{ __('Obsah') }}
+                    </legend>
+                    <div>
+                        <x-label for="languages" :value="__('Jazyk')" />
+                        <x-select x-data="select({element: $el })" x-init="initSelect()" id="languages"
+                            class="block w-full mt-1" name="languages[]" multiple >
+                            @foreach ($languages as $language)
+                                <option value="{{ $language->name }}" @if (in_array($language->name, $selectedLanguages)) selected @endif >
+                                    {{ $language->name }}
+                                </option>
+                            @endforeach
+                        </x-select>
+                        @error('languages')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
