@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Place;
 use App\Models\Keyword;
 use App\Models\Identity;
 use Illuminate\Support\Str;
@@ -22,7 +23,25 @@ class Letter extends Model
     public function identities()
     {
         return $this->belongsToMany(Identity::class)
-            ->withPivot('position', 'role', 'marked', 'salutation');
+            ->withPivot('position', 'role', 'marked', 'salutation')
+            ->orderBy('pivot_position', 'asc');
+    }
+
+    public function places()
+    {
+        return $this->belongsToMany(Place::class)
+            ->withPivot('position', 'role', 'marked')
+            ->orderBy('pivot_position', 'asc');
+    }
+
+    public function origins()
+    {
+        return $this->places()->where('role', '=', 'origin');
+    }
+
+    public function destinations()
+    {
+        return $this->places()->where('role', '=', 'destination');
     }
 
     public function keywords()
