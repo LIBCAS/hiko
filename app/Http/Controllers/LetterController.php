@@ -40,6 +40,7 @@ class LetterController extends Controller
             'selectedDestinations' => $this->getDestinations($letter),
             'selectedLanguages' => $this->getLanguages($letter),
             'selectedKeywords' => $this->getKeywords($letter),
+            'selectedMentioned' => $this->getMentioned($letter),
             'languages' => Language::all(),
         ]);
     }
@@ -66,6 +67,7 @@ class LetterController extends Controller
             'selectedDestinations' => $this->getDestinations($letter),
             'selectedLanguages' => $this->getLanguages($letter),
             'selectedKeywords' => $this->getKeywords($letter),
+            'selectedMentioned' => $this->getMentioned($letter),
             'languages' => Language::all()
         ]);
     }
@@ -128,17 +130,17 @@ class LetterController extends Controller
                 ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
                 ->get();
 
-            return $recipients->map(function ($author, $index) use ($names, $salutations) {
+            return $recipients->map(function ($recipient, $index) use ($names, $salutations) {
                 return [
-                    'id' => $author->id,
-                    'name' => $author->name,
+                    'id' => $recipient->id,
+                    'name' => $recipient->name,
                     'marked' => $names[$index],
                     'salutation' => $salutations[$index],
                 ];
             });
         }
 
-        if ($letter->recipients()) {
+        if ($letter->recipients) {
             return $letter->recipients
                 ->map(function ($recipient) {
                     return [
@@ -146,6 +148,36 @@ class LetterController extends Controller
                         'name' => $recipient->name,
                         'marked' => $recipient->pivot->marked,
                         'salutation' => $recipient->pivot->salutation,
+                    ];
+                })
+                ->values()
+                ->toArray();
+        }
+    }
+
+    protected function getMentioned(Letter $letter)
+    {
+        if (request()->old('mentioned')) {
+            $ids = request()->old('mentioned');
+
+            $mentions = Identity::whereIn('id', $ids)
+                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
+                ->get();
+
+            return $mentions->map(function ($mentioned) {
+                return [
+                    'id' => $mentioned->id,
+                    'name' => $mentioned->name,
+                ];
+            });
+        }
+
+        if ($letter->mentioned) {
+            return $letter->mentioned
+                ->map(function ($mentioned) {
+                    return [
+                        'id' => $mentioned->id,
+                        'name' => $mentioned->name,
                     ];
                 })
                 ->values()

@@ -58,12 +58,12 @@
         <div>
             <x-success-alert />
             <form action="{{ $action }}" method="post" onkeydown="return event.key != 'Enter';"
-                class="max-w-sm -mt-3 space-y-3" autocomplete="off">
+                class="max-w-sm -mt-3 space-y-6" autocomplete="off">
                 @csrf
                 @isset($method)
                     @method($method)
                 @endisset
-                <fieldset id="a-dates" class="space-y-3">
+                <fieldset id="a-dates" class="space-y-6">
                     <legend class="text-lg font-semibold">
                         {{ __('Datum') }}
                     </legend>
@@ -162,13 +162,13 @@
                 <div>
                     <hr class="my-6">
                 </div>
-                <fieldset id="a-author" class="space-y-3"
+                <fieldset id="a-author" class="space-y-6"
                     x-data="{ authors: JSON.parse(document.getElementById('selectedAuthors').innerHTML) }">
                     <legend class="text-lg font-semibold">
                         {{ __('Autor') }}
                     </legend>
                     <template x-for="author, index in authors" :key="author.key ? author.key : author.id">
-                        <div class="p-3 space-y-3 border border-primary-light">
+                        <div class="p-3 space-y-6 border border-primary-light">
                             <div>
                                 <x-label x-bind:for="'name' + index" :value="__('Jméno autora')" />
                                 <x-select name="author[]" class="block w-full mt-1" x-bind:id="'name' + index"
@@ -218,14 +218,14 @@
                 <div>
                     <hr class="my-6">
                 </div>
-                <fieldset id="a-recipient" class="space-y-3"
+                <fieldset id="a-recipient" class="space-y-6"
                     x-data="{ recipients: JSON.parse(document.getElementById('selectedRecipients').innerHTML) }">
                     <legend class="text-lg font-semibold">
                         {{ __('Příjemce') }}
                     </legend>
                     <template x-for="recipient, index in recipients"
                         :key="recipient.key ? recipient.key : recipient.id">
-                        <div class="p-3 space-y-3 border border-primary-light">
+                        <div class="p-3 space-y-6 border border-primary-light">
                             <div>
                                 <x-label x-bind:for="'name' + index" :value="__('Jméno příjemce')" />
                                 <x-select name="recipient[]" class="block w-full mt-1" x-bind:id="'name' + index"
@@ -280,13 +280,13 @@
                 <div>
                     <hr class="my-6">
                 </div>
-                <fieldset id="a-origin" class="space-y-3"
+                <fieldset id="a-origin" class="space-y-6"
                     x-data="{ origins: JSON.parse(document.getElementById('selectedOrigins').innerHTML) }">
                     <legend class="text-lg font-semibold">
                         {{ __('Místo odeslání') }}
                     </legend>
                     <template x-for="origin, index in origins" :key="origin.key ? origin.key : origin.id">
-                        <div class="p-3 space-y-3 border border-primary-light">
+                        <div class="p-3 space-y-6 border border-primary-light">
                             <div>
                                 <x-label x-bind:for="'name' + index" :value="__('Jméno')" />
                                 <x-select name="origin[]" class="block w-full mt-1" x-bind:id="'name' + index"
@@ -336,14 +336,14 @@
                 <div>
                     <hr class="my-6">
                 </div>
-                <fieldset id="a-destination" class="space-y-3"
+                <fieldset id="a-destination" class="space-y-6"
                     x-data="{ destinations: JSON.parse(document.getElementById('selectedDestinations').innerHTML) }">
                     <legend class="text-lg font-semibold">
                         {{ __('Místo určení') }}
                     </legend>
                     <template x-for="destination, index in destinations"
                         :key="destination.key ? destination.key : destination.id">
-                        <div class="p-3 space-y-3 border border-primary-light">
+                        <div class="p-3 space-y-6 border border-primary-light">
                             <div>
                                 <x-label x-bind:for="'name' + index" :value="__('Jméno')" />
                                 <x-select name="destination[]" class="block w-full mt-1" x-bind:id="'name' + index"
@@ -393,7 +393,7 @@
                 <div>
                     <hr class="my-6">
                 </div>
-                <fieldset id="a-content" class="space-y-3">
+                <fieldset id="a-content" class="space-y-6">
                     <legend class="text-lg font-semibold">
                         {{ __('Popis obsahu') }}
                     </legend>
@@ -454,6 +454,16 @@
                             {{ old('explicit', $letter->explicit) }}
                         </x-textarea>
                         @error('explicit')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div>
+                        <x-label for="mentioned" :value="__('Zmíněné osoby')" />
+                        <x-select name="mentioned[]" class="block w-full mt-1" id="mentioned"
+                            x-data="ajaxSelect({url: '{{ route('ajax.identities') }}', element: $el, options: JSON.parse(document.getElementById('selectedMentioned').innerHTML) })"
+                            x-init="initSelect()" multiple>
+                        </x-select>
+                        @error('mentioned')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
@@ -523,6 +533,9 @@
         </script>
         <script id="selectedKeywords" type="application/json">
             @json($selectedKeywords)
+        </script>
+        <script id="selectedMentioned" type="application/json">
+            @json($selectedMentioned)
         </script>
     @endpush
 </x-app-layout>
