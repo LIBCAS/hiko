@@ -9,7 +9,7 @@
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-author">
-                        Author
+                        {{ __('Autor') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
@@ -113,6 +113,9 @@
                     <div>
                         <x-checkbox name="date_inferred" label="{{ __('Datum je vyvozené') }}"
                             :checked="boolval(old('date_inferred', $letter->date_inferred))" />
+                        <small class="block text-gray-600">
+                            {{ __('Datum není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
+                        </small>
                     </div>
                     <div
                         x-data="{ isRange: {{ var_export(boolval(old('date_day', $letter->date_is_range)), true) }} }">
@@ -148,13 +151,74 @@
                     </div>
                     <div>
                         <x-label for="date_note" :value="__('Poznámka k datu')" />
-                        <x-textarea name="date_note" id="date_note" class="block w-full mt-1">{{ old('date_note', $letter->date_note) }}
+                        <x-textarea name="date_note" id="date_note" class="block w-full mt-1">
+                            {{ old('date_note', $letter->date_note) }}
                         </x-textarea>
                         @error('date_note')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
                 </fieldset>
+                <div>
+                    <hr class="my-3">
+                </div>
+                <fieldset id="a-author" class="space-y-3"
+                    x-data="{ authors: JSON.parse(document.getElementById('selectedAuthors').innerHTML) }">
+                    <legend class="text-lg font-semibold">
+                        {{ __('Autor') }}
+                    </legend>
+                    <template x-for="author, index in authors" :key="author.key ? author.key : author.id">
+                        <div class="p-3 space-y-3 border border-primary-light">
+                            <div>
+                                <x-label x-bind:for="'name' + index" :value="__('Jméno autora')" />
+                                <x-select name="author[]" class="block w-full mt-1" x-bind:id="'name' + index"
+                                    x-data="ajaxSelect({url: '{{ route('ajax.identities') }}', element: $el, options: { id: author.id, name: author.name } })"
+                                    x-init="initSelect()">
+                                </x-select>
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'marked' + index" :value="__('Jméno použité v dopise')" />
+                                <x-input x-bind:id="'marked' + index" x-bind:value="author.marked"
+                                    class="block w-full mt-1" type="text" name="author_marked[]" />
+                            </div>
+                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
+                                aria-label="{{ __('Odstranit autora') }}"
+                                x-on:click="authors = authors.filter((item, authorIndex) => { return authorIndex !== index })">
+                                <x-heroicon-o-trash class="h-5" />
+                                {{ __('Odstranit autora') }}
+                            </button>
+                        </div>
+                    </template>
+                    <div>
+                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
+                            x-on:click="authors.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
+                            {{ __('Přidat další') }}
+                        </button>
+                    </div>
+                    <div>
+                        <x-checkbox name="author_inferred" label="{{ __('Datum je vyvozené') }}"
+                            :checked="boolval(old('author_inferred', $letter->author_inferred))" />
+                        <small class="block text-gray-600">
+                            {{ __('Autorovo jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
+                        </small>
+                    </div>
+                    <div>
+                        <x-checkbox name="author_uncertain" label="{{ __('Autor je nejistý') }}"
+                            :checked="boolval(old('author_uncertain', $letter->author_uncertain))" />
+                    </div>
+                    <div>
+                        <x-label for="author_note" :value="__('Poznámka k autorům')" />
+                        <x-textarea name="author_note" id="author_note" class="block w-full mt-1">
+                            {{ old('author_note', $letter->author_note) }}
+                        </x-textarea>
+                        @error('author_note')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </fieldset>
+                <div>
+                    <hr class="my-3">
+                </div>
                 <x-button-simple class="w-full">
                     {{ $label }}
                 </x-button-simple>
@@ -172,4 +236,9 @@
             @endif
         </div>
     </div>
+    @push('scripts')
+        <script id="selectedAuthors" type="application/json">
+            @json($selectedAuthors)
+        </script>
+    @endpush
 </x-app-layout>
