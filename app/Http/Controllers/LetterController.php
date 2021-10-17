@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Place;
 use App\Models\Letter;
+use App\Models\Identity;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
-use App\Models\Identity;
 
 class LetterController extends Controller
 {
@@ -31,6 +32,7 @@ class LetterController extends Controller
             'label' => __('Vytvořit'),
             'selectedAuthors' => $this->getAuthors($letter),
             'selectedRecipients' => $this->getRecipients($letter),
+            'selectedOrigins' => $this->getOrigins($letter),
         ]);
     }
 
@@ -52,6 +54,7 @@ class LetterController extends Controller
             'label' => __('Upravit'),
             'selectedAuthors' => $this->getAuthors($letter),
             'selectedRecipients' => $this->getRecipients($letter),
+            'selectedOrigins' => $this->getOrigins($letter),
         ]);
     }
 
@@ -131,6 +134,39 @@ class LetterController extends Controller
                         'name' => $recipient->name,
                         'marked' => $recipient->pivot->marked,
                         'salutation' => $recipient->pivot->salutation,
+                    ];
+                })
+                ->values()
+                ->toArray();
+        }
+    }
+
+    protected function getOrigins(Letter $letter)
+    {
+        if (request()->old('origin')) {
+            $ids = request()->old('origin');
+            $names = request()->old('origin_marked');
+
+            $origins = Place::whereIn('id', $ids)
+                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
+                ->get();
+
+            return $origins->map(function ($origin, $index) use ($names) {
+                return [
+                    'id' => $origin->id,
+                    'name' => $origin->name,
+                    'marked' => $names[$index],
+                ];
+            });
+        }
+
+        if ($letter->origins) {
+            return $letter->origins
+                ->map(function ($origin) {
+                    return [
+                        'id' => $origin->id,
+                        'name' => $origin->name,
+                        'marked' => $origin->pivot->marked,
                     ];
                 })
                 ->values()

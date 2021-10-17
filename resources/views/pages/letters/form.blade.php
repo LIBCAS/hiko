@@ -19,7 +19,7 @@
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-origin">
-                        Origin
+                        {{ __('Místo odeslání') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
@@ -223,7 +223,8 @@
                     <legend class="text-lg font-semibold">
                         {{ __('Příjemce') }}
                     </legend>
-                    <template x-for="recipient, index in recipients" :key="recipient.key ? recipient.key : recipient.id">
+                    <template x-for="recipient, index in recipients"
+                        :key="recipient.key ? recipient.key : recipient.id">
                         <div class="p-3 space-y-3 border border-primary-light">
                             <div>
                                 <x-label x-bind:for="'name' + index" :value="__('Jméno příjemce')" />
@@ -279,6 +280,62 @@
                 <div>
                     <hr class="my-3">
                 </div>
+                <fieldset id="a-origin" class="space-y-3"
+                    x-data="{ origins: JSON.parse(document.getElementById('selectedOrigins').innerHTML) }">
+                    <legend class="text-lg font-semibold">
+                        {{ __('Místo odeslání') }}
+                    </legend>
+                    <template x-for="origin, index in origins" :key="origin.key ? origin.key : origin.id">
+                        <div class="p-3 space-y-3 border border-primary-light">
+                            <div>
+                                <x-label x-bind:for="'name' + index" :value="__('Jméno')" />
+                                <x-select name="origin[]" class="block w-full mt-1" x-bind:id="'name' + index"
+                                    x-data="ajaxSelect({url: '{{ route('ajax.places') }}', element: $el, options: { id: origin.id, name: origin.name } })"
+                                    x-init="initSelect()">
+                                </x-select>
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'marked' + index" :value="__('Jméno použité v dopise')" />
+                                <x-input x-bind:id="'marked' + index" x-bind:value="origin.marked"
+                                    class="block w-full mt-1" type="text" name="origin_marked[]" />
+                            </div>
+                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
+                                x-on:click="origins = origins.filter((item, originIndex) => { return originIndex !== index })">
+                                <x-heroicon-o-trash class="h-5" />
+                                {{ __('Odstranit místo') }}
+                            </button>
+                        </div>
+                    </template>
+                    <div>
+                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
+                            x-on:click="origins.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
+                            {{ __('Přidat další') }}
+                        </button>
+                    </div>
+                    <div>
+                        <x-checkbox name="origin_inferred" label="{{ __('Místo je odvozená') }}"
+                            :checked="boolval(old('origin_inferred', $letter->origin_inferred))" />
+                        <small class="block text-gray-600">
+                            {{ __('Jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
+                        </small>
+                    </div>
+                    <div>
+                        <x-checkbox name="origin_uncertain" label="{{ __('Místo je nejistý') }}"
+                            :checked="boolval(old('origin_uncertain', $letter->origin_uncertain))" />
+                    </div>
+                    <div>
+                        <x-label for="origin_note" :value="__('Poznámka k místu odeslání')" />
+                        <x-textarea name="origin_note" id="origin_note" class="block w-full mt-1">
+                            {{ old('origin_note', $letter->origin_note) }}
+                        </x-textarea>
+                        @error('origin_note')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </fieldset>
+                <div>
+                    <hr class="my-3">
+                </div>
                 <x-button-simple class="w-full">
                     {{ $label }}
                 </x-button-simple>
@@ -302,6 +359,9 @@
         </script>
         <script id="selectedRecipients" type="application/json">
             @json($selectedRecipients)
+        </script>
+        <script id="selectedOrigins" type="application/json">
+            @json($selectedOrigins)
         </script>
     @endpush
 </x-app-layout>

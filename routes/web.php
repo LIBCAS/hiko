@@ -9,12 +9,13 @@ use App\Http\Controllers\IdentityController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfessionController;
+use App\Http\Controllers\Ajax\AjaxPlaceController;
 use App\Http\Controllers\KeywordCategoryController;
+use App\Http\Controllers\Ajax\AjaxIdentityController;
 use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
 use App\Http\Controllers\Ajax\KeywordCategoryController as AjaxKeywordCategoryController;
-use App\Http\Controllers\Ajax\AjaxIdentityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -318,6 +319,10 @@ Route::prefix('ajax')->group(function () {
 
     Route::get('/identity', AjaxIdentityController::class)
         ->name('ajax.identities')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/place', AjaxPlaceController::class)
+        ->name('ajax.places')
         ->middleware(['auth', 'can:manage-metadata']);
 });
 

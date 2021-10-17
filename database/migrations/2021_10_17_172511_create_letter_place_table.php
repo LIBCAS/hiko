@@ -16,14 +16,14 @@ class CreateLetterPlaceTable extends Migration
         Schema::create('letter_place', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->unique(['letter_id', 'place_id']);
+            $table->unique(['letter_id', 'place_id', 'role']);
             $table->foreignId('letter_id')
                 ->constrained()
                 ->onDelete('cascade');
             $table->foreignId('place_id')
                 ->constrained()
                 ->onDelete('cascade');
-            $table->text('role')->nullable();
+            $table->string('role', 100);
             $table->integer('position')->nullable();
             $table->text('marked')->nullable();
         });
