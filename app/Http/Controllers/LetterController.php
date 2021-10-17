@@ -9,7 +9,9 @@ use App\Models\Identity;
 
 class LetterController extends Controller
 {
-    protected $rules = [];
+    protected $rules = [
+        'name' => 'required',
+    ];
 
     public function index()
     {
@@ -28,7 +30,7 @@ class LetterController extends Controller
             'action' => route('letters.store'),
             'label' => __('Vytvořit'),
             'selectedAuthors' => $this->getAuthors($letter),
-
+            'selectedRecipients' => $this->getRecipients($letter),
         ]);
     }
 
@@ -49,7 +51,7 @@ class LetterController extends Controller
             'action' => route('letters.update', $letter),
             'label' => __('Upravit'),
             'selectedAuthors' => $this->getAuthors($letter),
-
+            'selectedRecipients' => $this->getRecipients($letter),
         ]);
     }
 
@@ -93,6 +95,42 @@ class LetterController extends Controller
                         'id' => $author->id,
                         'name' => $author->name,
                         'marked' => $author->pivot->marked,
+                    ];
+                })
+                ->values()
+                ->toArray();
+        }
+    }
+
+    protected function getRecipients(Letter $letter)
+    {
+        if (request()->old('recipient')) {
+            $ids = request()->old('recipient');
+            $names = request()->old('recipient_marked');
+            $salutations = request()->old('recipient_salutation');
+
+            $recipients = Identity::whereIn('id', $ids)
+                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
+                ->get();
+
+            return $recipients->map(function ($author, $index) use ($names, $salutations) {
+                return [
+                    'id' => $author->id,
+                    'name' => $author->name,
+                    'marked' => $names[$index],
+                    'salutation' => $salutations[$index],
+                ];
+            });
+        }
+
+        if ($letter->recipients()) {
+            return $letter->recipients
+                ->map(function ($recipient) {
+                    return [
+                        'id' => $recipient->id,
+                        'name' => $recipient->name,
+                        'marked' => $recipient->pivot->marked,
+                        'salutation' => $recipient->pivot->salutation,
                     ];
                 })
                 ->values()

@@ -14,7 +14,7 @@
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-recipient">
-                        Recipient
+                        {{ __('Příjemce') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
@@ -182,7 +182,6 @@
                                     class="block w-full mt-1" type="text" name="author_marked[]" />
                             </div>
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
-                                aria-label="{{ __('Odstranit autora') }}"
                                 x-on:click="authors = authors.filter((item, authorIndex) => { return authorIndex !== index })">
                                 <x-heroicon-o-trash class="h-5" />
                                 {{ __('Odstranit autora') }}
@@ -199,7 +198,7 @@
                         <x-checkbox name="author_inferred" label="{{ __('Datum je odvozené') }}"
                             :checked="boolval(old('author_inferred', $letter->author_inferred))" />
                         <small class="block text-gray-600">
-                            {{ __('Autorovo jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
+                            {{ __('Jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
                         </small>
                     </div>
                     <div>
@@ -212,6 +211,67 @@
                             {{ old('author_note', $letter->author_note) }}
                         </x-textarea>
                         @error('author_note')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </fieldset>
+                <div>
+                    <hr class="my-3">
+                </div>
+                <fieldset id="a-recipient" class="space-y-3"
+                    x-data="{ recipients: JSON.parse(document.getElementById('selectedRecipients').innerHTML) }">
+                    <legend class="text-lg font-semibold">
+                        {{ __('Příjemce') }}
+                    </legend>
+                    <template x-for="recipient, index in recipients" :key="recipient.key ? recipient.key : recipient.id">
+                        <div class="p-3 space-y-3 border border-primary-light">
+                            <div>
+                                <x-label x-bind:for="'name' + index" :value="__('Jméno příjemce')" />
+                                <x-select name="recipient[]" class="block w-full mt-1" x-bind:id="'name' + index"
+                                    x-data="ajaxSelect({url: '{{ route('ajax.identities') }}', element: $el, options: { id: recipient.id, name: recipient.name } })"
+                                    x-init="initSelect()">
+                                </x-select>
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'marked' + index" :value="__('Jméno použité v dopise')" />
+                                <x-input x-bind:id="'marked' + index" x-bind:value="recipient.marked"
+                                    class="block w-full mt-1" type="text" name="recipient_marked[]" />
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'salutation' + index" :value="__('Oslovení')" />
+                                <x-input x-bind:id="'salutation' + index" x-bind:value="recipient.salutation"
+                                    class="block w-full mt-1" type="text" name="recipient_salutation[]" />
+                            </div>
+                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
+                                x-on:click="recipients = recipients.filter((item, recipientIndex) => { return recipientIndex !== index })">
+                                <x-heroicon-o-trash class="h-5" />
+                                {{ __('Odstranit příjemce') }}
+                            </button>
+                        </div>
+                    </template>
+                    <div>
+                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
+                            x-on:click="recipients.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
+                            {{ __('Přidat další') }}
+                        </button>
+                    </div>
+                    <div>
+                        <x-checkbox name="recipient_inferred" label="{{ __('Datum je odvozené') }}"
+                            :checked="boolval(old('recipient_inferred', $letter->recipient_inferred))" />
+                        <small class="block text-gray-600">
+                            {{ __('Jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
+                        </small>
+                    </div>
+                    <div>
+                        <x-checkbox name="recipient_uncertain" label="{{ __('Příjemce je nejistý') }}"
+                            :checked="boolval(old('recipient_uncertain', $letter->recipient_uncertain))" />
+                    </div>
+                    <div>
+                        <x-label for="recipient_note" :value="__('Poznámka k příjemcům')" />
+                        <x-textarea name="recipient_note" id="recipient_note" class="block w-full mt-1">
+                            {{ old('recipient_note', $letter->recipient_note) }}
+                        </x-textarea>
+                        @error('recipient_note')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
@@ -239,6 +299,9 @@
     @push('scripts')
         <script id="selectedAuthors" type="application/json">
             @json($selectedAuthors)
+        </script>
+        <script id="selectedRecipients" type="application/json">
+            @json($selectedRecipients)
         </script>
     @endpush
 </x-app-layout>
