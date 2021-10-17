@@ -14,6 +14,7 @@ use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
 use App\Http\Controllers\Ajax\KeywordCategoryController as AjaxKeywordCategoryController;
+use App\Http\Controllers\Ajax\AjaxIdentityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -313,6 +314,10 @@ Route::prefix('ajax')->group(function () {
 
     Route::get('/profession-category', AjaxProfessionCategoryController::class)
         ->name('ajax.professions.category')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/identity', AjaxIdentityController::class)
+        ->name('ajax.identities')
         ->middleware(['auth', 'can:manage-metadata']);
 });
 
