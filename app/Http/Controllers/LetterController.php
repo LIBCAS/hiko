@@ -17,6 +17,12 @@ class LetterController extends Controller
 
     public function create()
     {
+        return view('pages.letters.form', [
+            'title' => __('Nový dopis'),
+            'letter' => new Letter(),
+            'action' => route('letters.store'),
+            'label' => __('Vytvořit'),
+        ]);
     }
 
     public function store(Request $request)
