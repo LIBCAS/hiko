@@ -439,6 +439,51 @@
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
+                    <div>
+                        <x-label for="incipit" :value="__('Incipit')" />
+                        <x-textarea name="incipit" id="incipit" class="block w-full mt-1">
+                            {{ old('incipit', $letter->incipit) }}
+                        </x-textarea>
+                        @error('incipit')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div>
+                        <x-label for="explicit" :value="__('Explicit')" />
+                        <x-textarea name="explicit" id="explicit" class="block w-full mt-1">
+                            {{ old('explicit', $letter->explicit) }}
+                        </x-textarea>
+                        @error('explicit')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div>
+                        <x-label for="people_mentioned_note" :value="__('Poznámka ke zmíněným osobám')" />
+                        <x-textarea name="people_mentioned_note" id="people_mentioned_note" class="block w-full mt-1">
+                            {{ old('people_mentioned_note', $letter->people_mentioned_note) }}
+                        </x-textarea>
+                        @error('people_mentioned_note')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div>
+                        <x-label for="notes_private" :value="__('Poznámka pro zpracovatele')" />
+                        <x-textarea name="notes_private" id="notes_private" class="block w-full mt-1">
+                            {{ old('notes_private', $letter->notes_private) }}
+                        </x-textarea>
+                        @error('notes_private')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div>
+                        <x-label for="notes_public" :value="__('Veřejná poznámka')" />
+                        <x-textarea name="notes_public" id="notes_public" class="block w-full mt-1">
+                            {{ old('notes_public', $letter->notes_public) }}
+                        </x-textarea>
+                        @error('notes_public')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </fieldset>
                 <div>
                     <hr class="my-6">
