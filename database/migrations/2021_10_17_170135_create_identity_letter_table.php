@@ -16,14 +16,14 @@ class CreateIdentityLetterTable extends Migration
         Schema::create('identity_letter', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->unique(['identity_id', 'letter_id']);
+            $table->unique(['identity_id', 'letter_id', 'role']);
             $table->foreignId('identity_id')
                 ->constrained()
                 ->onDelete('cascade');
             $table->foreignId('letter_id')
                 ->constrained()
                 ->onDelete('cascade');
-            $table->text('role')->nullable();
+            $table->string('role', 100)->nullable();
             $table->integer('position')->nullable();
             $table->text('marked')->nullable();
             $table->text('salutation')->nullable();

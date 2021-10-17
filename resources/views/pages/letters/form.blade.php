@@ -111,7 +111,7 @@
                             :checked="boolval(old('date_approximate', $letter->date_approximate))" />
                     </div>
                     <div>
-                        <x-checkbox name="date_inferred" label="{{ __('Datum je vyvozené') }}"
+                        <x-checkbox name="date_inferred" label="{{ __('Datum je odvozené') }}"
                             :checked="boolval(old('date_inferred', $letter->date_inferred))" />
                         <small class="block text-gray-600">
                             {{ __('Datum není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
@@ -196,7 +196,7 @@
                         </button>
                     </div>
                     <div>
-                        <x-checkbox name="author_inferred" label="{{ __('Datum je vyvozené') }}"
+                        <x-checkbox name="author_inferred" label="{{ __('Datum je odvozené') }}"
                             :checked="boolval(old('author_inferred', $letter->author_inferred))" />
                         <small class="block text-gray-600">
                             {{ __('Autorovo jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
