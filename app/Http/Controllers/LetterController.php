@@ -35,6 +35,13 @@ class LetterController extends Controller
 
     public function edit(Letter $letter)
     {
+        return view('pages.letters.form', [
+            'title' => __('Dopis: '),
+            'letter' => $letter,
+            'method' => 'PUT',
+            'action' => route('letters.update', $letter),
+            'label' => __('Upravit'),
+        ]);
     }
 
     public function update(Request $request, Letter $letter)
