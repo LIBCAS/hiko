@@ -9,6 +9,7 @@ use App\Models\Keyword;
 use App\Models\Location;
 use App\Models\Profession;
 use App\Models\KeywordCategory;
+use App\Models\Letter;
 use Illuminate\Database\Seeder;
 use App\Models\ProfessionCategory;
 
@@ -149,5 +150,17 @@ class DatabaseSeeder extends Seeder
             'geoname_id' => 588335,
             'note' => 'on this time the Russian Empire; historical name Dorpat or Děrpt'
         ]);
+
+        $letters = Letter::factory(2)->create();
+
+        $letters->each(function ($letter) {
+            $letter->identities()->attach(1, ['position' => 0, 'role' => 'author', 'marked' => 'XXX']);
+            $letter->identities()->attach(2, ['position' => 0, 'role' => 'recipient', 'marked' => 'YYY']);
+            $letter->identities()->attach(3, ['position' => 0, 'role' => 'marked',]);
+            $letter->identities()->attach(4, ['position' => 0, 'role' => 'marked',]);
+            $letter->keywords()->attach([1,2]);
+            $letter->places()->attach(1, ['position' => 0, 'role' => 'origin', 'marked' => 'Praha']);
+            $letter->places()->attach(2, ['position' => 0, 'role' => 'destination', 'marked' => 'Tartu']);
+        });
     }
 }

@@ -21,8 +21,67 @@ class LetterFactory extends Factory
      */
     public function definition()
     {
+        $date = $this->faker->date('Y n j');
+        $date2 = $this->faker->date('Y n j');
+        $is_range = $this->faker->boolean();
+
         return [
-            //
+            'date_year' => explode(' ', $date)[0],
+            'date_month' => explode(' ', $date)[1],
+            'date_day' => explode(' ', $date)[2],
+            'date_marked' => $date,
+            'date_uncertain' => $this->faker->boolean(),
+            'date_approximate' => $this->faker->boolean(),
+            'date_inferred' => $this->faker->boolean(),
+            'date_is_range' => $is_range,
+            'range_year' => explode(' ', $date2)[0],
+            'range_month' => explode(' ', $date2)[1],
+            'range_day' => explode(' ', $date2)[2],
+            'date_note' => $this->faker->sentence(),
+            'author_inferred' => $this->faker->boolean(),
+            'author_uncertain' => $this->faker->boolean(),
+            'author_note' => $this->faker->sentence(),
+            'recipient_inferred' => $this->faker->boolean(),
+            'recipient_uncertain' => $this->faker->boolean(),
+            'recipient_note' => $this->faker->sentence(),
+            'destination_inferred' => $this->faker->boolean(),
+            'destination_uncertain' => $this->faker->boolean(),
+            'destination_note' => $this->faker->sentence(),
+            'origin_inferred' => $this->faker->boolean(),
+            'origin_uncertain' => $this->faker->boolean(),
+            'origin_note' => $this->faker->sentence(),
+            'people_mentioned_note' => $this->faker->sentence(),
+            'copies' => json_encode([
+                [
+                    'archive' => 'Archiv ' . $this->faker->word(),
+                    'collection' => $this->faker->word(),
+                    'copy' => 'handwritten',
+                    'l_number' => $this->faker->randomNumber(),
+                    'location_note' => $this->faker->sentence(),
+                    'manifestation_notes' => $this->faker->sentence(),
+                    'ms_manifestation' => 'ALS',
+                    'preservation' => 'original',
+                    'repository' => $this->faker->words(3, true),
+                    'signature' => $this->faker->word() . ' ' . $this->faker->randomNumber(),
+                    'type' => 'letter',
+                ]
+            ]),
+            'related_resources' => json_encode([
+                [
+                    'link' => $this->faker->url(),
+                    'title' => $this->faker->words(3, true),
+                ]
+            ]),
+            'explicit' => $this->faker->sentence(),
+            'incipit' => $this->faker->sentence(),
+            'copyright' => $this->faker->sentence(),
+            'status' => 'draft',
+            'abstract' => $this->faker->paragraph(),
+            'content' => $this->faker->paragraph(),
+            'languages' => 'Czech;Latin',
+            'notes_private' => $this->faker->paragraph(),
+            'notes_public' => $this->faker->paragraph(),
+            'content' => $this->faker->paragraphs(3, true),
         ];
     }
 }
