@@ -51,7 +51,7 @@ class LetterFactory extends Factory
             'origin_uncertain' => $this->faker->boolean(),
             'origin_note' => $this->faker->sentence(),
             'people_mentioned_note' => $this->faker->sentence(),
-            'copies' => json_encode([
+            'copies' => [
                 [
                     'archive' => 'Archiv ' . $this->faker->word(),
                     'collection' => $this->faker->word(),
@@ -65,13 +65,13 @@ class LetterFactory extends Factory
                     'signature' => $this->faker->word() . ' ' . $this->faker->randomNumber(),
                     'type' => 'letter',
                 ]
-            ]),
-            'related_resources' => json_encode([
+            ],
+            'related_resources' => [
                 [
                     'link' => $this->faker->url(),
                     'title' => $this->faker->words(3, true),
                 ]
-            ]),
+            ],
             'explicit' => $this->faker->sentence(),
             'incipit' => $this->faker->sentence(),
             'copyright' => $this->faker->sentence(),

@@ -34,7 +34,7 @@
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-related-resource">
-                        Related resources
+                        {{ __('Související zdroje') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
@@ -498,6 +498,41 @@
                 <div>
                     <hr class="my-6">
                 </div>
+                <fieldset id="a-related-resource" class="space-y-6"
+                    x-data="{ relatedResources: JSON.parse(document.getElementById('relatedResources').innerHTML)}">
+                    <legend class="text-lg font-semibold">
+                        {{ __('Související zdroje') }}
+                    </legend>
+                    <template x-for="resource, index in relatedResources" :key="resource.key ? resource.key : index">
+                        <div class="p-3 space-y-6 border border-primary-light">
+                            <div>
+                                <x-label x-bind:for="'resource_title' + index" :value="__('Název')" />
+                                <x-input x-bind:id="'resource_title' + index" x-bind:value="resource.title"
+                                    class="block w-full mt-1" type="text" name="resource_title[]" />
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'resource_link' + index" :value="__('URL')" />
+                                <x-input x-bind:id="'resource_link' + index" x-bind:value="resource.link"
+                                    class="block w-full mt-1" type="text" name="resource_link[]" type="url" />
+                            </div>
+                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
+                                x-on:click="relatedResources = relatedResources.filter((item, resourceIndex) => { return resourceIndex !== index })">
+                                <x-heroicon-o-trash class="h-5" />
+                                {{ __('Odstranit zdroj') }}
+                            </button>
+                        </div>
+                    </template>
+                    <div>
+                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
+                            x-on:click="relatedResources.push({title: '', link: '', key: Math.random().toString(36).substring(7) })">
+                            {{ __('Přidat další') }}
+                        </button>
+                    </div>
+
+
+
+
+                </fieldset>
                 <x-button-simple class="w-full">
                     {{ $label }}
                 </x-button-simple>
@@ -536,6 +571,13 @@
         </script>
         <script id="selectedMentioned" type="application/json">
             @json($selectedMentioned)
+        </script>
+        <script id="relatedResources" type="application/json">
+            @if (empty($letter->related_resources))
+                @json([])
+            @else
+                @json($letter->related_resources)
+            @endif
         </script>
     @endpush
 </x-app-layout>

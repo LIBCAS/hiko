@@ -20,6 +20,11 @@ class Letter extends Model
 
     protected $guarded = ['id', 'uuid'];
 
+    protected $casts = [
+        'copies' => 'array',
+        'related_resources' => 'array',
+    ];
+
     public function identities()
     {
         return $this->belongsToMany(Identity::class)
