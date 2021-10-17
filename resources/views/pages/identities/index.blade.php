@@ -1,7 +1,8 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <a href="{{ route('identities.create') }}" class="max-w-sm px-2 py-1 mb-6 font-bold text-primary hover:underline">
-        + {{ __('Nová osoba / instituce') }}
+    <x-create-link label="{{ __('Nová osoba / instituce') }}" link="{{ route('identities.create') }}" />
+    <a href="{{ route('identities.export') }}" class="inline-block mt-3 text-sm font-semibold">
+        {{ __('Exportovat') }}
     </a>
     <livewire:identities-table :labels="$labels" />
 </x-app-layout>

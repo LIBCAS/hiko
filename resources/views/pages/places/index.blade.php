@@ -1,7 +1,8 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <a href="{{ route('places.create') }}" class="max-w-sm px-2 py-1 mb-6 font-bold text-primary hover:underline">
-        + {{ __('Nové místo') }}
+    <x-create-link label="{{ __('Nové místo') }}" link="{{ route('places.create') }}" />
+    <a href="{{ route('places.export') }}" class="inline-block mt-3 text-sm font-semibold">
+        {{ __('Exportovat') }}
     </a>
     <livewire:places-table />
 </x-app-layout>

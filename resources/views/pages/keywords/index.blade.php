@@ -1,12 +1,13 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <a href="{{ route('keywords.create') }}" class="max-w-sm px-2 py-1 font-bold text-primary hover:underline">
-        + {{ __('Nové klíčové slovo') }}
+    <x-create-link label="{{ __('Nové klíčové slovo') }}" link="{{ route('keywords.create') }}" />
+    <a href="{{ route('keywords.export') }}" class="inline-block mt-3 text-sm font-semibold">
+        {{ __('Exportovat') }}
     </a>
     <livewire:keywords-table />
-    <a href="{{ route('keywords.category.create') }}"
-        class="block max-w-sm px-2 py-1 mt-16 font-bold text-primary hover:underline">
-        + {{ __('Nová kategorie klíčových slov') }}
+    <x-create-link label="{{ __('Nová kategorie klíčových slov') }}" link="{{ route('keywords.category.create') }}" class="mt-16" />
+    <a href="{{ route('keywords.category.export') }}" class="inline-block mt-3 text-sm font-semibold">
+        {{ __('Exportovat') }}
     </a>
     <livewire:keywords-categories-table />
 </x-app-layout>
