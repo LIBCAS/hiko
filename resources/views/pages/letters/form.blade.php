@@ -169,11 +169,11 @@
                     </legend>
                     <template x-for="author, index in authors" :key="author.key ? author.key : author.id">
                         <div class="p-3 space-y-6 border border-primary-light">
-                            <div>
+                            <div class="required">
                                 <x-label x-bind:for="'name' + index" :value="__('Jméno autora')" />
                                 <x-select name="author[]" class="block w-full mt-1" x-bind:id="'name' + index"
                                     x-data="ajaxSelect({url: '{{ route('ajax.identities') }}', element: $el, options: { id: author.id, name: author.name } })"
-                                    x-init="initSelect()">
+                                    x-init="initSelect()" required>
                                 </x-select>
                             </div>
                             <div>
@@ -226,11 +226,11 @@
                     <template x-for="recipient, index in recipients"
                         :key="recipient.key ? recipient.key : recipient.id">
                         <div class="p-3 space-y-6 border border-primary-light">
-                            <div>
+                            <div class="required">
                                 <x-label x-bind:for="'name' + index" :value="__('Jméno příjemce')" />
                                 <x-select name="recipient[]" class="block w-full mt-1" x-bind:id="'name' + index"
                                     x-data="ajaxSelect({url: '{{ route('ajax.identities') }}', element: $el, options: { id: recipient.id, name: recipient.name } })"
-                                    x-init="initSelect()">
+                                    x-init="initSelect()" required>
                                 </x-select>
                             </div>
                             <div>
@@ -287,11 +287,11 @@
                     </legend>
                     <template x-for="origin, index in origins" :key="origin.key ? origin.key : origin.id">
                         <div class="p-3 space-y-6 border border-primary-light">
-                            <div>
+                            <div class="required">
                                 <x-label x-bind:for="'name' + index" :value="__('Jméno')" />
                                 <x-select name="origin[]" class="block w-full mt-1" x-bind:id="'name' + index"
                                     x-data="ajaxSelect({url: '{{ route('ajax.places') }}', element: $el, options: { id: origin.id, name: origin.name } })"
-                                    x-init="initSelect()">
+                                    x-init="initSelect()" required>
                                 </x-select>
                             </div>
                             <div>
@@ -344,11 +344,11 @@
                     <template x-for="destination, index in destinations"
                         :key="destination.key ? destination.key : destination.id">
                         <div class="p-3 space-y-6 border border-primary-light">
-                            <div>
+                            <div class="required">
                                 <x-label x-bind:for="'name' + index" :value="__('Jméno')" />
                                 <x-select name="destination[]" class="block w-full mt-1" x-bind:id="'name' + index"
                                     x-data="ajaxSelect({url: '{{ route('ajax.places') }}', element: $el, options: { id: destination.id, name: destination.name } })"
-                                    x-init="initSelect()">
+                                    x-init="initSelect()" required>
                                 </x-select>
                             </div>
                             <div>
@@ -505,10 +505,10 @@
                     </legend>
                     <template x-for="resource, index in relatedResources" :key="resource.key ? resource.key : index">
                         <div class="p-3 space-y-6 border border-primary-light">
-                            <div>
+                            <div class="required">
                                 <x-label x-bind:for="'resource_title' + index" :value="__('Název')" />
                                 <x-input x-bind:id="'resource_title' + index" x-bind:value="resource.title"
-                                    class="block w-full mt-1" type="text" name="resource_title[]" />
+                                    class="block w-full mt-1" type="text" name="resource_title[]" required />
                             </div>
                             <div>
                                 <x-label x-bind:for="'resource_link' + index" :value="__('URL')" />
@@ -528,10 +528,6 @@
                             {{ __('Přidat další') }}
                         </button>
                     </div>
-
-
-
-
                 </fieldset>
                 <x-button-simple class="w-full">
                     {{ $label }}
@@ -573,11 +569,7 @@
             @json($selectedMentioned)
         </script>
         <script id="relatedResources" type="application/json">
-            @if (empty($letter->related_resources))
-                @json([])
-            @else
-                @json($letter->related_resources)
-            @endif
+            @json($selectedRelatedResources)
         </script>
     @endpush
 </x-app-layout>

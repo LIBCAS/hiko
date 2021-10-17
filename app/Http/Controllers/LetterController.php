@@ -41,6 +41,7 @@ class LetterController extends Controller
             'selectedLanguages' => $this->getLanguages($letter),
             'selectedKeywords' => $this->getKeywords($letter),
             'selectedMentioned' => $this->getMentioned($letter),
+            'selectedRelatedResources' => $this->getRelatedResources($letter),
             'languages' => Language::all(),
         ]);
     }
@@ -68,6 +69,7 @@ class LetterController extends Controller
             'selectedLanguages' => $this->getLanguages($letter),
             'selectedKeywords' => $this->getKeywords($letter),
             'selectedMentioned' => $this->getMentioned($letter),
+            'selectedRelatedResources' => $this->getRelatedResources($letter),
             'languages' => Language::all()
         ]);
     }
@@ -263,7 +265,7 @@ class LetterController extends Controller
             return $keywords->map(function ($keyword) {
                 return [
                     'id' => $keyword->id,
-                    'name' => implode(' | ', array_values($keyword->name)),
+                    'name' => implode(' | ', array_values($keyword->getTranslations('name'))),
                 ];
             });
         }
@@ -280,6 +282,21 @@ class LetterController extends Controller
                 ->toArray();
         }
     }
+
+    protected function getRelatedResources(Letter $letter)
+    {
+        if (request()->old('resource_title')) {
+            return collect(request()->old('resource_title'))->map(function ($resource, $index) {
+                return [
+                    'link' => request()->old('resource_link')[$index],
+                    'title' => $resource,
+                ];
+            });
+        }
+
+        return empty($letter->related_resources) ? [] : $letter->related_resources;
+    }
+
 
     protected function getLanguages(Letter $letter)
     {
