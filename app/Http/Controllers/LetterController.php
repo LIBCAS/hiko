@@ -153,6 +153,9 @@ class LetterController extends Controller
 
     public function destroy(Letter $letter)
     {
+        $letter->delete();
+
+        return redirect()->route('letters')->with('success', 'Odstraněno');
     }
 
     public function export()
