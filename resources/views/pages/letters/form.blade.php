@@ -185,7 +185,7 @@
                             </div>
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
                                 x-on:click="authors = authors.filter((item, authorIndex) => { return authorIndex !== index })">
-                                <x-heroicon-o-trash class="h-5" />
+                                <x-icons.trash class="h-5" />
                                 {{ __('Odstranit autora') }}
                             </button>
                         </div>
@@ -247,7 +247,7 @@
                             </div>
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
                                 x-on:click="recipients = recipients.filter((item, recipientIndex) => { return recipientIndex !== index })">
-                                <x-heroicon-o-trash class="h-5" />
+                                <x-icons.trash class="h-5" />
                                 {{ __('Odstranit příjemce') }}
                             </button>
                         </div>
@@ -303,7 +303,7 @@
                             </div>
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
                                 x-on:click="origins = origins.filter((item, originIndex) => { return originIndex !== index })">
-                                <x-heroicon-o-trash class="h-5" />
+                                <x-icons.trash class="h-5" />
                                 {{ __('Odstranit místo odeslání') }}
                             </button>
                         </div>
@@ -360,7 +360,7 @@
                             </div>
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
                                 x-on:click="destinations = destinations.filter((item, destinationIndex) => { return destinationIndex !== index })">
-                                <x-heroicon-o-trash class="h-5" />
+                                <x-icons.trash class="h-5" />
                                 {{ __('Odstranit místo určení') }}
                             </button>
                         </div>
@@ -519,7 +519,7 @@
                             </div>
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
                                 x-on:click="relatedResources = relatedResources.filter((item, resourceIndex) => { return resourceIndex !== index })">
-                                <x-heroicon-o-trash class="h-5" />
+                                <x-icons.trash class="h-5" />
                                 {{ __('Odstranit zdroj') }}
                             </button>
                         </div>
@@ -660,7 +660,7 @@
                             </div>
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
                                 x-on:click="copies = copies.filter((item, copyIndex) => { return copyIndex !== index })">
-                                <x-heroicon-o-trash class="h-5" />
+                                <x-icons.trash class="h-5" />
                                 {{ __('Odstranit zdroj') }}
                             </button>
                         </div>

@@ -29,7 +29,7 @@
             <p class="font-semibold">
                 <a href="https://github.com/JarkaP/hiko/wiki" target="_blank"
                     class="inline-flex items-center hover:underline">
-                    <x-heroicon-o-question-mark-circle class="w-5 h-5 mr-1" />
+                    <x-icons.question-mark-circle class="w-5 h-5 mr-1" />
                     <span>{{ __('Nápověda') }}</span>
                 </a>
             </p>

@@ -39,7 +39,7 @@
         <div x-data="{ open: false }" class="p-2 border rounded-md border-primary-light">
             <button type="button" @click="open = !open"
                 class="inline-flex items-center font-semibold text-primary hover:underline">
-                <x-heroicon-o-location-marker class="h-5 mr-2" /> <span>{{ __('Vyhledat souřadnice') }}</span>
+                <x-icons.location-marker class="h-5 mr-2" /> <span>{{ __('Vyhledat souřadnice') }}</span>
             </button>
             <span x-show="open" x-transition.duration.500ms>
                 <livewire:geonames-search />

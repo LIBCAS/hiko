@@ -93,7 +93,7 @@
                                 return professionIndex !== index
                             })
                             ">
-                                <x-heroicon-o-trash class="h-5" />
+                                <x-icons.trash class="h-5" />
                             </button>
                         </div>
                     </template>
@@ -123,7 +123,7 @@
                             return categoryIndex !== index
                         })
                         ">
-                                <x-heroicon-o-trash class="h-5" />
+                                <x-icons.trash class="h-5" />
                             </button>
                         </div>
                     </template>

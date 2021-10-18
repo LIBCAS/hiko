@@ -3,7 +3,7 @@
         <x-input wire:model.debounce.50ms="search" class="block w-full mt-1" type="search" x-ref="search"
             @focus="isVisible = true" @keydown.escape.window="isVisible = false" @keydown="isVisible = true"
             @keydown.shift.tab="isVisible = false" />
-        <x-heroicon-o-refresh wire:loading
+        <x-icons.refresh wire:loading
             class="absolute top-0 right-0 h-5 mt-3 mr-4 text-primary-light motion-safe:animate-spin" />
         @if (strlen($search) >= 2)
             <div class="absolute z-50 w-full mt-1 text-sm bg-purple-100 rounded-md"
