@@ -25,7 +25,7 @@ class GeonamesController extends Controller
         return collect($result->geonames)->map(function ($place) {
             return [
                 'adminName' => $place->adminName1,
-                'country' => $place->countryName,
+                'country' => isset($place->countryName) ? $place->countryName : '',
                 'latitude' => $place->lat,
                 'longitude' => $place->lng,
                 'name' => $place->name,
