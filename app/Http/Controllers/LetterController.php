@@ -4,16 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Place;
 use App\Models\Letter;
+use App\Models\Keyword;
 use App\Models\Identity;
 use App\Models\Language;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
-use App\Models\Keyword;
+use App\Http\Traits\LetterLabelsTrait;
 
 // TODO: refaktorovat metody pro získání přidružených dat
 
 class LetterController extends Controller
 {
+    use LetterLabelsTrait;
+
     protected $rules = [
         'name' => 'required',
     ];
@@ -42,7 +45,10 @@ class LetterController extends Controller
             'selectedKeywords' => $this->getKeywords($letter),
             'selectedMentioned' => $this->getMentioned($letter),
             'selectedRelatedResources' => $this->getRelatedResources($letter),
+            'selectedCopies' => $this->getCopies($letter),
             'languages' => Language::all(),
+            'labels' => $this->getLabels(),
+            'locations' => $this->getLocations(),
         ]);
     }
 
@@ -70,7 +76,10 @@ class LetterController extends Controller
             'selectedKeywords' => $this->getKeywords($letter),
             'selectedMentioned' => $this->getMentioned($letter),
             'selectedRelatedResources' => $this->getRelatedResources($letter),
-            'languages' => Language::all()
+            'selectedCopies' => $this->getCopies($letter),
+            'languages' => Language::all(),
+            'labels' => $this->getLabels(),
+            'locations' => $this->getLocations(),
         ]);
     }
 
@@ -297,6 +306,36 @@ class LetterController extends Controller
         return empty($letter->related_resources) ? [] : $letter->related_resources;
     }
 
+    protected function getCopies(Letter $letter)
+    {
+        $fields = [
+            'archive',
+            'collection',
+            'copy',
+            'l_number',
+            'location_note',
+            'manifestation_notes',
+            'ms_manifestation',
+            'preservation',
+            'repository',
+            'signature',
+            'type',
+        ];
+
+        if (request()->old('copies')) {
+            $copies = [];
+
+            for ($i = 0; $i < (int) request()->old('copies'); $i++) {
+                foreach ($fields as $field) {
+                    $copies[$i][$field] = request()->old($field)[$i];
+                }
+            }
+
+            return $copies;
+        }
+
+        return empty($letter->copies) ? [] : $letter->copies;
+    }
 
     protected function getLanguages(Letter $letter)
     {

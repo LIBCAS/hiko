@@ -39,7 +39,7 @@
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-copies">
-                        Manifestations and repositories
+                        {{ __('Manifestace a uložení') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
@@ -499,7 +499,7 @@
                     <hr class="my-6">
                 </div>
                 <fieldset id="a-related-resource" class="space-y-6"
-                    x-data="{ relatedResources: JSON.parse(document.getElementById('relatedResources').innerHTML)}">
+                    x-data="{ relatedResources: JSON.parse(document.getElementById('selectedRelatedResources').innerHTML)}">
                     <legend class="text-lg font-semibold">
                         {{ __('Související zdroje') }}
                     </legend>
@@ -525,6 +525,160 @@
                     <div>
                         <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
                             x-on:click="relatedResources.push({title: '', link: '', key: Math.random().toString(36).substring(7) })">
+                            {{ __('Přidat další') }}
+                        </button>
+                    </div>
+                </fieldset>
+                <fieldset id="a-copies" class="space-y-6"
+                    x-data="{ copies: JSON.parse(document.getElementById('selectedCopies').innerHTML)}">
+                    <legend class="text-lg font-semibold">
+                        {{ __('Manifestace a uložení') }}
+                    </legend>
+
+                    <template x-for="copy, index in copies" :key="copy.key ? copy.key : index">
+                        <div class="p-3 space-y-6 border border-primary-light">
+                            <div>
+                                <x-label x-bind:for="'ms_manifestation' + index"
+                                    :value="__('MS manifestation (EMLO)')" />
+                                <x-select x-model="copies[index]['ms_manifestation']" name="ms_manifestation[]"
+                                    class="block w-full mt-1">
+                                    <option value="">
+                                        ---
+                                    </option>
+                                    @foreach ($labels['ms_manifestation'] as $item)
+                                        <option value="{{ $item['value'] }}">
+                                            {{ $item['label'] }}
+                                        </option>
+                                    @endforeach
+                                </x-select>
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'type' + index" :value="__('Typ dokumentu')" />
+                                <x-select x-model="copies[index]['type']" name="type[]" class="block w-full mt-1">
+                                    <option value="">
+                                        ---
+                                    </option>
+                                    @foreach ($labels['type'] as $item)
+                                        <option value="{{ $item['value'] }}">
+                                            {{ $item['label'] }}
+                                        </option>
+                                    @endforeach
+                                </x-select>
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'preservation' + index" :value="__('Uchování')" />
+                                <x-select x-model="copies[index]['preservation']" name="preservation[]"
+                                    class="block w-full mt-1">
+                                    <option value="">
+                                        ---
+                                    </option>
+                                    @foreach ($labels['preservation'] as $item)
+                                        <option value="{{ $item['value'] }}">
+                                            {{ $item['label'] }}
+                                        </option>
+                                    @endforeach
+                                </x-select>
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'copy' + index" :value="__('Typ')" /> {{-- TODO: lepší label --}}
+                                <x-select x-model="copies[index]['copy']" name="copy[]" class="block w-full mt-1">
+                                    <option value="">
+                                        ---
+                                    </option>
+                                    @foreach ($labels['copy'] as $item)
+                                        <option value="{{ $item['value'] }}">
+                                            {{ $item['label'] }}
+                                        </option>
+                                    @endforeach
+                                </x-select>
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'manifestation_notes' + index"
+                                    :value="__('Poznámka k manifestaci')" />
+                                <x-textarea name="manifestation_notes[]" x-bind:id="'manifestation_notes' + index"
+                                    class="block w-full mt-1" x-bind:value="copy['manifestation_notes']">
+                                </x-textarea>
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'l_number' + index" :value="__('Číslo dopisu')" />
+                                <x-input x-bind:id="'l_number' + index" x-bind:value="copy['l_number']"
+                                    class="block w-full mt-1" type="text" name="l_number[]" />
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'repository' + index" :value="__('Repozitář')" />
+                                <x-input x-bind:id="'repository' + index" x-bind:value="copy.repository"
+                                    class="block w-full mt-1" type="text" name="repository[]"
+                                    x-bind:list="'repository-datalist-' + index" />
+                                <datalist x-bind:id="'repository-datalist-' + index">
+                                    @foreach ($locations['repository'] as $repository)
+                                        <option>
+                                            {{ $repository['name'] }}
+                                        </option>
+                                    @endforeach
+                                </datalist>
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'archive' + index" :value="__('Archiv')" />
+                                <x-input x-bind:id="'archive' + index" x-bind:value="copy.archive"
+                                    class="block w-full mt-1" type="text" name="archive[]"
+                                    x-bind:list="'archive-datalist-' + index" />
+                                <datalist x-bind:id="'archive-datalist-' + index">
+                                    @foreach ($locations['archive'] as $archive)
+                                        <option>
+                                            {{ $archive['name'] }}
+                                        </option>
+                                    @endforeach
+                                </datalist>
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'collection' + index" :value="__('Sbírka')" />
+                                <x-input x-bind:id="'collection' + index" x-bind:value="copy.collection"
+                                    class="block w-full mt-1" type="text" name="collection[]"
+                                    x-bind:list="'collection-datalist-' + index" />
+                                <datalist x-bind:id="'collection-datalist-' + index">
+                                    @foreach ($locations['collection'] as $collection)
+                                        <option>
+                                            {{ $collection['name'] }}
+                                        </option>
+                                    @endforeach
+                                </datalist>
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'signature' + index" :value="__('Signatura')" />
+                                <x-input x-bind:id="'signature' + index" x-bind:value="copy.signature"
+                                    class="block w-full mt-1" type="text" name="signature[]" />
+                            </div>
+                            <div>
+                                <x-label x-bind:for="'location_note' + index" :value="__('Poznámka k uložení')" />
+                                <x-textarea name="location_note[]" x-bind:id="'location_note' + index"
+                                    class="block w-full mt-1" x-bind:value="copy['location_note']">
+                                </x-textarea>
+                            </div>
+                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
+                                x-on:click="copies = copies.filter((item, copyIndex) => { return copyIndex !== index })">
+                                <x-heroicon-o-trash class="h-5" />
+                                {{ __('Odstranit zdroj') }}
+                            </button>
+                        </div>
+                    </template>
+                    <template x-if="copies.length > 0">
+                        <input type="hidden" name="copies" x-bind:value="copies.length">
+                    </template>
+                    <div>
+                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline" x-on:click="copies.push({
+                            archive: '',
+                            collection: '',
+                            copy: '',
+                            l_number: '',
+                            location_note: '',
+                            manifestation_notes: '',
+                            ms_manifestation: '',
+                            preservation: '',
+                            repository: '',
+                            signature: '',
+                            type: '',
+                            key: Math.random().toString(36).substring(7)
+                        })">
                             {{ __('Přidat další') }}
                         </button>
                     </div>
@@ -568,8 +722,11 @@
         <script id="selectedMentioned" type="application/json">
             @json($selectedMentioned)
         </script>
-        <script id="relatedResources" type="application/json">
+        <script id="selectedRelatedResources" type="application/json">
             @json($selectedRelatedResources)
+        </script>
+        <script id="selectedCopies" type="application/json">
+            @json($selectedCopies)
         </script>
     @endpush
 </x-app-layout>
