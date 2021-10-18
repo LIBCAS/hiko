@@ -60,7 +60,7 @@
                 </x-error-alert>
             @endif
             <form action="{{ $action }}" method="post" onkeydown="return event.key != 'Enter';"
-                class="space-y-6 max-w-smmd:-mt-6" autocomplete="off">
+                class="max-w-sm space-y-6 md:-mt-6" autocomplete="off">
                 @csrf
                 @isset($method)
                     @method($method)

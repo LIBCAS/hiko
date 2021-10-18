@@ -6,6 +6,7 @@ use App\Models\Place;
 use App\Models\Keyword;
 use App\Models\Identity;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -74,7 +75,16 @@ class Letter extends Model
         parent::boot();
 
         self::creating(function ($model) {
+            $user = Auth::user();
+            $user = $user ? $user->name : User::first()->name;
             $model->uuid = Str::uuid();
+            $model->history = date('Y-m-d H:i:s') . ' – ' . $user . "\n";
+        });
+
+        self::updating(function ($model) {
+            $user = Auth::user();
+            $user = $user ? $user->name : User::first()->name;
+            $model->history = $model->history . date('Y-m-d H:i:s') . ' – ' . $user . "\n";
         });
     }
 }

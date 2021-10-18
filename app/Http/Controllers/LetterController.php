@@ -242,7 +242,7 @@ class LetterController extends Controller
         $letter->identities()->detach();
         $letter->places()->detach();
 
-        foreach ($request->mentioned as $key => $id) {
+        foreach ((array) $request->mentioned as $key => $id) {
             $mentioned[$id] = [
                 'position' => $key,
                 'role' => 'mentioned',
