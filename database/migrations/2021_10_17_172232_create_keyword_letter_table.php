@@ -15,7 +15,6 @@ class CreateKeywordLetterTable extends Migration
     {
         Schema::create('keyword_letter', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
             $table->unique(['keyword_id', 'letter_id']);
             $table->foreignId('keyword_id')
                 ->constrained()

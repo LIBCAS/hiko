@@ -15,7 +15,6 @@ class CreateIdentityLetterTable extends Migration
     {
         Schema::create('identity_letter', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
             $table->unique(['identity_id', 'letter_id', 'role']);
             $table->foreignId('identity_id')
                 ->constrained()

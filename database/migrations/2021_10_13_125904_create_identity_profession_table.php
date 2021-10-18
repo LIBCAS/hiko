@@ -15,7 +15,6 @@ class CreateIdentityProfessionTable extends Migration
     {
         Schema::create('identity_profession', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
             $table->unique(['identity_id', 'profession_id']);
             $table->foreignId('identity_id')
                 ->constrained()
