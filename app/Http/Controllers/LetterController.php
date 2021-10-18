@@ -18,7 +18,55 @@ class LetterController extends Controller
     use LetterLabelsTrait;
 
     protected $rules = [
-        'name' => 'required',
+        'date_year' => ['nullable', 'integer', 'numeric'],
+        'date_month' => ['nullable', 'integer', 'numeric'],
+        'date_day' => ['nullable', 'integer', 'numeric'],
+        'date_marked' => ['nullable', 'string', 'max:255'],
+        'date_uncertain' => ['nullable', 'boolean',],
+        'date_approximate' => ['nullable', 'boolean',],
+        'date_inferred' => ['nullable', 'boolean',],
+        'date_is_range' => ['nullable', 'boolean',],
+        'range_year' => ['nullable', 'integer', 'numeric'],
+        'range_month' => ['nullable', 'integer', 'numeric'],
+        'range_day' => ['nullable', 'integer', 'numeric'],
+        'date_note' => ['nullable'],
+        'author_uncertain' => ['nullable', 'boolean',],
+        'author_inferred' => ['nullable', 'boolean',],
+        'author_note' => ['nullable'],
+        'recipient_uncertain' => ['nullable', 'boolean',],
+        'recipient_inferred' => ['nullable', 'boolean',],
+        'recipient_note' => ['nullable'],
+        'destination_uncertain' => ['nullable', 'boolean',],
+        'destination_inferred' => ['nullable', 'boolean',],
+        'destination_note' => ['nullable'],
+        'origin_uncertain' => ['nullable', 'boolean',],
+        'origin_inferred' => ['nullable', 'boolean',],
+        'origin_note' => ['nullable'],
+        'people_mentioned_note' => ['nullable'],
+        'copies' => ['nullable'],
+        'related_resources' => ['nullable'],
+        'abstract' => ['nullable'],
+        'explicit' => ['nullable', 'string', 'max:255'],
+        'incipit' => ['nullable', 'string', 'max:255'],
+        'copyright' => ['nullable', 'string', 'max:255'],
+        'languages' => ['nullable', 'string', 'max:255'],
+        'notes_private' => ['nullable'],
+        'notes_public' => ['nullable'],
+        'status' => ['required', 'string', 'max:255'],
+    ];
+
+    protected $copiesFields = [
+        'archive',
+        'collection',
+        'copy',
+        'l_number',
+        'location_note',
+        'manifestation_notes',
+        'ms_manifestation',
+        'preservation',
+        'repository',
+        'signature',
+        'type',
     ];
 
     public function index()
@@ -54,6 +102,14 @@ class LetterController extends Controller
 
     public function store(Request $request)
     {
+        $request = $this->modifyRequest($request);
+
+        $letter = Letter::create($request->validate($this->rules));
+
+        $this->attachRelated($request, $letter);
+
+        return redirect()->route('letters.edit', $letter->id)
+            ->with('success', __('Uloženo.'));
     }
 
     public function show(Letter $letter)
@@ -85,7 +141,14 @@ class LetterController extends Controller
 
     public function update(Request $request, Letter $letter)
     {
-        $request->validate($this->rules);
+        $request = $this->modifyRequest($request);
+
+        $letter->update($request->validate($this->rules));
+
+        $this->attachRelated($request, $letter);
+
+        return redirect()->route('letters.edit', $letter->id)
+            ->with('success', __('Uloženo.'));
     }
 
     public function destroy(Letter $letter)
@@ -95,6 +158,135 @@ class LetterController extends Controller
     public function export()
     {
         return Excel::download(new LettersExport, 'letters.xlsx');
+    }
+
+    protected function modifyRequest(Request $request)
+    {
+        if (!empty($request->language)) {
+            $request->request->set('languages', implode(';', $request->language));
+        }
+
+        if (!empty($request->resource_title)) {
+            $related_resources = [];
+
+            foreach ($request->resource_title as $key => $title) {
+                $related_resources[] = [
+                    'link' => $request->resource_link[$key],
+                    'title' => $title,
+                ];
+            }
+            $request->request->set('related_resources', $related_resources);
+        }
+
+        if (!empty($request->resource_title)) {
+            $related_resources = [];
+
+            foreach ($request->resource_title as $key => $title) {
+                $related_resources[] = [
+                    'link' => $request->resource_link[$key],
+                    'title' => $title,
+                ];
+            }
+            $request->request->set('related_resources', $related_resources);
+        }
+
+        if ($request->copies) {
+            $copies = [];
+
+            for ($i = 0; $i < (int) $request->copies; $i++) {
+                foreach ($this->copiesFields as $field) {
+                    $copies[$i][$field] = $request->{$field}[$i];
+                }
+            }
+
+            $request->request->set('copies', $copies);
+        }
+
+        $request->request->set('abstract', [
+            'cs' => $request->abstract_cs,
+            'en' => $request->abstract_en,
+        ]);
+
+        $booleans = [
+            'date_uncertain',
+            'date_approximate',
+            'date_inferred',
+            'date_is_range',
+            'author_uncertain',
+            'author_inferred',
+            'recipient_uncertain',
+            'recipient_inferred',
+            'destination_uncertain',
+            'destination_inferred',
+            'origin_uncertain',
+            'origin_inferred',
+        ];
+
+        foreach ($booleans as $field) {
+            $request->request->set($field, isset($request->{$field}) ? 1 : 0);
+        }
+
+        return $request;
+    }
+
+    public function attachRelated(Request $request, Letter $letter)
+    {
+        $letter->keywords()->sync($request->keyword);
+
+        $mentioned = [];
+        $authors = [];
+        $recipients = [];
+        $origins = [];
+        $destinations = [];
+
+        $letter->identities()->detach();
+        $letter->places()->detach();
+
+        foreach ($request->mentioned as $key => $id) {
+            $mentioned[$id] = [
+                'position' => $key,
+                'role' => 'mentioned',
+            ];
+        }
+        $letter->identities()->attach($mentioned);
+
+        foreach ((array) $request->author as $key => $id) {
+            $authors[$id] = [
+                'position' => $key,
+                'role' => 'author',
+                'marked' => $request->author_marked[$key],
+            ];
+        }
+        $letter->identities()->attach($authors);
+
+        foreach ((array) $request->recipient as $key => $id) {
+            $recipients[$id] = [
+                'position' => $key,
+                'role' => 'recipient',
+                'marked' => $request->recipient_marked[$key],
+                'salutation' => $request->recipient_salutation[$key],
+
+            ];
+        }
+        $letter->identities()->attach($recipients);
+
+        foreach ((array) $request->origin as $key => $id) {
+            $origins[$id] = [
+                'position' => $key,
+                'role' => 'origin',
+                'marked' => $request->origin_marked[$key],
+            ];
+        }
+        $letter->places()->attach($origins);
+
+        foreach ((array) $request->destination as $key => $id) {
+            $destinations[$id] = [
+                'position' => $key,
+                'role' => 'destination',
+                'marked' => $request->destination_marked[$key],
+            ];
+        }
+        $letter->places()->attach($destinations);
     }
 
     protected function getAuthors(Letter $letter)
@@ -308,25 +500,11 @@ class LetterController extends Controller
 
     protected function getCopies(Letter $letter)
     {
-        $fields = [
-            'archive',
-            'collection',
-            'copy',
-            'l_number',
-            'location_note',
-            'manifestation_notes',
-            'ms_manifestation',
-            'preservation',
-            'repository',
-            'signature',
-            'type',
-        ];
-
         if (request()->old('copies')) {
             $copies = [];
 
             for ($i = 0; $i < (int) request()->old('copies'); $i++) {
-                foreach ($fields as $field) {
+                foreach ($this->copiesFields as $field) {
                     $copies[$i][$field] = request()->old($field)[$i];
                 }
             }
@@ -339,8 +517,8 @@ class LetterController extends Controller
 
     protected function getLanguages(Letter $letter)
     {
-        if (request()->old('languages')) {
-            return request()->old('languages');
+        if (request()->old('language')) {
+            return request()->old('language');
         }
 
         if (empty($letter->languages)) {

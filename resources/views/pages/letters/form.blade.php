@@ -52,8 +52,15 @@
         </div>
         <div>
             <x-success-alert />
+            @if ($errors->any())
+                <x-error-alert>
+                    <ul>
+                        {!! implode('', $errors->all('<li>:message</li>')) !!}
+                    </ul>
+                </x-error-alert>
+            @endif
             <form action="{{ $action }}" method="post" onkeydown="return event.key != 'Enter';"
-                class="max-w-sm -mt-3 space-y-6" autocomplete="off">
+                class="max-w-sm -mt-6 space-y-6" autocomplete="off">
                 @csrf
                 @isset($method)
                     @method($method)
@@ -393,16 +400,16 @@
                         {{ __('Popis obsahu') }}
                     </legend>
                     <div>
-                        <x-label for="languages" :value="__('Jazyk')" />
-                        <x-select x-data="select({element: $el })" x-init="initSelect()" id="languages"
-                            class="block w-full mt-1" name="languages[]" multiple>
+                        <x-label for="language" :value="__('Jazyk')" />
+                        <x-select x-data="select({element: $el })" x-init="initSelect()" id="language"
+                            class="block w-full mt-1" name="language[]" multiple>
                             @foreach ($languages as $language)
                                 <option value="{{ $language->name }}" @if (in_array($language->name, $selectedLanguages)) selected @endif>
                                     {{ $language->name }}
                                 </option>
                             @endforeach
                         </x-select>
-                        @error('languages')
+                        @error('language')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
