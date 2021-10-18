@@ -9,12 +9,14 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
+use Spatie\MediaLibrary\HasMedia\HasMedia;
+use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Letter extends Model
+class Letter extends Model implements HasMedia
 {
     use HasTranslations;
-
+    use HasMediaTrait;
     use HasFactory;
 
     public $translatable = ['abstract'];
