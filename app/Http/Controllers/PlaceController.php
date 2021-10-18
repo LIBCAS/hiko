@@ -56,7 +56,7 @@ class PlaceController extends Controller
     public function edit(Place $place)
     {
         return view('pages.places.form', [
-            'title' => __('Místo: '),
+            'title' => __('Místo č. ') . $place->id,
             'place' => $place,
             'method' => 'PUT',
             'action' => route('places.update', $place),

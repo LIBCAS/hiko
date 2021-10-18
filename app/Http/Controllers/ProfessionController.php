@@ -48,7 +48,7 @@ class ProfessionController extends Controller
     public function edit(Profession $profession)
     {
         return view('pages.professions.form', [
-            'title' => __('Profese: '),
+            'title' => __('Profese č. ') . $profession->id,
             'profession' => $profession,
             'method' => 'PUT',
             'action' => route('professions.update', $profession),

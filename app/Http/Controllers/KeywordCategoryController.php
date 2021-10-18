@@ -41,7 +41,7 @@ class KeywordCategoryController extends Controller
     public function edit(KeywordCategory $keywordCategory)
     {
         return view('pages.keywords-categories.form', [
-            'title' => __('Kategorie klíčových slov: '),
+            'title' => __('Kategorie klíčového slova č. ') . $keywordCategory->id,
             'keywordCategory' => $keywordCategory,
             'method' => 'PUT',
             'action' => route('keywords.category.update', $keywordCategory),

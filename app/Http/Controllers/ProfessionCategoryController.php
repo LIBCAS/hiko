@@ -41,7 +41,7 @@ class ProfessionCategoryController extends Controller
     public function edit(ProfessionCategory $professionCategory)
     {
         return view('pages.professions-categories.form', [
-            'title' => __('Kategorie profese: '),
+            'title' => __('Kategorie profese č. ') . $professionCategory->id,
             'professionCategory' => $professionCategory,
             'method' => 'PUT',
             'action' => route('professions.category.update', $professionCategory),

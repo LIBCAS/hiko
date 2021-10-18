@@ -119,7 +119,7 @@ class LetterController extends Controller
     public function edit(Letter $letter)
     {
         return view('pages.letters.form', [
-            'title' => __('Dopis: '),
+            'title' => __('Dopis č. ') . $letter->id,
             'letter' => $letter,
             'method' => 'PUT',
             'action' => route('letters.update', $letter),

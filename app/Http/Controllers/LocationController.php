@@ -48,7 +48,7 @@ class LocationController extends Controller
     public function edit(Location $location)
     {
         return view('pages.locations.form', [
-            'title' => __('Místo uložení: ') . $location->name,
+            'title' => __('Místo uložení č.: ') . $location->id,
             'location' => $location,
             'action' => route('locations.update', $location),
             'method' => 'PUT',

@@ -57,7 +57,7 @@ class KeywordController extends Controller
     public function edit(Keyword $keyword)
     {
         return view('pages.keywords.form', [
-            'title' => __('Klíčové slovo: '),
+            'title' => __('Klíčové slovo č. ') . $keyword->id,
             'keyword' => $keyword,
             'method' => 'PUT',
             'action' => route('keywords.update', $keyword),
