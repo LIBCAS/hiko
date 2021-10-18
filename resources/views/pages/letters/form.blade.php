@@ -42,14 +42,9 @@
                         {{ __('Manifestace a uložení') }}
                     </a>
                 </li>
-                <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-description">
-                        Description
-                    </a>
-                </li>
                 <li class="pb-1 ">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-status">
-                        Status
+                        {{ __('Status') }}
                     </a>
                 </li>
 
@@ -160,7 +155,7 @@
                     </div>
                 </fieldset>
                 <div>
-                    <hr class="my-6">
+                    <hr class="my-3">
                 </div>
                 <fieldset id="a-author" class="space-y-6"
                     x-data="{ authors: JSON.parse(document.getElementById('selectedAuthors').innerHTML) }">
@@ -216,7 +211,7 @@
                     </div>
                 </fieldset>
                 <div>
-                    <hr class="my-6">
+                    <hr class="my-3">
                 </div>
                 <fieldset id="a-recipient" class="space-y-6"
                     x-data="{ recipients: JSON.parse(document.getElementById('selectedRecipients').innerHTML) }">
@@ -278,7 +273,7 @@
                     </div>
                 </fieldset>
                 <div>
-                    <hr class="my-6">
+                    <hr class="my-3">
                 </div>
                 <fieldset id="a-origin" class="space-y-6"
                     x-data="{ origins: JSON.parse(document.getElementById('selectedOrigins').innerHTML) }">
@@ -334,7 +329,7 @@
                     </div>
                 </fieldset>
                 <div>
-                    <hr class="my-6">
+                    <hr class="my-3">
                 </div>
                 <fieldset id="a-destination" class="space-y-6"
                     x-data="{ destinations: JSON.parse(document.getElementById('selectedDestinations').innerHTML) }">
@@ -391,7 +386,7 @@
                     </div>
                 </fieldset>
                 <div>
-                    <hr class="my-6">
+                    <hr class="my-3">
                 </div>
                 <fieldset id="a-content" class="space-y-6">
                     <legend class="text-lg font-semibold">
@@ -496,7 +491,7 @@
                     </div>
                 </fieldset>
                 <div>
-                    <hr class="my-6">
+                    <hr class="my-3">
                 </div>
                 <fieldset id="a-related-resource" class="space-y-6"
                     x-data="{ relatedResources: JSON.parse(document.getElementById('selectedRelatedResources').innerHTML)}">
@@ -529,12 +524,14 @@
                         </button>
                     </div>
                 </fieldset>
+                <div>
+                    <hr class="my-3">
+                </div>
                 <fieldset id="a-copies" class="space-y-6"
                     x-data="{ copies: JSON.parse(document.getElementById('selectedCopies').innerHTML)}">
                     <legend class="text-lg font-semibold">
                         {{ __('Manifestace a uložení') }}
                     </legend>
-
                     <template x-for="copy, index in copies" :key="copy.key ? copy.key : index">
                         <div class="p-3 space-y-6 border border-primary-light">
                             <div>
@@ -683,6 +680,25 @@
                         </button>
                     </div>
                 </fieldset>
+                <div>
+                    <hr class="my-3">
+                </div>
+                <fieldset id="a-status">
+                    <legend class="text-lg font-semibold">
+                        {{ __('Status') }}
+                    </legend>
+                    <div>
+                        <x-radio name="status" label="{{ __('Soukromý dopis') }}" value="draft"
+                            :checked="old('status', $letter->status) === 'draft'" name="status" required />
+                    </div>
+                    <div>
+                        <x-radio name="status" label="{{ __('Veřejný dopis') }}" value="publish"
+                            :checked="old('status', $letter->status) === 'publish'" name="status" required />
+                    </div>
+                </fieldset>
+                <div>
+                    <hr class="my-3">
+                </div>
                 <x-button-simple class="w-full">
                     {{ $label }}
                 </x-button-simple>
