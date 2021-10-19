@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use App\Models\Place;
 use App\Models\Keyword;
 use App\Models\Identity;
@@ -72,6 +73,11 @@ class Letter extends Model implements HasMedia
         return $this->identities()->where('role', '=', 'mentioned');
     }
 
+    public function users()
+    {
+        return $this->belongsToMany(User::class);
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -79,17 +85,23 @@ class Letter extends Model implements HasMedia
         self::creating(function ($model) {
             self::computeDate($model);
             $user = Auth::user();
-            $user = $user ? $user->name : User::first()->name;
+            $user = $user ? $user : User::first();
             $model->uuid = Str::uuid();
-            $model->history = date('Y-m-d H:i:s') . ' – ' . $user . "\n";
+            $model->history = date('Y-m-d H:i:s') . ' – ' . $user->name . "\n";
             $model->date_computed = self::computeDate($model);
+        });
+
+        self::created(function ($model) {
+            $user = Auth::user();
+            $user = $user ? $user : User::first();
+            $model->users()->attach($user->id);
         });
 
         self::updating(function ($model) {
             $user = Auth::user();
-            $user = $user ? $user->name : User::first()->name;
-            $model->history = $model->history . date('Y-m-d H:i:s') . ' – ' . $user . "\n";
+            $model->history = $model->history . date('Y-m-d H:i:s') . ' – ' . $user->name . "\n";
             $model->date_computed = self::computeDate($model);
+            $model->users()->syncWithoutDetaching($user->id);
         });
     }
 

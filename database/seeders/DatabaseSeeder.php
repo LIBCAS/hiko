@@ -158,7 +158,7 @@ class DatabaseSeeder extends Seeder
             $letter->identities()->attach(2, ['position' => 0, 'role' => 'recipient', 'marked' => 'YYY']);
             $letter->identities()->attach(3, ['position' => 0, 'role' => 'marked',]);
             $letter->identities()->attach(4, ['position' => 0, 'role' => 'marked',]);
-            $letter->keywords()->attach([1,2]);
+            $letter->keywords()->attach([1, 2]);
             $letter->places()->attach(1, ['position' => 0, 'role' => 'origin', 'marked' => 'Praha']);
             $letter->places()->attach(2, ['position' => 0, 'role' => 'destination', 'marked' => 'Tartu']);
         });
