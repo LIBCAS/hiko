@@ -6,7 +6,7 @@
         <a href="#" class='font-semibold text-primary'>{{ __('Plný text') }}</a>
     </li>
     <li>
-        <a href="#" class='font-semibold text-primary'>{{ __('Obrazové přílohy') }}</a>
+        <a href="{{ route('letters.images', $id) }}" class='font-semibold text-primary'>{{ __('Obrazové přílohy') }}</a>
     </li>
     <li>
         <a href="#" class='font-semibold text-primary'>{{ __('Náhled') }}</a>

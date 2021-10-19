@@ -1,0 +1,3 @@
+<div>
+    @dump($letter)
+</div>

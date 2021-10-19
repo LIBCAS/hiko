@@ -303,6 +303,10 @@ Route::prefix('letters')->group(function () {
     Route::get('/export', [LetterController::class, 'export'])
         ->name('letters.export')
         ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/{letter}/images', [LetterController::class, 'images'])
+        ->name('letters.images')
+        ->middleware(['auth', 'can:manage-metadata']);
 });
 
 Route::prefix('ajax')->group(function () {

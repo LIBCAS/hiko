@@ -15,3 +15,6 @@ mix.postCss('resources/css/app.css', '', [
     require('tailwindcss'),
     require('autoprefixer'),
 ])
+
+mix.js('resources/js/images.js', '')
+mix.postCss('resources/css/images.css', '', [require('postcss-import')])

@@ -158,6 +158,14 @@ class LetterController extends Controller
         return redirect()->route('letters')->with('success', 'Odstraněno');
     }
 
+    public function images(Letter $letter)
+    {
+        return view('pages.letters.images', [
+            'title' => __('Dopis č. ') . $letter->id,
+            'letter' => $letter,
+        ]);
+    }
+
     public function export()
     {
         return Excel::download(new LettersExport, 'letters.xlsx');
@@ -232,7 +240,7 @@ class LetterController extends Controller
         return $request;
     }
 
-    public function attachRelated(Request $request, Letter $letter)
+    protected function attachRelated(Request $request, Letter $letter)
     {
         $letter->keywords()->sync($request->keyword);
 
