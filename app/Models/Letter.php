@@ -77,16 +77,30 @@ class Letter extends Model implements HasMedia
         parent::boot();
 
         self::creating(function ($model) {
+            self::computeDate($model);
             $user = Auth::user();
             $user = $user ? $user->name : User::first()->name;
             $model->uuid = Str::uuid();
             $model->history = date('Y-m-d H:i:s') . ' – ' . $user . "\n";
+            $model->date_computed = self::computeDate($model);
         });
 
         self::updating(function ($model) {
             $user = Auth::user();
             $user = $user ? $user->name : User::first()->name;
             $model->history = $model->history . date('Y-m-d H:i:s') . ' – ' . $user . "\n";
+            $model->date_computed = self::computeDate($model);
         });
+    }
+
+    protected static function computeDate($model)
+    {
+        $dates = [
+            $model->date_year ? (string) $model->date_year : '0001',
+            $model->date_month ? str_pad($model->date_month, 2, '0', STR_PAD_LEFT) : '01',
+            $model->date_day ? str_pad($model->date_day, 2, '0', STR_PAD_LEFT) : '01',
+        ];
+
+        return implode('-', $dates);
     }
 }

@@ -26,6 +26,7 @@ class CreateLettersTable extends Migration
             $table->boolean('date_inferred')->default(0);
             $table->boolean('date_is_range')->default(0);
             $table->mediumText('date_note')->nullable();
+            $table->date('date_computed')->nullable();
             $table->integer('range_year')->nullable();
             $table->integer('range_month')->nullable();
             $table->integer('range_day')->nullable();
