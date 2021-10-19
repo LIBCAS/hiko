@@ -2,30 +2,39 @@
 
 namespace App\Http\Livewire;
 
+use App\Models\User;
 use App\Models\Letter;
+use Illuminate\Support\Facades\Auth;
 use Mediconesystems\LivewireDatatables\Column;
-use Mediconesystems\LivewireDatatables\NumberColumn;
+use Mediconesystems\LivewireDatatables\BooleanColumn;
 use Mediconesystems\LivewireDatatables\Http\Livewire\LivewireDatatable;
 
 class LettersTable extends LivewireDatatable
 {
-    public $model = Letter::class;
     public $hideable = 'select';
+
+    public function builder()
+    {
+        return Letter::query()->leftJoin('letter_user', function ($join) {
+            $join->on('letter_user.letter_id', 'letters.id')->where('letter_user.user_id', '=', Auth::user()->id);
+        });
+    }
 
     public function columns()
     {
-        // TODO: filtrování podle obrázků a editorů
+        // TODO: filtrování podle obrázků
+        $currentUser = Auth::user();
 
-        return [
-
+        $columns = [
             Column::callback(['id'], function ($id) {
                 return view('tables.letter-actions', ['id' => $id]);
-            }, 'actions'),
+            }, 'actions')
+                ->label(__('Akce')),
 
             Column::name('id')
-            ->label(__('ID'))
-            ->defaultSort('asc')
-            ->filterable(),
+                ->label(__('ID'))
+                ->defaultSort('asc')
+                ->filterable(),
 
             Column::callback('copies', function ($copies) {
                 return collect(json_decode($copies))->map(function ($copy) {
@@ -58,10 +67,33 @@ class LettersTable extends LivewireDatatable
                 ->label(__('Odeslání'))
                 ->filterable(),
 
+            Column::name('destinations.name')
+                ->label(__('Určení'))
+                ->filterable(),
+
             Column::name('keywords.name')
                 ->label(__('Klíčová slova'))
                 ->hide()
                 ->filterable(),
         ];
+
+        if ($currentUser->can('manage-users')) {
+            $editors = User::select(['name'])->get()->map(function ($user) {
+                return [
+                    'id' => $user->name,
+                    'name' => $user->name,
+                ];
+            })->toArray();
+
+            $columns[] = Column::name('users.name')
+                ->label(__('Editoři'))
+                ->filterable($editors);
+        } else if ($currentUser->can('manage-metadata')) {
+            $columns[] = BooleanColumn::name('letter_user.id')
+                ->label(__('Moje záznamy'))
+                ->filterable();
+        }
+
+        return $columns;
     }
 }
