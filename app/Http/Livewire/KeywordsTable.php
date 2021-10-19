@@ -22,10 +22,10 @@ class KeywordsTable extends LivewireDatatable
                     return '';
                 }
                 return $name;
-            })
+            }, 'en')
                 ->defaultSort('asc')
                 ->filterable()
-                ->filterOn("JSON_EXTRACT(name, '$.en')")
+                ->filterOn("JSON_EXTRACT(keywords.name, '$.en')")
                 ->label('en'),
 
             Column::callback(['name->cs'], function ($name) {
@@ -33,9 +33,9 @@ class KeywordsTable extends LivewireDatatable
                     return '';
                 }
                 return $name;
-            })
+            }, 'cs')
                 ->filterable()
-                ->filterOn("JSON_EXTRACT(name, '$.cs')")
+                ->filterOn("JSON_EXTRACT(keywords.name, '$.cs')")
                 ->label('cs'),
 
             Column::callback(['keyword_category.name'], function ($keyword_category) {
@@ -43,7 +43,7 @@ class KeywordsTable extends LivewireDatatable
                     return '';
                 }
                 return implode(' | ', array_values(json_decode($keyword_category, true)));
-            })
+            }, 'category')
                 ->filterable()
                 ->label(__('Kategorie')),
         ];
