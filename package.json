@@ -19,6 +19,10 @@
         "tailwindcss": "^2.0.2"
     },
     "dependencies": {
+        "@tailwindcss/typography": "^0.4.1",
+        "@tiptap/core": "^2.0.0-beta.125",
+        "@tiptap/extension-underline": "^2.0.0-beta.16",
+        "@tiptap/starter-kit": "^2.0.0-beta.127",
         "filepond": "^4.30.3",
         "filepond-plugin-file-validate-size": "^2.2.5",
         "filepond-plugin-file-validate-type": "^1.2.6",

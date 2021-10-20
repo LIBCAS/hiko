@@ -28,3 +28,7 @@ html {
 
     @apply text-red-700;
 }
+
+.ProseMirror {
+    @apply outline-none;
+}

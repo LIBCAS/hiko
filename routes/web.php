@@ -307,6 +307,10 @@ Route::prefix('letters')->group(function () {
     Route::get('/{letter}/images', [LetterController::class, 'images'])
         ->name('letters.images')
         ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/{letter}/text', [LetterController::class, 'text'])
+        ->name('letters.text')
+        ->middleware(['auth', 'can:manage-metadata']);
 });
 
 Route::prefix('ajax')->group(function () {

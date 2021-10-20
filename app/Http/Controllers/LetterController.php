@@ -166,6 +166,14 @@ class LetterController extends Controller
         ]);
     }
 
+    public function text(Letter $letter)
+    {
+        return view('pages.letters.text', [
+            'title' => __('Dopis č. ') . $letter->id,
+            'letter' => $letter,
+        ]);
+    }
+
     public function export()
     {
         return Excel::download(new LettersExport, 'letters.xlsx');

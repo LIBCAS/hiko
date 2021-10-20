@@ -18,3 +18,5 @@ mix.postCss('resources/css/app.css', '', [
 
 mix.js('resources/js/images.js', '')
 mix.postCss('resources/css/images.css', '', [require('postcss-import')])
+
+mix.js('resources/js/editor.js', '')
