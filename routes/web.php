@@ -288,7 +288,7 @@ Route::prefix('letters')->group(function () {
         ->name('letters.store')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::post('/{letter}', [LetterController::class, 'show'])
+    Route::get('/{letter}', [LetterController::class, 'show'])
         ->name('letters.show')
         ->middleware(['auth', 'can:view-metadata']);
 

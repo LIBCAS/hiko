@@ -169,8 +169,9 @@ class LetterController extends Controller
     public function text(Letter $letter)
     {
         return view('pages.letters.text', [
-            'title' => __('Dopis č. ') . $letter->id,
+            'title' => __('Plný text – dopis č. ') . $letter->id,
             'letter' => $letter,
+            'images' => $letter->getMedia(),
         ]);
     }
 

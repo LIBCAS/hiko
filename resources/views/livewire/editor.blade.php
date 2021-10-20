@@ -1,5 +1,5 @@
 <div>
-    <div x-data="editor(`{{ $letter->content }}`)" class="max-w-md">
+    <div x-data="editor(`{{ str_replace('`', '\`', $letter->content) }}`)" class="max-w-md">
         <div class="p-1 prose bg-white border rounded border-primary">
             <div class="sticky top-0 z-20 flex flex-wrap justify-between bg-white border-b">
                 <div class="flex flex-wrap space-x-1">
