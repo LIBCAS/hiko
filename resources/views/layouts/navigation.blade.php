@@ -1,7 +1,7 @@
 <nav x-data="{ open: false }" class="container mx-auto">
     <div class="flex flex-wrap justify-between py-3">
         <div class="flex items-center">
-            <a href="{{ route('dashboard') }}" class="font-semibold">
+            <a href="{{ route('letters') }}" class="font-semibold">
                 {{ config('app.name') }}
             </a>
         </div>

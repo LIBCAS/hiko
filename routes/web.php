@@ -7,7 +7,6 @@ use App\Http\Controllers\LetterController;
 use App\Http\Controllers\KeywordController;
 use App\Http\Controllers\IdentityController;
 use App\Http\Controllers\LocationController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\Ajax\AjaxPlaceController;
 use App\Http\Controllers\KeywordCategoryController;
@@ -29,11 +28,7 @@ use App\Http\Controllers\Ajax\KeywordCategoryController as AjaxKeywordCategoryCo
 |
 */
 
-Route::redirect('/', '/dashboard');
-
-Route::get('/dashboard', DashboardController::class)
-    ->name('dashboard')
-    ->middleware('auth');
+Route::redirect('/', '/letters');
 
 Route::prefix('users')->group(function () {
     Route::get('/', [UserController::class, 'index'])
@@ -64,7 +59,7 @@ Route::prefix('users')->group(function () {
 Route::prefix('locations')->group(function () {
     Route::get('/', [LocationController::class, 'index'])
         ->name('locations')
-        ->middleware(['auth', 'can:manage-metadata']);
+        ->middleware(['auth', 'can:view-metadata']);
 
     Route::get('/create', [LocationController::class, 'create'])
         ->name('locations.create')
@@ -94,7 +89,7 @@ Route::prefix('locations')->group(function () {
 Route::prefix('professions')->group(function () {
     Route::get('/', [ProfessionController::class, 'index'])
         ->name('professions')
-        ->middleware(['auth', 'can:manage-metadata']);
+        ->middleware(['auth', 'can:view-metadata']);
 
     Route::get('/create', [ProfessionController::class, 'create'])
         ->name('professions.create')
@@ -154,7 +149,7 @@ Route::prefix('professions/category')->group(function () {
 Route::prefix('keywords')->group(function () {
     Route::get('/', [KeywordController::class, 'index'])
         ->name('keywords')
-        ->middleware(['auth', 'can:manage-metadata']);
+        ->middleware(['auth', 'can:view-metadata']);
 
     Route::get('/create', [KeywordController::class, 'create'])
         ->name('keywords.create')
@@ -214,7 +209,7 @@ Route::prefix('keywords/category')->group(function () {
 Route::prefix('places')->group(function () {
     Route::get('/', [PlaceController::class, 'index'])
         ->name('places')
-        ->middleware(['auth', 'can:manage-metadata']);
+        ->middleware(['auth', 'can:view-metadata']);
 
     Route::get('/create', [PlaceController::class, 'create'])
         ->name('places.create')
@@ -244,7 +239,7 @@ Route::prefix('places')->group(function () {
 Route::prefix('identities')->group(function () {
     Route::get('/', [IdentityController::class, 'index'])
         ->name('identities')
-        ->middleware(['auth', 'can:manage-metadata']);
+        ->middleware(['auth', 'can:view-metadata']);
 
     Route::get('/create', [IdentityController::class, 'create'])
         ->name('identities.create')
@@ -274,7 +269,7 @@ Route::prefix('identities')->group(function () {
 Route::prefix('letters')->group(function () {
     Route::get('/', [LetterController::class, 'index'])
         ->name('letters')
-        ->middleware(['auth', 'can:manage-metadata']);
+        ->middleware(['auth', 'can:view-metadata']);
 
     Route::get('/create', [LetterController::class, 'create'])
         ->name('letters.create')

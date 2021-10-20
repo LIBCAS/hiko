@@ -14,7 +14,7 @@ class KeywordsCategoriesTable extends LivewireDatatable
     {
         return [
             Column::callback(['id'], function ($id) {
-                return "<a href='" . route('keywords.category.edit', $id) . "' class='font-semibold text-primary'>" . __('Upravit') . "</a>";
+                return view('tables.edit-link', ['route' => route('keywords.category.edit', $id), 'label' => __('Upravit')]);
             }),
 
             Column::callback(['name->en'], function ($name) {

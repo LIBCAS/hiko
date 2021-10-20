@@ -14,7 +14,7 @@ class PlacesTable extends LivewireDatatable
     {
         return [
             Column::callback(['name', 'id'], function ($name, $id) {
-                return "<a href='" . route('places.edit', $id) . "' class='font-semibold text-primary'>$name</a>";
+                return view('tables.edit-link', ['route' => route('places.edit', $id), 'label' => $name]);
             })
                 ->defaultSort('asc')
                 ->label(__('Jméno'))
