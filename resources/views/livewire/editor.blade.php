@@ -147,5 +147,10 @@
     </div>
     @push('scripts')
         <script src="{{ asset('dist/editor.js') }}"></script>
+        <script>
+            window.onbeforeunload = function() {
+                return 'Opravdu chcete opustit stránku?'
+            }
+        </script>
     @endpush
 </div>
