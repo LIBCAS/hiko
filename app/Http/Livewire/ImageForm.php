@@ -31,6 +31,7 @@ class ImageForm extends Component
         collect($this->images)->each(function ($image) {
             $this->letter->addMedia($image->getRealPath())
                 ->usingFileName(Str::uuid() . '.' . pathinfo($image->getFilename())['extension'])
+                ->withCustomProperties(['status' => 'private'])
                 ->toMediaCollection();
         });
 
