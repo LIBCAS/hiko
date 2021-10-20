@@ -706,7 +706,7 @@
                 <div>
                     <hr class="my-3">
                 </div>
-                <x-button-simple class="w-full">
+                <x-button-simple class="w-full" onclick="preventLeaving = false">
                     {{ $label }}
                 </x-button-simple>
             </form>
@@ -715,7 +715,7 @@
                     class="max-w-sm mt-8">
                     @csrf
                     @method('DELETE')
-                    <x-button-danger class="w-full"
+                    <x-button-danger class="w-full" onclick="preventLeaving = false"
                         x-on:click.prevent="if (confirm('Odstraní dopis! Pokračovat?')) form.submit()">
                         {{ __('Odstranit dopis?') }}
                     </x-button-danger>
@@ -750,6 +750,14 @@
         </script>
         <script id="selectedCopies" type="application/json">
             @json($selectedCopies)
+        </script>
+        <script>
+            var preventLeaving = true;
+            window.onbeforeunload = function(e) {
+                if (preventLeaving) {
+                    return 'Opravdu chcete opustit stránku?'
+                }
+            }
         </script>
     @endpush
 </x-app-layout>
