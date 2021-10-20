@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Mediconesystems\LivewireDatatables\Column;
 use Mediconesystems\LivewireDatatables\BooleanColumn;
 use Mediconesystems\LivewireDatatables\Http\Livewire\LivewireDatatable;
+use Mediconesystems\LivewireDatatables\NumberColumn;
 
 class LettersTable extends LivewireDatatable
 {
@@ -15,9 +16,11 @@ class LettersTable extends LivewireDatatable
 
     public function builder()
     {
-        return Letter::query()->leftJoin('letter_user', function ($join) {
-            $join->on('letter_user.letter_id', 'letters.id')->where('letter_user.user_id', '=', Auth::user()->id);
-        });
+        return Letter::query()
+            ->leftJoin('letter_user', function ($join) {
+                $join->on('letter_user.letter_id', 'letters.id')->where('letter_user.user_id', '=', Auth::user()->id);
+            })
+            ->leftJoin('media', 'media.model_id', 'letters.id')->groupBy('letters.id');
     }
 
     public function columns()
@@ -74,6 +77,13 @@ class LettersTable extends LivewireDatatable
             Column::name('keywords.name')
                 ->label(__('Klíčová slova'))
                 ->hide()
+                ->filterable(),
+
+            Column::callback('media.id', function ($ids) {
+                return $ids;
+            })
+                ->label(__('Přílohy'))
+                ->filterOn('media.model_id')
                 ->filterable(),
         ];
 

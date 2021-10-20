@@ -165,7 +165,7 @@
                                                 <ul>
                                                     @foreach (json_decode('[' . $row->{$column['name']} . ']', true) as $item)
                                                         <li>
-                                                            {{ implode(' | ', array_values($item)) }}
+                                                            {{ is_numeric($item) ? $item : implode(' | ', array_values($item)) }}
                                                         </li>
                                                     @endforeach
                                                 </ul>
