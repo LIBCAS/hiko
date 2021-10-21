@@ -33,6 +33,17 @@ class LetterObserver
         $letter->users()->syncWithoutDetaching($user->id);
     }
 
+    public function saved(Letter $letter)
+    {
+        $letter->authors()->each(function ($author) {
+            $this->regenerateNames($author);
+        });
+
+        $letter->recipients()->each(function ($recipient) {
+            $this->regenerateNames($recipient);
+        });
+    }
+
     protected function computeDate($letter)
     {
         $dates = [
@@ -42,5 +53,21 @@ class LetterObserver
         ];
 
         return implode('-', $dates);
+    }
+
+    protected function regenerateNames($identity)
+    {
+        $names = $identity->letters
+            ->map(function ($letter) {
+                return $letter->pivot->marked;
+            })
+            ->reject(function ($marked) {
+                return empty($marked);
+            })
+            ->unique()
+            ->toArray();
+
+        $identity->alternative_names = $names;
+        $identity->save();
     }
 }

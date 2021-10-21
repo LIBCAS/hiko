@@ -33,18 +33,9 @@ class IdentitiesTable extends LivewireDatatable
                 ->label(__('Typ'))
                 ->filterable(array_values($labels)),
 
-            Column::callback(['alternative_names->variants'], function ($variants) {
-                if (empty($variants) || $variants === 'null') {
-                    return '';
-                }
-
-                $list = '<li>' . implode('</li><li>', json_decode($variants, true)) . '</li>';
-
-                return "<ul>$list</ul>";
-            })
-                ->filterable()
-                ->filterOn("JSON_EXTRACT(alternative_names, '$.variants')")
-                ->label(__('Další jména')),
+            Column::name('alternative_names')
+                ->label(__('Další jména'))
+                ->filterable(),
 
             Column::name('professions.name')
                 ->label(__('Profese'))

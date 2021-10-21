@@ -14,6 +14,10 @@ class Identity extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'alternative_names' => 'array',
+    ];
+
     public function professions()
     {
         return $this->belongsToMany(Profession::class)->withPivot('position');
@@ -26,6 +30,6 @@ class Identity extends Model
 
     public function letters()
     {
-        return $this->belongsToMany(Letter::class);
+        return $this->belongsToMany(Letter::class)->withPivot('marked');
     }
 }

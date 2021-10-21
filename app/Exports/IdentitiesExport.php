@@ -36,8 +36,6 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
 
     public function map($identity): array
     {
-        $names = json_decode($identity->alternative_names, true);
-
         if ($identity->professions) {
             $professions = $identity->professions
                 ->sortBy('pivot.position')
@@ -64,7 +62,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
             $identity->name,
             $identity->surname,
             $identity->forename,
-            $names ? implode('|', $names['variants']) : [],
+            $identity->alternative_names ? implode('|', $identity->alternative_names) : [],
             $identity->nationality,
             $identity->gender,
             $identity->birth_year,
