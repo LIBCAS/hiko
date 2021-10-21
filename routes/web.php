@@ -28,7 +28,9 @@ use App\Http\Controllers\Ajax\KeywordCategoryController as AjaxKeywordCategoryCo
 |
 */
 
-Route::redirect('/', '/letters');
+Route::get('/', function () {
+    return redirect()->route('letters');
+});
 
 Route::prefix('users')->group(function () {
     Route::get('/', [UserController::class, 'index'])
