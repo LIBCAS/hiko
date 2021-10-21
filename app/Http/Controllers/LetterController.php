@@ -9,6 +9,7 @@ use App\Models\Identity;
 use App\Models\Language;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
+use App\Http\Traits\LetterFormatTrait;
 use App\Http\Traits\LetterLabelsTrait;
 
 // TODO: refaktorovat metody pro získání přidružených dat
@@ -16,6 +17,7 @@ use App\Http\Traits\LetterLabelsTrait;
 class LetterController extends Controller
 {
     use LetterLabelsTrait;
+    use LetterFormatTrait;
 
     protected $rules = [
         'date_year' => ['nullable', 'integer', 'numeric'],
@@ -114,6 +116,15 @@ class LetterController extends Controller
 
     public function show(Letter $letter)
     {
+        $letter->formattedDate = $this->formatLetterDate($letter->date_day, $letter->date_month, $letter->date_year);
+        if ($letter->date_is_range) {
+            $letter->formattedRangeDate = $this->formatLetterDate($letter->range_day, $letter->range_month, $letter->range_year);
+        }
+
+        return view('pages.letters.show', [
+            'title' => $this->formatLetterName($letter),
+            'letter' => $letter,
+        ]);
     }
 
     public function edit(Letter $letter)
