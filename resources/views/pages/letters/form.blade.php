@@ -278,7 +278,7 @@
                         </button>
                     </div>
                     <div>
-                        <x-checkbox name="recipient_inferred" label="{{ __('Datum je odvozené') }}"
+                        <x-checkbox name="recipient_inferred" label="{{ __('Příjemce je odvozený') }}"
                             :checked="boolval(old('recipient_inferred', $letter->recipient_inferred))" />
                         <small class="block text-gray-600">
                             {{ __('Jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
