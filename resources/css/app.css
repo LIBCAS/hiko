@@ -1,0 +1,34 @@
+@import './../../node_modules/tom-select/dist/css/tom-select.default.min.css';
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+[x-cloak] {
+    display: none;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+:focus {
+    @apply outline-primary;
+}
+
+.ts-wrapper {
+    @apply px-0 !important;
+}
+
+.ts-control {
+    min-height: 2.5rem;
+}
+
+.required label::after {
+    content: " *";
+
+    @apply text-red-700;
+}
+
+.ProseMirror {
+    @apply outline-none;
+}

@@ -3,19 +3,18 @@ module.exports = {
         browser: true,
         commonjs: true,
         es6: true,
-        node: true,
     },
-    extends: ['eslint:recommended', 'plugin:vue/recommended'],
+    extends: ['eslint:recommended'],
     parserOptions: {
         sourceType: 'module',
     },
     rules: {
         indent: ['error', 4],
         'linebreak-style': ['error', 'unix'],
-        quotes: ['error', 'single', { avoidEscape: true }],
-        semi: 0,
+        quotes: ['error', 'single'],
         'space-in-parens': ['error', 'never'],
         yoda: ['error', 'never'],
-        'no-console': 'off',
+        semi: 0,
+        'no-console': 1,
     },
-}
+};
