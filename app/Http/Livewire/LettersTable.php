@@ -29,8 +29,8 @@ class LettersTable extends LivewireDatatable
         $currentUser = Auth::user();
 
         $columns = [
-            Column::callback(['id'], function ($id) {
-                return view('tables.letter-actions', ['id' => $id]);
+            Column::callback(['id', 'history'], function ($id, $history) {
+                return view('tables.letter-actions', ['id' => $id, 'history' => $history]);
             }, 'actions')
                 ->label(__('Akce')),
 
