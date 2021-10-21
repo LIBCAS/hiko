@@ -435,6 +435,14 @@
             </tbody>
         </table>
     @endif
+    @if ($letter->content)
+        <h2 class="text-lg font-bold">
+            Full text
+        </h2>
+        <div class="mb-10 prose">
+            {!! $letter->content !!}
+        </div>
+    @endif
     <div class="flex flex-wrap mb-6 -m-x-1 gallery">
         @foreach ($letter->getMedia() as $image)
             <div x-data="{open: false}" x-on:keydown.escape="open = false">
@@ -452,4 +460,5 @@
             </div>
         @endforeach
     </div>
+
 </x-app-layout>

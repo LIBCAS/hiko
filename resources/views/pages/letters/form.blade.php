@@ -1,5 +1,4 @@
 <x-app-layout :title="$title">
-
     @if ($letter->id)
         <ul class="flex flex-wrap mb-6 space-x-6 text-sm">
             <li>
