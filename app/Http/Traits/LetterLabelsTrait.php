@@ -111,9 +111,17 @@ trait LetterLabelsTrait
 
     public function getLocations()
     {
-        return Location::select(['name', 'type'])
+        $locations = Location::select(['name', 'type'])
             ->get()
             ->groupBy('type')
             ->toArray();
+
+        foreach (['repository', 'archive', 'collection'] as $type) {
+            if (!isset($locations[$type])) {
+                $locations[$type] = [];
+            }
+        }
+
+        return $locations;
     }
 }
