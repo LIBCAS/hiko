@@ -1,4 +1,21 @@
 <x-app-layout :title="$title">
+    <ul class="flex flex-wrap mb-6 space-x-6 text-sm">
+        <li>
+            <a href="{{ route('letters.edit', $letter->id) }}" class="hover:underline">
+                {{ __('Upravit dopis') }}
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('letters.text', $letter->id) }}" class="hover:underline">
+                {{ __('Upravit plný text') }}
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('letters.images', $letter->id) }}" class="hover:underline">
+                {{ __('Upravit přílohy') }}
+            </a>
+        </li>
+    </ul>
     <h2 class="text-lg font-bold">
         Dates
     </h2>

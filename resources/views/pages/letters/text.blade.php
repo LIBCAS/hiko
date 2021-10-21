@@ -15,7 +15,7 @@
         </li>
         <li>
             <a href="{{ route('letters.images', $letter->id) }}" class="hover:underline">
-                {{ __('Upravit obrázky') }}
+                {{ __('Upravit přílohy') }}
             </a>
         </li>
     </ul>

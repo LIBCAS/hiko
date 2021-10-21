@@ -85,6 +85,10 @@ class LettersTable extends LivewireDatatable
                 ->label(__('Přílohy'))
                 ->filterOn('media.model_id')
                 ->filterable(),
+
+            Column::name('status')
+                ->label(__('Status'))
+                ->filterable(),
         ];
 
         if ($currentUser->can('manage-users')) {

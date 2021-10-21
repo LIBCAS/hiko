@@ -1,4 +1,24 @@
 <x-app-layout :title="$title">
+
+    @if ($letter->id)
+        <ul class="flex flex-wrap mb-6 space-x-6 text-sm">
+            <li>
+                <a href="{{ route('letters.images', $letter->id) }}" class="hover:underline">
+                    {{ __('Upravit přílohy') }}
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('letters.text', $letter->id) }}" class="hover:underline">
+                    {{ __('Upravit plný text') }}
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('letters.show', $letter->id) }}" class="hover:underline">
+                    {{ __('Prohlédnout si dopis') }}
+                </a>
+            </li>
+        </ul>
+    @endif
     <div class="md:flex md:space-x-16">
         <div class="hidden md:block">
             <ul class="sticky text-gray-600 bg-white border rounded-md top-16 border-primary-light">
