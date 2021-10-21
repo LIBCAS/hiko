@@ -24,11 +24,9 @@ class GeonamesSearch extends Component
     public function render()
     {
         if (strlen($this->search) >= 2) {
-            $response = app()->handle(
-                Request::create(route('ajax.geonames') . '?search=' . $this->search, 'GET')
+            $this->searchResults = json_decode(
+                file_get_contents(route('ajax.geonames') . '?search=' . urlencode($this->search))
             );
-
-            $this->searchResults = json_decode($response->getContent());
         }
 
         return view('livewire.geonames-search');
