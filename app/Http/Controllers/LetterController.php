@@ -164,6 +164,10 @@ class LetterController extends Controller
 
     public function destroy(Letter $letter)
     {
+        foreach ($letter->getMedia() as $media) {
+            $media->delete();
+        }
+
         $letter->delete();
 
         return redirect()->route('letters')->with('success', 'Odstraněno');
