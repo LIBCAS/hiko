@@ -44,8 +44,6 @@ class NewUserPasswordCreate extends Notification
         ], false));
 
         return (new MailMessage)
-            ->greeting(' ')
-            ->salutation(' ')
             ->subject(Lang::get('Nový účet'))
             ->line(Lang::get('Právě vám byl založený účet v aplikaci :name', ['name' => config('app.name')]))
             ->action(Lang::get('Nastavit heslo'), $url)
