@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -20,6 +19,7 @@ class UserController extends Controller
     {
         return view('pages.users.index', [
             'title' => __('Uživatelé'),
+            'roles' => $this->getRoles(),
         ]);
     }
 
@@ -30,7 +30,7 @@ class UserController extends Controller
             'user' => new User(),
             'action' => route('users.store'),
             'label' => __('Vytvořit'),
-            'roles' => Role::all(),
+            'roles' => $this->getRoles(),
             'editEmail' => true,
             'editStatus' => false,
         ]);
@@ -62,7 +62,7 @@ class UserController extends Controller
             'action' => route('users.update', $user),
             'method' => 'PUT',
             'label' => __('Upravit'),
-            'roles' => Role::all(),
+            'roles' => $this->getRoles(),
             'editEmail' => false,
             'editStatus' => true,
             'active' => empty($user->deactivated_at) ? true : false,
@@ -87,5 +87,14 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('users')->with('success', 'Odstraněno');
+    }
+
+    protected function getRoles()
+    {
+        return [
+            'admin' => __('Správce'),
+            'editor' => __('Editor'),
+            'guest' => __('Divák'),
+        ];
     }
 }

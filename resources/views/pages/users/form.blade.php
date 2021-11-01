@@ -27,10 +27,9 @@
         <div class="required">
             <x-label for="role" :value="__('Role')" />
             <x-select id="role" class="block w-full mt-1" name="role" required>
-                @foreach ($roles as $role)
-                    <option value="{{ $role->label }}"
-                        {{ old('role', $user->role) == $role->label ? 'selected' : '' }}>
-                        {{ $role->label }}
+                @foreach ($roles as $role => $roleLabel)
+                    <option value="{{ $role }}" {{ old('role', $user->role) == $role ? 'selected' : '' }}>
+                        {{ $roleLabel }}
                     </option>
                 @endforeach
             </x-select>
