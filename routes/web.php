@@ -16,6 +16,7 @@ use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
 use App\Http\Controllers\Ajax\KeywordCategoryController as AjaxKeywordCategoryController;
+use App\Http\Controllers\LetterPreviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -285,7 +286,7 @@ Route::prefix('letters')->group(function () {
         ->name('letters.store')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/{letter}', [LetterController::class, 'show'])
+    Route::get('/{letter}/show', [LetterController::class, 'show'])
         ->name('letters.show')
         ->middleware(['auth', 'can:view-metadata']);
 
@@ -308,6 +309,10 @@ Route::prefix('letters')->group(function () {
     Route::get('/{letter}/text', [LetterController::class, 'text'])
         ->name('letters.text')
         ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('/preview', LetterPreviewController::class)
+        ->name('letters.preview')
+        ->middleware(['auth', 'can:view-metadata']);
 });
 
 Route::prefix('ajax')->group(function () {
