@@ -1,7 +1,7 @@
-@import './../../node_modules/tom-select/dist/css/tom-select.default.min.css';
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import "./../../node_modules/tom-select/dist/css/tom-select.default.min.css";
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 [x-cloak] {
     display: none;
@@ -12,7 +12,7 @@ html {
 }
 
 :focus {
-    @apply outline-primary;
+    @apply outline-none ring-1 ring-primary !important;
 }
 
 .ts-wrapper {
