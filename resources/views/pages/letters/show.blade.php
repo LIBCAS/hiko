@@ -66,17 +66,17 @@
     </h2>
     <table class="w-full mb-10 text-sm">
         <tbody>
-            @if ($letter->authors())
+            @if (isset($letter->identities['author']))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="w-1/5 py-2">Author</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
-                            @foreach ($letter->authors()->get() as $author)
+                            @foreach ($letter->identities['author'] as $author)
                                 <li class="mb-1">
-                                    {{ $author->name }}
-                                    @if ($author->pivot->marked)
+                                    {{ $author['name'] }}
+                                    @if ($author['pivot']['marked'])
                                         <span class="block pl-3 text-gray-500">
-                                            Marked as: {{ $author->pivot->marked }}
+                                            Marked as: {{ $author['pivot']['marked'] }}
                                         </span>
                                     @endif
                                 </li>
@@ -101,22 +101,22 @@
                     </td>
                 </tr>
             @endif
-            @if ($letter->recipients())
+            @if (isset($letter->identities['recipient']))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="w-1/5 py-2">Recipients</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
-                            @foreach ($letter->recipients()->get() as $recipient)
+                            @foreach ($letter->identities['recipient'] as $recipient)
                                 <li class="mb-1">
-                                    {{ $recipient->name }}
-                                    @if ($recipient->pivot->marked)
+                                    {{ $recipient['name'] }}
+                                    @if ($recipient['pivot']['marked'])
                                         <span class="block pl-3 text-gray-500">
-                                            Marked as: {{ $recipient->pivot->marked }}
+                                            Marked as: {{ $recipient['pivot']['marked'] }}
                                         </span>
                                     @endif
-                                    @if ($recipient->pivot->salutation)
+                                    @if ($recipient['pivot']['salutation'])
                                         <span class="block pl-3 text-gray-500">
-                                            Salutation: {{ $recipient->pivot->salutation }}
+                                            Salutation: {{ $recipient['pivot']['salutation'] }}
                                         </span>
                                     @endif
                                 </li>
@@ -141,14 +141,14 @@
                     </td>
                 </tr>
             @endif
-            @if ($letter->mentioned())
+            @if (isset($letter->identities['mentioned']))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="py-2">Mentioned people</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
-                            @foreach ($letter->mentioned()->get() as $mentioned)
+                            @foreach ($letter->identities['mentioned'] as $mentioned)
                                 <li class="mb-1">
-                                    {{ $mentioned->name }}
+                                    {{ $mentioned['name'] }}
                                 </li>
                             @endforeach
                         </ul>
@@ -170,17 +170,17 @@
     <h2 class="text-lg font-bold">Places</h2>
     <table class="w-full mb-10 text-sm">
         <tbody>
-            @if ($letter->origins())
+            @if (isset($letter->places['origin']))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="w-1/5 py-2">Origin</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
-                            @foreach ($letter->origins()->get() as $origin)
+                            @foreach ($letter->places['origin'] as $origin)
                                 <li class="mb-1">
-                                    {{ $origin->name }}
-                                    @if ($origin->pivot->marked)
+                                    {{ $origin['name'] }}
+                                    @if ($origin['pivot']['marked'])
                                         <span class="block pl-3 text-gray-500">
-                                            Marked as: {{ $origin->pivot->marked }}
+                                            Marked as: {{ $origin['pivot']['marked'] }}
                                         </span>
                                     @endif
                                 </li>
@@ -205,17 +205,17 @@
                     </td>
                 </tr>
             @endif
-            @if ($letter->destinations())
+            @if (isset($letter->places['destination']))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="w-1/5 py-2">Destination</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
-                            @foreach ($letter->destinations()->get() as $destination)
+                            @foreach ($letter->places['destination'] as $destination)
                                 <li class="mb-1">
-                                    {{ $destination->name }}
-                                    @if ($destination->pivot->marked)
+                                    {{ $destination['name'] }}
+                                    @if ($destination['pivot']['marked'])
                                         <span class="block pl-3 text-gray-500">
-                                            Marked as: {{ $destination->pivot->marked }}
+                                            Marked as: {{ $destination['pivot']['marked'] }}
                                         </span>
                                     @endif
                                 </li>
@@ -291,11 +291,11 @@
                     </td>
                 </tr>
             @endif
-            @if ($letter->keywords())
+            @if ($letter->keywords)
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="py-2">Keywords</td>
                     <td class="py-2">
-                        @foreach ($letter->keywords()->get() as $kw)
+                        @foreach ($letter->keywords as $kw)
                             <li class="mb-1">
                                 {{ implode(' | ', array_values($kw->getTranslations('name'))) }}
                             </li>
@@ -314,7 +314,7 @@
         </tbody>
     </table>
     <h2 class="text-lg font-bold">Repositories and versions</h2>
-    @foreach ($letter->copies as $c) :
+    @foreach ($letter->copies as $c)
         <table class="w-full mb-10 text-sm">
             <tbody>
                 @if ($c['l_number'])

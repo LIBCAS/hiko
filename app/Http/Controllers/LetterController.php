@@ -116,6 +116,10 @@ class LetterController extends Controller
 
     public function show(Letter $letter)
     {
+        $letter->load('identities', 'places', 'keywords');
+        $letter->identities = $letter->identities->groupBy('pivot.role')->toArray();
+        $letter->places = $letter->places->groupBy('pivot.role')->toArray();
+        $letter->keywords = $letter->keywords;
         $letter->formattedDate = $this->formatLetterDate($letter->date_day, $letter->date_month, $letter->date_year);
         if ($letter->date_is_range) {
             $letter->formattedRangeDate = $this->formatLetterDate($letter->range_day, $letter->range_month, $letter->range_year);
@@ -125,6 +129,7 @@ class LetterController extends Controller
             'title' => $this->formatLetterName($letter),
             'letter' => $letter,
         ]);
+
     }
 
     public function edit(Letter $letter)
