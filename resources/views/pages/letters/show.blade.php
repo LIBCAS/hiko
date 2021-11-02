@@ -325,21 +325,11 @@
                         </td>
                     </tr>
                 @endif
-
                 @if ($c['repository'])
                     <tr class="align-baseline border-t border-b border-gray-200">
                         <td class="w-1/5 py-2">Repository</td>
                         <td class="py-2">
                             {{ $c['repository'] }}
-                        </td>
-                    </tr>
-                @endif
-
-                @if ($c['repository'])
-                    <tr class="align-baseline border-t border-b border-gray-200">
-                        <td class="w-1/5 py-2">Repository</td>
-                        <td class="py-2">
-                            <x?= $c['repository'] ?>
                         </td>
                     </tr>
                 @endif
