@@ -64,6 +64,7 @@ function get_letter($types, $id, $lang, $private)
 
                 if (in_array($key, ['l_author', 'recipient', 'people_mentioned'])) {
                     $meta['name'] = format_person_name($field['name'], $field['birth_year'], $field['death_year']);
+                    $meta['simple_name'] = $field['name'];
                 }
 
                 if (in_array($key, ['l_author', 'recipient'])) {
