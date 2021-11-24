@@ -19,7 +19,7 @@ trait LetterFormatTrait
         $title .= $origin ? "({$origin['name']}) " : '';
         $title .= $recipient || $destination ? 'to ' : '';
         $title .= $recipient ? $recipient['name'] . ' ' : '';
-        $title .= $origin ? "({$destination['name']}) " : '';
+        $title .= $destination ? "({$destination['name']}) " : '';
 
         return $title;
     }
