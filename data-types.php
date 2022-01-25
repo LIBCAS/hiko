@@ -114,6 +114,17 @@ function fetch_types()
                 "profession" => "pbu_profession",
                 "default_lang" => "en"
             ],
+            "kal" => [
+                "letter" => "kal_letter",
+                "place" => "kal_place",
+                "person" => "kal_person",
+                "editor" => "kal_editor",
+                "path" => "kal",
+                "title" => "Korespondence R. Kalivody",
+                "keyword" => "kal_keyword",
+                "profession" => "kal_profession",
+                "default_lang" => "cs"
+            ],
         ],
         "editors" => [
             "administrator",
@@ -127,6 +138,7 @@ function fetch_types()
             "wirth_editor",
             "jak_editor",
             "pbu_editor",
+            "kal_editor",
         ]
     ];
 }
