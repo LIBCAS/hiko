@@ -9,6 +9,7 @@ $navData = [
     'Wirth' => 'wirth',
     'JAK' => 'jak',
     'Pobělohorští učenci' => 'pbu',
+    'Kalivoda' => 'kal',
     'Zkušební DB' => 'demo',
 ];
 ?>

@@ -14,6 +14,7 @@ $cardsData = [
     'Korespondence Zdeňka Wirtha' => 'wirth',
     'Korespondence JAK' => 'jak',
     'Pobělohorští učenci' => 'pbu',
+    'Korespondence R. Kalivody' => 'kal',
     'Zkušební DB' => 'demo',
 ];
 ?>
