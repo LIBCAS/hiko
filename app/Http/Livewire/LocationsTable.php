@@ -3,33 +3,66 @@
 namespace App\Http\Livewire;
 
 use App\Models\Location;
-use Mediconesystems\LivewireDatatables\Column;
-use Mediconesystems\LivewireDatatables\Http\Livewire\LivewireDatatable;
+use Livewire\Component;
+use Livewire\WithPagination;
 
-class LocationsTable extends LivewireDatatable
+class LocationsTable extends Component
 {
-    public $model = Location::class;
-    public $labels;
+    use WithPagination;
 
-    public function columns()
+    public $filters = [
+        'order' => 'name',
+    ];
+
+    public $types;
+
+    public function search()
     {
-        $labels = collect($this->labels)->map(function ($item, $key) {
-            return ['id' => $key, 'name' => $item];
-        })->toArray();
+        $this->resetPage();
+    }
 
+    public function render()
+    {
+        $locations = $this->findLocations();
+
+        return view('livewire.locations-table', [
+            'tableData' => $this->formatTableData($locations),
+            'pagination' => $locations,
+        ]);
+    }
+
+    protected function findLocations()
+    {
+        $query = Location::select('id', 'name', 'type');
+
+        if (isset($this->filters['name']) && !empty($this->filters['name'])) {
+            $query->where('name', 'LIKE', "%" . $this->filters['name'] . "%");
+        }
+
+        if (isset($this->filters['type']) && !empty($this->filters['type'])) {
+            $query->where('type', '=', $this->filters['type']);
+        }
+
+        $query->orderBy($this->filters['order']);
+
+        return $query->paginate(10);
+    }
+
+    protected function formatTableData($data)
+    {
         return [
-            Column::callback(['name', 'id'], function ($name, $id) {
-                return view('tables.edit-link', ['route' => route('locations.edit', $id), 'label' => $name]);
-            })
-                ->defaultSort('asc')
-                ->label(__('Jméno'))
-                ->filterable('name'),
-
-            Column::callback(['type'], function ($type) {
-                return $this->labels[$type];
-            })
-                ->label(__('Typ'))
-                ->filterable(array_values($labels)),
+            'header' => [__('hiko.name'), __('hiko.type')],
+            'rows' => $data->map(function ($locations) {
+                return [
+                    [
+                        'label' => $locations->name,
+                        'link' => route('locations.edit', $locations->id),
+                    ],
+                    [
+                        'label' => __("hiko.{$locations->type}"),
+                    ],
+                ];
+            })->toArray(),
         ];
     }
 }

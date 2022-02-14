@@ -17,7 +17,7 @@ class LocationController extends Controller
     public function index()
     {
         return view('pages.locations.index', [
-            'title' => __('Uložení'),
+            'title' => __('hiko.locations'),
             'labels' => $this->getTypes(),
         ]);
     }
@@ -25,10 +25,10 @@ class LocationController extends Controller
     public function create()
     {
         return view('pages.locations.form', [
-            'title' => __('Nové místo uložení'),
-            'location' => new Location(),
+            'title' => __('hiko.new_location'),
+            'location' => new Location,
             'action' => route('locations.store'),
-            'label' => __('Vytvořit'),
+            'label' => __('hiko.create'),
             'types' => $this->getTypes(),
         ]);
     }
@@ -42,17 +42,19 @@ class LocationController extends Controller
             'type' => $validated['type'],
         ]);
 
-        return redirect()->route('locations.edit', $location->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('locations.edit', $location->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function edit(Location $location)
     {
         return view('pages.locations.form', [
-            'title' => __('Místo uložení č.: ') . $location->id,
+            'title' => __('hiko.location') . ': '. $location->id,
             'location' => $location,
             'action' => route('locations.update', $location),
             'method' => 'PUT',
-            'label' => __('Upravit'),
+            'label' => __('hiko.edit'),
             'types' => $this->getTypes(),
         ]);
     }
@@ -66,14 +68,18 @@ class LocationController extends Controller
             'type' => $validated['type'],
         ]);
 
-        return redirect()->route('locations.edit', $location->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('locations.edit', $location->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function destroy(Location $location)
     {
         $location->delete();
 
-        return redirect()->route('locations')->with('success', 'Odstraněno');
+        return redirect()
+            ->route('locations')
+            ->with('success', __('hiko.removed'));
     }
 
     public function export()
@@ -83,10 +89,6 @@ class LocationController extends Controller
 
     protected function getTypes()
     {
-        return [
-            'repository' => __('Instituce / repozitáře'),
-            'collection' => __('Sbírky / fondy'),
-            'archive' => __('Archivy'),
-        ];
+        return ['repository', 'collection', 'archive'];
     }
 }

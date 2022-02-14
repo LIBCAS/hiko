@@ -4,5 +4,5 @@
     <a href="{{ route('locations.export') }}" class="inline-block mt-3 text-sm font-semibold">
         {{ __('Exportovat') }}
     </a>
-    <livewire:locations-table :labels="$labels" />
+    <livewire:locations-table :types="$labels" />
 </x-app-layout>

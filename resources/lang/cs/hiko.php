@@ -25,4 +25,12 @@ return [
     'password_expired' => 'Pokud už odkaz vypršel, můžete o nové heslo zažádat na následující adrese:',
     'set_password' => 'Nastavit heslo',
     'new_account_created' => 'Právě vám byl založený účet v aplikaci :name',
+    'locations' => 'Uložení',
+    'location' => 'Místo uložení',
+    'new_location' => 'Nové místo uložení',
+    'repository' => 'Instituce / repozitáře',
+    'collection' => 'Sbírky / fondy',
+    'archive' => 'Archivy',
+    'type' => 'Typ',
+    'order_by' => 'Řadit podle',
 ];

@@ -25,4 +25,12 @@ return [
     'password_expired' => 'If the link is expired, you can request a new password on the following link:',
     'set_password' => 'Set password',
     'new_account_created' => 'Your :name account is ready.',
+    'locations' => 'Locations',
+    'location' => 'Location',
+    'new_location' => 'New location',
+    'repository' => 'Institutions / repositories',
+    'collection' => 'Collections',
+    'archive' => 'Archives',
+    'type' => 'Type',
+    'order_by' => 'Sort by',
 ];
