@@ -1,8 +1,25 @@
 const mix = require('laravel-mix')
+const config = require('./webpack.config.js')
 
 mix.setPublicPath('public/dist')
 
 mix.webpackConfig({ devtool: 'source-map' })
+
+mix.browserSync({
+    proxy: config.projectURL,
+    files: [
+        './resources/views/**/*.php',
+        './resources/css/**/*.css',
+        './resources/js/**/*.js',
+        './tailwind.config.js',
+    ],
+})
+
+mix.override((config) => {
+    config.watchOptions = {
+        ignored: /node_modules/,
+    }
+})
 
 mix.options({
     processCssUrls: false,
@@ -20,3 +37,7 @@ mix.js('resources/js/images.js', '')
 mix.postCss('resources/css/images.css', '', [require('postcss-import')])
 
 mix.js('resources/js/editor.js', '')
+
+if (mix.inProduction()) {
+    mix.version()
+}
