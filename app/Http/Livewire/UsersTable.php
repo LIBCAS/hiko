@@ -10,7 +10,9 @@ class UsersTable extends Component
 {
     use WithPagination;
 
-    public $filters = [];
+    public $filters = [
+        'order' => 'name',
+    ];
 
     public $roles;
 
@@ -48,6 +50,8 @@ class UsersTable extends Component
                 $query->where('deactivated_at', '!=', null);
             }
         }
+
+        $query->orderBy($this->filters['order']);
 
         return $query->paginate(10);
     }

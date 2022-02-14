@@ -34,6 +34,22 @@
                     </option>
                 </x-select>
             </label>
+            <label>
+                <span class="block text-sm">
+                    {{ __('hiko.order_by') }}
+                </span>
+                <x-select wire:model.defer="filters.order" class="w-full lg:w-64">
+                    <option value="name">
+                        {{ __('hiko.name') }}
+                    </option>
+                    <option value="role">
+                        {{ __('hiko.role') }}
+                    </option>
+                    <option value="deactivated_at">
+                        {{ __('hiko.status') }}
+                    </option>
+                </x-select>
+            </label>
             <x-button-simple type="button" wire:click="search" class="mt-4">
                 {{ __('hiko.search') }}
             </x-button-simple>
