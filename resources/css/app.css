@@ -1,7 +1,7 @@
-@import "./../../node_modules/tom-select/dist/css/tom-select.default.min.css";
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@import './../../node_modules/tom-select/dist/css/tom-select.default.min.css';
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
 [x-cloak] {
     display: none;
@@ -24,7 +24,7 @@ html {
 }
 
 .required label::after {
-    content: " *";
+    content: ' *';
 
     @apply text-red-700;
 }
