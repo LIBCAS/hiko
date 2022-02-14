@@ -18,7 +18,7 @@ class UserController extends Controller
     public function index()
     {
         return view('pages.users.index', [
-            'title' => __('Uživatelé'),
+            'title' => __('hiko.users'),
             'roles' => $this->getRoles(),
         ]);
     }
@@ -26,10 +26,10 @@ class UserController extends Controller
     public function create()
     {
         return view('pages.users.form', [
-            'title' => 'Nový účet',
+            'title' => __('hiko.new_account'),
             'user' => new User,
             'action' => route('users.store'),
-            'label' => __('Vytvořit'),
+            'label' => __('hiko.create'),
             'roles' => $this->getRoles(),
             'editEmail' => true,
             'editStatus' => false,
@@ -46,22 +46,21 @@ class UserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'role' => $validated['role'],
-            'password' => bcrypt(Str::random(10)),
         ]);
 
-        $user->notify(new NewUserPasswordCreate($user));
-
-        return redirect()->route('users.edit', $user->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('users.edit', $user->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function edit(User $user)
     {
         return view('pages.users.form', [
-            'title' => 'Účet: ' . $user->name,
+            'title' => __('hiko.account') . ': ' . $user->name,
             'user' => $user,
             'action' => route('users.update', $user),
             'method' => 'PUT',
-            'label' => __('Upravit'),
+            'label' => __('hiko.edit'),
             'roles' => $this->getRoles(),
             'editEmail' => false,
             'editStatus' => true,
@@ -76,17 +75,23 @@ class UserController extends Controller
         $user->update([
             'name' => $validated['name'],
             'role' => $validated['role'],
-            'deactivated_at' => isset($validated['deactivated_at']) && $validated['deactivated_at'] === 'on' ? null : now()->format('Y-m-d H:i:s'),
+            'deactivated_at' => isset($validated['deactivated_at']) && $validated['deactivated_at'] === 'on'
+                ? null
+                : now()->format('Y-m-d H:i:s'),
         ]);
 
-        return redirect()->route('users.edit', $user->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('users.edit', $user->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function destroy(User $user)
     {
         $user->delete();
 
-        return redirect()->route('users')->with('success', 'Odstraněno');
+        return redirect()
+            ->route('users')
+            ->with('success', __('hiko.removed'));
     }
 
     protected function getRoles()
