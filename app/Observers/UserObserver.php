@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\User;
 use App\Jobs\UserCreated;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 
 class UserObserver
