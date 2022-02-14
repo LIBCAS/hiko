@@ -1,6 +1,6 @@
 <div>
     <form wire:submit.prevent="search" class="w-full p-3 my-8 bg-gray-200 shadow-sm">
-        <div class="flex flex-col gap-4 lg:flex-row">
+        <div class="flex flex-col flex-wrap gap-4 lg:flex-row">
             <label>
                 <span class="block text-sm">
                     {{ __('hiko.name') }}
