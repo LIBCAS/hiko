@@ -31,6 +31,7 @@ return [
     'repository' => 'Instituce / repozitáře',
     'collection' => 'Sbírky / fondy',
     'archive' => 'Archivy',
+    'remove_location' => 'Odstranit místo uložení',
     'type' => 'Typ',
     'order_by' => 'Řadit podle',
 ];

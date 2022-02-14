@@ -7,7 +7,7 @@
             @method($method)
         @endisset
         <div class="required">
-            <x-label for="name" :value="__('Jméno')" />
+            <x-label for="name" :value="__('hiko.name')" />
             <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $location->name)"
                 required />
             @error('name')
@@ -15,11 +15,11 @@
             @enderror
         </div>
         <div class="required">
-            <x-label for="type" :value="__('Typ')" />
+            <x-label for="type" :value="__('hiko.type')" />
             <x-select id="type" class="block w-full mt-1" name="type" required>
-                @foreach ($types as $key => $type)
-                    <option value="{{ $key }}" {{ old('type', $location->type) == $key ? 'selected' : '' }}>
-                        {{ $type }}
+                @foreach ($types as $type)
+                    <option value="{{ $type }}" {{ old('type', $location->type) === $type ? 'selected' : '' }}>
+                        {{ __("hiko.{$type}") }}
                     </option>
                 @endforeach
             </x-select>
@@ -37,8 +37,8 @@
             @csrf
             @method('DELETE')
             <x-button-danger class="w-full"
-                x-on:click.prevent="if (confirm('Odstraní místo uložení! Pokračovat?')) form.submit()">
-                {{ __('Odstranit místo uložení') }}
+                x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
+                {{ __('hiko.remove_location') }}
             </x-button-danger>
         </form>
     @endif

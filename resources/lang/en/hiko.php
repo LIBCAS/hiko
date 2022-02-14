@@ -31,6 +31,7 @@ return [
     'repository' => 'Institutions / repositories',
     'collection' => 'Collections',
     'archive' => 'Archives',
+    'remove_location' => 'Remove location',
     'type' => 'Type',
     'order_by' => 'Sort by',
 ];
