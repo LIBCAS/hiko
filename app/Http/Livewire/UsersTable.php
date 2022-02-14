@@ -55,7 +55,7 @@ class UsersTable extends Component
     protected function formatTableData($data)
     {
         return [
-            'header' => ['Jméno', 'Role', 'Status'],
+            'header' => [__('hiko.name'), __('hiko.role'), __('hiko.status')],
             'rows' => $data->map(function ($user) {
                 return [
                     [
