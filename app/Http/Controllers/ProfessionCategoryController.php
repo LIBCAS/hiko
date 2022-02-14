@@ -17,10 +17,10 @@ class ProfessionCategoryController extends Controller
     public function create()
     {
         return view('pages.professions-categories.form', [
-            'title' => __('Nová kategorie profese'),
+            'title' => __('hiko.new_professions_category'),
             'professionCategory' => new ProfessionCategory,
             'action' => route('professions.category.store'),
-            'label' => __('Vytvořit'),
+            'label' => __('hiko.create'),
         ]);
     }
 
@@ -35,17 +35,19 @@ class ProfessionCategoryController extends Controller
             ],
         ]);
 
-        return redirect()->route('professions.category.edit', $professionCategory->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('professions.category.edit', $professionCategory->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function edit(ProfessionCategory $professionCategory)
     {
         return view('pages.professions-categories.form', [
-            'title' => __('Kategorie profese č. ') . $professionCategory->id,
+            'title' => __('hiko.professions_category') . ': ' . $professionCategory->id,
             'professionCategory' => $professionCategory,
             'method' => 'PUT',
             'action' => route('professions.category.update', $professionCategory),
-            'label' => __('Upravit'),
+            'label' => __('hiko.edit'),
         ]);
     }
 
@@ -60,14 +62,18 @@ class ProfessionCategoryController extends Controller
             ],
         ]);
 
-        return redirect()->route('professions.category.edit', $professionCategory->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('professions.category.edit', $professionCategory->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function destroy(ProfessionCategory $professionCategory)
     {
         $professionCategory->delete();
 
-        return redirect()->route('professions')->with('success', __('Odstraněno'));
+        return redirect()
+            ->route('professions')
+            ->with('success', __('hiko.removed'));
     }
 
     public function export()

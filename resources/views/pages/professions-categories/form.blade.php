@@ -7,7 +7,7 @@
             @method($method)
         @endisset
         <div>
-            <x-label for="cs" :value="__('CS')" />
+            <x-label for="cs" value="CS" />
             <x-input id="cs" class="block w-full mt-1" type="text" name="cs"
                 :value="old('cs', $professionCategory->translations['name']['cs'] ?? null)" />
             @error('cs')
@@ -15,7 +15,7 @@
             @enderror
         </div>
         <div>
-            <x-label for="en" :value="__('EN')" />
+            <x-label for="en" value="EN" />
             <x-input id="en" class="block w-full mt-1" type="text" name="en"
                 :value="old('cs', $professionCategory->translations['name']['en'] ?? null)" />
             @error('en')
@@ -29,7 +29,7 @@
     @if ($professionCategory->id)
         @if ($professionCategory->identities->count() > 0)
             <p class="mt-6 text-sm">
-                {{ __('Počet připojených osob:') }} {{ $professionCategory->identities->count() }}
+                {{ __('hiko.attached_persons_count') }}: {{ $professionCategory->identities->count() }}
             </p>
         @else
             <form x-data="{ form: $el }" action="{{ route('professions.category.destroy', $professionCategory->id) }}"
@@ -37,8 +37,8 @@
                 @csrf
                 @method('DELETE')
                 <x-button-danger class="w-full"
-                    x-on:click.prevent="if (confirm('Odstraní profesi! Pokračovat?')) form.submit()">
-                    {{ __('Odstranit profesi') }}
+                    x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
+                    {{ __('hiko.remove_profession') }}
                 </x-button-danger>
             </form>
         @endif

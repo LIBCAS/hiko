@@ -34,4 +34,12 @@ return [
     'remove_location' => 'Odstranit místo uložení',
     'type' => 'Typ',
     'order_by' => 'Řadit podle',
+    'professions' => 'Profese',
+    'profession' => 'Profese',
+    'new_profession' => 'Nová profese',
+    'new_professions_category' => 'Nová kategorie profese',
+    'professions_category' => 'Kategorie profese',
+    'export' => 'Exportovat',
+    'remove_profession' => 'Odstranit profesi',
+    'attached_persons_count' => 'Počet připojených osob',
 ];

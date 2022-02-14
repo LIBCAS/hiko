@@ -34,4 +34,12 @@ return [
     'remove_location' => 'Remove location',
     'type' => 'Type',
     'order_by' => 'Sort by',
+    'professions' => 'Profese',
+    'profession' => 'Profession',
+    'new_profession' => 'New profession',
+    'new_professions_category' => 'New profession category',
+    'professions_category' => 'Profession category',
+    'export' => 'Export',
+    'remove_profession' => 'Remove profession',
+    'attached_persons_count' => 'Number of attached persons',
 ];
