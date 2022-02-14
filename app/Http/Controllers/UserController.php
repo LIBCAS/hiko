@@ -91,10 +91,6 @@ class UserController extends Controller
 
     protected function getRoles()
     {
-        return [
-            'admin' => __('Správce'),
-            'editor' => __('Editor'),
-            'guest' => __('Divák'),
-        ];
+        return ['admin', 'editor', 'guest'];
     }
 }

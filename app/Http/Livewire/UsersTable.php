@@ -3,43 +3,73 @@
 namespace App\Http\Livewire;
 
 use App\Models\User;
-use Mediconesystems\LivewireDatatables\Column;
-use Mediconesystems\LivewireDatatables\Http\Livewire\LivewireDatatable;
+use Livewire\Component;
+use Livewire\WithPagination;
 
-class UsersTable extends LivewireDatatable
+class UsersTable extends Component
 {
-    public $model = User::class;
+    use WithPagination;
+
+    public $filters = [];
+
     public $roles;
 
-    public function builder()
+    public function search()
     {
-        return User::query();
+        $this->resetPage();
     }
 
-    public function columns()
+    public function render()
     {
-        $roles = collect($this->roles)->map(function ($item, $key) {
-            return ['id' => $key, 'name' => $item];
-        })->toArray();
+        $users = $this->findUsers();
 
+        return view('livewire.users-table', [
+            'tableData' => $this->formatTableData($users),
+            'pagination' => $users,
+        ]);
+    }
+
+    protected function findUsers()
+    {
+        $query = User::select('id', 'name', 'role', 'deactivated_at');
+
+        if (isset($this->filters['name']) && !empty($this->filters['name'])) {
+            $query->where('name', 'LIKE', "%" . $this->filters['name'] . "%");
+        }
+
+        if (isset($this->filters['role']) && !empty($this->filters['role'])) {
+            $query->where('role', '=', $this->filters['role']);
+        }
+
+        if (isset($this->filters['status'])) {
+            if ($this->filters['status'] === '1') {
+                $query->where('deactivated_at', '=', null);
+            } else if ($this->filters['status'] === '0') {
+                $query->where('deactivated_at', '!=', null);
+            }
+        }
+
+        return $query->paginate(10);
+    }
+
+    protected function formatTableData($data)
+    {
         return [
-            Column::callback(['name', 'id'], function ($name, $id) {
-                return view('tables.edit-link', ['route' => route('users.edit', $id), 'label' => $name]);
-            })
-                ->defaultSort('asc')
-                ->label(__('Jméno'))
-                ->filterable('name'),
-
-            Column::callback(['role'], function ($role) {
-                return $this->roles[$role];
-            })
-                ->label(__('Role'))
-                ->filterable(array_values($roles)),
-
-            Column::callback(['deactivated_at'], function ($deactivated_at) {
-                return empty($deactivated_at) ? __('Aktivní') : __('Neaktivní');
-            })
-                ->label('Status'),
+            'header' => ['Jméno', 'Role', 'Status'],
+            'rows' => $data->map(function ($user) {
+                return [
+                    [
+                        'label' => $user->name,
+                        'link' => route('users.edit', $user->id),
+                    ],
+                    [
+                        'label' => __("hiko.{$user->role}"),
+                    ],
+                    [
+                        'label' => $user->isDeactivated() ? __('hiko.inactive') : __('hiko.active'),
+                    ],
+                ];
+            })->toArray(),
         ];
     }
 }
