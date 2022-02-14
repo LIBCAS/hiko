@@ -25,7 +25,7 @@ class ProfessionController extends Controller
     {
         return view('pages.professions.form', [
             'title' => __('Nová profese'),
-            'profession' => new Profession(),
+            'profession' => new Profession,
             'action' => route('professions.store'),
             'label' => __('Vytvořit'),
         ]);

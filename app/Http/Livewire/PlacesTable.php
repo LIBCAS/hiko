@@ -29,8 +29,8 @@ class PlacesTable extends LivewireDatatable
                     return '';
                 }
 
-                $url = "https://www.openstreetmap.org/?mlat=$latitude&mlon=$longitude&zoom=12";
-                return "<a href='$url' target='_blank' class=''>$latitude,$longitude &#10697;</a>";
+                $url = "https://www.openstreetmap.org/?mlat={$latitude}&mlon={$longitude}&zoom=12";
+                return "<a href='{$url}' target='_blank' class=''>{$latitude},{$longitude} &#10697;</a>";
             })
                 ->label(__('Souřadnice')),
         ];

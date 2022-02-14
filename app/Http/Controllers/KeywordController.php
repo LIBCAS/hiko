@@ -25,7 +25,7 @@ class KeywordController extends Controller
 
     public function create()
     {
-        $keyword = new Keyword();
+        $keyword = new Keyword;
 
         return view('pages.keywords.form', [
             'title' => __('Nové klíčové slovo'),

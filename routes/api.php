@@ -19,5 +19,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/geonames', GeonamesController::class)
-->name('ajax.geonames');
+Route::get('geonames', GeonamesController::class)
+    ->name('ajax.geonames');

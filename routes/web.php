@@ -38,11 +38,11 @@ Route::prefix('users')->group(function () {
         ->name('users')
         ->middleware(['auth', 'can:manage-users']);
 
-    Route::get('/create', [UserController::class, 'create'])
+    Route::get('create', [UserController::class, 'create'])
         ->name('users.create')
         ->middleware(['auth', 'can:manage-users']);
 
-    Route::get('/{user}/edit', [UserController::class, 'edit'])
+    Route::get('{user}/edit', [UserController::class, 'edit'])
         ->name('users.edit')
         ->middleware(['auth', 'can:manage-users']);
 
@@ -50,11 +50,11 @@ Route::prefix('users')->group(function () {
         ->name('users.store')
         ->middleware(['auth', 'can:manage-users']);
 
-    Route::put('/{user}', [UserController::class, 'update'])
+    Route::put('{user}', [UserController::class, 'update'])
         ->name('users.update')
         ->middleware(['auth', 'can:manage-users']);
 
-    Route::delete('/{user}', [UserController::class, 'destroy'])
+    Route::delete('{user}', [UserController::class, 'destroy'])
         ->name('users.destroy')
         ->middleware(['auth', 'can:manage-users']);
 });
@@ -64,11 +64,11 @@ Route::prefix('locations')->group(function () {
         ->name('locations')
         ->middleware(['auth', 'can:view-metadata']);
 
-    Route::get('/create', [LocationController::class, 'create'])
+    Route::get('create', [LocationController::class, 'create'])
         ->name('locations.create')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/{location}/edit', [LocationController::class, 'edit'])
+    Route::get('{location}/edit', [LocationController::class, 'edit'])
         ->name('locations.edit')
         ->middleware(['auth', 'can:manage-metadata']);
 
@@ -76,15 +76,15 @@ Route::prefix('locations')->group(function () {
         ->name('locations.store')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::put('/{location}', [LocationController::class, 'update'])
+    Route::put('{location}', [LocationController::class, 'update'])
         ->name('locations.update')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::delete('/{location}', [LocationController::class, 'destroy'])
+    Route::delete('{location}', [LocationController::class, 'destroy'])
         ->name('locations.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/export', [LocationController::class, 'export'])
+    Route::get('export', [LocationController::class, 'export'])
         ->name('locations.export')
         ->middleware(['auth', 'can:manage-metadata']);
 });
@@ -94,11 +94,11 @@ Route::prefix('professions')->group(function () {
         ->name('professions')
         ->middleware(['auth', 'can:view-metadata']);
 
-    Route::get('/create', [ProfessionController::class, 'create'])
+    Route::get('create', [ProfessionController::class, 'create'])
         ->name('professions.create')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/{profession}/edit', [ProfessionController::class, 'edit'])
+    Route::get('{profession}/edit', [ProfessionController::class, 'edit'])
         ->name('professions.edit')
         ->middleware(['auth', 'can:manage-metadata']);
 
@@ -106,15 +106,15 @@ Route::prefix('professions')->group(function () {
         ->name('professions.store')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::put('/{profession}', [ProfessionController::class, 'update'])
+    Route::put('{profession}', [ProfessionController::class, 'update'])
         ->name('professions.update')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::delete('/{profession}', [ProfessionController::class, 'destroy'])
+    Route::delete('{profession}', [ProfessionController::class, 'destroy'])
         ->name('professions.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/export', [ProfessionController::class, 'export'])
+    Route::get('export', [ProfessionController::class, 'export'])
         ->name('professions.export')
         ->middleware(['auth', 'can:manage-metadata']);
 });
@@ -124,11 +124,11 @@ Route::prefix('professions/category')->group(function () {
         return redirect()->route('professions');
     });
 
-    Route::get('/create', [ProfessionCategoryController::class, 'create'])
+    Route::get('create', [ProfessionCategoryController::class, 'create'])
         ->name('professions.category.create')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/{professionCategory}/edit', [ProfessionCategoryController::class, 'edit'])
+    Route::get('{professionCategory}/edit', [ProfessionCategoryController::class, 'edit'])
         ->name('professions.category.edit')
         ->middleware(['auth', 'can:manage-metadata']);
 
@@ -136,15 +136,15 @@ Route::prefix('professions/category')->group(function () {
         ->name('professions.category.store')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::put('/{professionCategory}', [ProfessionCategoryController::class, 'update'])
+    Route::put('{professionCategory}', [ProfessionCategoryController::class, 'update'])
         ->name('professions.category.update')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::delete('/{professionCategory}', [ProfessionCategoryController::class, 'destroy'])
+    Route::delete('{professionCategory}', [ProfessionCategoryController::class, 'destroy'])
         ->name('professions.category.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/export', [ProfessionCategoryController::class, 'export'])
+    Route::get('export', [ProfessionCategoryController::class, 'export'])
         ->name('professions.category.export')
         ->middleware(['auth', 'can:manage-metadata']);
 });
@@ -154,11 +154,11 @@ Route::prefix('keywords')->group(function () {
         ->name('keywords')
         ->middleware(['auth', 'can:view-metadata']);
 
-    Route::get('/create', [KeywordController::class, 'create'])
+    Route::get('create', [KeywordController::class, 'create'])
         ->name('keywords.create')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/{keyword}/edit', [KeywordController::class, 'edit'])
+    Route::get('{keyword}/edit', [KeywordController::class, 'edit'])
         ->name('keywords.edit')
         ->middleware(['auth', 'can:manage-metadata']);
 
@@ -166,15 +166,15 @@ Route::prefix('keywords')->group(function () {
         ->name('keywords.store')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::put('/{keyword}', [KeywordController::class, 'update'])
+    Route::put('{keyword}', [KeywordController::class, 'update'])
         ->name('keywords.update')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::delete('/{keyword}', [KeywordController::class, 'destroy'])
+    Route::delete('{keyword}', [KeywordController::class, 'destroy'])
         ->name('keywords.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/export', [KeywordController::class, 'export'])
+    Route::get('export', [KeywordController::class, 'export'])
         ->name('keywords.export')
         ->middleware(['auth', 'can:manage-metadata']);
 });
@@ -184,11 +184,11 @@ Route::prefix('keywords/category')->group(function () {
         return redirect()->route('keywords');
     });
 
-    Route::get('/create', [KeywordCategoryController::class, 'create'])
+    Route::get('create', [KeywordCategoryController::class, 'create'])
         ->name('keywords.category.create')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/{keywordCategory}/edit', [KeywordCategoryController::class, 'edit'])
+    Route::get('{keywordCategory}/edit', [KeywordCategoryController::class, 'edit'])
         ->name('keywords.category.edit')
         ->middleware(['auth', 'can:manage-metadata']);
 
@@ -196,15 +196,15 @@ Route::prefix('keywords/category')->group(function () {
         ->name('keywords.category.store')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::put('/{keywordCategory}', [KeywordCategoryController::class, 'update'])
+    Route::put('{keywordCategory}', [KeywordCategoryController::class, 'update'])
         ->name('keywords.category.update')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::delete('/{keywordCategory}', [KeywordCategoryController::class, 'destroy'])
+    Route::delete('{keywordCategory}', [KeywordCategoryController::class, 'destroy'])
         ->name('keywords.category.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/export', [KeywordCategoryController::class, 'export'])
+    Route::get('export', [KeywordCategoryController::class, 'export'])
         ->name('keywords.category.export')
         ->middleware(['auth', 'can:manage-metadata']);
 });
@@ -214,11 +214,11 @@ Route::prefix('places')->group(function () {
         ->name('places')
         ->middleware(['auth', 'can:view-metadata']);
 
-    Route::get('/create', [PlaceController::class, 'create'])
+    Route::get('create', [PlaceController::class, 'create'])
         ->name('places.create')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/{place}/edit', [PlaceController::class, 'edit'])
+    Route::get('{place}/edit', [PlaceController::class, 'edit'])
         ->name('places.edit')
         ->middleware(['auth', 'can:manage-metadata']);
 
@@ -226,15 +226,15 @@ Route::prefix('places')->group(function () {
         ->name('places.store')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::put('/{place}', [PlaceController::class, 'update'])
+    Route::put('{place}', [PlaceController::class, 'update'])
         ->name('places.update')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::delete('/{place}', [PlaceController::class, 'destroy'])
+    Route::delete('{place}', [PlaceController::class, 'destroy'])
         ->name('places.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/export', [PlaceController::class, 'export'])
+    Route::get('export', [PlaceController::class, 'export'])
         ->name('places.export')
         ->middleware(['auth', 'can:manage-metadata']);
 });
@@ -244,11 +244,11 @@ Route::prefix('identities')->group(function () {
         ->name('identities')
         ->middleware(['auth', 'can:view-metadata']);
 
-    Route::get('/create', [IdentityController::class, 'create'])
+    Route::get('create', [IdentityController::class, 'create'])
         ->name('identities.create')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/{identity}/edit', [IdentityController::class, 'edit'])
+    Route::get('{identity}/edit', [IdentityController::class, 'edit'])
         ->name('identities.edit')
         ->middleware(['auth', 'can:manage-metadata']);
 
@@ -256,15 +256,15 @@ Route::prefix('identities')->group(function () {
         ->name('identities.store')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::put('/{identity}', [IdentityController::class, 'update'])
+    Route::put('{identity}', [IdentityController::class, 'update'])
         ->name('identities.update')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::delete('/{identity}', [IdentityController::class, 'destroy'])
+    Route::delete('{identity}', [IdentityController::class, 'destroy'])
         ->name('identities.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/export', [IdentityController::class, 'export'])
+    Route::get('export', [IdentityController::class, 'export'])
         ->name('identities.export')
         ->middleware(['auth', 'can:manage-metadata']);
 });
@@ -274,11 +274,11 @@ Route::prefix('letters')->group(function () {
         ->name('letters')
         ->middleware(['auth', 'can:view-metadata']);
 
-    Route::get('/create', [LetterController::class, 'create'])
+    Route::get('create', [LetterController::class, 'create'])
         ->name('letters.create')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/{letter}/edit', [LetterController::class, 'edit'])
+    Route::get('{letter}/edit', [LetterController::class, 'edit'])
         ->name('letters.edit')
         ->middleware(['auth', 'can:manage-metadata']);
 
@@ -286,57 +286,57 @@ Route::prefix('letters')->group(function () {
         ->name('letters.store')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/{letter}/show', [LetterController::class, 'show'])
+    Route::get('{letter}/show', [LetterController::class, 'show'])
         ->name('letters.show')
         ->middleware(['auth', 'can:view-metadata']);
 
-    Route::put('/{letter}', [LetterController::class, 'update'])
+    Route::put('{letter}', [LetterController::class, 'update'])
         ->name('letters.update')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::delete('/{letter}', [LetterController::class, 'destroy'])
+    Route::delete('{letter}', [LetterController::class, 'destroy'])
         ->name('letters.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/export', [LetterController::class, 'export'])
+    Route::get('export', [LetterController::class, 'export'])
         ->name('letters.export')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/{letter}/images', [LetterController::class, 'images'])
+    Route::get('{letter}/images', [LetterController::class, 'images'])
         ->name('letters.images')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/{letter}/text', [LetterController::class, 'text'])
+    Route::get('{letter}/text', [LetterController::class, 'text'])
         ->name('letters.text')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/preview', LetterPreviewController::class)
+    Route::get('preview', LetterPreviewController::class)
         ->name('letters.preview')
         ->middleware(['auth', 'can:view-metadata']);
 });
 
 Route::prefix('ajax')->group(function () {
-    Route::get('/keyword-category', AjaxKeywordCategoryController::class)
+    Route::get('keyword-category', AjaxKeywordCategoryController::class)
         ->name('ajax.keywords.category')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/professions', AjaxProfessionController::class)
+    Route::get('professions', AjaxProfessionController::class)
         ->name('ajax.professions')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/profession-category', AjaxProfessionCategoryController::class)
+    Route::get('profession-category', AjaxProfessionCategoryController::class)
         ->name('ajax.professions.category')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/identity', AjaxIdentityController::class)
+    Route::get('identity', AjaxIdentityController::class)
         ->name('ajax.identities')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/place', AjaxPlaceController::class)
+    Route::get('place', AjaxPlaceController::class)
         ->name('ajax.places')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('/keyword', AjaxKeywordController::class)
+    Route::get('keyword', AjaxKeywordController::class)
         ->name('ajax.keywords')
         ->middleware(['auth', 'can:manage-metadata']);
 });

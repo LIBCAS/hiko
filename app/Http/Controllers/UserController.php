@@ -27,7 +27,7 @@ class UserController extends Controller
     {
         return view('pages.users.form', [
             'title' => 'Nový účet',
-            'user' => new User(),
+            'user' => new User,
             'action' => route('users.store'),
             'label' => __('Vytvořit'),
             'roles' => $this->getRoles(),

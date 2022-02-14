@@ -21,7 +21,10 @@ class IdentitiesTable extends LivewireDatatable
         return [
             Column::callback(['name', 'id', 'birth_year', 'death_year'], function ($name, $id, $birth_year, $death_year) {
                 $dates = $this->formatDate($birth_year, $death_year);
-                return view('tables.edit-link', ['route' => route('identities.edit', $id), 'label' => "$name $dates"]);
+                return view(
+                    'tables.edit-link',
+                    ['route' => route('identities.edit', $id), 'label' => "{$name} {$dates}"]
+                );
             })
                 ->defaultSort('asc')
                 ->label(__('Jméno'))

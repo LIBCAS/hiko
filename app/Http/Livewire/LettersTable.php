@@ -52,7 +52,7 @@ class LettersTable extends LivewireDatatable
                 $year = $year ? $year : '?';
                 $month = $month ? $month : '?';
                 $day = $day ? $day : '?';
-                return "$day/$month/$year";
+                return "{$day}/{$month}/{$year}";
             })
                 ->label(__('Datum'))
                 ->filterable()

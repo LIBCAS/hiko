@@ -42,7 +42,7 @@ class IdentityController extends Controller
 
     public function create()
     {
-        $identity = new Identity();
+        $identity = new Identity;
 
         return view('pages.identities.form', [
             'title' => __('Nová osoba / instituce'),

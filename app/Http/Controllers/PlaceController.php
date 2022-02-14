@@ -30,7 +30,7 @@ class PlaceController extends Controller
     {
         return view('pages.places.form', [
             'title' => __('Nové místo'),
-            'place' => new Place(),
+            'place' => new Place,
             'action' => route('places.store'),
             'label' => __('Vytvořit'),
             'countries' => Country::all(),

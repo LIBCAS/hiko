@@ -24,25 +24,25 @@ class LetterController extends Controller
         'date_month' => ['nullable', 'integer', 'numeric'],
         'date_day' => ['nullable', 'integer', 'numeric'],
         'date_marked' => ['nullable', 'string', 'max:255'],
-        'date_uncertain' => ['nullable', 'boolean',],
-        'date_approximate' => ['nullable', 'boolean',],
-        'date_inferred' => ['nullable', 'boolean',],
-        'date_is_range' => ['nullable', 'boolean',],
+        'date_uncertain' => ['nullable', 'boolean'],
+        'date_approximate' => ['nullable', 'boolean'],
+        'date_inferred' => ['nullable', 'boolean'],
+        'date_is_range' => ['nullable', 'boolean'],
         'range_year' => ['nullable', 'integer', 'numeric'],
         'range_month' => ['nullable', 'integer', 'numeric'],
         'range_day' => ['nullable', 'integer', 'numeric'],
         'date_note' => ['nullable'],
-        'author_uncertain' => ['nullable', 'boolean',],
-        'author_inferred' => ['nullable', 'boolean',],
+        'author_uncertain' => ['nullable', 'boolean'],
+        'author_inferred' => ['nullable', 'boolean'],
         'author_note' => ['nullable'],
-        'recipient_uncertain' => ['nullable', 'boolean',],
-        'recipient_inferred' => ['nullable', 'boolean',],
+        'recipient_uncertain' => ['nullable', 'boolean'],
+        'recipient_inferred' => ['nullable', 'boolean'],
         'recipient_note' => ['nullable'],
-        'destination_uncertain' => ['nullable', 'boolean',],
-        'destination_inferred' => ['nullable', 'boolean',],
+        'destination_uncertain' => ['nullable', 'boolean'],
+        'destination_inferred' => ['nullable', 'boolean'],
         'destination_note' => ['nullable'],
-        'origin_uncertain' => ['nullable', 'boolean',],
-        'origin_inferred' => ['nullable', 'boolean',],
+        'origin_uncertain' => ['nullable', 'boolean'],
+        'origin_inferred' => ['nullable', 'boolean'],
         'origin_note' => ['nullable'],
         'people_mentioned_note' => ['nullable'],
         'copies' => ['nullable'],
@@ -80,7 +80,7 @@ class LetterController extends Controller
 
     public function create()
     {
-        $letter = new Letter();
+        $letter = new Letter;
 
         return view('pages.letters.form', [
             'title' => __('Nový dopis'),
@@ -128,7 +128,6 @@ class LetterController extends Controller
             'title' => $this->formatLetterName($letter),
             'letter' => $letter,
         ]);
-
     }
 
     public function edit(Letter $letter)

@@ -18,7 +18,7 @@ class ProfessionCategoryController extends Controller
     {
         return view('pages.professions-categories.form', [
             'title' => __('Nová kategorie profese'),
-            'professionCategory' => new ProfessionCategory(),
+            'professionCategory' => new ProfessionCategory,
             'action' => route('professions.category.store'),
             'label' => __('Vytvořit'),
         ]);

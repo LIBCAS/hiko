@@ -18,7 +18,7 @@ class KeywordCategoryController extends Controller
     {
         return view('pages.keywords-categories.form', [
             'title' => __('Nová kategorie klíčových slov'),
-            'keywordCategory' => new KeywordCategory(),
+            'keywordCategory' => new KeywordCategory,
             'action' => route('keywords.category.store'),
             'label' => __('Vytvořit'),
         ]);
