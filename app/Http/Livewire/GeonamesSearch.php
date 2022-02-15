@@ -2,13 +2,14 @@
 
 namespace App\Http\Livewire;
 
+use App\Services\Geonames;
 use Livewire\Component;
-use Symfony\Component\HttpFoundation\Request;
 
 class GeonamesSearch extends Component
 {
     public $search = '';
     public $searchResults = [];
+    public $error = '';
 
     public function selectCity($id, $latitude, $longitude)
     {
@@ -24,9 +25,13 @@ class GeonamesSearch extends Component
     public function render()
     {
         if (strlen($this->search) >= 2) {
-            $this->searchResults = json_decode(
-                file_get_contents(route('ajax.geonames') . '?search=' . urlencode($this->search))
-            );
+            try {
+                $this->searchResults = (new Geonames)->search($this->search);
+                $this->error = '';
+            } catch (\Throwable $th) {
+                $this->searchResults = [];
+                $this->error = $th->getMessage();
+            }
         }
 
         return view('livewire.geonames-search');

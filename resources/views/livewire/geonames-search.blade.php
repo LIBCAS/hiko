@@ -8,21 +8,20 @@
         @if (strlen($search) >= 2)
             <div class="absolute z-50 w-full mt-1 text-sm bg-purple-100 rounded-md"
                 x-show.transition.opacity.duration.200="isVisible">
-                @if (count($searchResults) > 0)
-                    <ul>
-                        @foreach ($searchResults as $city)
-                            <li class="border border-primary-dark">
-                                <button type="button" class="w-full p-2 text-left"
-                                    wire:click="selectCity({{ $city->id }}, {{ $city->latitude }}, {{ $city->longitude }})">
-                                    {{ $city->name }} ({{ $city->adminName }} – {{ $city->country }})
-                                </button>
-                            </li>
-                        @endforeach
-                    </ul>
-                @else
-                    <div class="px-3 py-3">{{ __('Nebyly nalezeny žádné výsledky')}}</div>
-                @endif
+                <ul>
+                    @foreach ($searchResults as $city)
+                        <li class="border border-primary-dark">
+                            <button type="button" class="w-full p-2 text-left"
+                                wire:click="selectCity({{ $city['id'] }}, {{ $city['latitude'] }}, {{ $city['longitude'] }})">
+                                {{ $city['name'] }} ({{ $city['adminName'] }} – {{ $city['country'] }})
+                            </button>
+                        </li>
+                    @endforeach
+                </ul>
             </div>
+            @if (!empty($error))
+                <div class="px-1 py-3 text-red-700 text-sm">{{ $error }}</div>
+            @endif
         @endif
     </div>
     @push('scripts')
