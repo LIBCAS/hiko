@@ -6,7 +6,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
 
-class ProfessionsTable extends Component
+class NamesTable extends Component
 {
     use WithPagination;
 
@@ -25,7 +25,7 @@ class ProfessionsTable extends Component
     {
         $professions = $this->findProfessions();
 
-        return view('livewire.professions-table', [
+        return view('livewire.names-table', [
             'tableData' => $this->formatTableData($professions),
             'pagination' => $professions,
         ]);
