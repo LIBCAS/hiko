@@ -2,8 +2,9 @@
 
 namespace App\Http\Livewire;
 
-use App\Models\Identity;
 use Livewire\Component;
+use App\Models\Identity;
+use Illuminate\Support\Str;
 use Livewire\WithPagination;
 
 class IdentitiesTable extends Component
@@ -11,7 +12,7 @@ class IdentitiesTable extends Component
     use WithPagination;
 
     public $filters = [
-        'order' => 'surname',
+        'order' => 'name',
     ];
 
     public function search()
@@ -31,7 +32,7 @@ class IdentitiesTable extends Component
 
     protected function findIdentities()
     {
-        $query = Identity::select('id', 'surname', 'name', 'type', 'birth_year', 'death_year', 'alternative_names')
+        $query = Identity::select('id', 'name', 'type', 'birth_year', 'death_year', 'alternative_names')
             ->with([
                 'professions' => function ($subquery) {
                     $subquery->select('name')
@@ -43,6 +44,31 @@ class IdentitiesTable extends Component
                 },
             ]);
 
+        if (isset($this->filters['name']) && !empty($this->filters['name'])) {
+            $query->where('name', 'LIKE', "%" . $this->filters['name'] . "%")
+                ->orWhereRaw("LOWER(alternative_names) like ?", ["%" . Str::lower($this->filters['name']) . "%"]);
+        }
+
+        if (isset($this->filters['type']) && !empty($this->filters['type'])) {
+            $query->where('type', '=', $this->filters['type']);
+        }
+
+        if (isset($this->filters['profession']) && !empty($this->filters['profession'])) {
+            $query->whereHas('professions', function ($subquery) {
+                $subquery
+                    ->whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($this->filters['profession']) . '%'])
+                    ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($this->filters['profession']) . '%']);
+            });
+        }
+
+        if (isset($this->filters['category']) && !empty($this->filters['category'])) {
+            $query->whereHas('profession_categories', function ($subquery) {
+                $subquery
+                    ->whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($this->filters['category']) . '%'])
+                    ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($this->filters['category']) . '%']);
+            });
+        }
+
         $query->orderBy($this->filters['order']);
 
         return $query->paginate(10);
@@ -51,7 +77,7 @@ class IdentitiesTable extends Component
     protected function formatTableData($data)
     {
         return [
-            'header' => [__('hiko.name'), __('hiko.type'), __('hiko.dates'), __('hiko.alternative_names'), __('hiko.professions'), __('hiko.professions_category')],
+            'header' => [__('hiko.name'), __('hiko.type'), __('hiko.dates'), __('hiko.alternative_names'), __('hiko.professions'), __('hiko.category')],
             'rows' => $data->map(function ($identity) {
                 return [
                     [
