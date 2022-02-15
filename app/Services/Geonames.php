@@ -9,7 +9,13 @@ class Geonames
     public function search($query)
     {
         if (empty($query)) {
-            throw new Exception('Neplatný formát', 400);
+            throw new Exception(
+                __('validation.min.string', [
+                    'attribute' => __('hiko.query'),
+                    'min' => '0',
+                ]),
+                400
+            );
         }
 
         $url = 'https://secure.geonames.org/searchJSON?maxRows=10&username=' . config('hiko.geonames_username') . '&q=' . urlencode($query);
@@ -17,11 +23,11 @@ class Geonames
         try {
             $result = json_decode(file_get_contents($url));
         } catch (Exception $e) {
-            throw new Exception('Geonames není dostupné', 500);
+            throw new Exception(__('hiko.geonames_unavailable'), 503);
         }
 
         if ($result->totalResultsCount === 0) {
-            throw new Exception('Źádné výsledky', 404);
+            throw new Exception(__('hiko.items_not_found'), 404);
         }
 
         return collect($result->geonames)->map(function ($place) {

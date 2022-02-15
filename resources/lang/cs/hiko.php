@@ -48,4 +48,6 @@ return [
     'latitude' => 'Zeměpisná šířka',
     'longitude' => 'Zeměpisná délka',
     'remove' => 'Odstranit',
+    'query' => 'Hledaný termín',
+    'geonames_unavailable' => 'Služba Geonames není dostupná',
 ];

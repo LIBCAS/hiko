@@ -48,4 +48,6 @@ return [
     'latitude' => 'Latitude',
     'longitude' => 'Longitude',
     'remove' => 'Remove',
+    'query' => 'Search query',
+    'geonames_unavailable' => 'Geonames service is not available.',
 ];
