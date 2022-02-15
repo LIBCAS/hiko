@@ -120,10 +120,6 @@ class LetterController extends Controller
         $letter->load('identities', 'places', 'keywords');
         $letter->identities = $letter->identities->groupBy('pivot.role')->toArray();
         $letter->places = $letter->places->groupBy('pivot.role')->toArray();
-        $letter->formattedDate = $this->formatLetterDate($letter->date_day, $letter->date_month, $letter->date_year);
-        if ($letter->date_is_range) {
-            $letter->formattedRangeDate = $this->formatLetterDate($letter->range_day, $letter->range_month, $letter->range_year);
-        }
 
         return view('pages.letters.show', [
             'title' => $this->formatLetterName($letter),

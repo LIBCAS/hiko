@@ -26,7 +26,7 @@
                     Letter date
                 </td>
                 <td class="py-2">
-                    {{ $letter->formattedDate }}@if ($letter->date_is_range)–{{ $letter->formattedRangeDate }} @endif
+                    {{ $letter->pretty_date }}@if ($letter->date_is_range)–{{ $letter->pretty_range_date }} @endif
                     @if ($letter->date_uncertain)
                         <small class="block pl-3"><em>Uncertain date</em></small>
                     @endif

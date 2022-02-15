@@ -16,11 +16,11 @@
                 </h3>
                 <ul>
                     <li>
-                        {{ $letter->date }}
+                        {{ $letter->pretty_date }}
                     </li>
                     @if ($letter->date_is_range)
                         <li>
-                            Date is range: {{ $letter->rangeDate }}
+                            Date is range: {{ $letter->pretty_range_date }}
                         </li>
                     @endif
                     @if ($letter->date_uncertain)

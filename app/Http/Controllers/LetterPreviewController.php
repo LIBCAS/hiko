@@ -19,10 +19,6 @@ class LetterPreviewController extends Controller
                 $letter->identities = $letter->identities->groupBy('pivot.role')->toArray();
                 $letter->places = $letter->places->groupBy('pivot.role')->toArray();
                 $letter->name = $this->formatLetterName($letter);
-                $letter->date = $this->formatLetterDate($letter->date_day, $letter->date_month, $letter->date_year);
-                if ($letter->date_is_range) {
-                    $letter->rangeDate = $this->formatLetterDate($letter->range_day, $letter->range_month, $letter->range_year);
-                }
                 return $letter;
             }),
         ]);

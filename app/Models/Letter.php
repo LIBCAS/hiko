@@ -82,4 +82,27 @@ class Letter extends Model implements HasMedia
     {
         return $this->belongsToMany(User::class);
     }
+
+    public function getPrettyDateAttribute()
+    {
+        return $this->formatDate($this->date_day, $this->date_month, $this->date_year);
+    }
+
+    public function getPrettyRangeDateAttribute()
+    {
+        return $this->formatDate($this->range_day, $this->range_month, $this->range_year);
+    }
+
+    protected function formatDate($day, $month, $year)
+    {
+        $day = $day && $day != 0 ? $day : '?';
+        $month = $month && $month != 0 ? $month : '?';
+        $year = $year && $year != 0 ? $year : '????';
+
+        if ($year == '????' && $month == '?' && $day == '?') {
+            return '?';
+        }
+
+        return "{$day}. {$month}. {$year}";
+    }
 }
