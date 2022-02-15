@@ -9,7 +9,6 @@ use App\Models\Identity;
 use App\Models\Language;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
-use App\Http\Traits\LetterFormatTrait;
 use App\Http\Traits\LetterLabelsTrait;
 
 // TODO: refaktorovat metody pro získání přidružených dat
@@ -17,7 +16,6 @@ use App\Http\Traits\LetterLabelsTrait;
 class LetterController extends Controller
 {
     use LetterLabelsTrait;
-    use LetterFormatTrait;
 
     protected $rules = [
         'date_year' => ['nullable', 'integer', 'numeric'],
@@ -118,11 +116,9 @@ class LetterController extends Controller
     public function show(Letter $letter)
     {
         $letter->load('identities', 'places', 'keywords');
-        $letter->identities = $letter->identities->groupBy('pivot.role')->toArray();
-        $letter->places = $letter->places->groupBy('pivot.role')->toArray();
 
         return view('pages.letters.show', [
-            'title' => $this->formatLetterName($letter),
+            'title' => $letter->name,
             'letter' => $letter,
         ]);
     }

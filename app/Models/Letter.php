@@ -93,6 +93,26 @@ class Letter extends Model implements HasMedia
         return $this->formatDate($this->range_day, $this->range_month, $this->range_year);
     }
 
+    public function getNameAttribute()
+    {
+        $this->identities = $this->identities->groupBy('pivot.role')->toArray();
+        $this->places = $this->places->groupBy('pivot.role')->toArray();
+
+        $author = isset($this->identities['author']) ? $this->identities['author'][0] : [];
+        $recipient = isset($this->identities['recipient']) ? $this->identities['recipient'][0] : [];
+        $origin = isset($this->places['origin']) ? $this->places['origin'][0] : [];
+        $destination = isset($this->places['destination']) ? $this->places['destination'][0] : [];
+
+        $title = "{$this->pretty_date} ";
+        $title .= $author ? $author['name'] . ' ' : '';
+        $title .= $origin ? "({$origin['name']}) " : '';
+        $title .= $recipient || $destination ? 'to ' : '';
+        $title .= $recipient ? $recipient['name'] . ' ' : '';
+        $title .= $destination ? "({$destination['name']}) " : '';
+
+        return $title;
+    }
+
     protected function formatDate($day, $month, $year)
     {
         $day = $day && $day != 0 ? $day : '?';
