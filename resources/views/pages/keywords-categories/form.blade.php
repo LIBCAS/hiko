@@ -7,7 +7,7 @@
             @method($method)
         @endisset
         <div>
-            <x-label for="cs" :value="__('CS')" />
+            <x-label for="cs" value="CS" />
             <x-input id="cs" class="block w-full mt-1" type="text" name="cs"
                 :value="old('cs', $keywordCategory->translations['name']['cs'] ?? null)" />
             @error('cs')
@@ -15,7 +15,7 @@
             @enderror
         </div>
         <div>
-            <x-label for="en" :value="__('EN')" />
+            <x-label for="en" value="EN" />
             <x-input id="en" class="block w-full mt-1" type="text" name="en"
                 :value="old('cs', $keywordCategory->translations['name']['en'] ?? null)" />
             @error('en')
@@ -26,11 +26,10 @@
             {{ $label }}
         </x-button-simple>
     </form>
-
     @if ($keywordCategory->id)
         @if ($keywordCategory->keywords->count() > 0)
             <p class="mt-6 text-sm">
-                {{ __('Počet závislých klíčových slov:') }} {{ $keywordCategory->keywords->count() }}
+                {{ __('hiko.attached_keywords_count') }} {{ $keywordCategory->keywords->count() }}
             </p>
         @else
             <form x-data="{ form: $el }" action="{{ route('keywords.category.destroy', $keywordCategory->id) }}"
@@ -38,8 +37,8 @@
                 @csrf
                 @method('DELETE')
                 <x-button-danger class="w-full"
-                    x-on:click.prevent="if (confirm('Odstraní klíčové slovo! Pokračovat?')) form.submit()">
-                    {{ __('Odstranit klíčové slovo') }}
+                    x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
+                    {{ __('hiko.remove') }}
                 </x-button-danger>
             </form>
         @endif

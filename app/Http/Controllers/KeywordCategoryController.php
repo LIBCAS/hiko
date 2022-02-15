@@ -17,10 +17,10 @@ class KeywordCategoryController extends Controller
     public function create()
     {
         return view('pages.keywords-categories.form', [
-            'title' => __('Nová kategorie klíčových slov'),
+            'title' => __('hiko.new_keyword_category'),
             'keywordCategory' => new KeywordCategory,
             'action' => route('keywords.category.store'),
-            'label' => __('Vytvořit'),
+            'label' => __('hiko.create'),
         ]);
     }
 
@@ -35,17 +35,19 @@ class KeywordCategoryController extends Controller
             ],
         ]);
 
-        return redirect()->route('keywords.category.edit', $keywordCategory->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('keywords.category.edit', $keywordCategory->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function edit(KeywordCategory $keywordCategory)
     {
         return view('pages.keywords-categories.form', [
-            'title' => __('Kategorie klíčového slova č. ') . $keywordCategory->id,
+            'title' => __('hiko.keyword_category') . ': ' . $keywordCategory->id,
             'keywordCategory' => $keywordCategory,
             'method' => 'PUT',
             'action' => route('keywords.category.update', $keywordCategory),
-            'label' => __('Upravit'),
+            'label' => __('hiko.edit'),
         ]);
     }
 
@@ -60,14 +62,18 @@ class KeywordCategoryController extends Controller
             ],
         ]);
 
-        return redirect()->route('keywords.category.edit', $keywordCategory->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('keywords.category.edit', $keywordCategory->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function destroy(KeywordCategory $keywordCategory)
     {
         $keywordCategory->delete();
 
-        return redirect()->route('keywords')->with('success', __('Odstraněno'));
+        return redirect()
+            ->route('keywords')
+            ->with('success', __('hiko.removed'));
     }
 
     public function export()

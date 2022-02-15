@@ -50,4 +50,11 @@ return [
     'remove' => 'Remove',
     'query' => 'Search query',
     'geonames_unavailable' => 'Geonames service is not available.',
+    'keywords' => 'Keywords',
+    'keyword' => 'Keyword',
+    'new_keyword' => 'New keyword',
+    'keyword_category' => 'Keyword category',
+    'new_keyword_category' => 'New keyword category',
+    'category' => 'Category',
+    'attached_keywords_count' => 'Number of attached keywords',
 ];

@@ -19,7 +19,7 @@ class KeywordController extends Controller
     public function index()
     {
         return view('pages.keywords.index', [
-            'title' => __('Klíčová slova'),
+            'title' => __('hiko.keywords'),
         ]);
     }
 
@@ -28,10 +28,10 @@ class KeywordController extends Controller
         $keyword = new Keyword;
 
         return view('pages.keywords.form', [
-            'title' => __('Nové klíčové slovo'),
+            'title' => __('hiko.new_keyword'),
             'keyword' => $keyword,
             'action' => route('keywords.store'),
-            'label' => __('Vytvořit'),
+            'label' => __('hiko.create'),
             'category' => $this->getCategory($keyword),
         ]);
     }
@@ -51,17 +51,19 @@ class KeywordController extends Controller
 
         $keyword->save();
 
-        return redirect()->route('keywords.edit', $keyword->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('keywords.edit', $keyword->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function edit(Keyword $keyword)
     {
         return view('pages.keywords.form', [
-            'title' => __('Klíčové slovo č. ') . $keyword->id,
+            'title' => __('hiko.keyword') . ': ' . $keyword->id,
             'keyword' => $keyword,
             'method' => 'PUT',
             'action' => route('keywords.update', $keyword),
-            'label' => __('Upravit'),
+            'label' => __('hiko.edit'),
             'category' => $this->getCategory($keyword),
         ]);
     }
@@ -81,14 +83,18 @@ class KeywordController extends Controller
 
         $keyword->save();
 
-        return redirect()->route('keywords.edit', $keyword->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('keywords.edit', $keyword->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function destroy(Keyword $keyword)
     {
         $keyword->delete();
 
-        return redirect()->route('keywords')->with('success', __('Odstraněno'));
+        return redirect()
+            ->route('keywords')
+            ->with('success', __('hiko.removed'));
     }
 
     public function export()

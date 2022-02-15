@@ -7,7 +7,7 @@
             @method($method)
         @endisset
         <div>
-            <x-label for="cs" :value="__('CS')" />
+            <x-label for="cs" value="CS" />
             <x-input id="cs" class="block w-full mt-1" type="text" name="cs"
                 :value="old('cs', $keyword->translations['name']['cs'] ?? null)" />
             @error('cs')
@@ -15,7 +15,7 @@
             @enderror
         </div>
         <div>
-            <x-label for="en" :value="__('EN')" />
+            <x-label for="en" value="EN" />
             <x-input id="en" class="block w-full mt-1" type="text" name="en"
                 :value="old('cs', $keyword->translations['name']['en'] ?? null)" />
             @error('en')
@@ -23,7 +23,7 @@
             @enderror
         </div>
         <div>
-            <x-label for="category" :value="__('Kategorie')" />
+            <x-label for="category" :value="__('hiko.category')" />
             <x-select name="category" id="category" class="block w-full mt-1"
                 x-data="ajaxSelect({url: '{{ route('ajax.keywords.category') }}', element: $el, options: JSON.parse(document.getElementById('selectedCategory').innerHTML) })"
                 x-init="initSelect()">
@@ -42,14 +42,14 @@
             @csrf
             @method('DELETE')
             <x-button-danger class="w-full"
-                x-on:click.prevent="if (confirm('Odstraní klíčové slovo! Pokračovat?')) form.submit()">
-                {{ __('Odstranit klíčové slovo') }}
+                x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
+                {{ __('hiko.remove') }}
             </x-button-danger>
         </form>
     @endif
     @push('scripts')
-    <script id="selectedCategory" type="application/json">
-        @json($category)
-    </script>
-@endpush
+        <script id="selectedCategory" type="application/json">
+            @json($category)
+        </script>
+    @endpush
 </x-app-layout>
