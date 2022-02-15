@@ -6,7 +6,7 @@
             {{ __('hiko.export') }}
         </a>
     @endcan
-    <livewire:names-table model="Profession" />
+    <livewire:names-table model="Profession" routePrefix="professions" />
     @can('manage-metadata')
         <x-create-link label="{{ __('hiko.new_professions_category') }}" link="{{ route('professions.category.create') }}"
             class="mt-16" />
@@ -19,5 +19,5 @@
             {{ __('hiko.professions_category') }}
         </p>
     @endcannot
-    <livewire:names-table model="ProfessionCategory" />
+    <livewire:names-table model="ProfessionCategory" routePrefix="professions.category" />
 </x-app-layout>

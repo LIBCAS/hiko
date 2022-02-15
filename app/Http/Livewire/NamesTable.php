@@ -16,6 +16,8 @@ class NamesTable extends Component
 
     public $model;
 
+    public $routePrefix;
+
     public function search()
     {
         $this->resetPage("{$this->model}Page");
@@ -56,7 +58,7 @@ class NamesTable extends Component
                 return [
                     [
                         'label' => __('hiko.edit'),
-                        'link' => route('users.edit', $profession->id),
+                        'link' => route("{$this->routePrefix}.edit", $profession->id),
                     ],
                     [
                         'label' => $profession->getTranslation('name', 'cs'),
