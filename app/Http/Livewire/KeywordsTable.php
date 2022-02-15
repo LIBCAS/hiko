@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use App\Models\Keyword;
 use Livewire\Component;
+use Illuminate\Support\Str;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
 
@@ -40,18 +41,18 @@ class KeywordsTable extends Component
             ]);
 
         if (isset($this->filters['cs']) && !empty($this->filters['cs'])) {
-            $query->whereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ["%{$this->filters['cs']}%"]);
+            $query->whereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($this->filters['cs']) . '%']);
         }
 
         if (isset($this->filters['en']) && !empty($this->filters['en'])) {
-            $query->whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ["%{$this->filters['en']}%"]);
+            $query->whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($this->filters['en']) . '%']);
         }
 
         if (isset($this->filters['category']) && !empty($this->filters['category'])) {
             $query->whereHas('keyword_category', function ($subquery) {
                 $subquery
-                    ->whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ["%{$this->filters['category']}%"])
-                    ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ["%{$this->filters['category']}%"]);
+                    ->whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($this->filters['category']) . '%'])
+                    ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($this->filters['category']) . '%']);
             });
         }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Ajax;
 
 use App\Models\Profession;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -16,8 +17,8 @@ class AjaxProfessionController extends Controller
             return [];
         }
 
-        $professions = Profession::whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ["%$search%"])
-            ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ["%$search%"])
+        $professions = Profession::whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($search) . '%'])
+            ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($search) . '%'])
             ->select('id', 'name')
             ->take(15)
             ->get();

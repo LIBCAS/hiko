@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Ajax;
 
-use App\Http\Controllers\Controller;
-use App\Models\ProfessionCategory;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\ProfessionCategory;
+use App\Http\Controllers\Controller;
 
 class AjaxProfessionCategoryController extends Controller
 {
@@ -16,8 +17,8 @@ class AjaxProfessionCategoryController extends Controller
             return [];
         }
 
-        $professions = ProfessionCategory::whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ["%$search%"])
-            ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ["%$search%"])
+        $professions = ProfessionCategory::whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($search) . '%'])
+            ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($search) . '%'])
             ->select('id', 'name')
             ->take(15)
             ->get();

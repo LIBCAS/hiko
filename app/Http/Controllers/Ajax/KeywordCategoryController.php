@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Ajax;
 
-use App\Http\Controllers\Controller;
-use App\Models\KeywordCategory;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\KeywordCategory;
+use App\Http\Controllers\Controller;
 
 class KeywordCategoryController extends Controller
 {
@@ -16,8 +17,8 @@ class KeywordCategoryController extends Controller
             return [];
         }
 
-        $categories = KeywordCategory::whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ["%$search%"])
-            ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ["%$search%"])
+        $categories = KeywordCategory::whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($search) . '%'])
+            ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($search) . '%'])
             ->select('id', 'name')
             ->take(15)
             ->get();
