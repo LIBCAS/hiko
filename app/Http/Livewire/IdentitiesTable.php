@@ -3,69 +3,82 @@
 namespace App\Http\Livewire;
 
 use App\Models\Identity;
-use Mediconesystems\LivewireDatatables\Column;
-use Mediconesystems\LivewireDatatables\Http\Livewire\LivewireDatatable;
+use Livewire\Component;
+use Livewire\WithPagination;
 
-class IdentitiesTable extends LivewireDatatable
+class IdentitiesTable extends Component
 {
-    public $model = Identity::class;
+    use WithPagination;
 
-    public $labels;
+    public $filters = [
+        'order' => 'surname',
+    ];
 
-    public function columns()
+    public function search()
     {
-        $labels = collect($this->labels)->map(function ($item, $key) {
-            return ['id' => $key, 'name' => $item];
-        })->toArray();
-
-        return [
-            Column::callback(['name', 'id', 'birth_year', 'death_year'], function ($name, $id, $birth_year, $death_year) {
-                $dates = $this->formatDate($birth_year, $death_year);
-                return view(
-                    'tables.edit-link',
-                    ['route' => route('identities.edit', $id), 'label' => "{$name} {$dates}"]
-                );
-            })
-                ->defaultSort('asc')
-                ->label(__('Jméno'))
-                ->filterable('name'),
-
-            Column::callback(['type'], function ($type) {
-                return $this->labels[$type];
-            })
-                ->label(__('Typ'))
-                ->filterable(array_values($labels)),
-
-            Column::name('alternative_names')
-                ->label(__('Další jména'))
-                ->filterable(),
-
-            Column::name('professions.name')
-                ->label(__('Profese'))
-                ->filterable(),
-
-            Column::name('profession_categories.name')
-                ->label(__('Kategorie'))
-                ->filterable(),
-        ];
+        $this->resetPage();
     }
 
-    protected function formatDate($birth, $death)
+    public function render()
     {
-        if (empty($birth) && empty($death)) {
-            return '';
-        }
+        $identities = $this->findIdentities();
 
-        if ($birth && $death) {
-            return "({$birth}–{$death})";
-        }
+        return view('livewire.identities-table', [
+            'tableData' => $this->formatTableData($identities),
+            'pagination' => $identities,
+        ]);
+    }
 
-        if ($birth) {
-            return "({$birth}–)";
-        }
+    protected function findIdentities()
+    {
+        $query = Identity::select('id', 'surname', 'name', 'type', 'birth_year', 'death_year', 'alternative_names')
+            ->with([
+                'professions' => function ($subquery) {
+                    $subquery->select('name')
+                        ->orderBy('position');
+                },
+                'profession_categories' => function ($subquery) {
+                    $subquery->select('name')
+                        ->orderBy('position');
+                },
+            ]);
 
-        if ($death) {
-            return "(–{$death})";
-        }
+        $query->orderBy($this->filters['order']);
+
+        return $query->paginate(10);
+    }
+
+    protected function formatTableData($data)
+    {
+        return [
+            'header' => [__('hiko.name'), __('hiko.type'), __('hiko.dates'), __('hiko.alternative_names'), __('hiko.professions'), __('hiko.professions_category')],
+            'rows' => $data->map(function ($identity) {
+                return [
+                    [
+                        'label' => $identity->name,
+                        'link' => route('identities.edit', $identity->id),
+                    ],
+                    [
+                        'label' => __("hiko.{$identity->type}"),
+                    ],
+                    [
+                        'label' => $identity->dates,
+                    ],
+                    [
+                        'label' => $identity->alternative_names,
+                    ],
+                    [
+                        'label' => collect($identity->professions)->map(function ($profession) {
+                            return implode('-', array_values($profession->getTranslations('name')));
+                        })->toArray(),
+                    ],
+                    [
+                        'label' => collect($identity->profession_categories)->map(function ($profession) {
+                            return implode('-', array_values($profession->getTranslations('name')));
+                        })->toArray(),
+                    ],
+                ];
+            })->toArray(),
+        ];
     }
 }

@@ -71,4 +71,6 @@ return [
     'gender' => 'Pohlaví',
     'add_new_item' => 'Přidat další položku',
     'remove_item' => 'Odstranit položku',
+    'dates' => 'Data',
+    'alternative_names' => 'Další jména',
 ];

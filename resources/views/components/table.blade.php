@@ -23,6 +23,14 @@
                                                 class="font-semibold text-primary-dark hover:underline">
                                                 {{ $item['label'] }}
                                             </a>
+                                        @elseif (is_array($item['label']))
+                                            <ul>
+                                                @foreach ($item['label'] as $label)
+                                                    <li>
+                                                        {{ $label }}
+                                                    </li>
+                                                @endforeach
+                                            </ul>
                                         @else
                                             {{ $item['label'] }}
                                         @endif
@@ -31,8 +39,8 @@
                             </tr>
                         @endforeach
                         @empty($tableData['rows'])
-                        <tr class="text-sm text-gray-900 hover:bg-gray-100">
-                            <td colspan="{{ count($tableData['header']) }}" class="px-6 py-4 whitespace-nowrap">
+                            <tr class="text-sm text-gray-900 hover:bg-gray-100">
+                                <td colspan="{{ count($tableData['header']) }}" class="px-6 py-4 whitespace-nowrap">
                                     {{ __('hiko.items_not_found') }}
                                 </td>
                             </tr>

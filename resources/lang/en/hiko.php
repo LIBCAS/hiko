@@ -71,4 +71,6 @@ return [
     'gender' => 'Gender',
     'add_new_item' => 'Add new item',
     'remove_item' => 'Remove item',
+    'dates' => 'Dates',
+    'alternative_names' => 'Alternative names',
 ];
