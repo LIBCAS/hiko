@@ -54,6 +54,7 @@ return [
     'keyword' => 'Klíčové slovo',
     'new_keyword' => 'Nové klíčové slovo',
     'keyword_category' => 'Kategorie klíčového slova',
+    'keyword_categories' => 'Kategorie klíčových slov',
     'new_keyword_category' => 'Nová kategorie klíčových slov',
     'category' => 'Kategorie',
     'attached_keywords_count' => 'Počet připojených klíčových slov',

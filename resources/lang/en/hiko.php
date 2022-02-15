@@ -54,6 +54,7 @@ return [
     'keyword' => 'Keyword',
     'new_keyword' => 'New keyword',
     'keyword_category' => 'Keyword category',
+    'keyword_categories' => 'Keyword categories',
     'new_keyword_category' => 'New keyword category',
     'category' => 'Category',
     'attached_keywords_count' => 'Number of attached keywords',
