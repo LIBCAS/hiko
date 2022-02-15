@@ -18,7 +18,7 @@ class ProfessionsTable extends Component
 
     public function search()
     {
-        $this->resetPage();
+        $this->resetPage("{$this->model}Page");
     }
 
     public function render()
