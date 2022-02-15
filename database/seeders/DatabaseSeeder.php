@@ -76,18 +76,20 @@ class DatabaseSeeder extends Seeder
             ]
         ]);
 
-        $identities = Identity::factory()->count(5)->create();
+        $identities = Identity::factory()->count(10)->create();
 
         $professions = Profession::all();
 
         $identities->each(function ($identity) use ($professions) {
-            $selected_professions = $professions->random(rand(1, 2))->pluck('id')->toArray();
+            if ($identity->type === 'person') {
+                $selected_professions = $professions->random(rand(1, 2))->pluck('id')->toArray();
 
-            collect($selected_professions)->each(function ($selected, $index) use ($identity) {
-                $identity->professions()->attach($selected, ['position' => $index]);
-            });
+                collect($selected_professions)->each(function ($selected, $index) use ($identity) {
+                    $identity->professions()->attach($selected, ['position' => $index]);
+                });
 
-            $identity->profession_categories()->attach(1, ['position' => 1]);
+                $identity->profession_categories()->attach(1, ['position' => 1]);
+            }
         });
 
         $category_one = KeywordCategory::factory()->create([

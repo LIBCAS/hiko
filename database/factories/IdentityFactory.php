@@ -27,12 +27,12 @@ class IdentityFactory extends Factory
         $firstname = $type === 'person' ? $this->faker->firstName() : null;
 
         return [
-            'name' => $this->faker->name(),
+            'name' => $type === 'person' ? "{$surname}, {$firstname}" : $this->faker->company(),
             'type' => $type,
             'surname' => $surname,
             'forename' => $firstname,
-            'gender' => $this->faker->randomElement(['M', 'F',]),
-            'nationality' => $this->faker->word(),
+            'gender' => $type === 'person' ? $this->faker->randomElement(['M', 'F',]) : null,
+            'nationality' => $type === 'person' ? $this->faker->word() : null,
         ];
     }
 }
