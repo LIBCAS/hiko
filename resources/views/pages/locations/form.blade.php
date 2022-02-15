@@ -38,7 +38,7 @@
             @method('DELETE')
             <x-button-danger class="w-full"
                 x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
-                {{ __('hiko.remove_location') }}
+                {{ __('hiko.remove') }}
             </x-button-danger>
         </form>
     @endif

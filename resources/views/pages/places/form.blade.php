@@ -7,7 +7,7 @@
             @method($method)
         @endisset
         <div class="required">
-            <x-label for="name" :value="__('Jméno')" />
+            <x-label for="name" :value="__('hiko.name')" />
             <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $place->name)"
                 required />
             @error('name')
@@ -15,7 +15,7 @@
             @enderror
         </div>
         <div class="required">
-            <x-label for="country" :value="__('Země')" />
+            <x-label for="country" :value="__('hiko.country')" />
             <x-select x-data="select({element: $el })" x-init="initSelect()" id="country" class="block w-full mt-1"
                 name="country" required>
                 @foreach ($countries as $country)
@@ -30,7 +30,7 @@
             @enderror
         </div>
         <div>
-            <x-label for="note" :value="__('Poznámka')" />
+            <x-label for="note" :value="__('hiko.note')" />
             <x-textarea name="note" id="note" class="block w-full mt-1">{{ old('note', $place->note) }}</x-textarea>
             @error('note')
                 <div class="text-red-600">{{ $message }}</div>
@@ -39,14 +39,14 @@
         <div x-data="{ open: false }" class="p-2 border rounded-md border-primary-light">
             <button type="button" @click="open = !open"
                 class="inline-flex items-center font-semibold text-primary hover:underline">
-                <x-icons.location-marker class="h-5 mr-2" /> <span>{{ __('Vyhledat souřadnice') }}</span>
+                <x-icons.location-marker class="h-5 mr-2" /> <span>{{ __('hiko.search_geolocation') }}</span>
             </button>
             <span x-show="open" x-transition.duration.500ms>
                 <livewire:geonames-search />
             </span>
         </div>
         <div>
-            <x-label for="latitude" :value="__('Zeměpisná šířka')" />
+            <x-label for="latitude" :value="__('hiko.latitude')" />
             <x-input id="latitude" class="block w-full mt-1" type="text" name="latitude"
                 :value="old('latitude', $place->latitude)" />
             @error('latitude')
@@ -54,7 +54,7 @@
             @enderror
         </div>
         <div>
-            <x-label for="longitude" :value="__('Zeměpisná délka')" />
+            <x-label for="longitude" :value="__('hiko.longitude')" />
             <x-input id="longitude" class="block w-full mt-1" type="text" name="longitude"
                 :value="old('longitude', $place->longitude)" />
             @error('longitude')
@@ -79,8 +79,8 @@
             @csrf
             @method('DELETE')
             <x-button-danger class="w-full"
-                x-on:click.prevent="if (confirm('Odstraní místo! Pokračovat?')) form.submit()">
-                {{ __('Odstranit místo') }}
+                x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
+                {{ __('hiko.remove') }}
             </x-button-danger>
         </form>
     @endif
