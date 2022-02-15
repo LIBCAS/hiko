@@ -74,7 +74,7 @@ class LetterController extends Controller
     public function index()
     {
         return view('pages.letters.index', [
-            'title' => __('Dopisy'),
+            'title' => __('hiko.letters'),
         ]);
     }
 
@@ -83,10 +83,10 @@ class LetterController extends Controller
         $letter = new Letter;
 
         return view('pages.letters.form', [
-            'title' => __('Nový dopis'),
+            'title' => __('hiko.new_letter'),
             'letter' => $letter,
             'action' => route('letters.store'),
-            'label' => __('Vytvořit'),
+            'label' => __('hiko.create'),
             'selectedAuthors' => $this->getAuthors($letter),
             'selectedRecipients' => $this->getRecipients($letter),
             'selectedOrigins' => $this->getOrigins($letter),
@@ -110,8 +110,9 @@ class LetterController extends Controller
 
         $this->attachRelated($request, $letter);
 
-        return redirect()->route('letters.edit', $letter->id)
-            ->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('letters.edit', $letter->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function show(Letter $letter)
@@ -133,11 +134,11 @@ class LetterController extends Controller
     public function edit(Letter $letter)
     {
         return view('pages.letters.form', [
-            'title' => __('Dopis č. ') . $letter->id,
+            'title' => __('hiko.letter') . ': ' .  $letter->id,
             'letter' => $letter,
             'method' => 'PUT',
             'action' => route('letters.update', $letter),
-            'label' => __('Upravit'),
+            'label' => __('hiko.edit'),
             'selectedAuthors' => $this->getAuthors($letter),
             'selectedRecipients' => $this->getRecipients($letter),
             'selectedOrigins' => $this->getOrigins($letter),
@@ -161,8 +162,9 @@ class LetterController extends Controller
 
         $this->attachRelated($request, $letter);
 
-        return redirect()->route('letters.edit', $letter->id)
-            ->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('letters.edit', $letter->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function destroy(Letter $letter)
@@ -173,13 +175,15 @@ class LetterController extends Controller
 
         $letter->delete();
 
-        return redirect()->route('letters')->with('success', 'Odstraněno');
+        return redirect()
+            ->route('letters')
+            ->with('success', 'hiko.removed');
     }
 
     public function images(Letter $letter)
     {
         return view('pages.letters.images', [
-            'title' => __('Dopis č. ') . $letter->id,
+            'title' => __('hiko.letter') . ': ' .  $letter->id,
             'letter' => $letter,
         ]);
     }
@@ -187,7 +191,7 @@ class LetterController extends Controller
     public function text(Letter $letter)
     {
         return view('pages.letters.text', [
-            'title' => __('Plný text – dopis č. ') . $letter->id,
+            'title' => __('hiko.full_text') . ' – ' . __('hiko.letter') . ': ' .  $letter->id,
             'letter' => $letter,
             'images' => $letter->getMedia(),
         ]);

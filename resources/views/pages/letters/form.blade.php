@@ -3,17 +3,17 @@
         <ul class="flex flex-wrap mb-6 space-x-6 text-sm">
             <li>
                 <a href="{{ route('letters.images', $letter->id) }}" class="hover:underline">
-                    {{ __('Upravit přílohy') }}
+                    {{ __('hiko.edit_attachments') }}
                 </a>
             </li>
             <li>
                 <a href="{{ route('letters.text', $letter->id) }}" class="hover:underline">
-                    {{ __('Upravit plný text') }}
+                    {{ __('hiko.edit_full_text') }}
                 </a>
             </li>
             <li>
                 <a href="{{ route('letters.show', $letter->id) }}" class="hover:underline">
-                    {{ __('Prohlédnout si dopis') }}
+                    {{ __('hiko.preview_letter') }}
                 </a>
             </li>
         </ul>
@@ -23,50 +23,49 @@
             <ul class="sticky text-gray-600 bg-white border rounded-md top-16 border-primary-light">
                 <li class="pt-1 border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-dates">
-                        {{ __('Datum') }}
+                        {{ __('hiko.date') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-author">
-                        {{ __('Autor') }}
+                        {{ __('hiko.author') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-recipient">
-                        {{ __('Příjemce') }}
+                        {{ __('hiko.recipient') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-origin">
-                        {{ __('Místo odeslání') }}
+                        {{ __('hiko.origin') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-destination">
-                        {{ __('Místo určení') }}
+                        {{ __('hiko.destination') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-content">
-                        {{ __('Popis obsahu') }}
+                        {{ __('hiko.content_description') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-related-resource">
-                        {{ __('Související zdroje') }}
+                        {{ __('hiko.related_resources') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-copies">
-                        {{ __('Manifestace a uložení') }}
+                        {{ __('hiko.manifestation_location') }}
                     </a>
                 </li>
                 <li class="pb-1 ">
                     <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-status">
-                        {{ __('Status') }}
+                        {{ __('hiko.status') }}
                     </a>
                 </li>
-
             </ul>
         </div>
         <div>
@@ -86,11 +85,11 @@
                 @endisset
                 <fieldset id="a-dates" class="space-y-6">
                     <legend class="text-lg font-semibold">
-                        {{ __('Datum') }}
+                        {{ __('hiko.date') }}
                     </legend>
                     <div class="flex space-x-6">
                         <div>
-                            <x-label for="date_year" :value="__('Rok')" />
+                            <x-label for="date_year" :value="__('hiko.year')" />
                             <x-input id="date_year" class="block w-full mt-1" type="text" name="date_year"
                                 :value="old('date_year', $letter->date_year)" min="0" max="{{ date('Y') }}"
                                 type="number" />
@@ -99,7 +98,7 @@
                             @enderror
                         </div>
                         <div>
-                            <x-label for="date_month" :value="__('Měsíc')" />
+                            <x-label for="date_month" :value="__('hiko.month')" />
                             <x-input id="date_month" class="block w-full mt-1" type="text" name="date_month"
                                 :value="old('date_month', $letter->date_month)" min="1" max="12" type="number" />
                             @error('date_month')
@@ -107,7 +106,7 @@
                             @enderror
                         </div>
                         <div>
-                            <x-label for="date_day" :value="__('Den')" />
+                            <x-label for="date_day" :value="__('hiko.day')" />
                             <x-input id="date_day" class="block w-full mt-1" type="text" name="date_day"
                                 :value="old('date_day', $letter->date_day)" min="1" max="31" type="number" />
                             @error('date_day')
@@ -144,7 +143,7 @@
                             x-model="isRange" :checked="boolval(old('date_day', $letter->date_is_range))" />
                         <div class="flex space-x-6">
                             <div x-show="isRange">
-                                <x-label for="range_year" :value="__('Rok 2')" />
+                                <x-label for="range_year" :value="__('hiko.year') . ' 2'" />
                                 <x-input id="range_year" class="block w-full mt-1" type="text" name="range_year"
                                     :value="old('range_year', $letter->range_year)" min="0" max="{{ date('Y') }}"
                                     type="number" />
@@ -153,7 +152,7 @@
                                 @enderror
                             </div>
                             <div x-show="isRange">
-                                <x-label for="range_month" :value="__('Měsíc 2')" />
+                                <x-label for="range_month" :value="__('hiko.month') . ' 2'" />
                                 <x-input id="range_month" class="block w-full mt-1" type="text" name="range_month"
                                     :value="old('range_month', $letter->range_month)" min="1" max="12" type="number" />
                                 @error('range_month')
@@ -161,7 +160,7 @@
                                 @enderror
                             </div>
                             <div x-show="isRange">
-                                <x-label for="range_day" :value="__('Den 2')" />
+                                <x-label for="range_day" :value="__('hiko.day') . ' 2'" />
                                 <x-input id="range_day" class="block w-full mt-1" type="text" name="range_day"
                                     :value="old('range_day', $letter->range_day)" min="1" max="31" type="number" />
                                 @error('range_day')
@@ -186,7 +185,7 @@
                 <fieldset id="a-author" class="space-y-6"
                     x-data="{ authors: JSON.parse(document.getElementById('selectedAuthors').innerHTML) }">
                     <legend class="text-lg font-semibold">
-                        {{ __('Autor') }}
+                        {{ __('hiko.author') }}
                     </legend>
                     <template x-for="author, index in authors" :key="author.key ? author.key : author.id">
                         <div class="p-3 space-y-6 border border-primary-light">
@@ -205,14 +204,14 @@
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
                                 x-on:click="authors = authors.filter((item, authorIndex) => { return authorIndex !== index })">
                                 <x-icons.trash class="h-5" />
-                                {{ __('Odstranit autora') }}
+                                {{ __('hiko.remove_item') }}
                             </button>
                         </div>
                     </template>
                     <div>
                         <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
                             x-on:click="authors.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('Přidat další') }}
+                            {{ __('hiko.add_new_item') }}
                         </button>
                     </div>
                     <div>
@@ -242,7 +241,7 @@
                 <fieldset id="a-recipient" class="space-y-6"
                     x-data="{ recipients: JSON.parse(document.getElementById('selectedRecipients').innerHTML) }">
                     <legend class="text-lg font-semibold">
-                        {{ __('Příjemce') }}
+                        {{ __('hiko.recipient') }}
                     </legend>
                     <template x-for="recipient, index in recipients"
                         :key="recipient.key ? recipient.key : recipient.id">
@@ -267,14 +266,14 @@
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
                                 x-on:click="recipients = recipients.filter((item, recipientIndex) => { return recipientIndex !== index })">
                                 <x-icons.trash class="h-5" />
-                                {{ __('Odstranit příjemce') }}
+                                {{ __('hiko.remove_item') }}
                             </button>
                         </div>
                     </template>
                     <div>
                         <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
                             x-on:click="recipients.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('Přidat další') }}
+                            {{ __('hiko.add_new_item') }}
                         </button>
                     </div>
                     <div>
@@ -304,12 +303,12 @@
                 <fieldset id="a-origin" class="space-y-6"
                     x-data="{ origins: JSON.parse(document.getElementById('selectedOrigins').innerHTML) }">
                     <legend class="text-lg font-semibold">
-                        {{ __('Místo odeslání') }}
+                        {{ __('hiko.origin') }}
                     </legend>
                     <template x-for="origin, index in origins" :key="origin.key ? origin.key : origin.id">
                         <div class="p-3 space-y-6 border border-primary-light">
                             <div class="required">
-                                <x-label x-bind:for="'name' + index" :value="__('Jméno')" />
+                                <x-label x-bind:for="'name' + index" :value="__('hiko.name')" />
                                 <x-select name="origin[]" class="block w-full mt-1" x-bind:id="'name' + index"
                                     x-data="ajaxSelect({url: '{{ route('ajax.places') }}', element: $el, options: { id: origin.id, name: origin.name } })"
                                     x-init="initSelect()" required>
@@ -323,14 +322,14 @@
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
                                 x-on:click="origins = origins.filter((item, originIndex) => { return originIndex !== index })">
                                 <x-icons.trash class="h-5" />
-                                {{ __('Odstranit místo odeslání') }}
+                                {{ __('hiko.remove_item') }}
                             </button>
                         </div>
                     </template>
                     <div>
                         <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
                             x-on:click="origins.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('Přidat další') }}
+                            {{ __('hiko.add_new_item') }}
                         </button>
                     </div>
                     <div>
@@ -360,13 +359,13 @@
                 <fieldset id="a-destination" class="space-y-6"
                     x-data="{ destinations: JSON.parse(document.getElementById('selectedDestinations').innerHTML) }">
                     <legend class="text-lg font-semibold">
-                        {{ __('Místo určení') }}
+                        {{ __('hiko.destination') }}
                     </legend>
                     <template x-for="destination, index in destinations"
                         :key="destination.key ? destination.key : destination.id">
                         <div class="p-3 space-y-6 border border-primary-light">
                             <div class="required">
-                                <x-label x-bind:for="'name' + index" :value="__('Jméno')" />
+                                <x-label x-bind:for="'name' + index" :value="__('hiko.name')" />
                                 <x-select name="destination[]" class="block w-full mt-1" x-bind:id="'name' + index"
                                     x-data="ajaxSelect({url: '{{ route('ajax.places') }}', element: $el, options: { id: destination.id, name: destination.name } })"
                                     x-init="initSelect()" required>
@@ -380,14 +379,14 @@
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
                                 x-on:click="destinations = destinations.filter((item, destinationIndex) => { return destinationIndex !== index })">
                                 <x-icons.trash class="h-5" />
-                                {{ __('Odstranit místo určení') }}
+                                {{ __('hiko.remove_item') }}
                             </button>
                         </div>
                     </template>
                     <div>
                         <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
                             x-on:click="destinations.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('Přidat další') }}
+                            {{ __('hiko.add_new_item') }}
                         </button>
                     </div>
                     <div>
@@ -416,14 +415,15 @@
                 </div>
                 <fieldset id="a-content" class="space-y-6">
                     <legend class="text-lg font-semibold">
-                        {{ __('Popis obsahu') }}
+                        {{ __('hiko.content_description') }}
                     </legend>
                     <div>
                         <x-label for="language" :value="__('Jazyk')" />
                         <x-select x-data="select({element: $el })" x-init="initSelect()" id="language"
                             class="block w-full mt-1" name="language[]" multiple>
                             @foreach ($languages as $language)
-                                <option value="{{ $language->name }}" @if (in_array($language->name, $selectedLanguages)) selected @endif>
+                                <option value="{{ $language->name }}"
+                                    @if (in_array($language->name, $selectedLanguages)) selected @endif>
                                     {{ $language->name }}
                                 </option>
                             @endforeach
@@ -522,7 +522,7 @@
                 <fieldset id="a-related-resource" class="space-y-6"
                     x-data="{ relatedResources: JSON.parse(document.getElementById('selectedRelatedResources').innerHTML)}">
                     <legend class="text-lg font-semibold">
-                        {{ __('Související zdroje') }}
+                        {{ __('hiko.related_resources') }}
                     </legend>
                     <template x-for="resource, index in relatedResources" :key="resource.key ? resource.key : index">
                         <div class="p-3 space-y-6 border border-primary-light">
@@ -539,14 +539,14 @@
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
                                 x-on:click="relatedResources = relatedResources.filter((item, resourceIndex) => { return resourceIndex !== index })">
                                 <x-icons.trash class="h-5" />
-                                {{ __('Odstranit zdroj') }}
+                                {{ __('hiko.remove_item') }}
                             </button>
                         </div>
                     </template>
                     <div>
                         <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
                             x-on:click="relatedResources.push({title: '', link: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('Přidat další') }}
+                            {{ __('hiko.add_new_item') }}
                         </button>
                     </div>
                 </fieldset>
@@ -556,7 +556,7 @@
                 <fieldset id="a-copies" class="space-y-6"
                     x-data="{ copies: JSON.parse(document.getElementById('selectedCopies').innerHTML)}">
                     <legend class="text-lg font-semibold">
-                        {{ __('Manifestace a uložení') }}
+                        {{ __('hiko.manifestation_location') }}
                     </legend>
                     <template x-for="copy, index in copies" :key="copy.key ? copy.key : index">
                         <div class="p-3 space-y-6 border border-primary-light">
@@ -603,7 +603,7 @@
                                 </x-select>
                             </div>
                             <div>
-                                <x-label x-bind:for="'copy' + index" :value="__('Typ')" /> {{-- TODO: lepší label --}}
+                                <x-label x-bind:for="'copy' + index" :value="__('hiko.type')" />
                                 <x-select x-model="copies[index]['copy']" name="copy[]" class="block w-full mt-1">
                                     <option value="">
                                         ---
@@ -680,7 +680,7 @@
                             <button type="button" class="inline-flex items-center mt-6 text-red-600"
                                 x-on:click="copies = copies.filter((item, copyIndex) => { return copyIndex !== index })">
                                 <x-icons.trash class="h-5" />
-                                {{ __('Odstranit zdroj') }}
+                                {{ __('hiko.remove_item') }}
                             </button>
                         </div>
                     </template>
@@ -702,7 +702,7 @@
                             type: '',
                             key: Math.random().toString(36).substring(7)
                         })">
-                            {{ __('Přidat další') }}
+                            {{ __('hiko.add_new_item') }}
                         </button>
                     </div>
                 </fieldset>
@@ -711,7 +711,7 @@
                 </div>
                 <fieldset id="a-status">
                     <legend class="text-lg font-semibold">
-                        {{ __('Status') }}
+                        {{ __('hiko.status') }}
                     </legend>
                     <div>
                         <x-radio name="status" label="{{ __('Soukromý dopis') }}" value="draft"
@@ -735,8 +735,8 @@
                     @csrf
                     @method('DELETE')
                     <x-button-danger class="w-full" onclick="preventLeaving = false"
-                        x-on:click.prevent="if (confirm('Odstraní dopis! Pokračovat?')) form.submit()">
-                        {{ __('Odstranit dopis?') }}
+                        x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
+                        {{ __('hiko.remove') }}
                     </x-button-danger>
                 </form>
             @endif
@@ -774,7 +774,7 @@
             var preventLeaving = true;
             window.onbeforeunload = function(e) {
                 if (preventLeaving) {
-                    return 'Opravdu chcete opustit stránku?'
+                    return '{{ __('hiko.confirm_leave') }}'
                 }
             }
         </script>
