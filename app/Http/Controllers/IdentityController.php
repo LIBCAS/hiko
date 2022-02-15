@@ -35,7 +35,7 @@ class IdentityController extends Controller
     public function index()
     {
         return view('pages.identities.index', [
-            'title' => __('Lidé a instituce'),
+            'title' => __('hiko.identities'),
             'labels' => $this->getTypes(),
         ]);
     }
@@ -45,10 +45,10 @@ class IdentityController extends Controller
         $identity = new Identity;
 
         return view('pages.identities.form', [
-            'title' => __('Nová osoba / instituce'),
+            'title' => __('hiko.new_identity'),
             'identity' => $identity,
             'action' => route('identities.store'),
-            'label' => __('Vytvořit'),
+            'label' => __('hiko.create'),
             'types' => $this->getTypes(),
             'selectedProfessions' => $this->getProfessions($identity),
             'selectedCategories' => $this->getCategories($identity),
@@ -63,17 +63,19 @@ class IdentityController extends Controller
 
         $this->attachProfessionsAndCategories($identity, $validated);
 
-        return redirect()->route('identities.edit', $identity->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('identities.edit', $identity->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function edit(Identity $identity)
     {
         return view('pages.identities.form', [
-            'title' => __('Osoba / instituce č. ') . $identity->id,
+            'title' => __('hiko.identity') . ': ' . $identity->id,
             'identity' => $identity,
             'method' => 'PUT',
             'action' => route('identities.update', $identity),
-            'label' => __('Upravit'),
+            'label' => __('hiko.edit'),
             'types' => $this->getTypes(),
             'selectedProfessions' => $this->getProfessions($identity),
             'selectedCategories' => $this->getCategories($identity),
@@ -88,14 +90,18 @@ class IdentityController extends Controller
 
         $this->attachProfessionsAndCategories($identity, $validated);
 
-        return redirect()->route('identities.edit', $identity->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('identities.edit', $identity->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function destroy(Identity $identity)
     {
         $identity->delete();
 
-        return redirect()->route('identities')->with('success', __('Odstraněno'));
+        return redirect()
+            ->route('identities')
+            ->with('success', __('hiko.removed'));
     }
 
     public function export()
@@ -134,24 +140,23 @@ class IdentityController extends Controller
         $identity->profession_categories()->detach();
 
         if (isset($validated['profession']) && !empty($validated['profession'])) {
-            collect($validated['profession'])->each(function ($profession, $index) use ($identity) {
-                $identity->professions()->attach($profession, ['position' => $index]);
-            });
+            collect($validated['profession'])
+                ->each(function ($profession, $index) use ($identity) {
+                    $identity->professions()->attach($profession, ['position' => $index]);
+                });
         }
 
         if (isset($validated['category']) && !empty($validated['category'])) {
-            collect($validated['category'])->each(function ($category, $index) use ($identity) {
-                $identity->profession_categories()->attach($category, ['position' => $index]);
-            });
+            collect($validated['category'])
+                ->each(function ($category, $index) use ($identity) {
+                    $identity->profession_categories()->attach($category, ['position' => $index]);
+                });
         }
     }
 
     protected function getTypes()
     {
-        return [
-            'person' => __('Osoba'),
-            'institution' => __('Instituce'),
-        ];
+        return ['person', 'institution'];
     }
 
     protected function getProfessions(Identity $identity)
