@@ -22,17 +22,17 @@ class PlaceController extends Controller
     public function index()
     {
         return view('pages.places.index', [
-            'title' => __('Místa'),
+            'title' => __('hiko.places'),
         ]);
     }
 
     public function create()
     {
         return view('pages.places.form', [
-            'title' => __('Nové místo'),
+            'title' => __('hiko.new_place'),
             'place' => new Place,
             'action' => route('places.store'),
-            'label' => __('Vytvořit'),
+            'label' => __('hiko.create'),
             'countries' => Country::all(),
         ]);
     }
@@ -41,26 +41,21 @@ class PlaceController extends Controller
     {
         $validated = $request->validate($this->rules);
 
-        $place = Place::create([
-            'name' => $validated['name'],
-            'country' => $validated['country'],
-            'note' => $validated['note'],
-            'latitude' => $validated['latitude'],
-            'longitude' => $validated['longitude'],
-            'geoname_id' => $validated['geoname_id'],
-        ]);
+        $place = Place::create($validated);
 
-        return redirect()->route('places.edit', $place->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('places.edit', $place->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function edit(Place $place)
     {
         return view('pages.places.form', [
-            'title' => __('Místo č. ') . $place->id,
+            'title' => __('hiko.place') . ': ' . $place->id,
             'place' => $place,
             'method' => 'PUT',
             'action' => route('places.update', $place),
-            'label' => __('Upravit'),
+            'label' => __('hiko.edit'),
             'countries' => Country::all(),
         ]);
     }
@@ -69,23 +64,20 @@ class PlaceController extends Controller
     {
         $validated = $request->validate($this->rules);
 
-        $place->update([
-            'name' => $validated['name'],
-            'country' => $validated['country'],
-            'note' => $validated['note'],
-            'latitude' => $validated['latitude'],
-            'longitude' => $validated['longitude'],
-            'geoname_id' => $validated['geoname_id'],
-        ]);
+        $place->update($validated);
 
-        return redirect()->route('places.edit', $place->id)->with('success', __('Uloženo.'));
+        return redirect()
+            ->route('places.edit', $place->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function destroy(Place $place)
     {
         $place->delete();
 
-        return redirect()->route('places')->with('success', 'Odstraněno');
+        return redirect()
+            ->route('places')
+            ->with('success', __('hiko.removed'));
     }
 
     public function export()
