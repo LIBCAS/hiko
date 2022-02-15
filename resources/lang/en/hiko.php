@@ -45,6 +45,7 @@ return [
     'note' => 'Note',
     'country' => 'Country',
     'search_geolocation' => 'Search location',
+    'coordinates' => 'Coordinates',
     'latitude' => 'Latitude',
     'longitude' => 'Longitude',
     'remove' => 'Remove',
