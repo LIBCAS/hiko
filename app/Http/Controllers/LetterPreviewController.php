@@ -10,7 +10,7 @@ class LetterPreviewController extends Controller
     {
         return view('pages.letters.preview', [
             'title' => __('hiko.letters_preview'),
-            'letters' => Letter::with('identities', 'places')->get(),
+            'letters' => Letter::with('identities', 'places', 'keywords')->get(),
         ]);
     }
 }
