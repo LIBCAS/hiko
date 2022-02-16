@@ -103,4 +103,7 @@ return [
     'save' => 'Save',
     'logout' => 'Log out',
     'confirm_new_password_error' => 'The new passwords did not match',
+    'history' => 'History',
+    'preview' => 'Preview',
+    'media' => 'Media',
 ];

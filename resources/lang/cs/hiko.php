@@ -103,4 +103,7 @@ return [
     'save' => 'Uložit',
     'logout' => 'Odhlásit se',
     'confirm_new_password_error' => 'Nově zadaná hesla se neshodují',
+    'history' => 'Historie',
+    'preview' => 'Náhled',
+    'media' => 'Média',
 ];
