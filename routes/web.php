@@ -4,10 +4,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\LetterController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\KeywordController;
 use App\Http\Controllers\IdentityController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ProfessionController;
+use App\Http\Controllers\LetterPreviewController;
 use App\Http\Controllers\Ajax\AjaxPlaceController;
 use App\Http\Controllers\KeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxKeywordController;
@@ -16,7 +18,6 @@ use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
 use App\Http\Controllers\Ajax\KeywordCategoryController as AjaxKeywordCategoryController;
-use App\Http\Controllers\LetterPreviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,6 +58,10 @@ Route::prefix('users')->group(function () {
     Route::delete('{user}', [UserController::class, 'destroy'])
         ->name('users.destroy')
         ->middleware(['auth', 'can:manage-users']);
+
+    Route::get('account', AccountController::class)
+        ->name('users.account')
+        ->middleware(['auth']);
 });
 
 Route::prefix('locations')->group(function () {

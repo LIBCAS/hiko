@@ -95,4 +95,12 @@ return [
     'year' => 'Rok',
     'month' => 'Měsíc',
     'day' => 'Den',
+    'settings' => 'Nastavení',
+    'current_password' => 'Současné heslo',
+    'new_password' => 'Nové heslo',
+    'confirm_new_password' => 'Zopakovat nové heslo',
+    'change_password' => 'Změna hesla',
+    'save' => 'Uložit',
+    'logout' => 'Odhlásit se',
+    'confirm_new_password_error' => 'Nově zadaná hesla se neshodují',
 ];
