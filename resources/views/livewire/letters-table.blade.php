@@ -15,6 +15,26 @@
             <x-input wire:model.defer="filters.before" class="block w-full lg:w-64" type="date" />
         </label>
         <label>
+            <span class="block text-sm">{{ __('hiko.signature') }}</span>
+            <x-input wire:model.defer="filters.signature" class="block w-full lg:w-64" type="text" />
+        </label>
+        <label>
+            <span class="block text-sm">{{ __('hiko.author') }}</span>
+            <x-input wire:model.defer="filters.author" class="block w-full lg:w-64" type="text" />
+        </label>
+        <label>
+            <span class="block text-sm">{{ __('hiko.recipient') }}</span>
+            <x-input wire:model.defer="filters.recipient" class="block w-full lg:w-64" type="text" />
+        </label>
+        <label>
+            <span class="block text-sm">{{ __('hiko.origin') }}</span>
+            <x-input wire:model.defer="filters.origin" class="block w-full lg:w-64" type="text" />
+        </label>
+        <label>
+            <span class="block text-sm">{{ __('hiko.destination') }}</span>
+            <x-input wire:model.defer="filters.destination" class="block w-full lg:w-64" type="text" />
+        </label>
+        <label>
             <span class="block text-sm">
                 {{ __('hiko.status') }}
             </span>

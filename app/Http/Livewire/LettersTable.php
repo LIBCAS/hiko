@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use App\Models\Letter;
 use Livewire\Component;
+use Illuminate\Support\Str;
 use Livewire\WithPagination;
 
 class LettersTable extends Component
@@ -34,7 +35,7 @@ class LettersTable extends Component
     {
         $query = Letter::with([
             'identities' => function ($subquery) {
-                $subquery->select('name')
+                $subquery->select('name', 'alternative_names')
                     ->where('role', '=', 'author')
                     ->orWhere('role', '=', 'recipient')
                     ->orderBy('position');
@@ -45,11 +46,8 @@ class LettersTable extends Component
             'keywords' => function ($subquery) {
                 $subquery->select('name');
             },
-
         ])
             ->select('id', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status');
-
-        $query->orderBy($this->filters['order'], $this->filters['direction']);
 
         if (isset($this->filters['id']) && !empty($this->filters['id'])) {
             $query->where('id', 'LIKE', "%" . $this->filters['id'] . "%");
@@ -67,15 +65,38 @@ class LettersTable extends Component
             $query->whereDate('date_computed', '<=', $this->filters['before']);
         }
 
-        return $query->paginate(10);
+        if (isset($this->filters['signature']) && !empty($this->filters['signature'])) {
+            $query->whereRaw("LOWER(JSON_EXTRACT(copies, '$[*].signature')) like ?", ['%' . Str::lower($this->filters['signature']) . '%']);
+        }
+
+        if (isset($this->filters['author']) && !empty($this->filters['author'])) {
+            $query = $this->addIdentityNameFilter($query, 'author');
+        }
+
+        if (isset($this->filters['recipient']) && !empty($this->filters['recipient'])) {
+            $query = $this->addIdentityNameFilter($query, 'recipient');
+        }
+
+        if (isset($this->filters['origin']) && !empty($this->filters['origin'])) {
+            $query = $this->addPlaceFilter($query, 'origin');
+        }
+
+        if (isset($this->filters['destination']) && !empty($this->filters['destination'])) {
+            $query = $this->addPlaceFilter($query, 'destination');
+        }
+
+        return $query
+            ->orderBy($this->filters['order'], $this->filters['direction'])
+            ->paginate(10);
     }
 
     protected function formatTableData($data)
     {
         return [
-            'header' => ['', 'ID', __('hiko.date'), __('hiko.author'), __('hiko.status')],
+            'header' => ['', 'ID', __('hiko.date'), __('hiko.signature'), __('hiko.author'), __('hiko.recipient'), __('hiko.origin'), __('hiko.destination'), __('hiko.status')],
             'rows' => $data->map(function ($letter) {
                 $identities = $letter->identities->groupBy('pivot.role')->toArray();
+                $places = $letter->places->groupBy('pivot.role')->toArray();
 
                 return [
                     [
@@ -94,7 +115,19 @@ class LettersTable extends Component
                         'label' => $letter->pretty_date,
                     ],
                     [
+                        'label' => collect($letter->copies)->pluck('signature')->toArray(),
+                    ],
+                    [
                         'label' => collect(isset($identities['author']) ? $identities['author'] : [])->pluck('name')->ToArray(),
+                    ],
+                    [
+                        'label' => collect(isset($identities['recipient']) ? $identities['recipient'] : [])->pluck('name')->ToArray(),
+                    ],
+                    [
+                        'label' => collect(isset($places['origin']) ? $places['origin'] : [])->pluck('name')->ToArray(),
+                    ],
+                    [
+                        'label' => collect(isset($places['destination']) ? $places['destination'] : [])->pluck('name')->ToArray(),
                     ],
                     [
                         'label' => __("hiko.{$letter->status}"),
@@ -102,5 +135,26 @@ class LettersTable extends Component
                 ];
             })->toArray(),
         ];
+    }
+
+    protected function addIdentityNameFilter($query, string $type)
+    {
+        return $query->whereHas('identities', function ($subquery) use ($type) {
+            $subquery
+                ->where('role', '=', $type)
+                ->where(function ($namesubquery) use ($type) {
+                    $namesubquery->where('name', 'LIKE', "%" . $this->filters[$type] . "%")
+                        ->orWhereRaw('LOWER(alternative_names) like ?', ['%' . Str::lower($this->filters[$type]) . '%']);
+                });
+        });
+    }
+
+    protected function addPlaceFilter($query, string $type)
+    {
+        return $query->whereHas('places', function ($subquery) use ($type) {
+            $subquery
+                ->where('role', '=', $type)
+                ->where('name', 'LIKE', "%" . $this->filters[$type] . "%");
+        });
     }
 }
