@@ -12,7 +12,7 @@ class LettersTable extends Component
 
     public $filters = [
         'order' => 'id',
-        'direction' => 'desc',
+        'direction' => 'asc',
     ];
 
     public function search()
@@ -32,7 +32,21 @@ class LettersTable extends Component
 
     protected function findLetters()
     {
-        $query = Letter::with('identities', 'places', 'keywords')
+        $query = Letter::with([
+            'identities' => function ($subquery) {
+                $subquery->select('name')
+                    ->where('role', '=', 'author')
+                    ->orWhere('role', '=', 'recipient')
+                    ->orderBy('position');
+            },
+            'places' => function ($subquery) {
+                $subquery->select('name');
+            },
+            'keywords' => function ($subquery) {
+                $subquery->select('name');
+            },
+
+        ])
             ->select('id', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status');
 
         $query->orderBy($this->filters['order'], $this->filters['direction']);
@@ -59,8 +73,10 @@ class LettersTable extends Component
     protected function formatTableData($data)
     {
         return [
-            'header' => ['', 'ID', __('hiko.date'), __('hiko.status')],
+            'header' => ['', 'ID', __('hiko.date'), __('hiko.author'), __('hiko.status')],
             'rows' => $data->map(function ($letter) {
+                $identities = $letter->identities->groupBy('pivot.role')->toArray();
+
                 return [
                     [
                         'component' => [
@@ -76,6 +92,9 @@ class LettersTable extends Component
                     ],
                     [
                         'label' => $letter->pretty_date,
+                    ],
+                    [
+                        'label' => collect(isset($identities['author']) ? $identities['author'] : [])->pluck('name')->ToArray(),
                     ],
                     [
                         'label' => __("hiko.{$letter->status}"),
