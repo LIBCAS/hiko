@@ -33,6 +33,8 @@ class LettersTable extends Component
 
     protected function findLetters()
     {
+        $lang = config('hiko.metadata_default_locale');
+
         $query = Letter::with([
             'identities' => function ($subquery) {
                 $subquery->select('name', 'alternative_names')
@@ -41,7 +43,7 @@ class LettersTable extends Component
                     ->orderBy('position');
             },
             'places' => function ($subquery) {
-                $subquery->select('name');
+                $subquery->select('name')->orderBy('position');
             },
             'keywords' => function ($subquery) {
                 $subquery->select('name');
@@ -85,6 +87,13 @@ class LettersTable extends Component
             $query = $this->addPlaceFilter($query, 'destination');
         }
 
+        if (isset($this->filters['keyword']) && !empty($this->filters['keyword'])) {
+            $query->whereHas('keywords', function ($subquery) use ($lang) {
+                $subquery
+                    ->whereRaw("LOWER(JSON_EXTRACT(name, '$.{$lang}')) like ?", ['%' . Str::lower($this->filters['keyword']) . '%']);
+            });
+        }
+
         return $query
             ->orderBy($this->filters['order'], $this->filters['direction'])
             ->paginate(10);
@@ -92,8 +101,10 @@ class LettersTable extends Component
 
     protected function formatTableData($data)
     {
+
+
         return [
-            'header' => ['', 'ID', __('hiko.date'), __('hiko.signature'), __('hiko.author'), __('hiko.recipient'), __('hiko.origin'), __('hiko.destination'), __('hiko.status')],
+            'header' => ['', 'ID', __('hiko.date'), __('hiko.signature'), __('hiko.author'), __('hiko.recipient'), __('hiko.origin'), __('hiko.destination'), __('hiko.keywords'), __('hiko.status')],
             'rows' => $data->map(function ($letter) {
                 $identities = $letter->identities->groupBy('pivot.role')->toArray();
                 $places = $letter->places->groupBy('pivot.role')->toArray();
@@ -128,6 +139,11 @@ class LettersTable extends Component
                     ],
                     [
                         'label' => collect(isset($places['destination']) ? $places['destination'] : [])->pluck('name')->ToArray(),
+                    ],
+                    [
+                        'label' => collect($letter->keywords)->map(function ($kw) {
+                            return $kw->getTranslation('name', config('hiko.metadata_default_locale'));
+                        })->toArray(),
                     ],
                     [
                         'label' => __("hiko.{$letter->status}"),
