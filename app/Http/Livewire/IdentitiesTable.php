@@ -100,12 +100,12 @@ class IdentitiesTable extends Component
                     ],
                     [
                         'label' => collect($identity->professions)->map(function ($profession) {
-                            return implode('-', array_values($profession->getTranslations('name')));
+                            return $profession->getTranslation('name', config('hiko.metadata_default_locale'));
                         })->toArray(),
                     ],
                     [
                         'label' => collect($identity->profession_categories)->map(function ($profession) {
-                            return implode('-', array_values($profession->getTranslations('name')));
+                            return $profession->getTranslation('name', config('hiko.metadata_default_locale'));
                         })->toArray(),
                     ],
                 ];

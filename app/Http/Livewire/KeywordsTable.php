@@ -87,7 +87,7 @@ class KeywordsTable extends Component
                         'label' => $kw->getTranslation('name', 'en'),
                     ],
                     [
-                        'label' => $kw->keyword_category ? implode('-', array_values($kw->keyword_category->getTranslations('name'))) : '',
+                        'label' => $kw->keyword_category ? $kw->keyword_category->getTranslation('name', config('hiko.metadata_default_locale')) : '',
                     ],
                 ]);
             })->toArray(),
