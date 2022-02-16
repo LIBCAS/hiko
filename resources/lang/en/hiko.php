@@ -106,4 +106,12 @@ return [
     'history' => 'History',
     'preview' => 'Preview',
     'media' => 'Media',
+    'from' => 'From',
+    'to' => 'To',
+    'ascending' => 'Ascending',
+    'descending' => 'Descending',
+    'order_direction' => 'Order',
+    'by_date' => 'By date',
+    'publish' => 'Published',
+    'draft' => 'Draft',
 ];

@@ -106,4 +106,12 @@ return [
     'history' => 'Historie',
     'preview' => 'Náhled',
     'media' => 'Média',
+    'from' => 'Od',
+    'to' => 'Do',
+    'ascending' => 'Vzestupně',
+    'descending' => 'Sestupně',
+    'order_direction' => 'Řazení',
+    'by_date' => 'Podle data',
+    'publish' => 'Veřejné',
+    'draft' => 'Soukromé',
 ];
