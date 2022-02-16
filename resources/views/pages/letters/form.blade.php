@@ -561,8 +561,7 @@
                     <template x-for="copy, index in copies" :key="copy.key ? copy.key : index">
                         <div class="p-3 space-y-6 border border-primary-light">
                             <div>
-                                <x-label x-bind:for="'ms_manifestation' + index"
-                                    :value="__('MS manifestation (EMLO)')" />
+                                <x-label x-bind:for="'ms_manifestation' + index" :value="__('hiko.ms_manifestation')" />
                                 <x-select x-model="copies[index]['ms_manifestation']" name="ms_manifestation[]"
                                     class="block w-full mt-1">
                                     <option value="">
@@ -576,7 +575,7 @@
                                 </x-select>
                             </div>
                             <div>
-                                <x-label x-bind:for="'type' + index" :value="__('Typ dokumentu')" />
+                                <x-label x-bind:for="'type' + index" :value="__('hiko.doc_type')" />
                                 <x-select x-model="copies[index]['type']" name="type[]" class="block w-full mt-1">
                                     <option value="">
                                         ---
@@ -589,7 +588,7 @@
                                 </x-select>
                             </div>
                             <div>
-                                <x-label x-bind:for="'preservation' + index" :value="__('Uchování')" />
+                                <x-label x-bind:for="'preservation' + index" :value="__('hiko.preservation')" />
                                 <x-select x-model="copies[index]['preservation']" name="preservation[]"
                                     class="block w-full mt-1">
                                     <option value="">
@@ -617,18 +616,18 @@
                             </div>
                             <div>
                                 <x-label x-bind:for="'manifestation_notes' + index"
-                                    :value="__('Poznámka k manifestaci')" />
+                                    :value="__('hiko.manifestation_notes')" />
                                 <x-textarea name="manifestation_notes[]" x-bind:id="'manifestation_notes' + index"
                                     class="block w-full mt-1" x-bind:value="copy['manifestation_notes']">
                                 </x-textarea>
                             </div>
                             <div>
-                                <x-label x-bind:for="'l_number' + index" :value="__('Číslo dopisu')" />
+                                <x-label x-bind:for="'l_number' + index" :value="__('hiko.l_number')" />
                                 <x-input x-bind:id="'l_number' + index" x-bind:value="copy['l_number']"
                                     class="block w-full mt-1" type="text" name="l_number[]" />
                             </div>
                             <div>
-                                <x-label x-bind:for="'repository' + index" :value="__('Repozitář')" />
+                                <x-label x-bind:for="'repository' + index" :value="__('hiko.repository')" />
                                 <x-input x-bind:id="'repository' + index" x-bind:value="copy.repository"
                                     class="block w-full mt-1" type="text" name="repository[]"
                                     x-bind:list="'repository-datalist-' + index" />
@@ -641,7 +640,7 @@
                                 </datalist>
                             </div>
                             <div>
-                                <x-label x-bind:for="'archive' + index" :value="__('Archiv')" />
+                                <x-label x-bind:for="'archive' + index" :value="__('hiko.archive')" />
                                 <x-input x-bind:id="'archive' + index" x-bind:value="copy.archive"
                                     class="block w-full mt-1" type="text" name="archive[]"
                                     x-bind:list="'archive-datalist-' + index" />
@@ -654,7 +653,7 @@
                                 </datalist>
                             </div>
                             <div>
-                                <x-label x-bind:for="'collection' + index" :value="__('Sbírka')" />
+                                <x-label x-bind:for="'collection' + index" :value="__('hiko.collection')" />
                                 <x-input x-bind:id="'collection' + index" x-bind:value="copy.collection"
                                     class="block w-full mt-1" type="text" name="collection[]"
                                     x-bind:list="'collection-datalist-' + index" />
@@ -667,12 +666,12 @@
                                 </datalist>
                             </div>
                             <div>
-                                <x-label x-bind:for="'signature' + index" :value="__('Signatura')" />
+                                <x-label x-bind:for="'signature' + index" :value="__('hiko.signature')" />
                                 <x-input x-bind:id="'signature' + index" x-bind:value="copy.signature"
                                     class="block w-full mt-1" type="text" name="signature[]" />
                             </div>
                             <div>
-                                <x-label x-bind:for="'location_note' + index" :value="__('Poznámka k uložení')" />
+                                <x-label x-bind:for="'location_note' + index" :value="__('hiko.location_note')" />
                                 <x-textarea name="location_note[]" x-bind:id="'location_note' + index"
                                     class="block w-full mt-1" x-bind:value="copy['location_note']">
                                 </x-textarea>
@@ -714,11 +713,11 @@
                         {{ __('hiko.status') }}
                     </legend>
                     <div>
-                        <x-radio name="status" label="{{ __('Soukromý dopis') }}" value="draft"
+                        <x-radio name="status" label="{{ __('hiko.draft_letter') }}" value="draft"
                             :checked="old('status', $letter->status) === 'draft'" name="status" required />
                     </div>
                     <div>
-                        <x-radio name="status" label="{{ __('Veřejný dopis') }}" value="publish"
+                        <x-radio name="status" label="{{ __('hiko.published_letter') }}" value="publish"
                             :checked="old('status', $letter->status) === 'publish'" name="status" required />
                     </div>
                 </fieldset>
