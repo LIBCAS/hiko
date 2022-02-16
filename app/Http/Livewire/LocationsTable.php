@@ -55,8 +55,13 @@ class LocationsTable extends Component
             'rows' => $data->map(function ($locations) {
                 return [
                     [
-                        'label' => $locations->name,
-                        'link' => route('locations.edit', $locations->id),
+                        'component' => [
+                            'args' => [
+                                'link' => route('locations.edit', $locations->id),
+                                'label' => $locations->name,
+                            ],
+                            'name' => 'tables.edit-link',
+                        ],
                     ],
                     [
                         'label' => __("hiko.{$locations->type}"),

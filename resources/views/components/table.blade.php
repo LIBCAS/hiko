@@ -18,7 +18,10 @@
                             <tr class="text-sm text-gray-900 hover:bg-gray-100">
                                 @foreach ($row as $item)
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        @if (isset($item['link']) && isset($item['external']) && $item['external'])
+                                        @if (isset($item['component']))
+                                            <x-dynamic-component :component="$item['component']['name']"
+                                                :args="$item['component']['args']" />
+                                        @elseif (isset($item['link']) && isset($item['external']) && $item['external'])
                                             <a href="{{ $item['link'] }}" target="_blank" class="hover:underline">
                                                 {{ $item['label'] }} &#10697
                                             </a>

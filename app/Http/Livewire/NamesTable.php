@@ -53,21 +53,30 @@ class NamesTable extends Component
 
     protected function formatTableData($data)
     {
+        $header = auth()->user()->cannot('manage-metadata')
+            ? ['CS', 'EN']
+            : ['', 'CS', 'EN'];
+
         return [
-            'header' => ['', 'CS', 'EN'],
+            'header' => $header,
             'rows' => $data->map(function ($profession) {
-                return [
-                    [
-                        'label' => __('hiko.edit'),
-                        'link' => route("{$this->routePrefix}.edit", $profession->id),
-                    ],
+                $row = auth()->user()->cannot('manage-metadata')
+                    ? []
+                    : [
+                        [
+                            'label' => __('hiko.edit'),
+                            'link' => route("{$this->routePrefix}.edit", $profession->id),
+                        ],
+                    ];
+
+                return array_merge($row, [
                     [
                         'label' => $profession->getTranslation('name', 'cs'),
                     ],
                     [
                         'label' => $profession->getTranslation('name', 'en'),
                     ],
-                ];
+                ]);
             })->toArray(),
         ];
     }

@@ -54,8 +54,13 @@ class PlacesTable extends Component
 
                 return [
                     [
-                        'label' => $place->name,
-                        'link' => route('places.edit', $place->id),
+                        'component' => [
+                            'args' => [
+                                'link' => route('places.edit', $place->id),
+                                'label' => $place->name,
+                            ],
+                            'name' => 'tables.edit-link',
+                        ],
                     ],
                     [
                         'label' => $place->country,

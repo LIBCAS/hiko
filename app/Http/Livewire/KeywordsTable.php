@@ -63,14 +63,23 @@ class KeywordsTable extends Component
 
     protected function formatTableData($data)
     {
+        $header = auth()->user()->cannot('manage-metadata')
+            ? ['CS', 'EN', __('hiko.category')]
+            : ['', 'CS', 'EN', __('hiko.category')];
+
         return [
-            'header' => ['', 'CS', 'EN', __('hiko.category')],
+            'header' => $header,
             'rows' => $data->map(function ($kw) {
-                return [
-                    [
-                        'label' => __('hiko.edit'),
-                        'link' => route('keywords.edit', $kw->id),
-                    ],
+                $row = auth()->user()->cannot('manage-metadata')
+                    ? []
+                    : [
+                        [
+                            'label' => __('hiko.edit'),
+                            'link' => route('keywords.edit', $kw->id),
+                        ],
+                    ];
+
+                return array_merge($row, [
                     [
                         'label' => $kw->getTranslation('name', 'cs'),
                     ],
@@ -80,7 +89,7 @@ class KeywordsTable extends Component
                     [
                         'label' => $kw->keyword_category ? implode('-', array_values($kw->keyword_category->getTranslations('name'))) : '',
                     ],
-                ];
+                ]);
             })->toArray(),
         ];
     }

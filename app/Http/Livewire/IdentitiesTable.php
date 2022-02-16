@@ -81,8 +81,13 @@ class IdentitiesTable extends Component
             'rows' => $data->map(function ($identity) {
                 return [
                     [
-                        'label' => $identity->name,
-                        'link' => route('identities.edit', $identity->id),
+                        'component' => [
+                            'args' => [
+                                'link' => route('identities.edit', $identity->id),
+                                'label' => $identity->name,
+                            ],
+                            'name' => 'tables.edit-link',
+                        ],
                     ],
                     [
                         'label' => __("hiko.{$identity->type}"),
