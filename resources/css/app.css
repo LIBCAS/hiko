@@ -1,4 +1,4 @@
-@import './../../node_modules/tom-select/dist/css/tom-select.default.min.css';
+@import './../../node_modules/choices.js/public/assets/styles/choices.min.css';
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
@@ -13,14 +13,6 @@ html {
 
 :focus {
     @apply outline-none ring-1 ring-primary !important;
-}
-
-.ts-wrapper {
-    @apply px-0 !important;
-}
-
-.ts-control {
-    min-height: 2.5rem;
 }
 
 .required label::after {
