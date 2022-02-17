@@ -51,7 +51,7 @@ class PlacesTable extends Component
         return [
             'header' => [__('hiko.name'), __('hiko.country'), __('hiko.coordinates')],
             'rows' => $data->map(function ($place) {
-
+                $hasLatLng = $place->latitude && $place->longitude;
                 return [
                     [
                         'component' => [
@@ -66,9 +66,9 @@ class PlacesTable extends Component
                         'label' => $place->country,
                     ],
                     [
-                        'label' => "{$place->latitude},{$place->longitude}",
-                        'link' => "https://www.openstreetmap.org/?mlat={$place->latitude}&mlon={$place->longitude}&zoom=12",
-                        'external' => true,
+                        'label' => $hasLatLng ? "{$place->latitude},{$place->longitude}" : '',
+                        'link' => $hasLatLng ? "https://www.openstreetmap.org/?mlat={$place->latitude}&mlon={$place->longitude}&zoom=12" : '',
+                        'external' => $hasLatLng,
                     ],
                 ];
             })->toArray(),

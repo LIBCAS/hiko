@@ -1,5 +1,6 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    <x-form-errors />
     <form onkeydown="return event.key != 'Enter';" action="{{ $action }}" method="post" class="max-w-sm space-y-3"
         autocomplete="off">
         @csrf
@@ -16,8 +17,8 @@
         </div>
         <div class="required">
             <x-label for="country" :value="__('hiko.country')" />
-            <x-select x-data="select({element: $el })" x-init="initSelect()" id="country" class="block w-full mt-1"
-                name="country" required>
+            <x-select x-data="choices({element: $el })" x-init="initSelect()" id="country" class="block w-full mt-1"
+                name="country">
                 @foreach ($countries as $country)
                     <option value="{{ $country->name }}"
                         {{ old('country', $place->country) == $country->name ? 'selected' : '' }}>
