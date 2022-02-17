@@ -47,7 +47,9 @@ class KeywordController extends Controller
             ],
         ]);
 
-        $keyword->keyword_category()->associate($validated['category']);
+        if (isset($validated['category'])) {
+            $keyword->keyword_category()->associate($validated['category']);
+        }
 
         $keyword->save();
 
@@ -79,7 +81,11 @@ class KeywordController extends Controller
             ],
         ]);
 
-        $keyword->keyword_category()->associate($validated['category']);
+        $keyword->keyword_category()->dissociate();
+
+        if (isset($validated['category'])) {
+            $keyword->keyword_category()->associate($validated['category']);
+        }
 
         $keyword->save();
 
@@ -104,23 +110,19 @@ class KeywordController extends Controller
 
     protected function getCategory(Keyword $keyword)
     {
-        $category = null;
-
-        if ($keyword->keyword_category) {
-            $category = [
-                'id' => $keyword->keyword_category->id,
-                'name' => implode(' | ', array_values($keyword->keyword_category->getTranslations('name'))),
-            ];
+        if (!$keyword->keyword_category && !request()->old('category')) {
+            return null;
         }
 
-        if (request()->old('category')) {
-            $category = KeywordCategory::where('id', '=', request()->old('category'))->get()[0];
-            $category = [
-                'id' => request()->old('category'),
-                'name' => implode(' | ', array_values($category->getTranslations('name'))),
-            ];
-        }
+        $id = request()->old('category') ? request()->old('category') : $keyword->keyword_category->id;
 
-        return $category;
+        $category = request()->old('category')
+            ? KeywordCategory::where('id', '=', request()->old('category'))->get()[0]
+            : $keyword->keyword_category;
+
+        return [
+            'id' => $id,
+            'label' => $category->getTranslation('name', config('hiko.metadata_default_locale')),
+        ];
     }
 }
