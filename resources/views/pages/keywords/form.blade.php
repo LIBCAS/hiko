@@ -25,8 +25,11 @@
         <div>
             <x-label for="category" :value="__('hiko.category')" />
             <x-select name="category" id="category" class="block w-full mt-1"
-                x-data="ajaxSelect({url: '{{ route('ajax.keywords.category') }}', element: $el, options: JSON.parse(document.getElementById('selectedCategory').innerHTML) })"
+                x-data="ajaxChoices({url: '{{ route('ajax.keywords.category') }}', element: $el })"
                 x-init="initSelect()">
+                @if ($category)
+                    <option value="{{ $category['id'] }}" selected>{{ $category['label'] }}</option>
+                @endif
             </x-select>
             @error('category')
                 <div class="text-red-600">{{ $message }}</div>
@@ -47,9 +50,4 @@
             </x-button-danger>
         </form>
     @endif
-    @push('scripts')
-        <script id="selectedCategory" type="application/json">
-            @json($category)
-        </script>
-    @endpush
 </x-app-layout>
