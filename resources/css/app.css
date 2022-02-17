@@ -24,3 +24,29 @@ html {
 .ProseMirror {
     @apply outline-none;
 }
+
+.choices {
+    margin-bottom: 0;
+}
+
+.choices__input {
+    @apply bg-transparent p-1 !important;
+}
+
+.choices__input:focus {
+    @apply ring-0 !important;
+}
+
+.choices__list--multiple .choices__item {
+    @apply bg-primary border-primary-dark;
+}
+
+.choices[data-type*='select-multiple'] .choices__button,
+.choices[data-type*='text'] .choices__button {
+    @apply border-l-primary-dark;
+}
+
+
+.choices__list--multiple .choices__item.is-highlighted {
+    @apply bg-primary-dark border-primary-dark;
+}
