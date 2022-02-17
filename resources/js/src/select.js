@@ -24,7 +24,7 @@ window.ajaxChoices = function (data) {
                 'search',
                 debounce(
                     this,
-                    function (e) {
+                    (e) => {
                         const url =
                             data.url +
                             '?search=' +
@@ -42,6 +42,19 @@ window.ajaxChoices = function (data) {
                     300
                 )
             )
+
+            if ('change' in data) {
+                data.element.addEventListener('change', (event) => {
+                    const option = data.element.querySelector(
+                        'option[value="' + event.detail.value + '"]'
+                    )
+
+                    data.change({
+                        value: event.detail.value,
+                        label: option ? option.textContent : '',
+                    })
+                })
+            }
         },
     }
 }
