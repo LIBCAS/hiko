@@ -29,7 +29,7 @@ class RelatedResources extends Component
         }
 
         if (empty($this->resources)) {
-            $this->addItem();
+            $this->resources = [];
         }
     }
 
