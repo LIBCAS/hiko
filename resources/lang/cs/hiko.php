@@ -145,4 +145,6 @@ return [
     'preservation_photocopy' => 'photocopy',
     'handwritten' => 'handwritten',
     'typewritten' => 'typewritten',
+    'mentioned' => 'Zmíněné osoby',
+    'people_mentioned_note' => 'Poznámka ke zmíněným osobám',
 ];

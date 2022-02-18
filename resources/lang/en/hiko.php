@@ -145,4 +145,6 @@ return [
     'preservation_photocopy' => 'photocopy',
     'handwritten' => 'handwritten',
     'typewritten' => 'typewritten',
+    'mentioned' => 'People mentioned',
+    'people_mentioned_note' => 'Note on people mentioned',
 ];

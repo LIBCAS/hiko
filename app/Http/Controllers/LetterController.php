@@ -339,32 +339,24 @@ class LetterController extends Controller
 
     protected function getMentioned(Letter $letter)
     {
-        if (request()->old('mentioned')) {
-            $ids = request()->old('mentioned');
+        if (!request()->old('mentioned') && !$letter->mentioned) {
+            return [];
+        }
 
-            $mentions = Identity::whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
-                ->get();
+        $mentions = request()->old('mentioned')
+            ? Identity::whereIn('id', request()->old('mentioned'))
+            ->orderByRaw('FIELD(id, ' . implode(',', request()->old('mentioned')) . ')')
+            ->get()
+            : $letter->mentioned;
 
-            return $mentions->map(function ($mentioned) {
+        return $mentions
+            ->map(function ($mention) {
                 return [
-                    'id' => $mentioned->id,
-                    'name' => $mentioned->name,
+                    'value' => $mention->id,
+                    'label' => $mention->name,
                 ];
-            });
-        }
-
-        if ($letter->mentioned) {
-            return $letter->mentioned
-                ->map(function ($mentioned) {
-                    return [
-                        'id' => $mentioned->id,
-                        'name' => $mentioned->name,
-                    ];
-                })
-                ->values()
-                ->toArray();
-        }
+            })
+            ->toArray();
     }
 
     protected function getOrigins(Letter $letter)

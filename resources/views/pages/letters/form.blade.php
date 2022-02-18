@@ -78,7 +78,7 @@
                 </x-error-alert>
             @endif
             <form action="{{ $action }}" method="post" onkeydown="return event.key != 'Enter';"
-                class="max-w-sm space-y-6 md:-mt-6" autocomplete="off">
+                class="max-w-sm space-y-6 md:-mt-6" autocomplete="off" novalidate>
                 @csrf
                 @isset($method)
                     @method($method)
@@ -468,17 +468,20 @@
                         @enderror
                     </div>
                     <div>
-                        <x-label for="mentioned" :value="__('Zmíněné osoby')" />
+                        <x-label for="mentioned" :value="__('hiko.mentioned')" />
                         <x-select name="mentioned[]" class="block w-full mt-1" id="mentioned"
-                            x-data="ajaxSelect({url: '{{ route('ajax.identities') }}', element: $el, options: JSON.parse(document.getElementById('selectedMentioned').innerHTML) })"
+                            x-data="ajaxChoices({url: '{{ route('ajax.identities') }}', element: $el })"
                             x-init="initSelect()" multiple>
+                            @foreach ($selectedMentioned as $mention)
+                                <option value="{{ $mention['value'] }}" selected>{{ $mention['label'] }}</option>
+                            @endforeach
                         </x-select>
                         @error('mentioned')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
                     <div>
-                        <x-label for="people_mentioned_note" :value="__('Poznámka ke zmíněným osobám')" />
+                        <x-label for="people_mentioned_note" :value="__('hiko.people_mentioned_note')" />
                         <x-textarea name="people_mentioned_note" id="people_mentioned_note" class="block w-full mt-1">
                             {{ old('people_mentioned_note', $letter->people_mentioned_note) }}
                         </x-textarea>
@@ -559,9 +562,6 @@
         </script>
         <script id="selectedKeywords" type="application/json">
             @json($selectedKeywords)
-        </script>
-        <script id="selectedMentioned" type="application/json">
-            @json($selectedMentioned)
         </script>
         @production
             <script>
