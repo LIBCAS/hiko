@@ -417,17 +417,20 @@
                                 </option>
                             @endforeach
                         </x-select>
-                        @error('language')
+                        @error('languages')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
                     <div>
-                        <x-label for="keyword" :value="__('Klíčová slova')" />
-                        <x-select name="keyword[]" class="block w-full mt-1" id="keyword"
-                            x-data="ajaxSelect({url: '{{ route('ajax.keywords') }}', element: $el, options: JSON.parse(document.getElementById('selectedKeywords').innerHTML) })"
+                        <x-label for="keywords" :value="__('hiko.keywords')" />
+                        <x-select name="keywords[]" class="block w-full mt-1" id="keywords"
+                            x-data="ajaxChoices({url: '{{ route('ajax.keywords') }}', element: $el })"
                             x-init="initSelect()" multiple>
+                            @foreach ($selectedKeywords as $kw)
+                                <option value="{{ $kw['value'] }}" selected>{{ $kw['label'] }}</option>
+                            @endforeach
                         </x-select>
-                        @error('keyword')
+                        @error('keywords')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
@@ -556,12 +559,6 @@
         </script>
         <script id="selectedDestinations" type="application/json">
             @json($selectedDestinations)
-        </script>
-        <script id="selectedKeywords" type="application/json">
-            @json($selectedKeywords)
-        </script>
-        <script id="selectedKeywords" type="application/json">
-            @json($selectedKeywords)
         </script>
         @production
             <script>

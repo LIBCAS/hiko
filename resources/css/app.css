@@ -49,7 +49,7 @@ html {
 }
 
 .choices {
-    margin-bottom: 0;
+    @apply mt-1 mb-0;
 }
 
 .choices .choices__inner {

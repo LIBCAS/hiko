@@ -210,7 +210,7 @@ class LetterController extends Controller
 
     protected function attachRelated(Request $request, Letter $letter)
     {
-        $letter->keywords()->sync($request->keyword);
+        $letter->keywords()->sync($request->keywords);
 
         $mentioned = [];
         $authors = [];
@@ -427,31 +427,23 @@ class LetterController extends Controller
 
     protected function getKeywords(Letter $letter)
     {
-        if (request()->old('keyword')) {
-            $ids = request()->old('keyword');
+        if (!request()->old('keywords') && !$letter->keywords) {
+            return [];
+        }
 
-            $keywords = Keyword::whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
-                ->get();
+        $keywords = request()->old('keywords')
+            ? Keyword::whereIn('id', request()->old('keywords'))
+            ->orderByRaw('FIELD(id, ' . implode(',', request()->old('keywords')) . ')')
+            ->get()
+            : $letter->keywords;
 
-            return $keywords->map(function ($keyword) {
+        return $keywords
+            ->map(function ($kw) {
                 return [
-                    'id' => $keyword->id,
-                    'name' => implode(' | ', array_values($keyword->getTranslations('name'))),
+                    'value' => $kw->id,
+                    'label' => $kw->getTranslation('name', config('hiko.metadata_default_locale')),
                 ];
-            });
-        }
-
-        if ($letter->keywords) {
-            return $letter->keywords
-                ->map(function ($keyword) {
-                    return [
-                        'id' => $keyword->id,
-                        'name' => implode(' | ', array_values($keyword->getTranslations('name'))),
-                    ];
-                })
-                ->values()
-                ->toArray();
-        }
+            })
+            ->toArray();
     }
 }
