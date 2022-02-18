@@ -2,15 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Place;
 use App\Models\Letter;
-use App\Models\Keyword;
-use App\Models\Identity;
 use App\Models\Language;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
-
-// TODO: refaktorovat metody pro získání přidružených dat
 
 class LetterController extends Controller
 {
