@@ -68,12 +68,12 @@ class LetterController extends Controller
             'letter' => $letter,
             'action' => route('letters.store'),
             'label' => __('hiko.create'),
-            'selectedAuthors' => $this->getAuthors($letter),
-            'selectedRecipients' => $this->getRecipients($letter),
-            'selectedOrigins' => $this->getOrigins($letter),
-            'selectedDestinations' => $this->getDestinations($letter),
-            'selectedKeywords' => $this->getKeywords($letter),
-            'selectedMentioned' => $this->getMentioned($letter),
+            'selectedAuthors' => $this->getSelectedMeta($letter, 'Identity', 'authors', ['marked']),
+            'selectedRecipients' => $this->getSelectedMeta($letter, 'Identity', 'recipients', ['marked', 'salutation']),
+            'selectedOrigins' => $this->getSelectedMeta($letter, 'Place', 'origins', ['marked']),
+            'selectedDestinations' => $this->getSelectedMeta($letter, 'Place', 'destinations', ['marked']),
+            'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
+            'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
             'languages' => collect(Language::all())->pluck('name'),
         ]);
     }
@@ -109,12 +109,12 @@ class LetterController extends Controller
             'method' => 'PUT',
             'action' => route('letters.update', $letter),
             'label' => __('hiko.edit'),
-            'selectedAuthors' => $this->getAuthors($letter),
-            'selectedRecipients' => $this->getRecipients($letter),
-            'selectedOrigins' => $this->getOrigins($letter),
-            'selectedDestinations' => $this->getDestinations($letter),
-            'selectedKeywords' => $this->getKeywords($letter),
-            'selectedMentioned' => $this->getMentioned($letter),
+            'selectedAuthors' => $this->getSelectedMeta($letter, 'Identity', 'authors', ['marked']),
+            'selectedRecipients' => $this->getSelectedMeta($letter, 'Identity', 'recipients', ['marked', 'salutation']),
+            'selectedOrigins' => $this->getSelectedMeta($letter, 'Place', 'origins', ['marked']),
+            'selectedDestinations' => $this->getSelectedMeta($letter, 'Place', 'destinations', ['marked']),
+            'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
+            'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
             'languages' => collect(Language::all())->pluck('name'),
         ]);
     }
@@ -268,181 +268,32 @@ class LetterController extends Controller
         $letter->places()->attach($destinations);
     }
 
-    protected function getAuthors(Letter $letter)
+    protected function getSelectedMeta(Letter $letter, $model, string $fieldKey, $pivotFields = [])
     {
-        if (request()->old('author')) {
-            $ids = request()->old('author');
-            $names = request()->old('author_marked');
-
-            $authors = Identity::whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
-                ->get();
-
-            return $authors->map(function ($author, $index) use ($names) {
-                return [
-                    'id' => $author->id,
-                    'name' => $author->name,
-                    'marked' => $names[$index],
-                ];
-            });
-        }
-
-        if ($letter->authors) {
-            return $letter->authors
-                ->map(function ($author) {
-                    return [
-                        'id' => $author->id,
-                        'name' => $author->name,
-                        'marked' => $author->pivot->marked,
-                    ];
-                })
-                ->values()
-                ->toArray();
-        }
-    }
-
-    protected function getRecipients(Letter $letter)
-    {
-        if (request()->old('recipient')) {
-            $ids = request()->old('recipient');
-            $names = request()->old('recipient_marked');
-            $salutations = request()->old('recipient_salutation');
-
-            $recipients = Identity::whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
-                ->get();
-
-            return $recipients->map(function ($recipient, $index) use ($names, $salutations) {
-                return [
-                    'id' => $recipient->id,
-                    'name' => $recipient->name,
-                    'marked' => $names[$index],
-                    'salutation' => $salutations[$index],
-                ];
-            });
-        }
-
-        if ($letter->recipients) {
-            return $letter->recipients
-                ->map(function ($recipient) {
-                    return [
-                        'id' => $recipient->id,
-                        'name' => $recipient->name,
-                        'marked' => $recipient->pivot->marked,
-                        'salutation' => $recipient->pivot->salutation,
-                    ];
-                })
-                ->values()
-                ->toArray();
-        }
-    }
-
-    protected function getMentioned(Letter $letter)
-    {
-        if (!request()->old('mentioned') && !$letter->mentioned) {
+        if (!request()->old($fieldKey) && !$letter->{$fieldKey}) {
             return [];
         }
 
-        $mentions = request()->old('mentioned')
-            ? Identity::whereIn('id', request()->old('mentioned'))
-            ->orderByRaw('FIELD(id, ' . implode(',', request()->old('mentioned')) . ')')
+        $items = request()->old($fieldKey)
+            ? app('App\Models\\' . $model)::whereIn('id', request()->old($fieldKey))
+            ->orderByRaw('FIELD(id, ' . implode(',', request()->old($fieldKey)) . ')')
             ->get()
-            : $letter->mentioned;
+            : $letter->{$fieldKey};
 
-        return $mentions
-            ->map(function ($mention) {
-                return [
-                    'value' => $mention->id,
-                    'label' => $mention->name,
+        return $items
+            ->map(function ($item) use ($pivotFields) {
+                $result = [
+                    'value' => $item->id,
+                    'label' => is_array($item->name)
+                        ? $item->getTranslation('name', config('hiko.metadata_default_locale'))
+                        : $item->name,
                 ];
-            })
-            ->toArray();
-    }
 
-    protected function getOrigins(Letter $letter)
-    {
-        if (request()->old('origin')) {
-            $ids = request()->old('origin');
-            $names = request()->old('origin_marked');
+                foreach ($pivotFields as $field) {
+                    $result[$field] = $item->pivot->{$field};
+                }
 
-            $origins = Place::whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
-                ->get();
-
-            return $origins->map(function ($origin, $index) use ($names) {
-                return [
-                    'id' => $origin->id,
-                    'name' => $origin->name,
-                    'marked' => $names[$index],
-                ];
-            });
-        }
-
-        if ($letter->origins) {
-            return $letter->origins
-                ->map(function ($origin) {
-                    return [
-                        'id' => $origin->id,
-                        'name' => $origin->name,
-                        'marked' => $origin->pivot->marked,
-                    ];
-                })
-                ->values()
-                ->toArray();
-        }
-    }
-
-    protected function getDestinations(Letter $letter)
-    {
-        if (request()->old('destination')) {
-            $ids = request()->old('destination');
-            $names = request()->old('destination_marked');
-
-            $destinations = Place::whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
-                ->get();
-
-            return $destinations->map(function ($destination, $index) use ($names) {
-                return [
-                    'id' => $destination->id,
-                    'name' => $destination->name,
-                    'marked' => $names[$index],
-                ];
-            });
-        }
-
-        if ($letter->destinations) {
-            return $letter->destinations
-                ->map(function ($destination) {
-                    return [
-                        'id' => $destination->id,
-                        'name' => $destination->name,
-                        'marked' => $destination->pivot->marked,
-                    ];
-                })
-                ->values()
-                ->toArray();
-        }
-    }
-
-    protected function getKeywords(Letter $letter)
-    {
-        if (!request()->old('keywords') && !$letter->keywords) {
-            return [];
-        }
-
-        $keywords = request()->old('keywords')
-            ? Keyword::whereIn('id', request()->old('keywords'))
-            ->orderByRaw('FIELD(id, ' . implode(',', request()->old('keywords')) . ')')
-            ->get()
-            : $letter->keywords;
-
-        return $keywords
-            ->map(function ($kw) {
-                return [
-                    'value' => $kw->id,
-                    'label' => $kw->getTranslation('name', config('hiko.metadata_default_locale')),
-                ];
+                return $result;
             })
             ->toArray();
     }
