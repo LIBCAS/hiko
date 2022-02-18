@@ -24,12 +24,4 @@
             {{ __('hiko.add_new_item') }}
         </button>
     </div>
-    @push('styles')
-        <style>
-            .flex .choices {
-                width: 100%;
-            }
-
-        </style>
-    @endpush
 </div>

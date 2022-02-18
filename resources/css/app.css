@@ -25,6 +25,10 @@ html {
     @apply outline-none;
 }
 
+.flex > .choices {
+    width: 100%;
+}
+
 .choices {
     margin-bottom: 0;
 }
@@ -45,7 +49,6 @@ html {
 .choices[data-type*='text'] .choices__button {
     @apply border-l-primary-dark;
 }
-
 
 .choices__list--multiple .choices__item.is-highlighted {
     @apply bg-primary-dark border-primary-dark;
