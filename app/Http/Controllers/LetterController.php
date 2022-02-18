@@ -9,14 +9,11 @@ use App\Models\Identity;
 use App\Models\Language;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
-use App\Http\Traits\LetterLabelsTrait;
 
 // TODO: refaktorovat metody pro získání přidružených dat
 
 class LetterController extends Controller
 {
-    use LetterLabelsTrait;
-
     protected $rules = [
         'date_year' => ['nullable', 'integer', 'numeric'],
         'date_month' => ['nullable', 'integer', 'numeric'],
@@ -55,20 +52,6 @@ class LetterController extends Controller
         'status' => ['required', 'string', 'max:255'],
     ];
 
-    protected $copiesFields = [
-        'archive',
-        'collection',
-        'copy',
-        'l_number',
-        'location_note',
-        'manifestation_notes',
-        'ms_manifestation',
-        'preservation',
-        'repository',
-        'signature',
-        'type',
-    ];
-
     public function index()
     {
         return view('pages.letters.index', [
@@ -91,10 +74,7 @@ class LetterController extends Controller
             'selectedDestinations' => $this->getDestinations($letter),
             'selectedKeywords' => $this->getKeywords($letter),
             'selectedMentioned' => $this->getMentioned($letter),
-            'selectedCopies' => $this->getCopies($letter),
             'languages' => collect(Language::all())->pluck('name'),
-            'labels' => $this->getLabels(),
-            'locations' => $this->getLocations(),
         ]);
     }
 
@@ -135,10 +115,7 @@ class LetterController extends Controller
             'selectedDestinations' => $this->getDestinations($letter),
             'selectedKeywords' => $this->getKeywords($letter),
             'selectedMentioned' => $this->getMentioned($letter),
-            'selectedCopies' => $this->getCopies($letter),
             'languages' => collect(Language::all())->pluck('name'),
-            'labels' => $this->getLabels(),
-            'locations' => $this->getLocations(),
         ]);
     }
 
@@ -201,15 +178,7 @@ class LetterController extends Controller
         }
 
         if ($request->copies) {
-            $copies = [];
-
-            for ($i = 0; $i < (int) $request->copies; $i++) {
-                foreach ($this->copiesFields as $field) {
-                    $copies[$i][$field] = $request->{$field}[$i];
-                }
-            }
-
-            $request->request->set('copies', $copies);
+            $request->request->set('copies', json_decode($request->copies, true));
         }
 
         $request->request->set('abstract', [
@@ -492,22 +461,5 @@ class LetterController extends Controller
                 ->values()
                 ->toArray();
         }
-    }
-
-    protected function getCopies(Letter $letter)
-    {
-        if (request()->old('copies')) {
-            $copies = [];
-
-            for ($i = 0; $i < (int) request()->old('copies'); $i++) {
-                foreach ($this->copiesFields as $field) {
-                    $copies[$i][$field] = request()->old($field)[$i];
-                }
-            }
-
-            return $copies;
-        }
-
-        return empty($letter->copies) ? [] : $letter->copies;
     }
 }
