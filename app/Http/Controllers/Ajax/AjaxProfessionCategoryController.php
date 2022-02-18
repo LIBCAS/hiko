@@ -11,23 +11,20 @@ class AjaxProfessionCategoryController extends Controller
 {
     public function __invoke(Request $request)
     {
-        $search = $request->query('search');
-
-        if (empty($search)) {
-            return [];
-        }
-
-        $professions = ProfessionCategory::whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($search) . '%'])
-            ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($search) . '%'])
+        return empty($request->query('search'))
+            ? []
+            : ProfessionCategory::whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($request->query('search')) . '%'])
+            ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($request->query('search')) . '%'])
             ->select('id', 'name')
-            ->take(15)
-            ->get();
-
-        return $professions->map(function ($profession) {
-            return [
-                'id' => $profession->id,
-                'name' => implode(' | ', array_values($profession->getTranslations('name'))),
-            ];
-        })->toArray();
+            ->take(10)
+            ->get()
+            ->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'value' => $category->id,
+                    'label' => $category->getTranslation('name', config('hiko.metadata_default_locale')),
+                ];
+            })
+            ->toArray();
     }
 }
