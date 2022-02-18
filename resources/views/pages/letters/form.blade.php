@@ -20,49 +20,49 @@
     @endif
     <div class="md:flex md:space-x-16">
         <div class="hidden md:block">
-            <ul class="sticky text-gray-600 bg-white border rounded-md top-16 border-primary-light">
-                <li class="pt-1 border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-dates">
+            <ul class="sticky text-gray-700 bg-white rounded-md shadow-lg top-16">
+                <li class="border-b border-primary-light">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-dates">
                         {{ __('hiko.date') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-author">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-author">
                         {{ __('hiko.author') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-recipient">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-recipient">
                         {{ __('hiko.recipient') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-origin">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-origin">
                         {{ __('hiko.origin') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-destination">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-destination">
                         {{ __('hiko.destination') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-content">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-content">
                         {{ __('hiko.content_description') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-related-resource">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-related-resource">
                         {{ __('hiko.related_resources') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-copies">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-copies">
                         {{ __('hiko.manifestation_location') }}
                     </a>
                 </li>
-                <li class="pb-1 ">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-status">
+                <li class="">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-status">
                         {{ __('hiko.status') }}
                     </a>
                 </li>
@@ -412,8 +412,7 @@
                         <x-select x-data="choices({element: $el })" x-init="initSelect()" id="languages"
                             class="block w-full mt-1" name="languages[]" multiple>
                             @foreach ($languages as $language)
-                                <option value="{{ $language }}"
-                                    @if (in_array($language, explode(';', request()->old('languages', $letter->languages)))) selected @endif>
+                                <option value="{{ $language }}" @if (in_array($language, explode(';', request()->old('languages', $letter->languages)))) selected @endif>
                                     {{ $language }}
                                 </option>
                             @endforeach
