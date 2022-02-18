@@ -1,7 +1,7 @@
 <x-app-layout :title="$title">
     <x-success-alert />
     <form x-data="{ type: '{{ $identity->type ? $identity->type : 'person' }}' }" action="{{ $action }}"
-        method="post" onkeydown="return event.key != 'Enter';" class="max-w-sm space-y-3" novalidate>
+        method="post" onkeydown="return event.key != 'Enter';" class="max-w-sm space-y-3">
         @csrf
         @isset($method)
             @method($method)

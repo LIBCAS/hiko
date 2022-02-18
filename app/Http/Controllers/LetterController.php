@@ -92,7 +92,6 @@ class LetterController extends Controller
             'selectedLanguages' => $this->getLanguages($letter),
             'selectedKeywords' => $this->getKeywords($letter),
             'selectedMentioned' => $this->getMentioned($letter),
-            'selectedRelatedResources' => $this->getRelatedResources($letter),
             'selectedCopies' => $this->getCopies($letter),
             'languages' => Language::all(),
             'labels' => $this->getLabels(),
@@ -138,7 +137,6 @@ class LetterController extends Controller
             'selectedLanguages' => $this->getLanguages($letter),
             'selectedKeywords' => $this->getKeywords($letter),
             'selectedMentioned' => $this->getMentioned($letter),
-            'selectedRelatedResources' => $this->getRelatedResources($letter),
             'selectedCopies' => $this->getCopies($letter),
             'languages' => Language::all(),
             'labels' => $this->getLabels(),
@@ -200,28 +198,8 @@ class LetterController extends Controller
             $request->request->set('languages', implode(';', $request->language));
         }
 
-        if (!empty($request->resource_title)) {
-            $related_resources = [];
-
-            foreach ($request->resource_title as $key => $title) {
-                $related_resources[] = [
-                    'link' => $request->resource_link[$key],
-                    'title' => $title,
-                ];
-            }
-            $request->request->set('related_resources', $related_resources);
-        }
-
-        if (!empty($request->resource_title)) {
-            $related_resources = [];
-
-            foreach ($request->resource_title as $key => $title) {
-                $related_resources[] = [
-                    'link' => $request->resource_link[$key],
-                    'title' => $title,
-                ];
-            }
-            $request->request->set('related_resources', $related_resources);
+        if (!empty($request->related_resources)) {
+            $request->request->set('related_resources', json_decode($request->related_resources, true));
         }
 
         if ($request->copies) {
@@ -516,20 +494,6 @@ class LetterController extends Controller
                 ->values()
                 ->toArray();
         }
-    }
-
-    protected function getRelatedResources(Letter $letter)
-    {
-        if (request()->old('resource_title')) {
-            return collect(request()->old('resource_title'))->map(function ($resource, $index) {
-                return [
-                    'link' => request()->old('resource_link')[$index],
-                    'title' => $resource,
-                ];
-            });
-        }
-
-        return empty($letter->related_resources) ? [] : $letter->related_resources;
     }
 
     protected function getCopies(Letter $letter)

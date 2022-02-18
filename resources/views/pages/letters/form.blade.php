@@ -78,7 +78,7 @@
                 </x-error-alert>
             @endif
             <form action="{{ $action }}" method="post" onkeydown="return event.key != 'Enter';"
-                class="max-w-sm space-y-6 md:-mt-6" autocomplete="off">
+                class="max-w-sm space-y-6 md:-mt-6">
                 @csrf
                 @isset($method)
                     @method($method)
@@ -519,37 +519,7 @@
                 <div>
                     <hr class="my-3">
                 </div>
-                <fieldset id="a-related-resource" class="space-y-6"
-                    x-data="{ relatedResources: JSON.parse(document.getElementById('selectedRelatedResources').innerHTML)}">
-                    <legend class="text-lg font-semibold">
-                        {{ __('hiko.related_resources') }}
-                    </legend>
-                    <template x-for="resource, index in relatedResources" :key="resource.key ? resource.key : index">
-                        <div class="p-3 space-y-6 border border-primary-light">
-                            <div class="required">
-                                <x-label x-bind:for="'resource_title' + index" :value="__('Název')" />
-                                <x-input x-bind:id="'resource_title' + index" x-bind:value="resource.title"
-                                    class="block w-full mt-1" type="text" name="resource_title[]" required />
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'resource_link' + index" :value="__('URL')" />
-                                <x-input x-bind:id="'resource_link' + index" x-bind:value="resource.link"
-                                    class="block w-full mt-1" type="text" name="resource_link[]" type="url" />
-                            </div>
-                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
-                                x-on:click="relatedResources = relatedResources.filter((item, resourceIndex) => { return resourceIndex !== index })">
-                                <x-icons.trash class="h-5" />
-                                {{ __('hiko.remove_item') }}
-                            </button>
-                        </div>
-                    </template>
-                    <div>
-                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
-                            x-on:click="relatedResources.push({title: '', link: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('hiko.add_new_item') }}
-                        </button>
-                    </div>
-                </fieldset>
+                <livewire:related-resources :resources="$letter->related_resources" />
                 <div>
                     <hr class="my-3">
                 </div>
@@ -763,19 +733,18 @@
         <script id="selectedMentioned" type="application/json">
             @json($selectedMentioned)
         </script>
-        <script id="selectedRelatedResources" type="application/json">
-            @json($selectedRelatedResources)
-        </script>
         <script id="selectedCopies" type="application/json">
             @json($selectedCopies)
         </script>
-        <script>
-            var preventLeaving = true;
-            window.onbeforeunload = function(e) {
-                if (preventLeaving) {
-                    return '{{ __('hiko.confirm_leave') }}'
+        @production
+            <script>
+                var preventLeaving = true;
+                window.onbeforeunload = function(e) {
+                    if (preventLeaving) {
+                        return '{{ __('hiko.confirm_leave') }}'
+                    }
                 }
-            }
-        </script>
+            </script>
+        @endproduction
     @endpush
 </x-app-layout>
