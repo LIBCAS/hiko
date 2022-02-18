@@ -4,7 +4,7 @@
             {{ __('hiko.manifestation_location') }}
         </legend>
         @foreach ($copies as $item)
-            <div class="p-3 space-y-6 border border-primary-light">
+            <div class="p-3 space-y-6 bg-gray-200 shadow">
                 <div>
                     <x-label for="ms_manifestation_{{ $loop->index }}" :value="__('hiko.ms_manifestation')" />
                     <x-select wire:model.lazy="copies.{{ $loop->index }}.ms_manifestation" class="block w-full mt-1"

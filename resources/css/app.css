@@ -33,6 +33,10 @@ html {
     margin-bottom: 0;
 }
 
+.choices .choices__inner {
+    @apply bg-white border-gray-300 rounded-md shadow-sm;
+}
+
 .choices__input {
     @apply bg-transparent p-1 !important;
 }

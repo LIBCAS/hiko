@@ -37,7 +37,7 @@
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
-        <div x-data="{ open: false }" class="p-2 border rounded-md border-primary-light">
+        <div x-data="{ open: false }" class="p-3 bg-gray-200 border rounded-md shadow">
             <button type="button" @click="open = !open"
                 class="inline-flex items-center font-semibold text-primary hover:underline">
                 <x-icons.location-marker class="h-5 mr-2" /> <span>{{ __('hiko.search_geolocation') }}</span>
