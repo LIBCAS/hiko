@@ -83,7 +83,7 @@
                 @isset($method)
                     @method($method)
                 @endisset
-                <fieldset id="a-dates" class="space-y-6">
+                <fieldset id="a-dates" class="p-3 space-y-6 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.date') }}
                     </legend>
@@ -179,10 +179,8 @@
                         @enderror
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-author" class="space-y-6"
+                <div class="h-1"></div>
+                <fieldset id="a-author" class="p-3 space-y-6 shadow"
                     x-data="{ authors: JSON.parse(document.getElementById('selectedAuthors').innerHTML) }">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.author') }}
@@ -235,10 +233,8 @@
                         @enderror
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-recipient" class="space-y-6"
+                <div class="h-1"></div>
+                <fieldset id="a-recipient" class="p-3 space-y-6 shadow"
                     x-data="{ recipients: JSON.parse(document.getElementById('selectedRecipients').innerHTML) }">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.recipient') }}
@@ -297,10 +293,8 @@
                         @enderror
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-origin" class="space-y-6"
+                <div class="h-1"></div>
+                <fieldset id="a-origin" class="p-3 space-y-6 shadow"
                     x-data="{ origins: JSON.parse(document.getElementById('selectedOrigins').innerHTML) }">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.origin') }}
@@ -353,10 +347,8 @@
                         @enderror
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-destination" class="space-y-6"
+                <div class="h-1"></div>
+                <fieldset id="a-destination" class="p-3 space-y-6 shadow"
                     x-data="{ destinations: JSON.parse(document.getElementById('selectedDestinations').innerHTML) }">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.destination') }}
@@ -410,10 +402,8 @@
                         @enderror
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-content" class="space-y-6">
+                <div class="h-1"></div>
+                <fieldset id="a-content" class="p-3 space-y-6 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.content_description') }}
                     </legend>
@@ -516,14 +506,10 @@
                         @enderror
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
+                <div class="h-1"></div>
                 <livewire:related-resources :resources="$letter->related_resources" />
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-copies" class="space-y-6"
+                <div class="h-1"></div>
+                <fieldset id="a-copies" class="p-3 space-y-6 shadow"
                     x-data="{ copies: JSON.parse(document.getElementById('selectedCopies').innerHTML)}">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.manifestation_location') }}
@@ -675,10 +661,8 @@
                         </button>
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-status">
+                <div class="h-1"></div>
+                <fieldset id="a-status" class="p-3 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.status') }}
                     </legend>
@@ -691,9 +675,7 @@
                             :checked="old('status', $letter->status) === 'publish'" name="status" required />
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
+                <div class="h-1"></div>
                 <x-button-simple class="w-full" onclick="preventLeaving = false">
                     {{ $label }}
                 </x-button-simple>
