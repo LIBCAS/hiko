@@ -10,11 +10,9 @@ class AjaxIdentityController extends Controller
 {
     public function __invoke(Request $request)
     {
-        if (empty($request->query('search'))) {
-            return [];
-        }
-
-        return Identity::where('name', 'like', '%' . $request->query('search') . '%')
+        return empty($request->query('search'))
+            ? []
+            : Identity::where('name', 'like', '%' . $request->query('search') . '%')
             ->select('id', 'name')
             ->take(15)
             ->get()
