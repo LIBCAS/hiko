@@ -124,4 +124,5 @@ return [
     'preservation' => 'Uchování',
     'signature' => 'Signatura',
     'doc_type' => 'Typ dokumentu',
+    'language' => 'Jazyk',
 ];

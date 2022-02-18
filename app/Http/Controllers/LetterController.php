@@ -89,11 +89,11 @@ class LetterController extends Controller
             'selectedRecipients' => $this->getRecipients($letter),
             'selectedOrigins' => $this->getOrigins($letter),
             'selectedDestinations' => $this->getDestinations($letter),
-            'selectedLanguages' => $this->getLanguages($letter),
             'selectedKeywords' => $this->getKeywords($letter),
             'selectedMentioned' => $this->getMentioned($letter),
             'selectedCopies' => $this->getCopies($letter),
-            'languages' => Language::all(),
+            'selectedLanguages' => $this->getSelectedLanguages($letter),
+            'languages' => collect(Language::all())->pluck('name'),
             'labels' => $this->getLabels(),
             'locations' => $this->getLocations(),
         ]);
@@ -134,11 +134,11 @@ class LetterController extends Controller
             'selectedRecipients' => $this->getRecipients($letter),
             'selectedOrigins' => $this->getOrigins($letter),
             'selectedDestinations' => $this->getDestinations($letter),
-            'selectedLanguages' => $this->getLanguages($letter),
             'selectedKeywords' => $this->getKeywords($letter),
             'selectedMentioned' => $this->getMentioned($letter),
             'selectedCopies' => $this->getCopies($letter),
-            'languages' => Language::all(),
+            'selectedLanguages' => $this->getSelectedLanguages($letter),
+            'languages' => collect(Language::all())->pluck('name'),
             'labels' => $this->getLabels(),
             'locations' => $this->getLocations(),
         ]);
@@ -194,8 +194,8 @@ class LetterController extends Controller
 
     protected function modifyRequest(Request $request)
     {
-        if (!empty($request->language)) {
-            $request->request->set('languages', implode(';', $request->language));
+        if (!empty($request->languages)) {
+            $request->request->set('languages', implode(';', $request->languages));
         }
 
         if (!empty($request->related_resources)) {
@@ -513,16 +513,8 @@ class LetterController extends Controller
         return empty($letter->copies) ? [] : $letter->copies;
     }
 
-    protected function getLanguages(Letter $letter)
+    protected function getSelectedLanguages(Letter $letter)
     {
-        if (request()->old('language')) {
-            return request()->old('language');
-        }
-
-        if (empty($letter->languages)) {
-            return [];
-        }
-
-        return explode(';', $letter->languages);
+        return explode(';', request()->old('languages') ? request()->old('languages') : $letter->languages);
     }
 }

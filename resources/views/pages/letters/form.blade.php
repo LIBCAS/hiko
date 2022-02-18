@@ -418,13 +418,13 @@
                         {{ __('hiko.content_description') }}
                     </legend>
                     <div>
-                        <x-label for="language" :value="__('Jazyk')" />
-                        <x-select x-data="select({element: $el })" x-init="initSelect()" id="language"
-                            class="block w-full mt-1" name="language[]" multiple>
+                        <x-label for="languages" :value="__('hiko.language')" />
+                        <x-select x-data="choices({element: $el })" x-init="initSelect()" id="languages"
+                            class="block w-full mt-1" name="languages[]" multiple>
                             @foreach ($languages as $language)
-                                <option value="{{ $language->name }}"
-                                    @if (in_array($language->name, $selectedLanguages)) selected @endif>
-                                    {{ $language->name }}
+                                <option value="{{ $language }}"
+                                    @if (in_array($language, $selectedLanguages)) selected @endif>
+                                    {{ $language }}
                                 </option>
                             @endforeach
                         </x-select>

@@ -124,4 +124,5 @@ return [
     'preservation' => 'Preservation',
     'signature' => 'Signature',
     'doc_type' => 'Document type',
+    'language' => 'Language',
 ];
