@@ -423,7 +423,7 @@
                             class="block w-full mt-1" name="languages[]" multiple>
                             @foreach ($languages as $language)
                                 <option value="{{ $language }}"
-                                    @if (in_array($language, $selectedLanguages)) selected @endif>
+                                    @if (in_array($language, explode(';', request()->old('languages', $letter->languages)))) selected @endif>
                                     {{ $language }}
                                 </option>
                             @endforeach

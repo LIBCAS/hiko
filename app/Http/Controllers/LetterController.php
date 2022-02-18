@@ -92,7 +92,6 @@ class LetterController extends Controller
             'selectedKeywords' => $this->getKeywords($letter),
             'selectedMentioned' => $this->getMentioned($letter),
             'selectedCopies' => $this->getCopies($letter),
-            'selectedLanguages' => $this->getSelectedLanguages($letter),
             'languages' => collect(Language::all())->pluck('name'),
             'labels' => $this->getLabels(),
             'locations' => $this->getLocations(),
@@ -137,7 +136,6 @@ class LetterController extends Controller
             'selectedKeywords' => $this->getKeywords($letter),
             'selectedMentioned' => $this->getMentioned($letter),
             'selectedCopies' => $this->getCopies($letter),
-            'selectedLanguages' => $this->getSelectedLanguages($letter),
             'languages' => collect(Language::all())->pluck('name'),
             'labels' => $this->getLabels(),
             'locations' => $this->getLocations(),
@@ -511,10 +509,5 @@ class LetterController extends Controller
         }
 
         return empty($letter->copies) ? [] : $letter->copies;
-    }
-
-    protected function getSelectedLanguages(Letter $letter)
-    {
-        return explode(';', request()->old('languages') ? request()->old('languages') : $letter->languages);
     }
 }
