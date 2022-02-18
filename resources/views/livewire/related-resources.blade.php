@@ -18,11 +18,7 @@
                             id="resource_link-{{ $loop->index }}" :value="$resource['link']" class="block w-full mt-1"
                             type="text" type="url" />
                     </div>
-                    <button wire:click="removeItem({{ $loop->index }})" type="button"
-                        class="inline-flex items-center mt-6 text-sm text-red-600">
-                        <x-icons.remove class="h-4 mr-1" />
-                        {{ __('hiko.remove_item') }}
-                    </button>
+                    <x-button-trash wire:click="removeItem({{ $loop->index }})" />
                 </div>
             @endforeach
         </div>
