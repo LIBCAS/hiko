@@ -58,19 +58,11 @@ class LetterController extends Controller
     {
         $letter = new Letter;
 
-        return view('pages.letters.form', [
+        return view('pages.letters.form', array_merge([
             'title' => __('hiko.new_letter'),
-            'letter' => $letter,
             'action' => route('letters.store'),
             'label' => __('hiko.create'),
-            'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
-            'selectedRecipients' => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
-            'selectedOrigins' => $this->getSelectedMetaFields($letter, 'origins', ['marked']),
-            'selectedDestinations' => $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
-            'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
-            'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
-            'languages' => collect(Language::all())->pluck('name'),
-        ]);
+        ], $this->viewData($letter)));
     }
 
     public function store(Request $request)
@@ -98,20 +90,12 @@ class LetterController extends Controller
 
     public function edit(Letter $letter)
     {
-        return view('pages.letters.form', [
+        return view('pages.letters.form', array_merge([
             'title' => __('hiko.letter') . ': ' .  $letter->id,
-            'letter' => $letter,
             'method' => 'PUT',
             'action' => route('letters.update', $letter),
             'label' => __('hiko.edit'),
-            'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
-            'selectedRecipients' => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
-            'selectedOrigins' => $this->getSelectedMetaFields($letter, 'origins', ['marked']),
-            'selectedDestinations' => $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
-            'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
-            'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
-            'languages' => collect(Language::all())->pluck('name'),
-        ]);
+        ], $this->viewData($letter)));
     }
 
     public function update(Request $request, Letter $letter)
@@ -160,6 +144,20 @@ class LetterController extends Controller
     public function export()
     {
         return Excel::download(new LettersExport, 'letters.xlsx');
+    }
+
+    protected function viewData(Letter $letter)
+    {
+        return [
+            'letter' => $letter,
+            'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
+            'selectedRecipients' => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
+            'selectedOrigins' => $this->getSelectedMetaFields($letter, 'origins', ['marked']),
+            'selectedDestinations' => $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
+            'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
+            'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
+            'languages' => collect(Language::all())->pluck('name'),
+        ];
     }
 
     protected function modifyRequest(Request $request)
