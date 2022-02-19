@@ -1,18 +1,18 @@
 <x-app-layout :title="$title">
     <ul class="flex flex-wrap mb-6 space-x-6 text-sm">
         <li>
-            <a href="{{ route('letters.edit', $letter->id) }}" class="hover:underline">
-                {{ __('Upravit dopis') }}
+            <a href="{{ route('letters.edit', $letter->id) }}" class="text-primary hover:underline">
+                {{ __('hiko.edit_letter') }}
             </a>
         </li>
         <li>
-            <a href="{{ route('letters.text', $letter->id) }}" class="hover:underline">
-                {{ __('Upravit plný text') }}
+            <a href="{{ route('letters.text', $letter->id) }}" class="text-primary hover:underline">
+                {{ __('hiko.edit_full_text') }}
             </a>
         </li>
         <li>
-            <a href="{{ route('letters.images', $letter->id) }}" class="hover:underline">
-                {{ __('Upravit přílohy') }}
+            <a href="{{ route('letters.images', $letter->id) }}" class="text-primary hover:underline">
+                {{ __('hiko.edit_attachments') }}
             </a>
         </li>
     </ul>
@@ -26,7 +26,9 @@
                     Letter date
                 </td>
                 <td class="py-2">
-                    {{ $letter->pretty_date }}@if ($letter->date_is_range)–{{ $letter->pretty_range_date }} @endif
+                    {{ $letter->pretty_date }}@if ($letter->date_is_range)
+                        –{{ $letter->pretty_range_date }}
+                    @endif
                     @if ($letter->date_uncertain)
                         <small class="block pl-3"><em>Uncertain date</em></small>
                     @endif
@@ -62,7 +64,7 @@
         </tbody>
     </table>
     <h2 class="text-lg font-bold">
-        {{ __('Osoby a instituce') }}
+        Persons and institutions
     </h2>
     <table class="w-full mb-10 text-sm">
         <tbody>
@@ -313,94 +315,96 @@
             @endif
         </tbody>
     </table>
-    <h2 class="text-lg font-bold">Repositories and versions</h2>
-    @foreach ($letter->copies as $c)
-        <table class="w-full mb-10 text-sm">
-            <tbody>
-                @if ($c['l_number'])
-                    <tr class="align-baseline border-t border-b border-gray-200">
-                        <td class="w-1/5 py-2">Letter number</td>
-                        <td class="py-2">
-                            {{ $c['l_number'] }}
-                        </td>
-                    </tr>
-                @endif
-                @if ($c['repository'])
-                    <tr class="align-baseline border-t border-b border-gray-200">
-                        <td class="w-1/5 py-2">Repository</td>
-                        <td class="py-2">
-                            {{ $c['repository'] }}
-                        </td>
-                    </tr>
-                @endif
-                @if ($c['archive'])
-                    <tr class="align-baseline border-t border-b border-gray-200">
-                        <td class="w-1/5 py-2">Archive</td>
-                        <td class="py-2">
-                            {{ $c['archive'] }}
-                        </td>
-                    </tr>
-                @endif
-                @if ($c['collection'])
-                    <tr class="align-baseline border-t border-b border-gray-200">
-                        <td class="w-1/5 py-2">Collection</td>
-                        <td class="py-2">
-                            {{ $c['collection'] }}
-                        </td>
-                    </tr>
-                @endif
-                @if ($c['signature'])
-                    <tr class="align-baseline border-t border-b border-gray-200">
-                        <td class="w-1/5 py-2">Signature</td>
-                        <td class="py-2">
-                            {{ $c['signature'] }}
-                        </td>
-                    </tr>
-                @endif
-                @if ($c['location_note'])
-                    <tr class="align-baseline border-t border-b border-gray-200">
-                        <td class="w-1/5 py-2">Note on location</td>
-                        <td class="py-2">
-                            {{ $c['location_note'] }}
-                        </td>
-                    </tr>
-                @endif
-                @if ($c['type'])
-                    <tr class="align-baseline border-t border-b border-gray-200">
-                        <td class="w-1/5 py-2">Document type</td>
-                        <td class="py-2">
-                            {{ $c['type'] }}
-                        </td>
-                    </tr>
-                @endif
-                @if ($c['preservation'])
-                    <tr class="align-baseline border-t border-b border-gray-200">
-                        <td class="w-1/5 py-2">Preservation</td>
-                        <td class="py-2">
-                            {{ $c['preservation'] }}
-                        </td>
-                    </tr>
-                @endif
-                @if ($c['copy'])
-                    <tr class="align-baseline border-t border-b border-gray-200">
-                        <td class="w-1/5 py-2">Type of copy</td>
-                        <td class="py-2">
-                            {{ $c['copy'] }}
-                        </td>
-                    </tr>
-                @endif
-                @if ($c['manifestation_notes'])
-                    <tr class="align-baseline border-t border-b border-gray-200">
-                        <td class="w-1/5 py-2">
-                            Notes on manifestation</td>
-                        <td class="py-2">
-                            {{ $c['manifestation_notes'] }}
-                        </td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
-    @endforeach
+    @if ($letter->copies)
+        <h2 class="text-lg font-bold">Repositories and versions</h2>
+        @foreach ($letter->copies as $c)
+            <table class="w-full mb-10 text-sm">
+                <tbody>
+                    @if ($c['l_number'])
+                        <tr class="align-baseline border-t border-b border-gray-200">
+                            <td class="w-1/5 py-2">Letter number</td>
+                            <td class="py-2">
+                                {{ $c['l_number'] }}
+                            </td>
+                        </tr>
+                    @endif
+                    @if ($c['repository'])
+                        <tr class="align-baseline border-t border-b border-gray-200">
+                            <td class="w-1/5 py-2">Repository</td>
+                            <td class="py-2">
+                                {{ $c['repository'] }}
+                            </td>
+                        </tr>
+                    @endif
+                    @if ($c['archive'])
+                        <tr class="align-baseline border-t border-b border-gray-200">
+                            <td class="w-1/5 py-2">Archive</td>
+                            <td class="py-2">
+                                {{ $c['archive'] }}
+                            </td>
+                        </tr>
+                    @endif
+                    @if ($c['collection'])
+                        <tr class="align-baseline border-t border-b border-gray-200">
+                            <td class="w-1/5 py-2">Collection</td>
+                            <td class="py-2">
+                                {{ $c['collection'] }}
+                            </td>
+                        </tr>
+                    @endif
+                    @if ($c['signature'])
+                        <tr class="align-baseline border-t border-b border-gray-200">
+                            <td class="w-1/5 py-2">Signature</td>
+                            <td class="py-2">
+                                {{ $c['signature'] }}
+                            </td>
+                        </tr>
+                    @endif
+                    @if ($c['location_note'])
+                        <tr class="align-baseline border-t border-b border-gray-200">
+                            <td class="w-1/5 py-2">Note on location</td>
+                            <td class="py-2">
+                                {{ $c['location_note'] }}
+                            </td>
+                        </tr>
+                    @endif
+                    @if ($c['type'])
+                        <tr class="align-baseline border-t border-b border-gray-200">
+                            <td class="w-1/5 py-2">Document type</td>
+                            <td class="py-2">
+                                {{ $c['type'] }}
+                            </td>
+                        </tr>
+                    @endif
+                    @if ($c['preservation'])
+                        <tr class="align-baseline border-t border-b border-gray-200">
+                            <td class="w-1/5 py-2">Preservation</td>
+                            <td class="py-2">
+                                {{ $c['preservation'] }}
+                            </td>
+                        </tr>
+                    @endif
+                    @if ($c['copy'])
+                        <tr class="align-baseline border-t border-b border-gray-200">
+                            <td class="w-1/5 py-2">Type of copy</td>
+                            <td class="py-2">
+                                {{ $c['copy'] }}
+                            </td>
+                        </tr>
+                    @endif
+                    @if ($c['manifestation_notes'])
+                        <tr class="align-baseline border-t border-b border-gray-200">
+                            <td class="w-1/5 py-2">
+                                Notes on manifestation</td>
+                            <td class="py-2">
+                                {{ $c['manifestation_notes'] }}
+                            </td>
+                        </tr>
+                    @endif
+                </tbody>
+            </table>
+        @endforeach
+    @endif
     @if ($letter->related_resources)
         <h2 class="text-lg font-bold">Related resources</h2>
         <table class="w-full mb-10 text-sm">
@@ -429,7 +433,7 @@
         <h2 class="text-lg font-bold">
             Full text
         </h2>
-        <div class="mb-10 prose">
+        <div class="mb-10 prose-sm prose p-3 bg-gray-200 shadow-sm">
             {!! $letter->content !!}
         </div>
     @endif

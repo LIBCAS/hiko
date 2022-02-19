@@ -3,8 +3,8 @@
         <div class="p-1 prose bg-white border rounded border-primary">
             <div class="sticky top-0 z-20 flex flex-wrap justify-between bg-white border-b">
                 <div class="flex flex-wrap space-x-1">
-                    <button x-on:click="toggleBold()" type="button" aria-label="{{ __('Tučně') }}"
-                        title="{{ __('Tučně') }}" class="text-gray-600 hover:bg-gray-100"
+                    <button x-on:click="toggleBold()" type="button" aria-label="{{ __('hiko.bold') }}"
+                        title="{{ __('hiko.bold') }}" class="text-gray-600 hover:bg-gray-100"
                         :class="{ 'text-purple-500' : isActive('bold', updatedAt) }">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor">
@@ -13,16 +13,16 @@
                             </path>
                         </svg>
                     </button>
-                    <button x-on:click="toggleItalic()" type="button" aria-label="{{ __('Kurzíva') }}"
-                        title="{{ __('Kurzíva') }}" class="text-gray-600 hover:bg-gray-100"
+                    <button x-on:click="toggleItalic()" type="button" aria-label="{{ __('hiko.italic') }}"
+                        title="{{ __('hiko.italic') }}" class="text-gray-600 hover:bg-gray-100"
                         :class="{ 'text-purple-500' :  isActive('italic', updatedAt) }">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor">
                             <path d="M19 7V4H9v3h2.868L9.012 17H5v3h10v-3h-2.868l2.856-10z"></path>
                         </svg>
                     </button>
-                    <button x-on:click="toggleStrike()" type="button" aria-label="{{ __('Přeškrtnutí') }}"
-                        title="{{ __('Přeškrtnutí') }}" class="text-gray-600 hover:bg-gray-100"
+                    <button x-on:click="toggleStrike()" type="button" aria-label="{{ __('hiko.strikethrough') }}"
+                        title="{{ __('hiko.strikethrough') }}" class="text-gray-600 hover:bg-gray-100"
                         :class="{ 'text-purple-500' :  isActive('strike', updatedAt) }">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor">
@@ -31,8 +31,8 @@
                             </path>
                         </svg>
                     </button>
-                    <button x-on:click="toggleUnderline()" type="button" aria-label="{{ __('Podtržení') }}"
-                        title="{{ __('Podtržení') }}" class="text-gray-600 hover:bg-gray-100"
+                    <button x-on:click="toggleUnderline()" type="button" aria-label="{{ __('hiko.underline') }}"
+                        title="{{ __('hiko.underline') }}" class="text-gray-600 hover:bg-gray-100"
                         :class="{ 'text-purple-500' :  isActive('underline', updatedAt) }">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor">
@@ -41,16 +41,17 @@
                             </path>
                         </svg>
                     </button>
-                    <button x-on:click="toggleHeading(1)" type="button" aria-label="{{ __('Nadpis 1') }}"
-                        title="{{ __('Nadpis 1') }}" class="inline-flex items-center text-gray-600 hover:bg-gray-100"
+                    <button x-on:click="toggleHeading(1)" type="button" aria-label="{{ __('hiko.heading') }} 1"
+                        title="{{ __('hiko.heading') }} 1"
+                        class="inline-flex items-center text-gray-600 hover:bg-gray-100"
                         :class="{ 'text-purple-500' : isActive('heading', { level: 1 }, updatedAt) }">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style="fill:currentColor">
                             <path d="M18 20V4h-3v6H9V4H6v16h3v-7h6v7z" />
                         </svg>
                         <span class="-ml-1 text-xl font-semibold pr-0.5">1</span>
                     </button>
-                    <button x-on:click="toggleHeading(2)" type="button" aria-label="{{ __('Nadpis 2') }}"
-                        title="{{ __('Nadpis 2') }}"
+                    <button x-on:click="toggleHeading(2)" type="button" aria-label="{{ __('hiko.heading') }} 2"
+                        title="{{ __('hiko.heading') }} 2"
                         class="inline-flex items-center text-gray-600 text-gray hover:bg-gray-100"
                         :class="{ 'text-purple-500' : isActive('heading', { level: 2 }, updatedAt) }">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style="fill:currentColor">
@@ -58,8 +59,8 @@
                         </svg>
                         <span class="-ml-1 text-xl font-semibold pr-0.5">2</span>
                     </button>
-                    <button x-on:click="toggleHeading(3)" type="button" aria-label="{{ __('Nadpis 3') }}"
-                        title="{{ __('Nadpis 3') }}"
+                    <button x-on:click="toggleHeading(3)" type="button" aria-label="{{ __('hiko.heading') }} 3"
+                        title="{{ __('hiko.heading') }} 3"
                         class="inline-flex items-center text-gray-600 text-gray hover:bg-gray-100"
                         :class="{ 'text-purple-500' : isActive('heading', { level: 3 }, updatedAt) }">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style="fill:currentColor">
@@ -67,8 +68,8 @@
                         </svg>
                         <span class="-ml-1 text-xl font-semibold pr-0.5">3</span>
                     </button>
-                    <button x-on:click="toggleHeading(4)" type="button" aria-label="{{ __('Nadpis 4') }}"
-                        title="{{ __('Nadpis 4') }}"
+                    <button x-on:click="toggleHeading(4)" type="button" aria-label="{{ __('hiko.heading') }} 4"
+                        title="{{ __('hiko.heading') }} 4"
                         class="inline-flex items-center text-gray-600 text-gray hover:bg-gray-100"
                         :class="{ 'text-purple-500' : isActive('heading', { level: 4 }, updatedAt) }">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style="fill:currentColor">
@@ -76,8 +77,8 @@
                         </svg>
                         <span class="-ml-1 text-xl font-semibold pr-0.5">4</span>
                     </button>
-                    <button x-on:click="toggleBlockquote()" type="button" aria-label="{{ __('Citace') }}"
-                        title="{{ __('Citace') }}" class="text-gray-600 hover:bg-gray-100"
+                    <button x-on:click="toggleBlockquote()" type="button" aria-label="{{ __('hiko.blockquote') }}"
+                        title="{{ __('hiko.blockquote') }}" class="text-gray-600 hover:bg-gray-100"
                         :class="{ 'text-purple-500' : isActive('blockquote', updatedAt) }">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor">
@@ -86,8 +87,8 @@
                             </path>
                         </svg>
                     </button>
-                    <button x-on:click="toggleBulletList()" type="button" aria-label="{{ __('Seznam') }}"
-                        title="{{ __('Seznam') }}" class="text-gray-600 hover:bg-gray-100"
+                    <button x-on:click="toggleBulletList()" type="button" aria-label="{{ __('hiko.bullet_list') }}"
+                        title="{{ __('hiko.bullet_list') }}" class="text-gray-600 hover:bg-gray-100"
                         :class="{ 'text-purple-500' :  isActive('bulletList', updatedAt) }">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor">
@@ -95,8 +96,8 @@
                             </path>
                         </svg>
                     </button>
-                    <button x-on:click="toggleOrderedList()" type="button" aria-label="{{ __('Číslovaný seznam') }}"
-                        title="{{ __('Číslovaný seznam') }}" class="text-gray-600 hover:bg-gray-100"
+                    <button x-on:click="toggleOrderedList()" type="button" aria-label="{{ __('hiko.ordered_list') }}"
+                        title="{{ __('hiko.ordered_list') }}" class="text-gray-600 hover:bg-gray-100"
                         :class="{ 'text-purple-500' :  isActive('orderedList', updatedAt) }">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor">
@@ -105,9 +106,8 @@
                             </path>
                         </svg>
                     </button>
-                    <button x-on:click="setHorizontalRule()" type="button"
-                        aria-label="{{ __('Horizontální rozdělení') }}" title="{{ __('Horizontální rozdělení') }}"
-                        class="text-gray-600 hover:bg-gray-100">
+                    <button x-on:click="setHorizontalRule()" type="button" aria-label="{{ __('hiko.hr') }}"
+                        title="{{ __('hiko.hr') }}" class="text-gray-600 hover:bg-gray-100">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor">
                             <path d="M10 10h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4z"></path>
@@ -115,8 +115,8 @@
                     </button>
                 </div>
                 <div class="flex flex-wrap space-x-1">
-                    <button x-on:click="undo()" type="button" aria-label="{{ __('Zpět') }}"
-                        title="{{ __('Zpět') }}">
+                    <button x-on:click="undo()" type="button" aria-label="{{ __('hiko.back') }}"
+                        title="{{ __('hiko.back') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor">
                             <path
@@ -124,8 +124,8 @@
                             </path>
                         </svg>
                     </button>
-                    <button x-on:click="redo()" type="button" aria-label="{{ __('Znovu') }}"
-                        title="{{ __('Znovu') }}">
+                    <button x-on:click="redo()" type="button" aria-label="{{ __('hiko.redo') }}"
+                        title="{{ __('hiko.redo') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor">
                             <path
@@ -139,18 +139,20 @@
         </div>
         <x-button-simple type="button" class="w-full" x-on:click="$wire.save(editor.getHTML())"
             wire:loading.attr="disabled">
-            {{ __('Uložit') }}
+            {{ __('hiko.save') }}
         </x-button-simple>
         <div wire:loading>
-            Ukládám...
+            {{ __('hiko.saving') }}...
         </div>
     </div>
     @push('scripts')
         <script src="{{ asset('dist/editor.js') }}"></script>
-        <script>
-            window.onbeforeunload = function() {
-                return 'Opravdu chcete opustit stránku?'
-            }
-        </script>
+        @production
+            <script>
+                window.onbeforeunload = function() {
+                    return '{{ __('hiko.confirm_leave') }}'
+                }
+            </script>
+        @endproduction
     @endpush
 </div>

@@ -9,13 +9,4 @@
         </a>
     </p>
     <livewire:letters-table />
-    @push('styles')
-        <style>
-            .table input,
-            .table select,
-            .table .table-cell {
-                max-width: 140px;
-            }
-        </style>
-    @endpush
 </x-app-layout>

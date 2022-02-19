@@ -2,17 +2,17 @@
     @if ($letter->id)
         <ul class="flex flex-wrap mb-6 space-x-6 text-sm">
             <li>
-                <a href="{{ route('letters.images', $letter->id) }}" class="hover:underline">
+                <a href="{{ route('letters.images', $letter->id) }}" class="text-primary hover:underline">
                     {{ __('hiko.edit_attachments') }}
                 </a>
             </li>
             <li>
-                <a href="{{ route('letters.text', $letter->id) }}" class="hover:underline">
+                <a href="{{ route('letters.text', $letter->id) }}" class="text-primary hover:underline">
                     {{ __('hiko.edit_full_text') }}
                 </a>
             </li>
             <li>
-                <a href="{{ route('letters.show', $letter->id) }}" class="hover:underline">
+                <a href="{{ route('letters.show', $letter->id) }}" class="text-primary hover:underline">
                     {{ __('hiko.preview_letter') }}
                 </a>
             </li>

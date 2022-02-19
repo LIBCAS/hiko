@@ -7,18 +7,18 @@
 <x-app-layout :title="$title">
     <ul class="flex flex-wrap mb-6 space-x-6 text-sm">
         <li>
-            <a href="{{ route('letters.edit', $letter->id) }}" class="hover:underline">
-                {{ __('Upravit dopis') }}
+            <a href="{{ route('letters.edit', $letter->id) }}" class="text-primary hover:underline">
+                {{ __('hiko.edit_letter') }}
             </a>
         </li>
         <li>
-            <a href="{{ route('letters.text', $letter->id) }}" class="hover:underline">
-                {{ __('Upravit plný text') }}
+            <a href="{{ route('letters.text', $letter->id) }}" class="text-primary hover:underline">
+                {{ __('hiko.edit_full_text') }}
             </a>
         </li>
         <li>
-            <a href="{{ route('letters.show', $letter->id) }}" class="hover:underline">
-                {{ __('Prohlédnout si dopis') }}
+            <a href="{{ route('letters.show', $letter->id) }}" class="text-primary hover:underline">
+                {{ __('hiko.preview_letter') }}
             </a>
         </li>
     </ul>

@@ -50,7 +50,9 @@
                     <ul>
                         @foreach ($letter->identities['author'] as $author)
                             <li>
-                                {{ $author['name'] }}@if ($author['pivot']['marked']), marked as: {{ $author['pivot']['marked'] }} @endif
+                                {{ $author['name'] }}@if ($author['pivot']['marked'])
+                                    , marked as: {{ $author['pivot']['marked'] }}
+                                @endif
                             </li>
                         @endforeach
                     </ul>
@@ -75,7 +77,11 @@
                     <ul>
                         @foreach ($letter->identities['recipient'] as $recipient)
                             <li>
-                                {{ $recipient['name'] }}@if ($recipient['pivot']['marked']), marked as: {{ $recipient['pivot']['marked'] }} @endif @if ($recipient['pivot']['salutation']), salutation: {{ $recipient['pivot']['salutation'] }} @endif
+                                {{ $recipient['name'] }}@if ($recipient['pivot']['marked'])
+                                    , marked as: {{ $recipient['pivot']['marked'] }}
+                                    @endif @if ($recipient['pivot']['salutation'])
+                                        , salutation: {{ $recipient['pivot']['salutation'] }}
+                                    @endif
                             </li>
                         @endforeach
                     </ul>
@@ -100,7 +106,9 @@
                     <ul>
                         @foreach ($letter->places['origin'] as $origin)
                             <li>
-                                {{ $origin['name'] }}@if ($origin['pivot']['marked']), marked as: {{ $origin['pivot']['marked'] }} @endif
+                                {{ $origin['name'] }}@if ($origin['pivot']['marked'])
+                                    , marked as: {{ $origin['pivot']['marked'] }}
+                                @endif
                             </li>
                         @endforeach
                     </ul>
@@ -125,7 +133,9 @@
                     <ul>
                         @foreach ($letter->places['destination'] as $destination)
                             <li>
-                                {{ $destination['name'] }}@if ($destination['pivot']['marked']), marked as: {{ $destination['pivot']['marked'] }} @endif
+                                {{ $destination['name'] }}@if ($destination['pivot']['marked'])
+                                    , marked as: {{ $destination['pivot']['marked'] }}
+                                @endif
                             </li>
                         @endforeach
                     </ul>
@@ -146,8 +156,8 @@
                 <h3 class="text-base">
                     Manifestations and repositories
                 </h3>
-                @foreach ($letter->copies as $c)
-                    <ul>
+                @foreach ((array) $letter->copies as $c)
+                    <ul @if(!$loop->last) class="border-b" @endif>
                         @if ($c['l_number'])
                             <li>
                                 Letter number: {{ $c['l_number'] }}
@@ -216,7 +226,10 @@
                     </h3>
                     <ul>
                         <li>
-                            {{ $letter->abstract }}
+                            {{ $letter->getTranslation('abstract', 'cs') }}
+                        </li>
+                        <li>
+                            {{ $letter->getTranslation('abstract', 'en') }}
                         </li>
                     </ul>
                 @endif
@@ -307,17 +320,19 @@
                     <h3 class="text-base">
                         Notes
                     </h3>
-                    @if ($letter->notes_public)
-                        <li>
-                            {{ $letter->notes_public }}
-                        </li>
-                    @endif
+                    <ul>
+                        @if ($letter->notes_public)
+                            <li>
+                                {{ $letter->notes_public }}
+                            </li>
+                        @endif
 
-                    @if ($letter->notes_private)
-                        <li>
-                            {{ $letter->notes_private }}
-                        </li>
-                    @endif
+                        @if ($letter->notes_private)
+                            <li>
+                                {{ $letter->notes_private }}
+                            </li>
+                        @endif
+                    </ul>
                 @endif
                 <h3 class="text-base">
                     Status: {{ $letter->status }}

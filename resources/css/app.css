@@ -41,7 +41,7 @@ html {
 }
 
 .ProseMirror {
-    @apply outline-none;
+    @apply outline-none ring-0 !important;
 }
 
 .flex > .choices {
