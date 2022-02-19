@@ -165,4 +165,5 @@ return [
     'back' => 'Zpět',
     'redo' => 'Znovu',
     'viaf_unavailable' => 'Služba VIAF není dostupná',
+    'search_viaf' => 'Vyhledat VIAF ID',
 ];

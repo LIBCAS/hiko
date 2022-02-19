@@ -165,4 +165,5 @@ return [
     'back' => 'Back',
     'redo' => 'Redo',
     'viaf_unavailable' => 'Viaf service is not available.',
+    'search_viaf' => 'Search VIAF ID',
 ];
