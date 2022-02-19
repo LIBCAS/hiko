@@ -184,7 +184,9 @@
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.author') }}
                     </legend>
-                    <livewire:letter-meta-field :items="$selectedAuthors" fieldKey="authors" route="ajax.identities" :label="__('hiko.author_name')" :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
+                    <livewire:letter-meta-field :items="$selectedAuthors" fieldKey="authors" route="ajax.identities"
+                        :label="__('hiko.author_name')"
+                        :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
                     <div>
                         <x-checkbox name="author_inferred" label="{{ __('Autor je odvozený') }}"
                             :checked="boolval(old('author_inferred', $letter->author_inferred))" />
@@ -207,44 +209,13 @@
                     </div>
                 </fieldset>
                 <div class="h-1"></div>
-                <fieldset id="a-recipient" class="p-3 space-y-6 shadow"
-                    x-data="{ recipients: JSON.parse(document.getElementById('selectedRecipients').innerHTML) }">
+                <fieldset id="a-recipient" class="p-3 space-y-6 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.recipient') }}
                     </legend>
-                    <template x-for="recipient, index in recipients"
-                        :key="recipient.key ? recipient.key : recipient.id">
-                        <div class="p-3 space-y-6 border border-primary-light">
-                            <div class="required">
-                                <x-label x-bind:for="'name' + index" :value="__('Jméno příjemce')" />
-                                <x-select name="recipient[]" class="block w-full mt-1" x-bind:id="'name' + index"
-                                    x-data="ajaxSelect({url: '{{ route('ajax.identities') }}', element: $el, options: { id: recipient.id, name: recipient.name } })"
-                                    x-init="initSelect()" required>
-                                </x-select>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'marked' + index" :value="__('Jméno použité v dopise')" />
-                                <x-input x-bind:id="'marked' + index" x-bind:value="recipient.marked"
-                                    class="block w-full mt-1" type="text" name="recipient_marked[]" />
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'salutation' + index" :value="__('Oslovení')" />
-                                <x-input x-bind:id="'salutation' + index" x-bind:value="recipient.salutation"
-                                    class="block w-full mt-1" type="text" name="recipient_salutation[]" />
-                            </div>
-                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
-                                x-on:click="recipients = recipients.filter((item, recipientIndex) => { return recipientIndex !== index })">
-                                <x-icons.trash class="h-5" />
-                                {{ __('hiko.remove_item') }}
-                            </button>
-                        </div>
-                    </template>
-                    <div>
-                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
-                            x-on:click="recipients.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('hiko.add_new_item') }}
-                        </button>
-                    </div>
+                    <livewire:letter-meta-field :items="$selectedRecipients" fieldKey="recipients"
+                        route="ajax.identities" :label="__('hiko.recipient_name')"
+                        :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ], [ 'label' => __('hiko.salutation'), 'key' => 'salutation' ] ]" />
                     <div>
                         <x-checkbox name="recipient_inferred" label="{{ __('Příjemce je odvozený') }}"
                             :checked="boolval(old('recipient_inferred', $letter->recipient_inferred))" />

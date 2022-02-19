@@ -150,4 +150,5 @@ return [
     'author_name' => 'Author name',
     'name_marked' => 'Name as marked',
     'salutation' => 'Salutation',
+    'recipient_name' => 'Recipient name',
 ];

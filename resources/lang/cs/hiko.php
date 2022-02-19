@@ -150,4 +150,5 @@ return [
     'author_name' => 'Jméno autora',
     'name_marked' => 'Jméno použité v dopise',
     'salutation' => 'Oslovení',
+    'recipient_name' => 'Jméno příjemce',
 ];

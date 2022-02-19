@@ -64,7 +64,7 @@ class LetterController extends Controller
             'action' => route('letters.store'),
             'label' => __('hiko.create'),
             'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
-            'selectedRecipients' => $this->getSelectedMeta($letter, 'Identity', 'recipients', ['marked', 'salutation']),
+            'selectedRecipients' => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
             'selectedOrigins' => $this->getSelectedMeta($letter, 'Place', 'origins', ['marked']),
             'selectedDestinations' => $this->getSelectedMeta($letter, 'Place', 'destinations', ['marked']),
             'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
@@ -105,7 +105,7 @@ class LetterController extends Controller
             'action' => route('letters.update', $letter),
             'label' => __('hiko.edit'),
             'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
-            'selectedRecipients' => $this->getSelectedMeta($letter, 'Identity', 'recipients', ['marked', 'salutation']),
+            'selectedRecipients' => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
             'selectedOrigins' => $this->getSelectedMeta($letter, 'Place', 'origins', ['marked']),
             'selectedDestinations' => $this->getSelectedMeta($letter, 'Place', 'destinations', ['marked']),
             'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
@@ -180,6 +180,10 @@ class LetterController extends Controller
             $request->request->set('authors', json_decode($request->authors, true));
         }
 
+        if ($request->recipients) {
+            $request->request->set('recipients', json_decode($request->recipients, true));
+        }
+
         $request->request->set('abstract', [
             'cs' => $request->abstract_cs,
             'en' => $request->abstract_en,
@@ -199,7 +203,6 @@ class LetterController extends Controller
         $letter->keywords()->sync($request->keywords);
 
         $mentioned = [];
-        $recipients = [];
         $origins = [];
         $destinations = [];
 
@@ -212,19 +215,10 @@ class LetterController extends Controller
                 'role' => 'mentioned',
             ];
         }
+
         $letter->identities()->attach($mentioned);
-
         $letter->identities()->attach($this->prepareAttachmentData($request, 'authors', 'author'));
-
-        foreach ((array) $request->recipient as $key => $id) {
-            $recipients[$id] = [
-                'position' => $key,
-                'role' => 'recipient',
-                'marked' => $request->recipient_marked[$key],
-                'salutation' => $request->recipient_salutation[$key],
-            ];
-        }
-        $letter->identities()->attach($recipients);
+        $letter->identities()->attach($this->prepareAttachmentData($request, 'recipients', 'recipient', ['salutation']));
 
         foreach ((array) $request->origin as $key => $id) {
             $origins[$id] = [
