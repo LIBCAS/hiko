@@ -164,4 +164,5 @@ return [
     'hr' => 'Horizontální rozdělení',
     'back' => 'Zpět',
     'redo' => 'Znovu',
+    'viaf_unavailable' => 'Služba VIAF není dostupná',
 ];

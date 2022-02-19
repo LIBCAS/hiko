@@ -164,4 +164,5 @@ return [
     'hr' => 'Horizontal rule',
     'back' => 'Back',
     'redo' => 'Redo',
+    'viaf_unavailable' => 'Viaf service is not available.',
 ];
