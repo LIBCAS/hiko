@@ -63,7 +63,7 @@ class LetterController extends Controller
             'letter' => $letter,
             'action' => route('letters.store'),
             'label' => __('hiko.create'),
-            'selectedAuthors' => $this->getSelectedMeta($letter, 'Identity', 'authors', ['marked']),
+            'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
             'selectedRecipients' => $this->getSelectedMeta($letter, 'Identity', 'recipients', ['marked', 'salutation']),
             'selectedOrigins' => $this->getSelectedMeta($letter, 'Place', 'origins', ['marked']),
             'selectedDestinations' => $this->getSelectedMeta($letter, 'Place', 'destinations', ['marked']),
@@ -104,7 +104,7 @@ class LetterController extends Controller
             'method' => 'PUT',
             'action' => route('letters.update', $letter),
             'label' => __('hiko.edit'),
-            'selectedAuthors' => $this->getSelectedMeta($letter, 'Identity', 'authors', ['marked']),
+            'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
             'selectedRecipients' => $this->getSelectedMeta($letter, 'Identity', 'recipients', ['marked', 'salutation']),
             'selectedOrigins' => $this->getSelectedMeta($letter, 'Place', 'origins', ['marked']),
             'selectedDestinations' => $this->getSelectedMeta($letter, 'Place', 'destinations', ['marked']),
@@ -176,6 +176,10 @@ class LetterController extends Controller
             $request->request->set('copies', json_decode($request->copies, true));
         }
 
+        if ($request->authors) {
+            $request->request->set('authors', json_decode($request->authors, true));
+        }
+
         $request->request->set('abstract', [
             'cs' => $request->abstract_cs,
             'en' => $request->abstract_en,
@@ -195,7 +199,6 @@ class LetterController extends Controller
         $letter->keywords()->sync($request->keywords);
 
         $mentioned = [];
-        $authors = [];
         $recipients = [];
         $origins = [];
         $destinations = [];
@@ -211,14 +214,7 @@ class LetterController extends Controller
         }
         $letter->identities()->attach($mentioned);
 
-        foreach ((array) $request->author as $key => $id) {
-            $authors[$id] = [
-                'position' => $key,
-                'role' => 'author',
-                'marked' => $request->author_marked[$key],
-            ];
-        }
-        $letter->identities()->attach($authors);
+        $letter->identities()->attach($this->prepareAttachmentData($request, 'authors', 'author'));
 
         foreach ((array) $request->recipient as $key => $id) {
             $recipients[$id] = [
@@ -226,7 +222,6 @@ class LetterController extends Controller
                 'role' => 'recipient',
                 'marked' => $request->recipient_marked[$key],
                 'salutation' => $request->recipient_salutation[$key],
-
             ];
         }
         $letter->identities()->attach($recipients);
@@ -250,7 +245,52 @@ class LetterController extends Controller
         $letter->places()->attach($destinations);
     }
 
-    protected function getSelectedMeta(Letter $letter, $model, string $fieldKey, $pivotFields = [])
+    protected function prepareAttachmentData(Request $request, string $fieldKey, $role, $pivotFields = [])
+    {
+        $items = [];
+
+        foreach ($request->{$fieldKey} as $key => $item) {
+            if ($item['value']) {
+                $result = [
+                    'position' => $key,
+                    'role' => $role,
+                    'marked' => $item['marked'],
+                ];
+
+                foreach ($pivotFields as $field) {
+                    $result[$field] = $item[$field];
+                }
+
+                $items[$item['value']] = $result;
+            }
+        }
+
+        return $items;
+    }
+
+    protected function getSelectedMetaFields(Letter $letter, string $fieldKey, $pivotFields)
+    {
+        if (request()->old($fieldKey)) {
+            return request()->old($fieldKey);
+        }
+
+        return $letter->{$fieldKey}
+            ->map(function ($item) use ($pivotFields) {
+                $result = [
+                    'value' => $item->id,
+                    'label' => $item->name,
+                ];
+
+                foreach ($pivotFields as $field) {
+                    $result[$field] = $item->pivot->{$field};
+                }
+
+                return $result;
+            })
+            ->toArray();
+    }
+
+    protected function getSelectedMeta(Letter $letter, $model, string $fieldKey)
     {
         if (!request()->old($fieldKey) && !$letter->{$fieldKey}) {
             return [];
@@ -263,19 +303,13 @@ class LetterController extends Controller
             : $letter->{$fieldKey};
 
         return $items
-            ->map(function ($item) use ($pivotFields) {
-                $result = [
+            ->map(function ($item) {
+                return [
                     'value' => $item->id,
                     'label' => is_array($item->name)
                         ? $item->getTranslation('name', config('hiko.metadata_default_locale'))
                         : $item->name,
                 ];
-
-                foreach ($pivotFields as $field) {
-                    $result[$field] = $item->pivot->{$field};
-                }
-
-                return $result;
             })
             ->toArray();
     }

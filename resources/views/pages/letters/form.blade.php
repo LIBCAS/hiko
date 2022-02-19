@@ -180,38 +180,11 @@
                     </div>
                 </fieldset>
                 <div class="h-1"></div>
-                <fieldset id="a-author" class="p-3 space-y-6 shadow"
-                    x-data="{ authors: JSON.parse(document.getElementById('selectedAuthors').innerHTML) }">
+                <fieldset id="a-author" class="p-3 space-y-6 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.author') }}
                     </legend>
-                    <template x-for="author, index in authors" :key="author.key ? author.key : author.id">
-                        <div class="p-3 space-y-6 border border-primary-light">
-                            <div class="required">
-                                <x-label x-bind:for="'name' + index" :value="__('Jméno autora')" />
-                                <x-select name="author[]" class="block w-full mt-1" x-bind:id="'name' + index"
-                                    x-data="ajaxSelect({url: '{{ route('ajax.identities') }}', element: $el, options: { id: author.id, name: author.name } })"
-                                    x-init="initSelect()" required>
-                                </x-select>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'marked' + index" :value="__('Jméno použité v dopise')" />
-                                <x-input x-bind:id="'marked' + index" x-bind:value="author.marked"
-                                    class="block w-full mt-1" type="text" name="author_marked[]" />
-                            </div>
-                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
-                                x-on:click="authors = authors.filter((item, authorIndex) => { return authorIndex !== index })">
-                                <x-icons.trash class="h-5" />
-                                {{ __('hiko.remove_item') }}
-                            </button>
-                        </div>
-                    </template>
-                    <div>
-                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
-                            x-on:click="authors.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('hiko.add_new_item') }}
-                        </button>
-                    </div>
+                    <livewire:letter-meta-field :items="$selectedAuthors" fieldKey="authors" route="ajax.identities" :label="__('hiko.author_name')" :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
                     <div>
                         <x-checkbox name="author_inferred" label="{{ __('Autor je odvozený') }}"
                             :checked="boolval(old('author_inferred', $letter->author_inferred))" />
@@ -548,18 +521,6 @@
         </div>
     </div>
     @push('scripts')
-        <script id="selectedAuthors" type="application/json">
-            @json($selectedAuthors)
-        </script>
-        <script id="selectedRecipients" type="application/json">
-            @json($selectedRecipients)
-        </script>
-        <script id="selectedOrigins" type="application/json">
-            @json($selectedOrigins)
-        </script>
-        <script id="selectedDestinations" type="application/json">
-            @json($selectedDestinations)
-        </script>
         @production
             <script>
                 var preventLeaving = true;

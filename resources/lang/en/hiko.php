@@ -147,4 +147,7 @@ return [
     'typewritten' => 'typewritten',
     'mentioned' => 'People mentioned',
     'people_mentioned_note' => 'Note on people mentioned',
+    'author_name' => 'Author name',
+    'name_marked' => 'Name as marked',
+    'salutation' => 'Salutation',
 ];

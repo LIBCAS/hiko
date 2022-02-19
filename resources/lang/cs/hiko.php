@@ -147,4 +147,7 @@ return [
     'typewritten' => 'typewritten',
     'mentioned' => 'Zmíněné osoby',
     'people_mentioned_note' => 'Poznámka ke zmíněným osobám',
+    'author_name' => 'Jméno autora',
+    'name_marked' => 'Jméno použité v dopise',
+    'salutation' => 'Oslovení',
 ];
