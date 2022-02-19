@@ -181,23 +181,10 @@ class LetterController extends Controller
             'en' => $request->abstract_en,
         ]);
 
-        $booleans = [
-            'date_uncertain',
-            'date_approximate',
-            'date_inferred',
-            'date_is_range',
-            'author_uncertain',
-            'author_inferred',
-            'recipient_uncertain',
-            'recipient_inferred',
-            'destination_uncertain',
-            'destination_inferred',
-            'origin_uncertain',
-            'origin_inferred',
-        ];
-
-        foreach ($booleans as $field) {
-            $request->request->set($field, isset($request->{$field}) ? 1 : 0);
+        foreach ($this->rules as $key => $fieldRules) {
+            if (in_array('boolean', $fieldRules)) {
+                $request->request->set($key, isset($request->{$key}) ? 1 : 0);
+            }
         }
 
         return $request;
