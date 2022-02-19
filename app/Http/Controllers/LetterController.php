@@ -2,21 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Place;
 use App\Models\Letter;
-use App\Models\Keyword;
-use App\Models\Identity;
 use App\Models\Language;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
-use App\Http\Traits\LetterLabelsTrait;
-
-// TODO: refaktorovat metody pro získání přidružených dat
 
 class LetterController extends Controller
 {
-    use LetterLabelsTrait;
-
     protected $rules = [
         'date_year' => ['nullable', 'integer', 'numeric'],
         'date_month' => ['nullable', 'integer', 'numeric'],
@@ -55,20 +47,6 @@ class LetterController extends Controller
         'status' => ['required', 'string', 'max:255'],
     ];
 
-    protected $copiesFields = [
-        'archive',
-        'collection',
-        'copy',
-        'l_number',
-        'location_note',
-        'manifestation_notes',
-        'ms_manifestation',
-        'preservation',
-        'repository',
-        'signature',
-        'type',
-    ];
-
     public function index()
     {
         return view('pages.letters.index', [
@@ -80,24 +58,11 @@ class LetterController extends Controller
     {
         $letter = new Letter;
 
-        return view('pages.letters.form', [
+        return view('pages.letters.form', array_merge([
             'title' => __('hiko.new_letter'),
-            'letter' => $letter,
             'action' => route('letters.store'),
             'label' => __('hiko.create'),
-            'selectedAuthors' => $this->getAuthors($letter),
-            'selectedRecipients' => $this->getRecipients($letter),
-            'selectedOrigins' => $this->getOrigins($letter),
-            'selectedDestinations' => $this->getDestinations($letter),
-            'selectedLanguages' => $this->getLanguages($letter),
-            'selectedKeywords' => $this->getKeywords($letter),
-            'selectedMentioned' => $this->getMentioned($letter),
-            'selectedRelatedResources' => $this->getRelatedResources($letter),
-            'selectedCopies' => $this->getCopies($letter),
-            'languages' => Language::all(),
-            'labels' => $this->getLabels(),
-            'locations' => $this->getLocations(),
-        ]);
+        ], $this->viewData($letter)));
     }
 
     public function store(Request $request)
@@ -125,25 +90,12 @@ class LetterController extends Controller
 
     public function edit(Letter $letter)
     {
-        return view('pages.letters.form', [
+        return view('pages.letters.form', array_merge([
             'title' => __('hiko.letter') . ': ' .  $letter->id,
-            'letter' => $letter,
             'method' => 'PUT',
             'action' => route('letters.update', $letter),
             'label' => __('hiko.edit'),
-            'selectedAuthors' => $this->getAuthors($letter),
-            'selectedRecipients' => $this->getRecipients($letter),
-            'selectedOrigins' => $this->getOrigins($letter),
-            'selectedDestinations' => $this->getDestinations($letter),
-            'selectedLanguages' => $this->getLanguages($letter),
-            'selectedKeywords' => $this->getKeywords($letter),
-            'selectedMentioned' => $this->getMentioned($letter),
-            'selectedRelatedResources' => $this->getRelatedResources($letter),
-            'selectedCopies' => $this->getCopies($letter),
-            'languages' => Language::all(),
-            'labels' => $this->getLabels(),
-            'locations' => $this->getLocations(),
-        ]);
+        ], $this->viewData($letter)));
     }
 
     public function update(Request $request, Letter $letter)
@@ -194,46 +146,48 @@ class LetterController extends Controller
         return Excel::download(new LettersExport, 'letters.xlsx');
     }
 
+    protected function viewData(Letter $letter)
+    {
+        return [
+            'letter' => $letter,
+            'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
+            'selectedRecipients' => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
+            'selectedOrigins' => $this->getSelectedMetaFields($letter, 'origins', ['marked']),
+            'selectedDestinations' => $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
+            'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
+            'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
+            'languages' => collect(Language::all())->pluck('name'),
+        ];
+    }
+
     protected function modifyRequest(Request $request)
     {
-        if (!empty($request->language)) {
-            $request->request->set('languages', implode(';', $request->language));
+        if (!empty($request->languages)) {
+            $request->request->set('languages', implode(';', $request->languages));
         }
 
-        if (!empty($request->resource_title)) {
-            $related_resources = [];
-
-            foreach ($request->resource_title as $key => $title) {
-                $related_resources[] = [
-                    'link' => $request->resource_link[$key],
-                    'title' => $title,
-                ];
-            }
-            $request->request->set('related_resources', $related_resources);
-        }
-
-        if (!empty($request->resource_title)) {
-            $related_resources = [];
-
-            foreach ($request->resource_title as $key => $title) {
-                $related_resources[] = [
-                    'link' => $request->resource_link[$key],
-                    'title' => $title,
-                ];
-            }
-            $request->request->set('related_resources', $related_resources);
+        if (!empty($request->related_resources)) {
+            $request->request->set('related_resources', json_decode($request->related_resources, true));
         }
 
         if ($request->copies) {
-            $copies = [];
+            $request->request->set('copies', json_decode($request->copies, true));
+        }
 
-            for ($i = 0; $i < (int) $request->copies; $i++) {
-                foreach ($this->copiesFields as $field) {
-                    $copies[$i][$field] = $request->{$field}[$i];
-                }
-            }
+        if ($request->authors) {
+            $request->request->set('authors', json_decode($request->authors, true));
+        }
 
-            $request->request->set('copies', $copies);
+        if ($request->recipients) {
+            $request->request->set('recipients', json_decode($request->recipients, true));
+        }
+
+        if ($request->origins) {
+            $request->request->set('origins', json_decode($request->origins, true));
+        }
+
+        if ($request->destinations) {
+            $request->request->set('destinations', json_decode($request->destinations, true));
         }
 
         $request->request->set('abstract', [
@@ -241,23 +195,10 @@ class LetterController extends Controller
             'en' => $request->abstract_en,
         ]);
 
-        $booleans = [
-            'date_uncertain',
-            'date_approximate',
-            'date_inferred',
-            'date_is_range',
-            'author_uncertain',
-            'author_inferred',
-            'recipient_uncertain',
-            'recipient_inferred',
-            'destination_uncertain',
-            'destination_inferred',
-            'origin_uncertain',
-            'origin_inferred',
-        ];
-
-        foreach ($booleans as $field) {
-            $request->request->set($field, isset($request->{$field}) ? 1 : 0);
+        foreach ($this->rules as $key => $fieldRules) {
+            if (in_array('boolean', $fieldRules)) {
+                $request->request->set($key, isset($request->{$key}) ? 1 : 0);
+            }
         }
 
         return $request;
@@ -265,300 +206,91 @@ class LetterController extends Controller
 
     protected function attachRelated(Request $request, Letter $letter)
     {
-        $letter->keywords()->sync($request->keyword);
-
-        $mentioned = [];
-        $authors = [];
-        $recipients = [];
-        $origins = [];
-        $destinations = [];
-
+        $letter->keywords()->sync($request->keywords);
         $letter->identities()->detach();
         $letter->places()->detach();
+        $letter->identities()->attach($this->prepareAttachmentData($request, 'authors', 'author'));
+        $letter->identities()->attach($this->prepareAttachmentData($request, 'recipients', 'recipient', ['salutation']));
+        $letter->places()->attach($this->prepareAttachmentData($request, 'origins', 'origin'));
+        $letter->places()->attach($this->prepareAttachmentData($request, 'destinations', 'destination'));
 
+        $mentioned = [];
         foreach ((array) $request->mentioned as $key => $id) {
             $mentioned[$id] = [
                 'position' => $key,
                 'role' => 'mentioned',
             ];
         }
+
         $letter->identities()->attach($mentioned);
-
-        foreach ((array) $request->author as $key => $id) {
-            $authors[$id] = [
-                'position' => $key,
-                'role' => 'author',
-                'marked' => $request->author_marked[$key],
-            ];
-        }
-        $letter->identities()->attach($authors);
-
-        foreach ((array) $request->recipient as $key => $id) {
-            $recipients[$id] = [
-                'position' => $key,
-                'role' => 'recipient',
-                'marked' => $request->recipient_marked[$key],
-                'salutation' => $request->recipient_salutation[$key],
-
-            ];
-        }
-        $letter->identities()->attach($recipients);
-
-        foreach ((array) $request->origin as $key => $id) {
-            $origins[$id] = [
-                'position' => $key,
-                'role' => 'origin',
-                'marked' => $request->origin_marked[$key],
-            ];
-        }
-        $letter->places()->attach($origins);
-
-        foreach ((array) $request->destination as $key => $id) {
-            $destinations[$id] = [
-                'position' => $key,
-                'role' => 'destination',
-                'marked' => $request->destination_marked[$key],
-            ];
-        }
-        $letter->places()->attach($destinations);
     }
 
-    protected function getAuthors(Letter $letter)
+    protected function prepareAttachmentData(Request $request, string $fieldKey, $role, $pivotFields = [])
     {
-        if (request()->old('author')) {
-            $ids = request()->old('author');
-            $names = request()->old('author_marked');
+        $items = [];
 
-            $authors = Identity::whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
-                ->get();
-
-            return $authors->map(function ($author, $index) use ($names) {
-                return [
-                    'id' => $author->id,
-                    'name' => $author->name,
-                    'marked' => $names[$index],
+        foreach ($request->{$fieldKey} as $key => $item) {
+            if ($item['value']) {
+                $result = [
+                    'position' => $key,
+                    'role' => $role,
+                    'marked' => $item['marked'],
                 ];
-            });
-        }
 
-        if ($letter->authors) {
-            return $letter->authors
-                ->map(function ($author) {
-                    return [
-                        'id' => $author->id,
-                        'name' => $author->name,
-                        'marked' => $author->pivot->marked,
-                    ];
-                })
-                ->values()
-                ->toArray();
-        }
-    }
-
-    protected function getRecipients(Letter $letter)
-    {
-        if (request()->old('recipient')) {
-            $ids = request()->old('recipient');
-            $names = request()->old('recipient_marked');
-            $salutations = request()->old('recipient_salutation');
-
-            $recipients = Identity::whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
-                ->get();
-
-            return $recipients->map(function ($recipient, $index) use ($names, $salutations) {
-                return [
-                    'id' => $recipient->id,
-                    'name' => $recipient->name,
-                    'marked' => $names[$index],
-                    'salutation' => $salutations[$index],
-                ];
-            });
-        }
-
-        if ($letter->recipients) {
-            return $letter->recipients
-                ->map(function ($recipient) {
-                    return [
-                        'id' => $recipient->id,
-                        'name' => $recipient->name,
-                        'marked' => $recipient->pivot->marked,
-                        'salutation' => $recipient->pivot->salutation,
-                    ];
-                })
-                ->values()
-                ->toArray();
-        }
-    }
-
-    protected function getMentioned(Letter $letter)
-    {
-        if (request()->old('mentioned')) {
-            $ids = request()->old('mentioned');
-
-            $mentions = Identity::whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
-                ->get();
-
-            return $mentions->map(function ($mentioned) {
-                return [
-                    'id' => $mentioned->id,
-                    'name' => $mentioned->name,
-                ];
-            });
-        }
-
-        if ($letter->mentioned) {
-            return $letter->mentioned
-                ->map(function ($mentioned) {
-                    return [
-                        'id' => $mentioned->id,
-                        'name' => $mentioned->name,
-                    ];
-                })
-                ->values()
-                ->toArray();
-        }
-    }
-
-    protected function getOrigins(Letter $letter)
-    {
-        if (request()->old('origin')) {
-            $ids = request()->old('origin');
-            $names = request()->old('origin_marked');
-
-            $origins = Place::whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
-                ->get();
-
-            return $origins->map(function ($origin, $index) use ($names) {
-                return [
-                    'id' => $origin->id,
-                    'name' => $origin->name,
-                    'marked' => $names[$index],
-                ];
-            });
-        }
-
-        if ($letter->origins) {
-            return $letter->origins
-                ->map(function ($origin) {
-                    return [
-                        'id' => $origin->id,
-                        'name' => $origin->name,
-                        'marked' => $origin->pivot->marked,
-                    ];
-                })
-                ->values()
-                ->toArray();
-        }
-    }
-
-    protected function getDestinations(Letter $letter)
-    {
-        if (request()->old('destination')) {
-            $ids = request()->old('destination');
-            $names = request()->old('destination_marked');
-
-            $destinations = Place::whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
-                ->get();
-
-            return $destinations->map(function ($destination, $index) use ($names) {
-                return [
-                    'id' => $destination->id,
-                    'name' => $destination->name,
-                    'marked' => $names[$index],
-                ];
-            });
-        }
-
-        if ($letter->destinations) {
-            return $letter->destinations
-                ->map(function ($destination) {
-                    return [
-                        'id' => $destination->id,
-                        'name' => $destination->name,
-                        'marked' => $destination->pivot->marked,
-                    ];
-                })
-                ->values()
-                ->toArray();
-        }
-    }
-
-    protected function getKeywords(Letter $letter)
-    {
-        if (request()->old('keyword')) {
-            $ids = request()->old('keyword');
-
-            $keywords = Keyword::whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
-                ->get();
-
-            return $keywords->map(function ($keyword) {
-                return [
-                    'id' => $keyword->id,
-                    'name' => implode(' | ', array_values($keyword->getTranslations('name'))),
-                ];
-            });
-        }
-
-        if ($letter->keywords) {
-            return $letter->keywords
-                ->map(function ($keyword) {
-                    return [
-                        'id' => $keyword->id,
-                        'name' => implode(' | ', array_values($keyword->getTranslations('name'))),
-                    ];
-                })
-                ->values()
-                ->toArray();
-        }
-    }
-
-    protected function getRelatedResources(Letter $letter)
-    {
-        if (request()->old('resource_title')) {
-            return collect(request()->old('resource_title'))->map(function ($resource, $index) {
-                return [
-                    'link' => request()->old('resource_link')[$index],
-                    'title' => $resource,
-                ];
-            });
-        }
-
-        return empty($letter->related_resources) ? [] : $letter->related_resources;
-    }
-
-    protected function getCopies(Letter $letter)
-    {
-        if (request()->old('copies')) {
-            $copies = [];
-
-            for ($i = 0; $i < (int) request()->old('copies'); $i++) {
-                foreach ($this->copiesFields as $field) {
-                    $copies[$i][$field] = request()->old($field)[$i];
+                foreach ($pivotFields as $field) {
+                    $result[$field] = $item[$field];
                 }
-            }
 
-            return $copies;
+                $items[$item['value']] = $result;
+            }
         }
 
-        return empty($letter->copies) ? [] : $letter->copies;
+        return $items;
     }
 
-    protected function getLanguages(Letter $letter)
+    protected function getSelectedMetaFields(Letter $letter, string $fieldKey, $pivotFields)
     {
-        if (request()->old('language')) {
-            return request()->old('language');
+        if (request()->old($fieldKey)) {
+            return request()->old($fieldKey);
         }
 
-        if (empty($letter->languages)) {
+        return $letter->{$fieldKey}
+            ->map(function ($item) use ($pivotFields) {
+                $result = [
+                    'value' => $item->id,
+                    'label' => $item->name,
+                ];
+
+                foreach ($pivotFields as $field) {
+                    $result[$field] = $item->pivot->{$field};
+                }
+
+                return $result;
+            })
+            ->toArray();
+    }
+
+    protected function getSelectedMeta(Letter $letter, $model, string $fieldKey)
+    {
+        if (!request()->old($fieldKey) && !$letter->{$fieldKey}) {
             return [];
         }
 
-        return explode(';', $letter->languages);
+        $items = request()->old($fieldKey)
+            ? app('App\Models\\' . $model)::whereIn('id', request()->old($fieldKey))
+            ->orderByRaw('FIELD(id, ' . implode(',', request()->old($fieldKey)) . ')')
+            ->get()
+            : $letter->{$fieldKey};
+
+        return $items
+            ->map(function ($item) {
+                return [
+                    'value' => $item->id,
+                    'label' => is_array($item->name)
+                        ? $item->getTranslation('name', config('hiko.metadata_default_locale'))
+                        : $item->name,
+                ];
+            })
+            ->toArray();
     }
 }

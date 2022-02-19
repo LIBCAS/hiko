@@ -1,5 +1,6 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    <x-form-errors />
     <form onkeydown="return event.key != 'Enter';" action="{{ $action }}" method="post" class="max-w-sm space-y-3"
         autocomplete="off">
         @csrf
@@ -16,8 +17,8 @@
         </div>
         <div class="required">
             <x-label for="country" :value="__('hiko.country')" />
-            <x-select x-data="select({element: $el })" x-init="initSelect()" id="country" class="block w-full mt-1"
-                name="country" required>
+            <x-select x-data="choices({element: $el })" x-init="initSelect()" id="country" class="block w-full mt-1"
+                name="country">
                 @foreach ($countries as $country)
                     <option value="{{ $country->name }}"
                         {{ old('country', $place->country) == $country->name ? 'selected' : '' }}>
@@ -36,7 +37,7 @@
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
-        <div x-data="{ open: false }" class="p-2 border rounded-md border-primary-light">
+        <div x-data="{ open: false }" class="p-3 bg-gray-200 border rounded-md shadow">
             <button type="button" @click="open = !open"
                 class="inline-flex items-center font-semibold text-primary hover:underline">
                 <x-icons.location-marker class="h-5 mr-2" /> <span>{{ __('hiko.search_geolocation') }}</span>

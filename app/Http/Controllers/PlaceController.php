@@ -19,6 +19,19 @@ class PlaceController extends Controller
         'geoname_id' => ['nullable', 'integer', 'numeric'],
     ];
 
+    protected $attributes = [];
+
+    public function __construct()
+    {
+        $this->attributes = [
+            'name' => __('hiko.name'),
+            'country' => __('hiko.country'),
+            'latitude' => __('hiko.latitude'),
+            'longitude' => __('hiko.longitude'),
+            'geoname_id' => 'Geoname ID',
+        ];
+    }
+
     public function index()
     {
         return view('pages.places.index', [
@@ -62,7 +75,11 @@ class PlaceController extends Controller
 
     public function update(Request $request, Place $place)
     {
-        $validated = $request->validate($this->rules);
+        $validated = $request->validate(
+            $this->rules,
+            [],
+            $this->attributes
+        );
 
         $place->update($validated);
 

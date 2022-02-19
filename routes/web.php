@@ -16,8 +16,8 @@ use App\Http\Controllers\Ajax\AjaxKeywordController;
 use App\Http\Controllers\Ajax\AjaxIdentityController;
 use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionController;
+use App\Http\Controllers\Ajax\AjaxKeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
-use App\Http\Controllers\Ajax\KeywordCategoryController as AjaxKeywordCategoryController;
 
 /*
 |--------------------------------------------------------------------------

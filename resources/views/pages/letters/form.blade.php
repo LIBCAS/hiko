@@ -20,70 +20,68 @@
     @endif
     <div class="md:flex md:space-x-16">
         <div class="hidden md:block">
-            <ul class="sticky text-gray-600 bg-white border rounded-md top-16 border-primary-light">
-                <li class="pt-1 border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-dates">
+            <ul class="sticky text-gray-700 bg-white rounded-md shadow-lg top-16">
+                <li class="border-b border-primary-light">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-dates">
                         {{ __('hiko.date') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-author">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-author">
                         {{ __('hiko.author') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-recipient">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-recipient">
                         {{ __('hiko.recipient') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-origin">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-origin">
                         {{ __('hiko.origin') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-destination">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-destination">
                         {{ __('hiko.destination') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-content">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-content">
                         {{ __('hiko.content_description') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-related-resource">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-related-resource">
                         {{ __('hiko.related_resources') }}
                     </a>
                 </li>
                 <li class="border-b border-primary-light">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-copies">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-copies">
                         {{ __('hiko.manifestation_location') }}
                     </a>
                 </li>
-                <li class="pb-1 ">
-                    <a class="block w-full px-3 list-group-item hover:bg-gray-100" href="#a-status">
+                <li class="">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-status">
                         {{ __('hiko.status') }}
                     </a>
                 </li>
             </ul>
         </div>
         <div>
-            <x-success-alert />
-            @if ($errors->any())
-                <x-error-alert>
-                    <ul>
-                        {!! implode('', $errors->all('<li>:message</li>')) !!}
-                    </ul>
-                </x-error-alert>
+            @if (session()->has('success') || $errors->any())
+                <div class="pb-3">
+                    <x-success-alert />
+                    <x-form-errors />
+                </div>
             @endif
             <form action="{{ $action }}" method="post" onkeydown="return event.key != 'Enter';"
-                class="max-w-sm space-y-6 md:-mt-6" autocomplete="off">
+                class="max-w-sm space-y-6 md:-mt-6" autocomplete="off" novalidate>
                 @csrf
                 @isset($method)
                     @method($method)
                 @endisset
-                <fieldset id="a-dates" class="space-y-6">
+                <fieldset id="a-dates" class="p-3 space-y-6 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.date') }}
                     </legend>
@@ -179,41 +177,14 @@
                         @enderror
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-author" class="space-y-6"
-                    x-data="{ authors: JSON.parse(document.getElementById('selectedAuthors').innerHTML) }">
+                <div class="h-1"></div>
+                <fieldset id="a-author" class="p-3 space-y-6 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.author') }}
                     </legend>
-                    <template x-for="author, index in authors" :key="author.key ? author.key : author.id">
-                        <div class="p-3 space-y-6 border border-primary-light">
-                            <div class="required">
-                                <x-label x-bind:for="'name' + index" :value="__('Jméno autora')" />
-                                <x-select name="author[]" class="block w-full mt-1" x-bind:id="'name' + index"
-                                    x-data="ajaxSelect({url: '{{ route('ajax.identities') }}', element: $el, options: { id: author.id, name: author.name } })"
-                                    x-init="initSelect()" required>
-                                </x-select>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'marked' + index" :value="__('Jméno použité v dopise')" />
-                                <x-input x-bind:id="'marked' + index" x-bind:value="author.marked"
-                                    class="block w-full mt-1" type="text" name="author_marked[]" />
-                            </div>
-                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
-                                x-on:click="authors = authors.filter((item, authorIndex) => { return authorIndex !== index })">
-                                <x-icons.trash class="h-5" />
-                                {{ __('hiko.remove_item') }}
-                            </button>
-                        </div>
-                    </template>
-                    <div>
-                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
-                            x-on:click="authors.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('hiko.add_new_item') }}
-                        </button>
-                    </div>
+                    <livewire:letter-meta-field :items="$selectedAuthors" fieldKey="authors" route="ajax.identities"
+                        :label="__('hiko.author_name')"
+                        :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
                     <div>
                         <x-checkbox name="author_inferred" label="{{ __('Autor je odvozený') }}"
                             :checked="boolval(old('author_inferred', $letter->author_inferred))" />
@@ -235,47 +206,14 @@
                         @enderror
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-recipient" class="space-y-6"
-                    x-data="{ recipients: JSON.parse(document.getElementById('selectedRecipients').innerHTML) }">
+                <div class="h-1"></div>
+                <fieldset id="a-recipient" class="p-3 space-y-6 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.recipient') }}
                     </legend>
-                    <template x-for="recipient, index in recipients"
-                        :key="recipient.key ? recipient.key : recipient.id">
-                        <div class="p-3 space-y-6 border border-primary-light">
-                            <div class="required">
-                                <x-label x-bind:for="'name' + index" :value="__('Jméno příjemce')" />
-                                <x-select name="recipient[]" class="block w-full mt-1" x-bind:id="'name' + index"
-                                    x-data="ajaxSelect({url: '{{ route('ajax.identities') }}', element: $el, options: { id: recipient.id, name: recipient.name } })"
-                                    x-init="initSelect()" required>
-                                </x-select>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'marked' + index" :value="__('Jméno použité v dopise')" />
-                                <x-input x-bind:id="'marked' + index" x-bind:value="recipient.marked"
-                                    class="block w-full mt-1" type="text" name="recipient_marked[]" />
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'salutation' + index" :value="__('Oslovení')" />
-                                <x-input x-bind:id="'salutation' + index" x-bind:value="recipient.salutation"
-                                    class="block w-full mt-1" type="text" name="recipient_salutation[]" />
-                            </div>
-                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
-                                x-on:click="recipients = recipients.filter((item, recipientIndex) => { return recipientIndex !== index })">
-                                <x-icons.trash class="h-5" />
-                                {{ __('hiko.remove_item') }}
-                            </button>
-                        </div>
-                    </template>
-                    <div>
-                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
-                            x-on:click="recipients.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('hiko.add_new_item') }}
-                        </button>
-                    </div>
+                    <livewire:letter-meta-field :items="$selectedRecipients" fieldKey="recipients"
+                        route="ajax.identities" :label="__('hiko.recipient_name')"
+                        :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ], [ 'label' => __('hiko.salutation'), 'key' => 'salutation' ] ]" />
                     <div>
                         <x-checkbox name="recipient_inferred" label="{{ __('Příjemce je odvozený') }}"
                             :checked="boolval(old('recipient_inferred', $letter->recipient_inferred))" />
@@ -297,41 +235,14 @@
                         @enderror
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-origin" class="space-y-6"
-                    x-data="{ origins: JSON.parse(document.getElementById('selectedOrigins').innerHTML) }">
+                <div class="h-1"></div>
+                <fieldset id="a-origin" class="p-3 space-y-6 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.origin') }}
                     </legend>
-                    <template x-for="origin, index in origins" :key="origin.key ? origin.key : origin.id">
-                        <div class="p-3 space-y-6 border border-primary-light">
-                            <div class="required">
-                                <x-label x-bind:for="'name' + index" :value="__('hiko.name')" />
-                                <x-select name="origin[]" class="block w-full mt-1" x-bind:id="'name' + index"
-                                    x-data="ajaxSelect({url: '{{ route('ajax.places') }}', element: $el, options: { id: origin.id, name: origin.name } })"
-                                    x-init="initSelect()" required>
-                                </x-select>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'marked' + index" :value="__('Jméno použité v dopise')" />
-                                <x-input x-bind:id="'marked' + index" x-bind:value="origin.marked"
-                                    class="block w-full mt-1" type="text" name="origin_marked[]" />
-                            </div>
-                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
-                                x-on:click="origins = origins.filter((item, originIndex) => { return originIndex !== index })">
-                                <x-icons.trash class="h-5" />
-                                {{ __('hiko.remove_item') }}
-                            </button>
-                        </div>
-                    </template>
-                    <div>
-                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
-                            x-on:click="origins.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('hiko.add_new_item') }}
-                        </button>
-                    </div>
+                    <livewire:letter-meta-field :items="$selectedOrigins" fieldKey="origins" route="ajax.places"
+                        :label="__('hiko.name')"
+                        :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
                     <div>
                         <x-checkbox name="origin_inferred" label="{{ __('Místo odeslání je odvozené') }}"
                             :checked="boolval(old('origin_inferred', $letter->origin_inferred))" />
@@ -353,42 +264,14 @@
                         @enderror
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-destination" class="space-y-6"
-                    x-data="{ destinations: JSON.parse(document.getElementById('selectedDestinations').innerHTML) }">
+                <div class="h-1"></div>
+                <fieldset id="a-destination" class="p-3 space-y-6 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.destination') }}
                     </legend>
-                    <template x-for="destination, index in destinations"
-                        :key="destination.key ? destination.key : destination.id">
-                        <div class="p-3 space-y-6 border border-primary-light">
-                            <div class="required">
-                                <x-label x-bind:for="'name' + index" :value="__('hiko.name')" />
-                                <x-select name="destination[]" class="block w-full mt-1" x-bind:id="'name' + index"
-                                    x-data="ajaxSelect({url: '{{ route('ajax.places') }}', element: $el, options: { id: destination.id, name: destination.name } })"
-                                    x-init="initSelect()" required>
-                                </x-select>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'marked' + index" :value="__('Jméno použité v dopise')" />
-                                <x-input x-bind:id="'marked' + index" x-bind:value="destination.marked"
-                                    class="block w-full mt-1" type="text" name="destination_marked[]" />
-                            </div>
-                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
-                                x-on:click="destinations = destinations.filter((item, destinationIndex) => { return destinationIndex !== index })">
-                                <x-icons.trash class="h-5" />
-                                {{ __('hiko.remove_item') }}
-                            </button>
-                        </div>
-                    </template>
-                    <div>
-                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
-                            x-on:click="destinations.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('hiko.add_new_item') }}
-                        </button>
-                    </div>
+                    <livewire:letter-meta-field :items="$selectedDestinations" fieldKey="destinations"
+                        route="ajax.places" :label="__('hiko.name')"
+                        :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
                     <div>
                         <x-checkbox name="destination_inferred" label="{{ __('Místo určení je odvozené') }}"
                             :checked="boolval(old('destination_inferred', $letter->destination_inferred))" />
@@ -410,35 +293,35 @@
                         @enderror
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-content" class="space-y-6">
+                <div class="h-1"></div>
+                <fieldset id="a-content" class="p-3 space-y-6 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.content_description') }}
                     </legend>
                     <div>
-                        <x-label for="language" :value="__('Jazyk')" />
-                        <x-select x-data="select({element: $el })" x-init="initSelect()" id="language"
-                            class="block w-full mt-1" name="language[]" multiple>
+                        <x-label for="languages" :value="__('hiko.language')" />
+                        <x-select x-data="choices({element: $el })" x-init="initSelect()" id="languages"
+                            class="block w-full mt-1" name="languages[]" multiple>
                             @foreach ($languages as $language)
-                                <option value="{{ $language->name }}"
-                                    @if (in_array($language->name, $selectedLanguages)) selected @endif>
-                                    {{ $language->name }}
+                                <option value="{{ $language }}" @if (in_array($language, explode(';', request()->old('languages', $letter->languages)))) selected @endif>
+                                    {{ $language }}
                                 </option>
                             @endforeach
                         </x-select>
-                        @error('language')
+                        @error('languages')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
                     <div>
-                        <x-label for="keyword" :value="__('Klíčová slova')" />
-                        <x-select name="keyword[]" class="block w-full mt-1" id="keyword"
-                            x-data="ajaxSelect({url: '{{ route('ajax.keywords') }}', element: $el, options: JSON.parse(document.getElementById('selectedKeywords').innerHTML) })"
+                        <x-label for="keywords" :value="__('hiko.keywords')" />
+                        <x-select name="keywords[]" class="block w-full mt-1" id="keywords"
+                            x-data="ajaxChoices({url: '{{ route('ajax.keywords') }}', element: $el })"
                             x-init="initSelect()" multiple>
+                            @foreach ($selectedKeywords as $kw)
+                                <option value="{{ $kw['value'] }}" selected>{{ $kw['label'] }}</option>
+                            @endforeach
                         </x-select>
-                        @error('keyword')
+                        @error('keywords')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
@@ -479,17 +362,20 @@
                         @enderror
                     </div>
                     <div>
-                        <x-label for="mentioned" :value="__('Zmíněné osoby')" />
+                        <x-label for="mentioned" :value="__('hiko.mentioned')" />
                         <x-select name="mentioned[]" class="block w-full mt-1" id="mentioned"
-                            x-data="ajaxSelect({url: '{{ route('ajax.identities') }}', element: $el, options: JSON.parse(document.getElementById('selectedMentioned').innerHTML) })"
+                            x-data="ajaxChoices({url: '{{ route('ajax.identities') }}', element: $el })"
                             x-init="initSelect()" multiple>
+                            @foreach ($selectedMentioned as $mention)
+                                <option value="{{ $mention['value'] }}" selected>{{ $mention['label'] }}</option>
+                            @endforeach
                         </x-select>
                         @error('mentioned')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
                     <div>
-                        <x-label for="people_mentioned_note" :value="__('Poznámka ke zmíněným osobám')" />
+                        <x-label for="people_mentioned_note" :value="__('hiko.people_mentioned_note')" />
                         <x-textarea name="people_mentioned_note" id="people_mentioned_note" class="block w-full mt-1">
                             {{ old('people_mentioned_note', $letter->people_mentioned_note) }}
                         </x-textarea>
@@ -516,199 +402,12 @@
                         @enderror
                     </div>
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-related-resource" class="space-y-6"
-                    x-data="{ relatedResources: JSON.parse(document.getElementById('selectedRelatedResources').innerHTML)}">
-                    <legend class="text-lg font-semibold">
-                        {{ __('hiko.related_resources') }}
-                    </legend>
-                    <template x-for="resource, index in relatedResources" :key="resource.key ? resource.key : index">
-                        <div class="p-3 space-y-6 border border-primary-light">
-                            <div class="required">
-                                <x-label x-bind:for="'resource_title' + index" :value="__('Název')" />
-                                <x-input x-bind:id="'resource_title' + index" x-bind:value="resource.title"
-                                    class="block w-full mt-1" type="text" name="resource_title[]" required />
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'resource_link' + index" :value="__('URL')" />
-                                <x-input x-bind:id="'resource_link' + index" x-bind:value="resource.link"
-                                    class="block w-full mt-1" type="text" name="resource_link[]" type="url" />
-                            </div>
-                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
-                                x-on:click="relatedResources = relatedResources.filter((item, resourceIndex) => { return resourceIndex !== index })">
-                                <x-icons.trash class="h-5" />
-                                {{ __('hiko.remove_item') }}
-                            </button>
-                        </div>
-                    </template>
-                    <div>
-                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
-                            x-on:click="relatedResources.push({title: '', link: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('hiko.add_new_item') }}
-                        </button>
-                    </div>
-                </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-copies" class="space-y-6"
-                    x-data="{ copies: JSON.parse(document.getElementById('selectedCopies').innerHTML)}">
-                    <legend class="text-lg font-semibold">
-                        {{ __('hiko.manifestation_location') }}
-                    </legend>
-                    <template x-for="copy, index in copies" :key="copy.key ? copy.key : index">
-                        <div class="p-3 space-y-6 border border-primary-light">
-                            <div>
-                                <x-label x-bind:for="'ms_manifestation' + index" :value="__('hiko.ms_manifestation')" />
-                                <x-select x-model="copies[index]['ms_manifestation']" name="ms_manifestation[]"
-                                    class="block w-full mt-1">
-                                    <option value="">
-                                        ---
-                                    </option>
-                                    @foreach ($labels['ms_manifestation'] as $item)
-                                        <option value="{{ $item['value'] }}">
-                                            {{ $item['label'] }}
-                                        </option>
-                                    @endforeach
-                                </x-select>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'type' + index" :value="__('hiko.doc_type')" />
-                                <x-select x-model="copies[index]['type']" name="type[]" class="block w-full mt-1">
-                                    <option value="">
-                                        ---
-                                    </option>
-                                    @foreach ($labels['type'] as $item)
-                                        <option value="{{ $item['value'] }}">
-                                            {{ $item['label'] }}
-                                        </option>
-                                    @endforeach
-                                </x-select>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'preservation' + index" :value="__('hiko.preservation')" />
-                                <x-select x-model="copies[index]['preservation']" name="preservation[]"
-                                    class="block w-full mt-1">
-                                    <option value="">
-                                        ---
-                                    </option>
-                                    @foreach ($labels['preservation'] as $item)
-                                        <option value="{{ $item['value'] }}">
-                                            {{ $item['label'] }}
-                                        </option>
-                                    @endforeach
-                                </x-select>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'copy' + index" :value="__('hiko.type')" />
-                                <x-select x-model="copies[index]['copy']" name="copy[]" class="block w-full mt-1">
-                                    <option value="">
-                                        ---
-                                    </option>
-                                    @foreach ($labels['copy'] as $item)
-                                        <option value="{{ $item['value'] }}">
-                                            {{ $item['label'] }}
-                                        </option>
-                                    @endforeach
-                                </x-select>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'manifestation_notes' + index"
-                                    :value="__('hiko.manifestation_notes')" />
-                                <x-textarea name="manifestation_notes[]" x-bind:id="'manifestation_notes' + index"
-                                    class="block w-full mt-1" x-bind:value="copy['manifestation_notes']">
-                                </x-textarea>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'l_number' + index" :value="__('hiko.l_number')" />
-                                <x-input x-bind:id="'l_number' + index" x-bind:value="copy['l_number']"
-                                    class="block w-full mt-1" type="text" name="l_number[]" />
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'repository' + index" :value="__('hiko.repository')" />
-                                <x-input x-bind:id="'repository' + index" x-bind:value="copy.repository"
-                                    class="block w-full mt-1" type="text" name="repository[]"
-                                    x-bind:list="'repository-datalist-' + index" />
-                                <datalist x-bind:id="'repository-datalist-' + index">
-                                    @foreach ($locations['repository'] as $repository)
-                                        <option>
-                                            {{ $repository['name'] }}
-                                        </option>
-                                    @endforeach
-                                </datalist>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'archive' + index" :value="__('hiko.archive')" />
-                                <x-input x-bind:id="'archive' + index" x-bind:value="copy.archive"
-                                    class="block w-full mt-1" type="text" name="archive[]"
-                                    x-bind:list="'archive-datalist-' + index" />
-                                <datalist x-bind:id="'archive-datalist-' + index">
-                                    @foreach ($locations['archive'] as $archive)
-                                        <option>
-                                            {{ $archive['name'] }}
-                                        </option>
-                                    @endforeach
-                                </datalist>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'collection' + index" :value="__('hiko.collection')" />
-                                <x-input x-bind:id="'collection' + index" x-bind:value="copy.collection"
-                                    class="block w-full mt-1" type="text" name="collection[]"
-                                    x-bind:list="'collection-datalist-' + index" />
-                                <datalist x-bind:id="'collection-datalist-' + index">
-                                    @foreach ($locations['collection'] as $collection)
-                                        <option>
-                                            {{ $collection['name'] }}
-                                        </option>
-                                    @endforeach
-                                </datalist>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'signature' + index" :value="__('hiko.signature')" />
-                                <x-input x-bind:id="'signature' + index" x-bind:value="copy.signature"
-                                    class="block w-full mt-1" type="text" name="signature[]" />
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'location_note' + index" :value="__('hiko.location_note')" />
-                                <x-textarea name="location_note[]" x-bind:id="'location_note' + index"
-                                    class="block w-full mt-1" x-bind:value="copy['location_note']">
-                                </x-textarea>
-                            </div>
-                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
-                                x-on:click="copies = copies.filter((item, copyIndex) => { return copyIndex !== index })">
-                                <x-icons.trash class="h-5" />
-                                {{ __('hiko.remove_item') }}
-                            </button>
-                        </div>
-                    </template>
-                    <template x-if="copies.length > 0">
-                        <input type="hidden" name="copies" x-bind:value="copies.length">
-                    </template>
-                    <div>
-                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline" x-on:click="copies.push({
-                            archive: '',
-                            collection: '',
-                            copy: '',
-                            l_number: '',
-                            location_note: '',
-                            manifestation_notes: '',
-                            ms_manifestation: '',
-                            preservation: '',
-                            repository: '',
-                            signature: '',
-                            type: '',
-                            key: Math.random().toString(36).substring(7)
-                        })">
-                            {{ __('hiko.add_new_item') }}
-                        </button>
-                    </div>
-                </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
-                <fieldset id="a-status">
+                <div class="h-1"></div>
+                <livewire:related-resources :resources="$letter->related_resources" />
+                <div class="h-1"></div>
+                <livewire:letter-copies :copies="$letter->copies" />
+                <div class="h-1"></div>
+                <fieldset id="a-status" class="p-3 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.status') }}
                     </legend>
@@ -720,10 +419,11 @@
                         <x-radio name="status" label="{{ __('hiko.published_letter') }}" value="publish"
                             :checked="old('status', $letter->status) === 'publish'" name="status" required />
                     </div>
+                    @error('status')
+                        <div class="text-red-600">{{ $message }}</div>
+                    @enderror
                 </fieldset>
-                <div>
-                    <hr class="my-3">
-                </div>
+                <div class="h-1"></div>
                 <x-button-simple class="w-full" onclick="preventLeaving = false">
                     {{ $label }}
                 </x-button-simple>
@@ -742,40 +442,15 @@
         </div>
     </div>
     @push('scripts')
-        <script id="selectedAuthors" type="application/json">
-            @json($selectedAuthors)
-        </script>
-        <script id="selectedRecipients" type="application/json">
-            @json($selectedRecipients)
-        </script>
-        <script id="selectedOrigins" type="application/json">
-            @json($selectedOrigins)
-        </script>
-        <script id="selectedDestinations" type="application/json">
-            @json($selectedDestinations)
-        </script>
-        <script id="selectedKeywords" type="application/json">
-            @json($selectedKeywords)
-        </script>
-        <script id="selectedKeywords" type="application/json">
-            @json($selectedKeywords)
-        </script>
-        <script id="selectedMentioned" type="application/json">
-            @json($selectedMentioned)
-        </script>
-        <script id="selectedRelatedResources" type="application/json">
-            @json($selectedRelatedResources)
-        </script>
-        <script id="selectedCopies" type="application/json">
-            @json($selectedCopies)
-        </script>
-        <script>
-            var preventLeaving = true;
-            window.onbeforeunload = function(e) {
-                if (preventLeaving) {
-                    return '{{ __('hiko.confirm_leave') }}'
+        @production
+            <script>
+                var preventLeaving = true;
+                window.onbeforeunload = function(e) {
+                    if (preventLeaving) {
+                        return '{{ __('hiko.confirm_leave') }}'
+                    }
                 }
-            }
-        </script>
+            </script>
+        @endproduction
     @endpush
 </x-app-layout>

@@ -1,7 +1,26 @@
-@import './../../node_modules/tom-select/dist/css/tom-select.default.min.css';
+@import './../../node_modules/choices.js/public/assets/styles/choices.min.css';
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: normal;
+    font-weight: 400;
+    src: local(''),
+        url('../fonts/atkinson-hyperlegible-v7-latin-regular.woff2')
+        format('woff2'),
+        url('../fonts/atkinson-hyperlegible-v7-latin-regular.woff')
+        format('woff');
+}
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: normal;
+    font-weight: 700;
+    src: local(''),
+        url('../fonts/atkinson-hyperlegible-v7-latin-700.woff2') format('woff2'),
+        url('../fonts/atkinson-hyperlegible-v7-latin-700.woff') format('woff');
+}
 
 [x-cloak] {
     display: none;
@@ -15,14 +34,6 @@ html {
     @apply outline-none ring-1 ring-primary !important;
 }
 
-.ts-wrapper {
-    @apply px-0 !important;
-}
-
-.ts-control {
-    min-height: 2.5rem;
-}
-
 .required label::after {
     content: ' *';
 
@@ -31,4 +42,37 @@ html {
 
 .ProseMirror {
     @apply outline-none;
+}
+
+.flex > .choices {
+    width: 100%;
+}
+
+.choices {
+    @apply mt-1 mb-0;
+}
+
+.choices .choices__inner {
+    @apply bg-white border-gray-300 rounded-md shadow-sm;
+}
+
+.choices__input {
+    @apply bg-transparent p-1 !important;
+}
+
+.choices__input:focus {
+    @apply ring-0 !important;
+}
+
+.choices__list--multiple .choices__item {
+    @apply bg-primary border-primary-dark;
+}
+
+.choices[data-type*='select-multiple'] .choices__button,
+.choices[data-type*='text'] .choices__button {
+    @apply border-l-primary-dark;
+}
+
+.choices__list--multiple .choices__item.is-highlighted {
+    @apply bg-primary-dark border-primary-dark;
 }

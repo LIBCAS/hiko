@@ -1,4 +1,5 @@
 const colors = require('tailwindcss/colors')
+const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
     important: true,
@@ -14,6 +15,12 @@ module.exports = {
                 primary: colors.violet['700'],
                 'primary-light': colors.violet['400'],
                 'primary-dark': colors.violet['900'],
+            },
+            fontFamily: {
+                sans: [
+                    'Atkinson Hyperlegible',
+                    ...defaultTheme.fontFamily.sans,
+                ],
             },
             outline: {
                 primary: '2px solid ' + colors.violet['700'],
