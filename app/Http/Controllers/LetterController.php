@@ -65,8 +65,8 @@ class LetterController extends Controller
             'label' => __('hiko.create'),
             'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
             'selectedRecipients' => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
-            'selectedOrigins' => $this->getSelectedMeta($letter, 'Place', 'origins', ['marked']),
-            'selectedDestinations' => $this->getSelectedMeta($letter, 'Place', 'destinations', ['marked']),
+            'selectedOrigins' => $this->getSelectedMetaFields($letter, 'origins', ['marked']),
+            'selectedDestinations' => $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
             'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
             'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
             'languages' => collect(Language::all())->pluck('name'),
@@ -106,8 +106,8 @@ class LetterController extends Controller
             'label' => __('hiko.edit'),
             'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
             'selectedRecipients' => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
-            'selectedOrigins' => $this->getSelectedMeta($letter, 'Place', 'origins', ['marked']),
-            'selectedDestinations' => $this->getSelectedMeta($letter, 'Place', 'destinations', ['marked']),
+            'selectedOrigins' => $this->getSelectedMetaFields($letter, 'origins', ['marked']),
+            'selectedDestinations' => $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
             'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
             'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
             'languages' => collect(Language::all())->pluck('name'),
@@ -184,6 +184,14 @@ class LetterController extends Controller
             $request->request->set('recipients', json_decode($request->recipients, true));
         }
 
+        if ($request->origins) {
+            $request->request->set('origins', json_decode($request->origins, true));
+        }
+
+        if ($request->destinations) {
+            $request->request->set('destinations', json_decode($request->destinations, true));
+        }
+
         $request->request->set('abstract', [
             'cs' => $request->abstract_cs,
             'en' => $request->abstract_en,
@@ -201,14 +209,14 @@ class LetterController extends Controller
     protected function attachRelated(Request $request, Letter $letter)
     {
         $letter->keywords()->sync($request->keywords);
-
-        $mentioned = [];
-        $origins = [];
-        $destinations = [];
-
         $letter->identities()->detach();
         $letter->places()->detach();
+        $letter->identities()->attach($this->prepareAttachmentData($request, 'authors', 'author'));
+        $letter->identities()->attach($this->prepareAttachmentData($request, 'recipients', 'recipient', ['salutation']));
+        $letter->places()->attach($this->prepareAttachmentData($request, 'origins', 'origin'));
+        $letter->places()->attach($this->prepareAttachmentData($request, 'destinations', 'destination'));
 
+        $mentioned = [];
         foreach ((array) $request->mentioned as $key => $id) {
             $mentioned[$id] = [
                 'position' => $key,
@@ -217,26 +225,6 @@ class LetterController extends Controller
         }
 
         $letter->identities()->attach($mentioned);
-        $letter->identities()->attach($this->prepareAttachmentData($request, 'authors', 'author'));
-        $letter->identities()->attach($this->prepareAttachmentData($request, 'recipients', 'recipient', ['salutation']));
-
-        foreach ((array) $request->origin as $key => $id) {
-            $origins[$id] = [
-                'position' => $key,
-                'role' => 'origin',
-                'marked' => $request->origin_marked[$key],
-            ];
-        }
-        $letter->places()->attach($origins);
-
-        foreach ((array) $request->destination as $key => $id) {
-            $destinations[$id] = [
-                'position' => $key,
-                'role' => 'destination',
-                'marked' => $request->destination_marked[$key],
-            ];
-        }
-        $letter->places()->attach($destinations);
     }
 
     protected function prepareAttachmentData(Request $request, string $fieldKey, $role, $pivotFields = [])

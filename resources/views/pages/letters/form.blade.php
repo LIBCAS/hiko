@@ -238,38 +238,13 @@
                     </div>
                 </fieldset>
                 <div class="h-1"></div>
-                <fieldset id="a-origin" class="p-3 space-y-6 shadow"
-                    x-data="{ origins: JSON.parse(document.getElementById('selectedOrigins').innerHTML) }">
+                <fieldset id="a-origin" class="p-3 space-y-6 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.origin') }}
                     </legend>
-                    <template x-for="origin, index in origins" :key="origin.key ? origin.key : origin.id">
-                        <div class="p-3 space-y-6 border border-primary-light">
-                            <div class="required">
-                                <x-label x-bind:for="'name' + index" :value="__('hiko.name')" />
-                                <x-select name="origin[]" class="block w-full mt-1" x-bind:id="'name' + index"
-                                    x-data="ajaxSelect({url: '{{ route('ajax.places') }}', element: $el, options: { id: origin.id, name: origin.name } })"
-                                    x-init="initSelect()" required>
-                                </x-select>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'marked' + index" :value="__('Jméno použité v dopise')" />
-                                <x-input x-bind:id="'marked' + index" x-bind:value="origin.marked"
-                                    class="block w-full mt-1" type="text" name="origin_marked[]" />
-                            </div>
-                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
-                                x-on:click="origins = origins.filter((item, originIndex) => { return originIndex !== index })">
-                                <x-icons.trash class="h-5" />
-                                {{ __('hiko.remove_item') }}
-                            </button>
-                        </div>
-                    </template>
-                    <div>
-                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
-                            x-on:click="origins.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('hiko.add_new_item') }}
-                        </button>
-                    </div>
+                    <livewire:letter-meta-field :items="$selectedOrigins" fieldKey="origins" route="ajax.places"
+                        :label="__('hiko.name')"
+                        :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
                     <div>
                         <x-checkbox name="origin_inferred" label="{{ __('Místo odeslání je odvozené') }}"
                             :checked="boolval(old('origin_inferred', $letter->origin_inferred))" />
@@ -292,39 +267,13 @@
                     </div>
                 </fieldset>
                 <div class="h-1"></div>
-                <fieldset id="a-destination" class="p-3 space-y-6 shadow"
-                    x-data="{ destinations: JSON.parse(document.getElementById('selectedDestinations').innerHTML) }">
+                <fieldset id="a-destination" class="p-3 space-y-6 shadow">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.destination') }}
                     </legend>
-                    <template x-for="destination, index in destinations"
-                        :key="destination.key ? destination.key : destination.id">
-                        <div class="p-3 space-y-6 border border-primary-light">
-                            <div class="required">
-                                <x-label x-bind:for="'name' + index" :value="__('hiko.name')" />
-                                <x-select name="destination[]" class="block w-full mt-1" x-bind:id="'name' + index"
-                                    x-data="ajaxSelect({url: '{{ route('ajax.places') }}', element: $el, options: { id: destination.id, name: destination.name } })"
-                                    x-init="initSelect()" required>
-                                </x-select>
-                            </div>
-                            <div>
-                                <x-label x-bind:for="'marked' + index" :value="__('Jméno použité v dopise')" />
-                                <x-input x-bind:id="'marked' + index" x-bind:value="destination.marked"
-                                    class="block w-full mt-1" type="text" name="destination_marked[]" />
-                            </div>
-                            <button type="button" class="inline-flex items-center mt-6 text-red-600"
-                                x-on:click="destinations = destinations.filter((item, destinationIndex) => { return destinationIndex !== index })">
-                                <x-icons.trash class="h-5" />
-                                {{ __('hiko.remove_item') }}
-                            </button>
-                        </div>
-                    </template>
-                    <div>
-                        <button type="button" class="mb-3 text-sm font-bold text-primary hover:underline"
-                            x-on:click="destinations.push({id: null, name: '', key: Math.random().toString(36).substring(7) })">
-                            {{ __('hiko.add_new_item') }}
-                        </button>
-                    </div>
+                    <livewire:letter-meta-field :items="$selectedDestinations" fieldKey="destinations"
+                        route="ajax.places" :label="__('hiko.name')"
+                        :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
                     <div>
                         <x-checkbox name="destination_inferred" label="{{ __('Místo určení je odvozené') }}"
                             :checked="boolval(old('destination_inferred', $letter->destination_inferred))" />

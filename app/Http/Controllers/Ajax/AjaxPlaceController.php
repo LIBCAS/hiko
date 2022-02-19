@@ -10,16 +10,19 @@ class AjaxPlaceController extends Controller
 {
     public function __invoke(Request $request)
     {
-        $search = $request->query('search');
-
-        if (empty($search)) {
-            return [];
-        }
-
-        return Place::where('name', 'like', '%' . $search . '%')
+        return empty($request->query('search'))
+            ? []
+            : Place::where('name', 'like', '%' . $request->query('search') . '%')
             ->select('id', 'name')
             ->take(15)
             ->get()
+            ->map(function ($place) {
+                return [
+                    'id' => $place->id,
+                    'value' => $place->id,
+                    'label' => $place->name,
+                ];
+            })
             ->toArray();
     }
 }

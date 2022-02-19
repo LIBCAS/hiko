@@ -1,5 +1,5 @@
 <div>
-    <fieldset class="space-y-3">
+    <fieldset class="space-y-3" wire:loading.attr="disabled">
         @foreach ($items as $item)
             <div wire:key="{{ $loop->index }}" class="p-3 space-y-6 bg-gray-200 shadow">
                 <div class="required">
