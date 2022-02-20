@@ -25,12 +25,15 @@ class LetterMetaField extends Component
         }
 
         $this->items[] = $newItem;
+
+        $this->emit('itemChanged');
     }
 
     public function removeItem($index)
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
+        $this->emit('itemChanged');
     }
 
     public function changeItemValue($index, $data)

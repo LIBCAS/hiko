@@ -4,10 +4,10 @@
             <div wire:key="{{ $loop->index }}" class="p-3 space-y-6 bg-gray-200 shadow">
                 <div class="required">
                     <x-label :for="$fieldKey . '-' . $loop->index" :value="$label" />
-                    <div wire:ignore.self wire:key="{{ 'select-' . $loop->index }}">
-                        <x-select wire:model.lazy="items.{{ $loop->index }}.value"
-                            x-data="ajaxChoices({url: '{{ route($route) }}', element: $el, change: (data) => { $wire.changeItemValue({{ $loop->index }}, data) } })"
-                            class="block w-full mt-1" :id="$fieldKey .'-'.$loop->index" x-init="initSelect()">
+                    <div x-data="ajaxChoices({url: '{{ route($route) }}', element: document.getElementById('{{ $fieldKey . '-' . $loop->index }}'), change: (data) => { $wire.changeItemValue({{ $loop->index }}, data) } })"
+                        x-init="initSelect(); window.livewire.on('itemChanged', () => { initSelect() })" wire:key="{{ 'select-' . $loop->index }}">
+                        <x-select wire:model.lazy="items.{{ $loop->index }}.value" class="block w-full mt-1"
+                            :id="$fieldKey .'-'.$loop->index">
                             @if (!empty($item['value']))
                                 <option value="{{ $item['value'] }}">{{ $item['label'] }}</option>
                             @endif
