@@ -6,39 +6,22 @@
             </a>
         </div>
         <div class="hidden sm:flex sm:items-center sm:ml-6">
-            <div class="relative" x-data="{ open: false }" @click.away="open = false" @close.stop="open = false">
-                <button @click="open = ! open" class="flex items-center text-sm">
-                    {{ Auth::user()->name }}
-                    <div class="ml-1">
-                        <svg class="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd"
-                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                </button>
-                <div x-show="open" x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                    x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100"
-                    x-transition:leave-end="opacity-0 scale-95"
-                    class="absolute right-0 z-50 mt-2 origin-top-right shadow-lg w-44" style="display: none;"
-                    @click="open = false">
-                    <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
-                        <a href="{{ route('users.account') }}"
-                            class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
-                            {{ __('hiko.settings') }}
-                        </a>
-                    </div>
-                    <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button class="w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
-                                {{ __('hiko.logout') }}
-                            </button>
-                        </form>
-                    </div>
+            <x-dropdown label="{{ Auth::user()->name }}">
+                <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
+                    <a href="{{ route('account') }}"
+                        class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
+                        {{ __('hiko.settings') }}
+                    </a>
                 </div>
-            </div>
+                <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button class="w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
+                            {{ __('hiko.logout') }}
+                        </button>
+                    </form>
+                </div>
+            </x-dropdown>
         </div>
         <button @click="open = ! open"
             class="p-2 text-gray-500 rounded-md sm:hidden hover:text-gray-700 hover:bg-gray-100 focus:text-gray-500">
@@ -75,13 +58,17 @@
                     </a>
                 @endcan
             @endforeach
+            <a href="{{ route('account') }}"
+                class="block py-2 pl-3 pr-4 border-l-4 hover:bg-primary hover:bg-opacity-10 @if (request()->routeIs('account')) border-primary-light bg-primary bg-opacity-5 @else border-transparent @endif ">
+                {{ __('hiko.settings') }}
+            </a>
         </div>
         <div class="pt-4 pb-1 border-t border-gray-200">
             <span> {{ Auth::user()->name }} </span>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button class="w-full py-1 text-sm text-left">
-                    {{ __('Odhlásit se') }}
+                    {{ __('hiko.logout') }}
                 </button>
             </form>
         </div>

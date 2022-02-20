@@ -58,10 +58,6 @@ Route::prefix('users')->group(function () {
     Route::delete('{user}', [UserController::class, 'destroy'])
         ->name('users.destroy')
         ->middleware(['auth', 'can:manage-users']);
-
-    Route::get('account', AccountController::class)
-        ->name('users.account')
-        ->middleware(['auth']);
 });
 
 Route::prefix('locations')->group(function () {
@@ -345,5 +341,9 @@ Route::prefix('ajax')->group(function () {
         ->name('ajax.keywords')
         ->middleware(['auth', 'can:manage-metadata']);
 });
+
+Route::get('account', AccountController::class)
+    ->name('account')
+    ->middleware(['auth']);
 
 require __DIR__ . '/auth.php';
