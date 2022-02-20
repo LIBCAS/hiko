@@ -166,4 +166,7 @@ return [
     'redo' => 'Redo',
     'viaf_unavailable' => 'Viaf service is not available.',
     'search_viaf' => 'Search VIAF ID',
+    'show_attachment' => 'Show attachment',
+    'attachment' => 'Attachment',
+    'edit_attachments' => 'Edit attachments',
 ];

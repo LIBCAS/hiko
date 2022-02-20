@@ -166,4 +166,7 @@ return [
     'redo' => 'Znovu',
     'viaf_unavailable' => 'Služba VIAF není dostupná',
     'search_viaf' => 'Vyhledat VIAF ID',
+    'show_attachment' => 'Zobrazit přílohu',
+    'attachment' => 'Příloha',
+    'edit_attachments' => 'Upravit vložené obrazové přílohy',
 ];

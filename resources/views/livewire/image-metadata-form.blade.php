@@ -1,5 +1,5 @@
 <div class="mt-12">
-    <h2 class="font-bold uppercase">{{ __('Upravit vložené obrazové přílohy') }}</h2>
+    <h2 class="font-bold uppercase">{{ __('hiko.edit_attachments') }}</h2>
     <div x-data="{ sortlist: null }" x-init="
         sortlist = new Sortable($refs.list, {
             handle: '.handle',
@@ -33,14 +33,14 @@
                     </button>
                     <div x-data="{open: false}" x-on:keydown.escape="open = false">
                         <button x-on:click="open = true" class="block border"
-                            aria-label="{{ __('Zobrazit přílohu') }}">
-                            <img src="{{ $image->getUrl('thumb') }}" alt="{{ __('Příloha') }}" loading="lazy"
+                            aria-label="{{ __('hiko.show_attachment') }}">
+                            <img src="{{ $image->getUrl('thumb') }}" alt="{{ __('hiko.attachment') }}" loading="lazy"
                                 class="w-48">
                         </button>
                         <div x-show="open" x-on:click="open = false" style="display:none"
                             class="fixed inset-0 z-50 p-4 bg-black bg-opacity-75">
                             <div class="flex justify-center w-full" x-on:click.away="open = false">
-                                <img src="{{ $image->getUrl() }}" alt="{{ __('Příloha') }}" class="block border"
+                                <img src="{{ $image->getUrl() }}" alt="{{ __('hiko.attachment') }}" class="block border"
                                     loading="lazy">
                             </div>
                         </div>
@@ -49,7 +49,7 @@
                         <form class="w-full max-w-sm"
                             wire:submit.prevent="edit({{ $image->id }}, Object.fromEntries(new FormData($event.target)))">
                             <div>
-                                <x-label for="description" :value="__('Popisek')" />
+                                <x-label for="description" :value="__('hiko.description')" />
                                 <x-textarea name="description" id="description" class="block w-full mt-1">
                                     {{ $image->getCustomProperty('description') }}</x-textarea>
                             </div>
@@ -57,22 +57,22 @@
                                 {{ __('Viditelnost') }}
                             </legend>
                             <div>
-                                <x-radio name="status" label="{{ __('Soukromé') }}" value="private"
+                                <x-radio name="status" label="{{ __('hiko.draft') }}" value="private"
                                     :checked="$image->getCustomProperty('status') === 'private'" name="status"
                                     required />
                             </div>
                             <div>
-                                <x-radio name="status" label="{{ __('Veřejné') }}" value="publish"
+                                <x-radio name="status" label="{{ __('hiko.publish') }}" value="publish"
                                     :checked="$image->getCustomProperty('status') === 'publish'" name="status"
                                     required />
                             </div>
                             <x-button-simple class="w-full">
-                                {{ __('Upravit') }}
+                                {{ __('hiko.save') }}
                             </x-button-simple>
                         </form>
                         <button wire:click="remove({{ $image->id }})" type="button"
                             class="inline-flex items-center mt-6 space-x-3 text-red-600">
-                            <x-icons.trash /> <span class="text-sm">{{ __('Odstranit') }}</span>
+                            <x-icons.trash /> <span class="text-sm">{{ __('hiko.remove') }}</span>
                         </button>
                     </div>
                 </div>
