@@ -7,7 +7,7 @@
                         <tr>
                             @foreach ($tableData['header'] as $header)
                                 <th scope="col"
-                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                    class="p-3 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
                                     {{ $header }}
                                 </th>
                             @endforeach
@@ -17,7 +17,7 @@
                         @foreach ($tableData['rows'] as $row)
                             <tr class="text-sm text-gray-900 hover:bg-gray-100">
                                 @foreach ($row as $item)
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-3 py-2 whitespace-nowrap">
                                         @if (isset($item['component']))
                                             <x-dynamic-component :component="$item['component']['name']"
                                                 :args="$item['component']['args']" />

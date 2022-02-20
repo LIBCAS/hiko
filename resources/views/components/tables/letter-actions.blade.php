@@ -1,24 +1,24 @@
-<ul class="list-disc">
+<ul class="ml-2 list-disc text-primary-light">
     @can('manage-metadata')
         <li>
-            <a href="{{ route('letters.edit', $args['id']) }}" class='font-semibold text-primary hover:underline'>
+            <a href="{{ route('letters.edit', $args['id']) }}" class="font-semibold text-primary hover:underline">
                 {{ __('hiko.edit') }}
             </a>
         </li>
         <li>
-            <a href="{{ route('letters.text', $args['id']) }}" class='font-semibold text-primary hover:underline'>
+            <a href="{{ route('letters.text', $args['id']) }}" class="font-semibold text-primary hover:underline">
                 {{ __('hiko.full_text') }}
             </a>
         </li>
         <li>
-            <a href="{{ route('letters.images', $args['id']) }}" class='font-semibold text-primary hover:underline'>
+            <a href="{{ route('letters.images', $args['id']) }}" class="font-semibold text-primary hover:underline">
                 {{ __('hiko.media') }}
             </a>
         </li>
     @endcan
     @can('view-metadata')
         <li>
-            <a href="{{ route('letters.show', $args['id']) }}" class='font-semibold text-primary hover:underline'>
+            <a href="{{ route('letters.show', $args['id']) }}" class="font-semibold text-primary hover:underline">
                 {{ __('hiko.preview') }}
             </a>
         </li>
@@ -32,7 +32,7 @@
                 <div x-show="open" x-on:click="open = false" style="display:none"
                     class="fixed inset-0 z-50 p-4 bg-black bg-opacity-75">
                     <div class="flex items-center justify-center w-full h-full" x-on:click.away="open = false">
-                        <div class="p-3 overflow-y-auto bg-white h-96 w-96">
+                        <div class="p-3 overflow-y-auto text-gray-700 bg-white h-96 w-96">
                             {!! nl2br($args['history']) !!}
                         </div>
                     </div>

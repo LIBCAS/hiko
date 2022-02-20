@@ -1,7 +1,7 @@
 <form wire:submit.prevent="search" wire:keydown.enter="search"
     class="flex flex-col flex-wrap w-full gap-4 p-3 my-8 bg-gray-200 shadow-sm lg:items-end lg:flex-row">
     {{ $slot }}
-    <x-button-simple type="button" wire:click="search" class="flex py-3">
+    <x-button-simple type="button" wire:click="search" class="flex justify-center py-3 lg:justify-start">
         {{ __('hiko.search') }}
         <div wire:loading="search">
             <svg class="w-4 h-4 ml-3 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
