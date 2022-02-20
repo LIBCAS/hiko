@@ -95,10 +95,8 @@ class Letter extends Model implements HasMedia
 
     public function getNameAttribute()
     {
-        $identities = $this->identities; // prevent modifying original
-        $identities = $identities->groupBy('pivot.role')->toArray();
-        $places = $this->places;
-        $places = $places->groupBy('pivot.role')->toArray();
+        $identities = $this->identities->groupBy('pivot.role')->toArray();
+        $places = $this->places->groupBy('pivot.role')->toArray();
 
         $author = isset($identities['author']) ? $identities['author'][0] : [];
         $recipient = isset($identities['recipient']) ? $identities['recipient'][0] : [];
