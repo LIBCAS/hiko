@@ -64,18 +64,18 @@ class LetterFactory extends Factory
                     'repository' => $this->faker->words(3, true),
                     'signature' => $this->faker->word() . ' ' . $this->faker->randomNumber(),
                     'type' => 'letter',
-                ]
+                ],
             ],
             'related_resources' => [
                 [
                     'link' => $this->faker->url(),
                     'title' => $this->faker->words(3, true),
-                ]
+                ],
             ],
             'explicit' => $this->faker->sentence(),
             'incipit' => $this->faker->sentence(),
             'copyright' => $this->faker->sentence(),
-            'status' => 'draft',
+            'status' => $this->faker->randomElement(['draft', 'publish',]),
             'abstract' => [
                 'cs' => $this->faker->paragraph(),
                 'en' => $this->faker->paragraph(),

@@ -59,7 +59,7 @@ class DatabaseSeeder extends Seeder
             'name' => [
                 'cs' => 'umělec',
                 'en' => 'artist',
-            ]
+            ],
         ]);
 
         Profession::factory()->create([
@@ -72,8 +72,8 @@ class DatabaseSeeder extends Seeder
         ProfessionCategory::factory()->create([
             'name' => [
                 'cs' => 'humanitní vědy',
-                'en' => 'humanities ',
-            ]
+                'en' => 'humanities',
+            ],
         ]);
 
         $identities = Identity::factory()->count(10)->create();
@@ -96,14 +96,14 @@ class DatabaseSeeder extends Seeder
             'name' => [
                 'cs' => 'ideologie',
                 'en' => 'ideology',
-            ]
+            ],
         ]);
 
         $category_two = KeywordCategory::factory()->create([
             'name' => [
                 'cs' => 'věda a umění',
                 'en' => 'sciences and arts',
-            ]
+            ],
         ]);
 
         $keyword = Keyword::factory()->create([
@@ -150,7 +150,7 @@ class DatabaseSeeder extends Seeder
             'longitude' => 26.716666666667,
             'latitude' => 58.383333333333,
             'geoname_id' => 588335,
-            'note' => 'on this time the Russian Empire; historical name Dorpat or Děrpt'
+            'note' => 'on this time the Russian Empire; historical name Dorpat or Děrpt',
         ]);
 
         $letters = Letter::factory(2)->create();
