@@ -6,7 +6,7 @@
             </a>
         </div>
         <div class="hidden sm:flex sm:items-center sm:ml-6">
-            <x-dropdown label="{{ Auth::user()->name }}">
+            <x-dropdown label="{{ Auth::user()->name }}" :alignRight="true">
                 <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
                     <a href="{{ route('account') }}"
                         class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
