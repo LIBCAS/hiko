@@ -229,9 +229,13 @@ class LetterController extends Controller
 
     protected function prepareAttachmentData(Request $request, string $fieldKey, $role, $pivotFields = [])
     {
+        if (!isset($request->{$fieldKey})) {
+            return [];
+        }
+
         $items = [];
 
-        foreach ($request->{$fieldKey} as $key => $item) {
+        foreach ((array) $request->{$fieldKey} as $key => $item) {
             if ($item['value']) {
                 $result = [
                     'position' => $key,
