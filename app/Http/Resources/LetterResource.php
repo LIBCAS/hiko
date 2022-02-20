@@ -33,6 +33,7 @@ class LetterResource extends JsonResource
         $places = $this->places->groupBy('pivot.role');
 
         return [
+            'uuid' => $this->uuid,
             'dates' => [
                 'date' => $this->pretty_date,
                 'computed' => $this->date_computed,
@@ -59,6 +60,7 @@ class LetterResource extends JsonResource
 
         return [
             'name' => $this->name,
+            'uuid' => $this->uuid,
             'dates' => [
                 'date' => $this->pretty_date,
                 'date_range' => $this->date_is_range ? $this->pretty_range_date : '',

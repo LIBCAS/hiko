@@ -12,6 +12,36 @@ class ApiLetterController extends Controller
 {
     public function index(Request $request)
     {
+        return new LetterCollection($this->prepareQuery($request));
+    }
+
+    public function show($uuid)
+    {
+        $letter = Letter::where('uuid', $uuid)
+            ->where('status', 'publish')
+            ->first();
+
+        if (!$letter) {
+            abort(404);
+        }
+
+        $letter->load([
+            'identities' => function ($query) {
+                return $query->select(['name']);
+            },
+            'places' => function ($query) {
+                return $query->select(['name']);
+            },
+            'keywords' => function ($query) {
+                return $query->select(['name']);
+            },
+        ]);
+
+        return new LetterResource($letter);
+    }
+
+    protected function prepareQuery(Request $request)
+    {
         $order = $request->input('order') && in_array($request->input('order'), ['asc', 'desc'])
             ? $request->input('order')
             : 'asc';
@@ -44,9 +74,7 @@ class ApiLetterController extends Controller
             };
         }
 
-        $query = Letter::with($with)
-            ->where('status', 'publish')
-            ->orderBy('date_computed', $order);
+        $query = Letter::with($with)->where('status', 'publish');
 
         $query = $this->addScopeByRole($query, $request, 'author', 'identities');
         $query = $this->addScopeByRole($query, $request, 'recipient', 'identities');
@@ -67,32 +95,9 @@ class ApiLetterController extends Controller
             $query->whereDate('date_computed', '<=', $request->input('before'));
         }
 
-        return new LetterCollection($query->paginate($limit));
-    }
-
-    public function show($uuid)
-    {
-        $letter = Letter::where('uuid', $uuid)
-            ->where('status', 'publish')
-            ->first();
-
-        if (!$letter) {
-            abort(404);
-        }
-
-        $letter->load([
-            'identities' => function ($query) {
-                return $query->select(['name']);
-            },
-            'places' => function ($query) {
-                return $query->select(['name']);
-            },
-            'keywords' => function ($query) {
-                return $query->select(['name']);
-            },
-        ]);
-
-        return new LetterResource($letter);
+        return $query
+            ->orderBy('date_computed', $order)
+            ->paginate($limit);
     }
 
     protected function sanitizedIds($ids)
