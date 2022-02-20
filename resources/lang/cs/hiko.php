@@ -176,4 +176,5 @@ return [
     'only_my_records' => 'Jen mé záznamy',
     'yes' => 'Ano',
     'no' => 'Ne',
+    'basic_export' => 'Základní export',
 ];

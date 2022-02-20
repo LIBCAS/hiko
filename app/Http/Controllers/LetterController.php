@@ -6,6 +6,7 @@ use App\Models\Letter;
 use App\Models\Language;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class LetterController extends Controller
 {

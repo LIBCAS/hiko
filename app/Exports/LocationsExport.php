@@ -25,7 +25,6 @@ class LocationsExport implements FromCollection, WithMapping, WithHeadings
 
     public function map($location): array
     {
-
         return [
             $location->id,
             $location->name,

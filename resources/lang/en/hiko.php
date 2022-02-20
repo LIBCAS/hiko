@@ -177,4 +177,5 @@ return [
     'only_my_records' => 'Only my records',
     'yes' => 'Yes',
     'no' => 'No',
+    'basic_export' => 'Basic export',
 ];
