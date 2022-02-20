@@ -8,8 +8,55 @@ class LetterResource extends JsonResource
 {
     public function toArray($request)
     {
-        $identities = $this->relationships['identities'];
-        $places = $this->relationships['places'];
+        $record = $request->basic === '1'
+            ? $this->getBasicRecord()
+            : $this->getDetailedRecord();
+
+
+        if ($request->media === '1') {
+            foreach ($this->getMedia() as $media) {
+                if ($media->getCustomProperty('status') === 'publish') {
+                    $record['media'][] = [
+                        'thumb' => asset($media->getUrl('thumb')),
+                        'full' => asset($media->getUrl()),
+                        'description' => $media->getCustomProperty('description'),
+                    ];
+                }
+            }
+        }
+
+        return $record;
+    }
+
+    protected function getBasicRecord()
+    {
+        $identities = $this->identities->groupBy('pivot.role');
+        $places = $this->places->groupBy('pivot.role');
+
+        return [
+            'dates' => [
+                'date' => $this->pretty_date,
+                'computed' => $this->date_computed,
+            ],
+            'authors' => isset($identities['author'])
+                ? $identities['author']->pluck('name')->toArray()
+                : [],
+            'recipients' => isset($identities['recipient'])
+                ? $identities['recipient']->pluck('name')->toArray()
+                : [],
+            'origins' => isset($places['origin'])
+                ? $places['origin']->pluck('name')->toArray()
+                : [],
+            'destinations' => isset($places['destination'])
+                ? $places['destination']->pluck('name')->toArray()
+                : [],
+        ];
+    }
+
+    protected function getDetailedRecord()
+    {
+        $identities = $this->identities->groupBy('pivot.role');
+        $places = $this->places->groupBy('pivot.role');
 
         return [
             'name' => $this->name,

@@ -23,12 +23,17 @@ class ApiLetterController extends Controller
             abort(404);
         }
 
-        $letter->load('identities', 'places', 'keywords');
-
-        $letter['relationships'] = [
-            'identities' => $letter->identities->groupBy('pivot.role'),
-            'places' => $letter->places->groupBy('pivot.role'),
-        ];
+        $letter->load([
+            'identities' => function ($query) {
+                return $query->select(['name']);
+            },
+            'places' => function ($query) {
+                return $query->select(['name']);
+            },
+            'keywords' => function ($query) {
+                return $query->select(['name']);
+            },
+        ]);
 
         return new LetterResource($letter);
     }
