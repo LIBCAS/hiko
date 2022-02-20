@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Models\Letter;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LetterResource;
+use App\Http\Resources\LetterCollection;
 
 class ApiLetterController extends Controller
 {
     public function index()
     {
-        return [];
+        $query = Letter::where('status', 'publish')
+            ->paginate();
+
+        return new LetterCollection($query);
     }
 
     public function show($uuid)

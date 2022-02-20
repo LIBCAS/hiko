@@ -12,7 +12,6 @@ class LetterResource extends JsonResource
             ? $this->getBasicRecord()
             : $this->getDetailedRecord();
 
-
         if ($request->media === '1') {
             foreach ($this->getMedia() as $media) {
                 if ($media->getCustomProperty('status') === 'publish') {
