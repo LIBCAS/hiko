@@ -40,6 +40,22 @@
         </label>
         <label>
             <span class="block text-sm">
+                {{ __('hiko.media') }}
+            </span>
+            <x-select wire:model.defer="filters.media" class="w-full px-2 text-sm lg:w-32">
+                <option value="">
+                    ---
+                </option>
+                <option value="1">
+                    {{ __('hiko.with_media') }}
+                </option>
+                <option value='0'>
+                    {{ __('hiko.without_media') }}
+                </option>
+            </x-select>
+        </label>
+        <label>
+            <span class="block text-sm">
                 {{ __('hiko.status') }}
             </span>
             <x-select wire:model.defer="filters.status" class="w-full px-2 text-sm lg:w-32">
@@ -54,19 +70,36 @@
                 </option>
             </x-select>
         </label>
+        @can('manage-users')
+            <label>
+                <span class="block text-sm">{{ __('hiko.editors') }}</span>
+                <x-input wire:model.defer="filters.editor" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            </label>
+        @elsecan('manage-metadata')
+            <label>
+                <span class="block text-sm">
+                    {{ __('hiko.only_my_records') }}
+                </span>
+                <x-select wire:model.defer="filters.editor" class="w-full px-2 text-sm lg:w-32">
+                    <option value="">
+                        {{ __('hiko.no') }}
+                    </option>
+                    <option value='my'>
+                        {{ __('hiko.yes') }}
+                    </option>
+                </x-select>
+            </label>
+        @endcan
         <label>
             <span class="block text-sm">
                 {{ __('hiko.order_by') }}
             </span>
-            <x-select wire:model.defer="filters.order" class="w-full px-2 text-sm lg:w-32">
-                <option value="id">
-                    ID
+            <x-select wire:model.defer="filters.order" class="w-full px-2 text-sm lg:w-40">
+                <option value='updated_at'>
+                    {{ __('hiko.by_update') }}
                 </option>
                 <option value='date_computed'>
-                    {{ __('hiko.by_date') }}
-                </option>
-                <option value='status'>
-                    {{ __('hiko.status') }}
+                    {{ __('hiko.by_letter_date') }}
                 </option>
             </x-select>
         </label>
@@ -75,8 +108,12 @@
                 {{ __('hiko.order_direction') }}
             </span>
             <div class="flex flex-col">
-                <x-radio name="direction" wire:model.defer="filters.direction" aria-label="{{ __('hiko.ascending')}}" title="{{ __('hiko.ascending')}}" label="ASC" value="asc" />
-                <x-radio name="direction" wire:model.defer="filters.direction" aria-label="{{ __('hiko.descending')}}" title="{{ __('hiko.descending')}}"  label="DESC" value="desc" />
+                <x-radio name="direction" wire:model.defer="filters.direction"
+                    aria-label="{{ __('hiko.ascending') }}" title="{{ __('hiko.ascending') }}" label="ASC"
+                    value="asc" />
+                <x-radio name="direction" wire:model.defer="filters.direction"
+                    aria-label="{{ __('hiko.descending') }}" title="{{ __('hiko.descending') }}" label="DESC"
+                    value="desc" />
             </div>
         </div>
         </label>

@@ -12,8 +12,8 @@ class LettersTable extends Component
     use WithPagination;
 
     public $filters = [
-        'order' => 'id',
-        'direction' => 'asc',
+        'order' => 'updated_at',
+        'direction' => 'desc',
     ];
 
     public function search()
@@ -47,6 +47,12 @@ class LettersTable extends Component
             },
             'keywords' => function ($subquery) {
                 $subquery->select('name');
+            },
+            'media' => function ($subquery) {
+                $subquery->select('model_id', 'model_type');
+            },
+            'users' => function ($subquery) {
+                $subquery->select('users.id', 'name');
             },
         ])
             ->select('id', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status');
@@ -94,6 +100,26 @@ class LettersTable extends Component
             });
         }
 
+        if (isset($this->filters['media'])) {
+            if ($this->filters['media'] === '1') {
+                $query->whereHas('media');
+            } elseif ($this->filters['media'] === '0') {
+                $query->whereDoesntHave('media');
+            }
+        }
+
+        if (isset($this->filters['editor']) && !empty($this->filters['editor'])) {
+            if (request()->user()->can('manage-users')) {
+                $query->whereHas('users', function ($subquery) {
+                    $subquery->where('users.name', 'LIKE', "%" . $this->filters['editor'] . "%");
+                });
+            } else if (request()->user()->can('manage-metadata')) {
+                $query->whereHas('users', function ($subquery) {
+                    $subquery->where('users.id', request()->user()->id);
+                });
+            }
+        }
+
         return $query
             ->orderBy($this->filters['order'], $this->filters['direction'])
             ->paginate(10);
@@ -101,10 +127,8 @@ class LettersTable extends Component
 
     protected function formatTableData($data)
     {
-
-
         return [
-            'header' => ['', 'ID', __('hiko.date'), __('hiko.signature'), __('hiko.author'), __('hiko.recipient'), __('hiko.origin'), __('hiko.destination'), __('hiko.keywords'), __('hiko.status')],
+            'header' => ['', 'ID', __('hiko.date'), __('hiko.signature'), __('hiko.author'), __('hiko.recipient'), __('hiko.origin'), __('hiko.destination'), __('hiko.keywords'), __('hiko.media'), __('hiko.status')],
             'rows' => $data->map(function ($letter) {
                 $identities = $letter->identities->groupBy('pivot.role')->toArray();
                 $places = $letter->places->groupBy('pivot.role')->toArray();
@@ -144,6 +168,9 @@ class LettersTable extends Component
                         'label' => collect($letter->keywords)->map(function ($kw) {
                             return $kw->getTranslation('name', config('hiko.metadata_default_locale'));
                         })->toArray(),
+                    ],
+                    [
+                        'label' => $letter->media->count(),
                     ],
                     [
                         'label' => __("hiko.{$letter->status}"),
