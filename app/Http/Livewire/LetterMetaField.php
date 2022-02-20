@@ -53,4 +53,9 @@ class LetterMetaField extends Component
     {
         return view('livewire.letter-meta-field');
     }
+
+    public function updatedItems()
+    {
+        $this->emit('itemChanged');
+    }
 }
