@@ -68,12 +68,12 @@
     </h2>
     <table class="w-full mb-10 text-sm">
         <tbody>
-            @if (isset($letter->identities['author']))
+            @if (isset($identities['author']))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="w-1/5 py-2">Author</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
-                            @foreach ($letter->identities['author'] as $author)
+                            @foreach ($identities['author'] as $author)
                                 <li class="mb-1">
                                     {{ $author['name'] }}
                                     @if ($author['pivot']['marked'])
@@ -103,12 +103,12 @@
                     </td>
                 </tr>
             @endif
-            @if (isset($letter->identities['recipient']))
+            @if (isset($identities['recipient']))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="w-1/5 py-2">Recipients</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
-                            @foreach ($letter->identities['recipient'] as $recipient)
+                            @foreach ($identities['recipient'] as $recipient)
                                 <li class="mb-1">
                                     {{ $recipient['name'] }}
                                     @if ($recipient['pivot']['marked'])
@@ -143,12 +143,12 @@
                     </td>
                 </tr>
             @endif
-            @if (isset($letter->identities['mentioned']))
+            @if (isset($identities['mentioned']))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="py-2">Mentioned people</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
-                            @foreach ($letter->identities['mentioned'] as $mentioned)
+                            @foreach ($identities['mentioned'] as $mentioned)
                                 <li class="mb-1">
                                     {{ $mentioned['name'] }}
                                 </li>

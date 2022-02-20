@@ -85,6 +85,8 @@ class LetterController extends Controller
         return view('pages.letters.show', [
             'title' => $letter->name,
             'letter' => $letter,
+            'identities' => $letter->identities->groupBy('pivot.role')->toArray(),
+            'places' => $letter->places->groupBy('pivot.role')->toArray(),
         ]);
     }
 

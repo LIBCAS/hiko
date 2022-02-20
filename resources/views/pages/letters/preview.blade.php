@@ -46,12 +46,11 @@
                 <h3 class="text-base">
                     Authors
                 </h3>
-                @if (isset($letter->identities['author']))
+                @if (isset($letter->identities_grouped['author']))
                     <ul>
-                        @foreach ($letter->identities['author'] as $author)
+                        @foreach ($letter->identities_grouped['author'] as $author)
                             <li>
-                                {{ $author['name'] }}@if ($author['pivot']['marked'])
-                                    , marked as: {{ $author['pivot']['marked'] }}
+                                {{ $author['name'] }}@if ($author['pivot']['marked']), marked as: {{ $author['pivot']['marked'] }}
                                 @endif
                             </li>
                         @endforeach
@@ -73,14 +72,12 @@
                 <h3 class="text-base">
                     Recipients
                 </h3>
-                @if (isset($letter->identities['recipient']))
+                @if (isset($letter->identities_grouped['recipient']))
                     <ul>
-                        @foreach ($letter->identities['recipient'] as $recipient)
+                        @foreach ($letter->identities_grouped['recipient'] as $recipient)
                             <li>
-                                {{ $recipient['name'] }}@if ($recipient['pivot']['marked'])
-                                    , marked as: {{ $recipient['pivot']['marked'] }}
-                                    @endif @if ($recipient['pivot']['salutation'])
-                                        , salutation: {{ $recipient['pivot']['salutation'] }}
+                                {{ $recipient['name'] }}@if ($recipient['pivot']['marked']) , marked as: {{ $recipient['pivot']['marked'] }}
+                                    @endif @if ($recipient['pivot']['salutation']), salutation: {{ $recipient['pivot']['salutation'] }}
                                     @endif
                             </li>
                         @endforeach
@@ -102,12 +99,11 @@
                 <h3 class="text-base">
                     Origin
                 </h3>
-                @if (isset($letter->places['origin']))
+                @if (isset($letter->places_grouped['origin']))
                     <ul>
-                        @foreach ($letter->places['origin'] as $origin)
+                        @foreach ($letter->places_grouped['origin'] as $origin)
                             <li>
-                                {{ $origin['name'] }}@if ($origin['pivot']['marked'])
-                                    , marked as: {{ $origin['pivot']['marked'] }}
+                                {{ $origin['name'] }}@if ($origin['pivot']['marked']), marked as: {{ $origin['pivot']['marked'] }}
                                 @endif
                             </li>
                         @endforeach
@@ -129,12 +125,11 @@
                 <h3 class="text-base">
                     Destination
                 </h3>
-                @if (isset($letter->places['destination']))
+                @if (isset($letter->places_grouped['destination']))
                     <ul>
-                        @foreach ($letter->places['destination'] as $destination)
+                        @foreach ($letter->places_grouped['destination'] as $destination)
                             <li>
-                                {{ $destination['name'] }}@if ($destination['pivot']['marked'])
-                                    , marked as: {{ $destination['pivot']['marked'] }}
+                                {{ $destination['name'] }}@if ($destination['pivot']['marked']), marked as: {{ $destination['pivot']['marked'] }}
                                 @endif
                             </li>
                         @endforeach
@@ -253,13 +248,13 @@
                         </li>
                     </ul>
                 @endif
-                @if ($letter->people_mentioned_note || isset($letter->identities['mentioned']))
+                @if ($letter->people_mentioned_note || isset($letter->identities_grouped['mentioned']))
                     <h3 class="text-base">
                         People mentioned
                     </h3>
-                    @if (isset($letter->identities['mentioned']))
+                    @if (isset($letter->identities_grouped['mentioned']))
                         <ul>
-                            @foreach ($letter->identities['mentioned'] as $mentioned)
+                            @foreach ($letter->identities_grouped['mentioned'] as $mentioned)
                                 <li>
                                     {{ $mentioned['name'] }}
                                 </li>
