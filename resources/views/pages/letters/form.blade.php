@@ -113,7 +113,7 @@
                         </div>
                     </div>
                     <div>
-                        <x-label for="date_marked" :value="__('Datum označené v dopise')" />
+                        <x-label for="date_marked" :value="__('hiko.date_marked')" />
                         <x-input id="date_marked" class="block w-full mt-1" type="text" name="date_marked"
                             :value="old('date_day', $letter->date_marked)" />
                         @error('date_marked')
@@ -121,23 +121,23 @@
                         @enderror
                     </div>
                     <div>
-                        <x-checkbox name="date_uncertain" label="{{ __('Datum je nejisté') }}"
+                        <x-checkbox name="date_uncertain" label="{{ __('hiko.date_uncertain') }}"
                             :checked="boolval(old('date_uncertain', $letter->date_uncertain))" />
                     </div>
                     <div>
-                        <x-checkbox name="date_approximate" label="{{ __('Datum je přibližné') }}"
+                        <x-checkbox name="date_approximate" label="{{ __('hiko.date_approximate') }}"
                             :checked="boolval(old('date_approximate', $letter->date_approximate))" />
                     </div>
                     <div>
-                        <x-checkbox name="date_inferred" label="{{ __('Datum je odvozené') }}"
+                        <x-checkbox name="date_inferred" label="{{ __('date.date_inferred') }}"
                             :checked="boolval(old('date_inferred', $letter->date_inferred))" />
                         <small class="block text-gray-600">
-                            {{ __('Datum není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
+                            {{ __('hiko.date_inferred_help') }}
                         </small>
                     </div>
                     <div
                         x-data="{ isRange: {{ var_export(boolval(old('date_day', $letter->date_is_range)), true) }} }">
-                        <x-checkbox name="date_is_range" label="{{ __('Datum je uvedené v rozmezí') }}"
+                        <x-checkbox name="date_is_range" label="{{ __('hiko.date_is_range') }}"
                             x-model="isRange" :checked="boolval(old('date_day', $letter->date_is_range))" />
                         <div class="flex space-x-6">
                             <div x-show="isRange">
@@ -168,7 +168,7 @@
                         </div>
                     </div>
                     <div>
-                        <x-label for="date_note" :value="__('Poznámka k datu')" />
+                        <x-label for="date_note" :value="__('hiko.date_note')" />
                         <x-textarea name="date_note" id="date_note" class="block w-full mt-1">
                             {{ old('date_note', $letter->date_note) }}
                         </x-textarea>
@@ -186,18 +186,18 @@
                         :label="__('hiko.author_name')"
                         :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
                     <div>
-                        <x-checkbox name="author_inferred" label="{{ __('Autor je odvozený') }}"
+                        <x-checkbox name="author_inferred" label="{{ __('hiko.author_inferred') }}"
                             :checked="boolval(old('author_inferred', $letter->author_inferred))" />
                         <small class="block text-gray-600">
-                            {{ __('Jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
+                            {{ __('hiko.name_inferred_help') }}
                         </small>
                     </div>
                     <div>
-                        <x-checkbox name="author_uncertain" label="{{ __('Autor je nejistý') }}"
+                        <x-checkbox name="author_uncertain" label="{{ __('hiko.author_uncertain') }}"
                             :checked="boolval(old('author_uncertain', $letter->author_uncertain))" />
                     </div>
                     <div>
-                        <x-label for="author_note" :value="__('Poznámka k autorům')" />
+                        <x-label for="author_note" :value="__('hiko.author_note')" />
                         <x-textarea name="author_note" id="author_note" class="block w-full mt-1">
                             {{ old('author_note', $letter->author_note) }}
                         </x-textarea>
@@ -215,18 +215,18 @@
                         route="ajax.identities" :label="__('hiko.recipient_name')"
                         :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ], [ 'label' => __('hiko.salutation'), 'key' => 'salutation' ] ]" />
                     <div>
-                        <x-checkbox name="recipient_inferred" label="{{ __('Příjemce je odvozený') }}"
+                        <x-checkbox name="recipient_inferred" label="{{ __('hiko.recipient_inferred') }}"
                             :checked="boolval(old('recipient_inferred', $letter->recipient_inferred))" />
                         <small class="block text-gray-600">
-                            {{ __('Jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
+                            {{ __('hiko.name_inferred_help') }}
                         </small>
                     </div>
                     <div>
-                        <x-checkbox name="recipient_uncertain" label="{{ __('Příjemce je nejistý') }}"
+                        <x-checkbox name="recipient_uncertain" label="{{ __('hiko.recipient_uncertain') }}"
                             :checked="boolval(old('recipient_uncertain', $letter->recipient_uncertain))" />
                     </div>
                     <div>
-                        <x-label for="recipient_note" :value="__('Poznámka k příjemcům')" />
+                        <x-label for="recipient_note" :value="__('hiko.recipient_note')" />
                         <x-textarea name="recipient_note" id="recipient_note" class="block w-full mt-1">
                             {{ old('recipient_note', $letter->recipient_note) }}
                         </x-textarea>
@@ -244,18 +244,18 @@
                         :label="__('hiko.name')"
                         :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
                     <div>
-                        <x-checkbox name="origin_inferred" label="{{ __('Místo odeslání je odvozené') }}"
+                        <x-checkbox name="origin_inferred" label="{{ __('hiko.origin_inferred') }}"
                             :checked="boolval(old('origin_inferred', $letter->origin_inferred))" />
                         <small class="block text-gray-600">
-                            {{ __('Jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
+                            {{ __('hiko.name_inferred_help') }}
                         </small>
                     </div>
                     <div>
-                        <x-checkbox name="origin_uncertain" label="{{ __('Místo odeslání je nejisté') }}"
+                        <x-checkbox name="origin_uncertain" label="{{ __('hiko.origin_uncertain') }}"
                             :checked="boolval(old('origin_uncertain', $letter->origin_uncertain))" />
                     </div>
                     <div>
-                        <x-label for="origin_note" :value="__('Poznámka k místu odeslání')" />
+                        <x-label for="origin_note" :value="__('hiko.origin_note')" />
                         <x-textarea name="origin_note" id="origin_note" class="block w-full mt-1">
                             {{ old('origin_note', $letter->origin_note) }}
                         </x-textarea>
@@ -273,18 +273,18 @@
                         route="ajax.places" :label="__('hiko.name')"
                         :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
                     <div>
-                        <x-checkbox name="destination_inferred" label="{{ __('Místo určení je odvozené') }}"
+                        <x-checkbox name="destination_inferred" label="{{ __('hiko.destination_inferred') }}"
                             :checked="boolval(old('destination_inferred', $letter->destination_inferred))" />
                         <small class="block text-gray-600">
-                            {{ __('Jméno není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů') }}
+                            {{ __('hiko.name_inferred_help') }}
                         </small>
                     </div>
                     <div>
-                        <x-checkbox name="destination_uncertain" label="{{ __('Místo určení je nejisté') }}"
+                        <x-checkbox name="destination_uncertain" label="{{ __('hiko.destination_uncertain') }}"
                             :checked="boolval(old('destination_uncertain', $letter->destination_uncertain))" />
                     </div>
                     <div>
-                        <x-label for="destination_note" :value="__('Poznámka k místu určení')" />
+                        <x-label for="destination_note" :value="__('hiko.destination_note')" />
                         <x-textarea name="destination_note" id="destination_note" class="block w-full mt-1">
                             {{ old('destination_note', $letter->destination_note) }}
                         </x-textarea>
@@ -326,7 +326,7 @@
                         @enderror
                     </div>
                     <div>
-                        <x-label for="abstract_cs" :value="__('Abstrakt CS')" />
+                        <x-label for="abstract_cs" :value="__('hiko.abstract') . ' CS'" />
                         <x-textarea name="abstract_cs" id="abstract_cs" class="block w-full mt-1">
                             {{ old('abstract_cs', $letter->translations['abstract']['cs'] ?? '') }}
                         </x-textarea>
@@ -335,7 +335,7 @@
                         @enderror
                     </div>
                     <div>
-                        <x-label for="abstract_en" :value="__('Abstrakt EN')" />
+                        <x-label for="abstract_en" :value="__('hiko.abstract') . ' EN'" />
                         <x-textarea name="abstract_en" id="abstract_en" class="block w-full mt-1">
                             {{ old('abstract_en', $letter->translations['abstract']['en'] ?? '') }}
                         </x-textarea>
@@ -344,7 +344,7 @@
                         @enderror
                     </div>
                     <div>
-                        <x-label for="incipit" :value="__('Incipit')" />
+                        <x-label for="incipit" :value="__('hiko.incipit')" />
                         <x-textarea name="incipit" id="incipit" class="block w-full mt-1">
                             {{ old('incipit', $letter->incipit) }}
                         </x-textarea>
@@ -353,7 +353,7 @@
                         @enderror
                     </div>
                     <div>
-                        <x-label for="explicit" :value="__('Explicit')" />
+                        <x-label for="explicit" :value="__('hiko.explicit')" />
                         <x-textarea name="explicit" id="explicit" class="block w-full mt-1">
                             {{ old('explicit', $letter->explicit) }}
                         </x-textarea>
@@ -384,7 +384,7 @@
                         @enderror
                     </div>
                     <div>
-                        <x-label for="notes_private" :value="__('Poznámka pro zpracovatele')" />
+                        <x-label for="notes_private" :value="__('hiko.notes_private')" />
                         <x-textarea name="notes_private" id="notes_private" class="block w-full mt-1">
                             {{ old('notes_private', $letter->notes_private) }}
                         </x-textarea>
@@ -393,7 +393,7 @@
                         @enderror
                     </div>
                     <div>
-                        <x-label for="notes_public" :value="__('Veřejná poznámka')" />
+                        <x-label for="notes_public" :value="__('hiko.notes_public')" />
                         <x-textarea name="notes_public" id="notes_public" class="block w-full mt-1">
                             {{ old('notes_public', $letter->notes_public) }}
                         </x-textarea>
