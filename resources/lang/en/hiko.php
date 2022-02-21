@@ -4,6 +4,7 @@ return [
     'admin' => 'Admin',
     'editor' => 'Editor',
     'guest' => 'Guest',
+    'developer' => 'Developer',
     'name' => 'Name',
     'role' => 'Role',
     'status' => 'Status',

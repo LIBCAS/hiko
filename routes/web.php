@@ -6,6 +6,7 @@ use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\KeywordController;
+use App\Http\Controllers\DevToolsController;
 use App\Http\Controllers\IdentityController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ProfessionController;
@@ -340,6 +341,14 @@ Route::prefix('ajax')->group(function () {
     Route::get('keyword', AjaxKeywordController::class)
         ->name('ajax.keywords')
         ->middleware(['auth', 'can:manage-metadata']);
+});
+
+Route::prefix('dev')->group(function () {
+    Route::get('optimize', [DevToolsController::class, 'optimize'])
+        ->middleware(['auth', 'can:debug']);
+
+    Route::get('clear', [DevToolsController::class, 'clear'])
+        ->middleware(['auth', 'can:debug']);
 });
 
 Route::get('account', AccountController::class)

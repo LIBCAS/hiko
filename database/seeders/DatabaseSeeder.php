@@ -40,6 +40,12 @@ class DatabaseSeeder extends Seeder
             'role' => 'guest',
         ]);
 
+        User::factory()->create([
+            'name' => 'Zkušební Vývojář',
+            'email' => 'developer@example.com',
+            'role' => 'developer',
+        ]);
+
         Location::factory()->create([
             'name' => 'Národní Archiv',
             'type' => 'archive',

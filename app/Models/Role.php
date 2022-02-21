@@ -28,6 +28,11 @@ class Role extends Model
                 'label' => 'guest',
                 'abilities' => 'view-metadata',
             ],
+            [
+                'id' => 4,
+                'label' => 'developer',
+                'abilities' => 'manage-metadata,view-metadata,manage-users,debug',
+            ],
         ];
     }
 }

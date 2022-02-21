@@ -96,6 +96,6 @@ class UserController extends Controller
 
     protected function getRoles()
     {
-        return ['admin', 'editor', 'guest'];
+        return ['admin', 'editor', 'guest', 'developer'];
     }
 }

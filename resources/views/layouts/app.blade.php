@@ -8,7 +8,8 @@
     <title>{{ config('app.name') }}</title>
     <link rel="stylesheet" href="{{ asset('dist/app.css') }}">
     <script src="{{ asset('dist/app.js') }}" defer></script>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22256%22 height=%22256%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2290%22>✉️</text></svg>" />
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22256%22 height=%22256%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2290%22>✉️</text></svg>" />
     @livewireStyles
     @stack('styles')
 </head>
@@ -35,7 +36,7 @@
                 </a>
             </p>
             <p class="mt-2 text-sm text-gray-500">
-                {{ date('Y') }} HIKO – {{ config('app.name') }}
+                {{ date('Y') }} HIKO – {{ config('app.name') }}, v.{{ config('hiko.version') }}
             </p>
         </div>
     </footer>
