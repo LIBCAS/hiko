@@ -72,7 +72,7 @@
                         </form>
                         <button wire:click="remove({{ $image->id }})" type="button"
                             class="inline-flex items-center mt-6 space-x-3 text-red-600">
-                            <x-icons.trash /> <span class="text-sm">{{ __('hiko.remove') }}</span>
+                            <x-icons.remove /> <span class="text-sm">{{ __('hiko.remove') }}</span>
                         </button>
                     </div>
                 </div>
