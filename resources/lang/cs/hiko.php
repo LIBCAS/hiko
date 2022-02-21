@@ -178,4 +178,5 @@ return [
     'yes' => 'Ano',
     'no' => 'Ne',
     'basic_export' => 'Základní export',
+    'description' => 'Popisek',
 ];

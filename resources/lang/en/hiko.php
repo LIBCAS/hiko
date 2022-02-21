@@ -179,4 +179,5 @@ return [
     'yes' => 'Yes',
     'no' => 'No',
     'basic_export' => 'Basic export',
+    'description' => 'Description',
 ];
