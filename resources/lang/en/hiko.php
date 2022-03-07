@@ -204,4 +204,6 @@ return [
     'date_inferred' => 'Date je odvozené',
     'date_inferred_help' => 'Date not specified but deduced from content of letter or related material',
     'date_is_range' => 'Date range',
+    'letters_to' => 'Letters to: :name',
+    'letters_from' => 'Letters from: :name',
 ];

@@ -300,6 +300,10 @@ Route::prefix('letters')->group(function () {
         ->name('letters.destroy')
         ->middleware(['auth', 'can:manage-metadata']);
 
+    Route::get('export/palladio/character', [LetterController::class, 'exportPalladioCharacter'])
+        ->name('letters.export.palladio.character')
+        ->middleware(['auth', 'can:manage-metadata']);
+
     Route::get('export', [LetterController::class, 'export'])
         ->name('letters.export')
         ->middleware(['auth', 'can:manage-metadata']);

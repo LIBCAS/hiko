@@ -204,4 +204,6 @@ return [
     'date_inferred' => 'Datum je odvozené',
     'date_inferred_help' => 'Datum není uvedené, ale dá se odvodit z obsahu dopisu nebo dalších materiálů',
     'date_is_range' => 'Datum je uvedené v rozmezí',
+    'letters_to' => 'Dopisy pro: :name',
+    'letters_from' => 'Dopisy od: :name',
 ];

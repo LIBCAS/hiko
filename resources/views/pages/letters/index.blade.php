@@ -15,6 +15,16 @@
                     class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
                     {{ __('hiko.basic_export') }}
                 </a>
+                @if ($mainCharacter)
+                    <a href="{{ route('letters.export.palladio.character', ['role' => 'author', 'name' => $mainCharacter]) }}"
+                        class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
+                        {{ __('hiko.letters_from', ['name' => $mainCharacter]) }}
+                    </a>
+                    <a href="{{ route('letters.export.palladio.character', ['role' => 'recipient', 'name' => $mainCharacter]) }}"
+                        class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
+                        {{ __('hiko.letters_to', ['name' => $mainCharacter]) }}
+                    </a>
+                @endif
             </div>
         </x-dropdown>
     </div>
