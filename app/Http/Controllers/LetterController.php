@@ -6,6 +6,7 @@ use App\Models\Letter;
 use App\Models\Language;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
+use App\Models\Identity;
 use Maatwebsite\Excel\Facades\Excel;
 
 class LetterController extends Controller
@@ -52,6 +53,9 @@ class LetterController extends Controller
     {
         return view('pages.letters.index', [
             'title' => __('hiko.letters'),
+            'mainCharacter' => config('hiko.main_character')
+                ? Identity::find(config('hiko.main_character'))->select('name')->first()->name
+                : null,
         ]);
     }
 
