@@ -4,14 +4,24 @@ namespace App\Exports;
 
 use App\Models\Letter;
 use App\Models\Identity;
+use Illuminate\Support\Str;
+use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Illuminate\Contracts\Support\Responsable;
 use Maatwebsite\Excel\Concerns\FromCollection;
 
-class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadings
+class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadings, Responsable
 {
+    use Exportable;
+
     public $role;
     public $mainCharacter;
+
+    private $fileName;
+    private $headers = [
+        'Content-Type' => 'text/csv',
+    ];
 
     public function __construct($role)
     {
@@ -19,6 +29,7 @@ class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadin
         $this->mainCharacter = Identity::where('id', '=', config('hiko.main_character'))
             ->select('id', 'surname', 'birth_year')
             ->first();
+        $this->fileName = 'palladio-' . Str::slug($this->mainCharacter->surname) . "-{$this->role}.csv";
     }
 
     public function headings(): array
@@ -68,17 +79,21 @@ class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadin
             : $letter->places->where('role', '=', 'origin')->first();
 
         return [
-            $this->getAge($this->mainCharacter->birth_year, $letter->date_year),
-            $sideCharacter->name,
-            $sideCharacter->gender,
-            $sideCharacter->nationality,
-            $this->getAge($sideCharacter->birth_year, $letter->date_year),
-            $sideCharacter->professions->map(function ($profession) {
-                return $profession->getTranslation('name', config('hiko.metadata_default_locale'));
-            })->implode('|'),
-            $sideCharacter->profession_categories->map(function ($profession) {
-                return $profession->getTranslation('name', config('hiko.metadata_default_locale'));
-            })->implode('|'),
+            $this->getAge($this->mainCharacter, $letter->date_year),
+            !empty($sideCharacter) ? $sideCharacter->name : '',
+            !empty($sideCharacter) ? $sideCharacter->gender : '',
+            !empty($sideCharacter) ? $sideCharacter->nationality : '',
+            $this->getAge($sideCharacter, $letter->date_year),
+            !empty($sideCharacter)
+                ? $sideCharacter->professions->map(function ($profession) {
+                    return $profession->getTranslation('name', config('hiko.metadata_default_locale'));
+                })->implode('|')
+                : '',
+            !empty($sideCharacter)
+                ? $sideCharacter->profession_categories->map(function ($profession) {
+                    return $profession->getTranslation('name', config('hiko.metadata_default_locale'));
+                })->implode('|')
+                : '',
             $this->getDate($letter),
             $letter->date_year,
             $letter->date_month,
@@ -133,11 +148,11 @@ class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadin
             ->get();
     }
 
-    protected function getAge($birth, $year)
+    protected function getAge($person, $year)
     {
-        return empty($birth) || empty($year)
+        return empty($person) || empty($year)
             ? ''
-            : (int) $year - (int) $birth;
+            : (int) $year - (int) $person->birth_year;
     }
 
     protected function getDate($letter)

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Letter;
 use App\Models\Identity;
 use App\Models\Language;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -157,12 +156,7 @@ class LetterController extends Controller
 
     public function exportPalladioCharacter(Request $request)
     {
-        $nameSlug = Str::slug($request->name);
-
-        return Excel::download(
-            new PalladioCharacterExport($request->role),
-            "palladio-{$nameSlug}-{$request->role}.csv"
-        );
+        return new PalladioCharacterExport($request->role);
     }
 
     protected function viewData(Letter $letter)
