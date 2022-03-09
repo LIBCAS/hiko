@@ -59,24 +59,40 @@ class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadin
             ? $letter->identities->where('role', '=', 'recipient')->first()
             : $letter->identities->where('role', '=', 'author')->first();
 
+        $mainCharacterPlace = $this->role === 'author'
+            ? $letter->places->where('role', '=', 'origin')->first()
+            : $letter->places->where('role', '=', 'destination')->first();
+
+        $sideCharacterPlace = $this->role === 'author'
+            ? $letter->places->where('role', '=', 'destination')->first()
+            : $letter->places->where('role', '=', 'origin')->first();
+
         return [
             $this->getAge($this->mainCharacter->birth_year, $letter->date_year),
             $sideCharacter->name,
             $sideCharacter->gender,
             $sideCharacter->nationality,
             $this->getAge($sideCharacter->birth_year, $letter->date_year),
-            'Profession (O)', // profese korespondenčního partnera
-            'Profession category (O)', // kategorie profesí korespondenčního partnera
+            $sideCharacter->professions->map(function ($profession) {
+                return $profession->getTranslation('name', config('hiko.metadata_default_locale'));
+            })->implode('|'),
+            $sideCharacter->profession_categories->map(function ($profession) {
+                return $profession->getTranslation('name', config('hiko.metadata_default_locale'));
+            })->implode('|'),
             $this->getDate($letter),
             $letter->date_year,
             $letter->date_month,
-            "Place of {$this->mainCharacter->surname[0]}", // místo pobytu osobnosti
-            "Place of {$this->mainCharacter->surname[0]} (coordinates)", // to samé jako výše
-            'Place of O', // místo korespondenčního partnera
-            'Place of O (coordinates)', // to samé jako výše
+            $mainCharacterPlace->name,
+            $this->getLatLong($mainCharacterPlace),
+            $sideCharacterPlace->name,
+            $this->getLatLong($sideCharacterPlace),
             strtolower(str_replace(';', '|', $letter->languages)),
-            'Keywords',
-            'Keywords categories',
+            $letter->keywords->map(function ($kw) {
+                return $kw->getTranslation('name', config('hiko.metadata_default_locale'));
+            })->implode('|'),
+            $letter->keywords->map(function ($kw) {
+                return $kw->keyword_category->getTranslation('name', config('hiko.metadata_default_locale'));
+            })->implode('|'),
             collect($letter->identities->where('role', '=', 'mentioned')->pluck('name')->implode('|'))->toArray()[0],
             !empty($letter->copies) ? $letter->copies[0]['type'] : '',
             !empty($letter->copies) ? $letter->copies[0]['preservation'] : '',
@@ -93,7 +109,8 @@ class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadin
     {
         return Letter::with([
             'identities' => function ($subquery) {
-                $subquery->select('identities.id', 'name', 'role', 'birth_year', 'gender', 'nationality')
+                $subquery->with('professions', 'profession_categories')
+                    ->select('identities.id', 'name', 'role', 'birth_year', 'gender', 'nationality')
                     ->whereIn('role', ['author', 'recipient', 'mentioned'])
                     ->orderBy('position');
             },
@@ -103,7 +120,8 @@ class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadin
                     ->orderBy('position');
             },
             'keywords' => function ($subquery) {
-                $subquery->select('keywords.id', 'name');
+                $subquery->with('keyword_category')
+                    ->select('keywords.id', 'keyword_category_id', 'name');
             },
         ])
             ->whereHas('identities', function ($query) {
@@ -133,5 +151,12 @@ class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadin
         }
 
         return $date;
+    }
+
+    protected function getLatLong($place)
+    {
+        return empty($place->latitude) && empty($place->longitude)
+            ? ''
+            : "{$place->latitude}, {$place->longitude}";
     }
 }
