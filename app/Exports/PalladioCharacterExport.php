@@ -16,7 +16,7 @@ class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadin
     public function __construct($role)
     {
         $this->role = $role;
-        $this->mainCharacter = Identity::find(config('hiko.main_character'))
+        $this->mainCharacter = Identity::where('id', '=', config('hiko.main_character'))
             ->select('id', 'surname', 'birth_year')
             ->first();
     }

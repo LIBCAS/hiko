@@ -56,7 +56,7 @@ class LetterController extends Controller
         return view('pages.letters.index', [
             'title' => __('hiko.letters'),
             'mainCharacter' => config('hiko.main_character')
-                ? Identity::find(config('hiko.main_character'))->select('surname')->first()->surname
+                ? Identity::where('id', '=', config('hiko.main_character'))->select('surname')->first()->surname
                 : null,
         ]);
     }
