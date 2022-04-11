@@ -201,7 +201,7 @@ return [
     'date_marked' => 'Date as marked',
     'date_uncertain' => 'Date is uncertain',
     'date_approximate' => 'Date je přibližné',
-    'date_inferred' => 'Date je odvozené',
+    'date_inferred' => 'Date is inferred',
     'date_inferred_help' => 'Date not specified but deduced from content of letter or related material',
     'date_is_range' => 'Date range',
     'letters_to' => 'Letters to: :name',

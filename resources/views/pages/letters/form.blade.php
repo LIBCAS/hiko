@@ -128,7 +128,7 @@
                             :checked="boolval(old('date_approximate', $letter->date_approximate))" />
                     </div>
                     <div>
-                        <x-checkbox name="date_inferred" label="{{ __('date.date_inferred') }}" :checked="boolval(old('date_inferred', $letter->date_inferred))" />
+                        <x-checkbox name="date_inferred" label="{{ __('hiko.date_inferred') }}" :checked="boolval(old('date_inferred', $letter->date_inferred))" />
                         <small class="block text-gray-600">
                             {{ __('hiko.date_inferred_help') }}
                         </small>
