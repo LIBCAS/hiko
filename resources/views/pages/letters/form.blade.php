@@ -76,7 +76,7 @@
                 </div>
             @endif
             <form action="{{ $action }}" method="post" onkeydown="return event.key != 'Enter';"
-                class="max-w-sm space-y-6 md:-mt-6" autocomplete="off" novalidate>
+                class="max-w-sm space-y-6 md:-mt-6" autocomplete="off">
                 @csrf
                 @isset($method)
                     @method($method)

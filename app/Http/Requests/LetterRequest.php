@@ -52,6 +52,55 @@ class LetterRequest extends FormRequest
         ];
     }
 
+    public function attributes()
+    {
+        $fields = [
+            'date_year',
+            'date_month',
+            'date_day',
+            'date_marked',
+            'date_uncertain',
+            'date_approximate',
+            'date_inferred',
+            'date_is_range',
+            'range_year',
+            'range_month',
+            'range_day',
+            'date_note',
+            'author_uncertain',
+            'author_inferred',
+            'author_note',
+            'recipient_uncertain',
+            'recipient_inferred',
+            'recipient_note',
+            'destination_uncertain',
+            'destination_inferred',
+            'destination_note',
+            'origin_uncertain',
+            'origin_inferred',
+            'origin_note',
+            'people_mentioned_note',
+            'copies',
+            'related_resources',
+            'abstract',
+            'explicit',
+            'incipit',
+            'copyright',
+            'languages',
+            'notes_private',
+            'notes_public',
+            'status',
+        ];
+
+        $result = [];
+
+        foreach ($fields as $field) {
+            $result[$field] = "'" . __("hiko.{$field}") . "'";
+        }
+
+        return $result;
+    }
+
     protected function prepareForValidation()
     {
         $this->merge([
