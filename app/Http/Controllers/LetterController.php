@@ -7,49 +7,12 @@ use App\Models\Identity;
 use App\Models\Language;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
+use App\Http\Requests\LetterRequest;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PalladioCharacterExport;
 
 class LetterController extends Controller
 {
-    protected $rules = [
-        'date_year' => ['nullable', 'integer', 'numeric'],
-        'date_month' => ['nullable', 'integer', 'numeric'],
-        'date_day' => ['nullable', 'integer', 'numeric'],
-        'date_marked' => ['nullable', 'string', 'max:255'],
-        'date_uncertain' => ['nullable', 'boolean'],
-        'date_approximate' => ['nullable', 'boolean'],
-        'date_inferred' => ['nullable', 'boolean'],
-        'date_is_range' => ['nullable', 'boolean'],
-        'range_year' => ['nullable', 'integer', 'numeric'],
-        'range_month' => ['nullable', 'integer', 'numeric'],
-        'range_day' => ['nullable', 'integer', 'numeric'],
-        'date_note' => ['nullable'],
-        'author_uncertain' => ['nullable', 'boolean'],
-        'author_inferred' => ['nullable', 'boolean'],
-        'author_note' => ['nullable'],
-        'recipient_uncertain' => ['nullable', 'boolean'],
-        'recipient_inferred' => ['nullable', 'boolean'],
-        'recipient_note' => ['nullable'],
-        'destination_uncertain' => ['nullable', 'boolean'],
-        'destination_inferred' => ['nullable', 'boolean'],
-        'destination_note' => ['nullable'],
-        'origin_uncertain' => ['nullable', 'boolean'],
-        'origin_inferred' => ['nullable', 'boolean'],
-        'origin_note' => ['nullable'],
-        'people_mentioned_note' => ['nullable'],
-        'copies' => ['nullable'],
-        'related_resources' => ['nullable'],
-        'abstract' => ['nullable'],
-        'explicit' => ['nullable', 'string', 'max:255'],
-        'incipit' => ['nullable', 'string', 'max:255'],
-        'copyright' => ['nullable', 'string', 'max:255'],
-        'languages' => ['nullable', 'string', 'max:255'],
-        'notes_private' => ['nullable'],
-        'notes_public' => ['nullable'],
-        'status' => ['required', 'string', 'max:255'],
-    ];
-
     public function index()
     {
         return view('pages.letters.index', [
@@ -71,11 +34,9 @@ class LetterController extends Controller
         ], $this->viewData($letter)));
     }
 
-    public function store(Request $request)
+    public function store(LetterRequest $request)
     {
-        $request = $this->modifyRequest($request);
-
-        $letter = Letter::create($request->validate($this->rules));
+        $letter = Letter::create($request->validated());
 
         $this->attachRelated($request, $letter);
 
@@ -106,11 +67,9 @@ class LetterController extends Controller
         ], $this->viewData($letter)));
     }
 
-    public function update(Request $request, Letter $letter)
+    public function update(LetterRequest $request, Letter $letter)
     {
-        $request = $this->modifyRequest($request);
-
-        $letter->update($request->validate($this->rules));
+        $letter->update($request->validated());
 
         $this->attachRelated($request, $letter);
 
@@ -170,51 +129,10 @@ class LetterController extends Controller
             'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
             'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
             'languages' => collect(Language::all())->pluck('name'),
+            'selectedLanguages' => request()->old('languages')
+                ? (array) request()->old('languages')
+                : explode(';', $letter->languages),
         ];
-    }
-
-    protected function modifyRequest(Request $request)
-    {
-        if (!empty($request->languages)) {
-            $request->request->set('languages', implode(';', $request->languages));
-        }
-
-        if (!empty($request->related_resources)) {
-            $request->request->set('related_resources', json_decode($request->related_resources, true));
-        }
-
-        if ($request->copies) {
-            $request->request->set('copies', json_decode($request->copies, true));
-        }
-
-        if ($request->authors) {
-            $request->request->set('authors', json_decode($request->authors, true));
-        }
-
-        if ($request->recipients) {
-            $request->request->set('recipients', json_decode($request->recipients, true));
-        }
-
-        if ($request->origins) {
-            $request->request->set('origins', json_decode($request->origins, true));
-        }
-
-        if ($request->destinations) {
-            $request->request->set('destinations', json_decode($request->destinations, true));
-        }
-
-        $request->request->set('abstract', [
-            'cs' => $request->abstract_cs,
-            'en' => $request->abstract_en,
-        ]);
-
-        foreach ($this->rules as $key => $fieldRules) {
-            if (in_array('boolean', $fieldRules)) {
-                $request->request->set($key, isset($request->{$key}) ? 1 : 0);
-            }
-        }
-
-        return $request;
     }
 
     protected function attachRelated(Request $request, Letter $letter)
@@ -268,7 +186,9 @@ class LetterController extends Controller
     protected function getSelectedMetaFields(Letter $letter, string $fieldKey, $pivotFields)
     {
         if (request()->old($fieldKey)) {
-            return request()->old($fieldKey);
+            return is_array(request()->old($fieldKey))
+                ? request()->old($fieldKey)
+                : json_decode(request()->old($fieldKey), true);
         }
 
         return $letter->{$fieldKey}

@@ -89,8 +89,7 @@
                         <div>
                             <x-label for="date_year" :value="__('hiko.year')" />
                             <x-input id="date_year" class="block w-full mt-1" type="text" name="date_year"
-                                :value="old('date_year', $letter->date_year)" min="0" max="{{ date('Y') }}"
-                                type="number" />
+                                :value="old('date_year', $letter->date_year)" min="0" max="{{ date('Y') }}" type="number" />
                             @error('date_year')
                                 <div class="text-red-600">{{ $message }}</div>
                             @enderror
@@ -129,22 +128,19 @@
                             :checked="boolval(old('date_approximate', $letter->date_approximate))" />
                     </div>
                     <div>
-                        <x-checkbox name="date_inferred" label="{{ __('date.date_inferred') }}"
-                            :checked="boolval(old('date_inferred', $letter->date_inferred))" />
+                        <x-checkbox name="date_inferred" label="{{ __('date.date_inferred') }}" :checked="boolval(old('date_inferred', $letter->date_inferred))" />
                         <small class="block text-gray-600">
                             {{ __('hiko.date_inferred_help') }}
                         </small>
                     </div>
-                    <div
-                        x-data="{ isRange: {{ var_export(boolval(old('date_day', $letter->date_is_range)), true) }} }">
-                        <x-checkbox name="date_is_range" label="{{ __('hiko.date_is_range') }}"
-                            x-model="isRange" :checked="boolval(old('date_day', $letter->date_is_range))" />
+                    <div x-data="{ isRange: {{ var_export(boolval(old('date_day', $letter->date_is_range)), true) }} }">
+                        <x-checkbox name="date_is_range" label="{{ __('hiko.date_is_range') }}" x-model="isRange"
+                            :checked="boolval(old('date_day', $letter->date_is_range))" />
                         <div class="flex space-x-6">
                             <div x-show="isRange">
                                 <x-label for="range_year" :value="__('hiko.year') . ' 2'" />
                                 <x-input id="range_year" class="block w-full mt-1" type="text" name="range_year"
-                                    :value="old('range_year', $letter->range_year)" min="0" max="{{ date('Y') }}"
-                                    type="number" />
+                                    :value="old('range_year', $letter->range_year)" min="0" max="{{ date('Y') }}" type="number" />
                                 @error('range_year')
                                     <div class="text-red-600">{{ $message }}</div>
                                 @enderror
@@ -183,8 +179,7 @@
                         {{ __('hiko.author') }}
                     </legend>
                     <livewire:letter-meta-field :items="$selectedAuthors" fieldKey="authors" route="ajax.identities"
-                        :label="__('hiko.author_name')"
-                        :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
+                        :label="__('hiko.author_name')" :fields="[['label' => __('hiko.name_marked'), 'key' => 'marked']]" />
                     <div>
                         <x-checkbox name="author_inferred" label="{{ __('hiko.author_inferred') }}"
                             :checked="boolval(old('author_inferred', $letter->author_inferred))" />
@@ -211,9 +206,11 @@
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.recipient') }}
                     </legend>
-                    <livewire:letter-meta-field :items="$selectedRecipients" fieldKey="recipients"
-                        route="ajax.identities" :label="__('hiko.recipient_name')"
-                        :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ], [ 'label' => __('hiko.salutation'), 'key' => 'salutation' ] ]" />
+                    <livewire:letter-meta-field :items="$selectedRecipients" fieldKey="recipients" route="ajax.identities"
+                        :label="__('hiko.recipient_name')" :fields="[
+                            ['label' => __('hiko.name_marked'), 'key' => 'marked'],
+                            ['label' => __('hiko.salutation'), 'key' => 'salutation'],
+                        ]" />
                     <div>
                         <x-checkbox name="recipient_inferred" label="{{ __('hiko.recipient_inferred') }}"
                             :checked="boolval(old('recipient_inferred', $letter->recipient_inferred))" />
@@ -241,8 +238,7 @@
                         {{ __('hiko.origin') }}
                     </legend>
                     <livewire:letter-meta-field :items="$selectedOrigins" fieldKey="origins" route="ajax.places"
-                        :label="__('hiko.name')"
-                        :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
+                        :label="__('hiko.name')" :fields="[['label' => __('hiko.name_marked'), 'key' => 'marked']]" />
                     <div>
                         <x-checkbox name="origin_inferred" label="{{ __('hiko.origin_inferred') }}"
                             :checked="boolval(old('origin_inferred', $letter->origin_inferred))" />
@@ -269,9 +265,8 @@
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.destination') }}
                     </legend>
-                    <livewire:letter-meta-field :items="$selectedDestinations" fieldKey="destinations"
-                        route="ajax.places" :label="__('hiko.name')"
-                        :fields="[ [ 'label' => __('hiko.name_marked'), 'key' => 'marked' ] ]" />
+                    <livewire:letter-meta-field :items="$selectedDestinations" fieldKey="destinations" route="ajax.places"
+                        :label="__('hiko.name')" :fields="[['label' => __('hiko.name_marked'), 'key' => 'marked']]" />
                     <div>
                         <x-checkbox name="destination_inferred" label="{{ __('hiko.destination_inferred') }}"
                             :checked="boolval(old('destination_inferred', $letter->destination_inferred))" />
@@ -299,11 +294,12 @@
                         {{ __('hiko.content_description') }}
                     </legend>
                     <div>
+
                         <x-label for="languages" :value="__('hiko.language')" />
-                        <x-select x-data="choices({element: $el })" x-init="initSelect()" id="languages"
+                        <x-select x-data="choices({ element: $el })" x-init="initSelect()" id="languages"
                             class="block w-full mt-1" name="languages[]" multiple>
                             @foreach ($languages as $language)
-                                <option value="{{ $language }}" @if (in_array($language, explode(';', request()->old('languages', $letter->languages)))) selected @endif>
+                                <option value="{{ $language }}" @if (in_array($language, $selectedLanguages)) selected @endif>
                                     {{ $language }}
                                 </option>
                             @endforeach
@@ -314,8 +310,7 @@
                     </div>
                     <div>
                         <x-label for="keywords" :value="__('hiko.keywords')" />
-                        <x-select name="keywords[]" class="block w-full mt-1" id="keywords"
-                            x-data="ajaxChoices({url: '{{ route('ajax.keywords') }}', element: $el })"
+                        <x-select name="keywords[]" class="block w-full mt-1" id="keywords" x-data="ajaxChoices({ url: '{{ route('ajax.keywords') }}', element: $el })"
                             x-init="initSelect()" multiple>
                             @foreach ($selectedKeywords as $kw)
                                 <option value="{{ $kw['value'] }}" selected>{{ $kw['label'] }}</option>
@@ -363,8 +358,7 @@
                     </div>
                     <div>
                         <x-label for="mentioned" :value="__('hiko.mentioned')" />
-                        <x-select name="mentioned[]" class="block w-full mt-1" id="mentioned"
-                            x-data="ajaxChoices({url: '{{ route('ajax.identities') }}', element: $el })"
+                        <x-select name="mentioned[]" class="block w-full mt-1" id="mentioned" x-data="ajaxChoices({ url: '{{ route('ajax.identities') }}', element: $el })"
                             x-init="initSelect()" multiple>
                             @foreach ($selectedMentioned as $mention)
                                 <option value="{{ $mention['value'] }}" selected>{{ $mention['label'] }}</option>
@@ -412,8 +406,8 @@
                         {{ __('hiko.status') }}
                     </legend>
                     <div>
-                        <x-radio name="status" label="{{ __('hiko.draft_letter') }}" value="draft"
-                            :checked="old('status', $letter->status) === 'draft'" name="status" required />
+                        <x-radio name="status" label="{{ __('hiko.draft_letter') }}" value="draft" :checked="old('status', $letter->status) === 'draft'"
+                            name="status" required />
                     </div>
                     <div>
                         <x-radio name="status" label="{{ __('hiko.published_letter') }}" value="publish"
