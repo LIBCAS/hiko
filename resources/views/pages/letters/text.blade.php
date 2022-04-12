@@ -21,7 +21,7 @@
     </ul>
     <div class="w-full md:flex md:space-x-6">
         <livewire:editor :letter="$letter" />
-        <div class="flex-1 z-50">
+        <div class="z-50 flex-1">
             <div class="top-0 space-y-6 overflow-y-scroll border h-96 md:sticky">
                 @foreach ($images as $image)
                     <div x-data="{open: false}" x-on:keydown.escape="open = false">
@@ -32,7 +32,7 @@
                         </button>
                         <div x-show="open" x-on:click="open = false" style="display:none"
                             class="fixed inset-0 p-4 bg-black bg-opacity-75">
-                            <div class="flex justify-center w-full h-full items-center" x-on:click.away="open = false">
+                            <div class="flex items-center justify-center w-full h-full" x-on:click.away="open = false">
                                 <img src="{{ $image->getUrl() }}" alt="{{ __('Příloha') }}" class="block border"
                                     loading="lazy">
                             </div>
