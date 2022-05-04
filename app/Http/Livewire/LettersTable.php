@@ -101,12 +101,8 @@ class LettersTable extends Component
             });
         }
 
-        if (isset($this->filters['media'])) {
-            if ($this->filters['media'] === '1') {
-                $query->whereHas('media');
-            } elseif ($this->filters['media'] === '0') {
-                $query->whereDoesntHave('media');
-            }
+        if (isset($this->filters['media']) && $this->filters['media'] !== '') {
+            $query->media((bool) $this->filters['media']);
         }
 
         if (isset($this->filters['editor']) && !empty($this->filters['editor'])) {

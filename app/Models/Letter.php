@@ -113,6 +113,15 @@ class Letter extends Model implements HasMedia
         return $title;
     }
 
+    public function scopeMedia($query, bool $hasMedia)
+    {
+        if ($hasMedia) {
+            $query->whereHas('media');
+        } else {
+            $query->whereDoesntHave('media');
+        }
+    }
+
     protected function formatDate($day, $month, $year)
     {
         $day = $day && $day != 0 ? $day : '?';
