@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Place;
 use App\Models\Keyword;
 use App\Models\Identity;
+use App\Builders\LetterBuilder;
 use Spatie\MediaLibrary\Models\Media;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
@@ -113,13 +114,9 @@ class Letter extends Model implements HasMedia
         return $title;
     }
 
-    public function scopeMedia($query, bool $hasMedia)
+    public function newEloquentBuilder($query)
     {
-        if ($hasMedia) {
-            $query->whereHas('media');
-        } else {
-            $query->whereDoesntHave('media');
-        }
+            return new LetterBuilder($query);
     }
 
     protected function formatDate($day, $month, $year)
