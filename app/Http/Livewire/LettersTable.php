@@ -19,6 +19,7 @@ class LettersTable extends Component
     public function search()
     {
         $this->resetPage();
+        $this->emit('filtersChanged', $this->filters);
     }
 
     public function render()
@@ -113,7 +114,7 @@ class LettersTable extends Component
                 $query->whereHas('users', function ($subquery) {
                     $subquery->where('users.name', 'LIKE', "%" . $this->filters['editor'] . "%");
                 });
-            } else if (request()->user()->can('manage-metadata')) {
+            } elseif (request()->user()->can('manage-metadata')) {
                 $query->whereHas('users', function ($subquery) {
                     $subquery->where('users.id', request()->user()->id);
                 });
