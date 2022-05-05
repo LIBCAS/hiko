@@ -33,19 +33,10 @@ class LocationsTable extends Component
 
     protected function findLocations()
     {
-        $query = Location::select('id', 'name', 'type');
-
-        if (isset($this->filters['name']) && !empty($this->filters['name'])) {
-            $query->where('name', 'LIKE', "%" . $this->filters['name'] . "%");
-        }
-
-        if (isset($this->filters['type']) && !empty($this->filters['type'])) {
-            $query->where('type', '=', $this->filters['type']);
-        }
-
-        $query->orderBy($this->filters['order']);
-
-        return $query->paginate(10);
+        return Location::select('id', 'name', 'type')
+            ->search($this->filters)
+            ->orderBy($this->filters['order'])
+            ->paginate(10);
     }
 
     protected function formatTableData($data)
@@ -67,7 +58,8 @@ class LocationsTable extends Component
                         'label' => __("hiko.{$locations->type}"),
                     ],
                 ];
-            })->toArray(),
+            })
+                ->toArray(),
         ];
     }
 }
