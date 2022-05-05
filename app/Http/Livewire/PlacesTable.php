@@ -31,19 +31,10 @@ class PlacesTable extends Component
 
     protected function findPlaces()
     {
-        $query = Place::select('id', 'name', 'latitude', 'longitude', 'country');
-
-        if (isset($this->filters['name']) && !empty($this->filters['name'])) {
-            $query->where('name', 'LIKE', "%" . $this->filters['name'] . "%");
-        }
-
-        if (isset($this->filters['country']) && !empty($this->filters['country'])) {
-            $query->where('country', 'LIKE', "%" . $this->filters['country'] . "%");
-        }
-
-        $query->orderBy($this->filters['order']);
-
-        return $query->paginate(10);
+        return Place::select('id', 'name', 'latitude', 'longitude', 'country')
+            ->search($this->filters)
+            ->orderBy($this->filters['order'])
+            ->paginate(10);
     }
 
     protected function formatTableData($data)
@@ -71,7 +62,8 @@ class PlacesTable extends Component
                         'external' => $hasLatLng,
                     ],
                 ];
-            })->toArray(),
+            })
+                ->toArray(),
         ];
     }
 }
