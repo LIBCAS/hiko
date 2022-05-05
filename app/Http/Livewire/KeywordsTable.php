@@ -4,7 +4,6 @@ namespace App\Http\Livewire;
 
 use App\Models\Keyword;
 use Livewire\Component;
-use Illuminate\Support\Str;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
 
@@ -33,32 +32,15 @@ class KeywordsTable extends Component
 
     protected function findKeywords()
     {
-        $query = Keyword::select('id', 'keyword_category_id', 'name', DB::raw("LOWER(JSON_EXTRACT(name, '$.cs')) AS cs"), DB::raw("LOWER(JSON_EXTRACT(name, '$.en')) AS en"))
-            ->with([
-                'keyword_category' => function ($subquery) {
-                    $subquery->select('id', 'name');
-                },
-            ]);
-
-        if (isset($this->filters['cs']) && !empty($this->filters['cs'])) {
-            $query->whereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($this->filters['cs']) . '%']);
-        }
-
-        if (isset($this->filters['en']) && !empty($this->filters['en'])) {
-            $query->whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($this->filters['en']) . '%']);
-        }
-
-        if (isset($this->filters['category']) && !empty($this->filters['category'])) {
-            $query->whereHas('keyword_category', function ($subquery) {
-                $subquery
-                    ->whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($this->filters['category']) . '%'])
-                    ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($this->filters['category']) . '%']);
-            });
-        }
-
-        $query->orderBy($this->filters['order']);
-
-        return $query->paginate(10, ['*'], 'keywordsPage');
+        return Keyword::with([
+            'keyword_category' => function ($subquery) {
+                $subquery->select('id', 'name');
+            },
+        ])
+            ->select('id', 'keyword_category_id', 'name', DB::raw("LOWER(JSON_EXTRACT(name, '$.cs')) AS cs"), DB::raw("LOWER(JSON_EXTRACT(name, '$.en')) AS en"))
+            ->search($this->filters)
+            ->orderBy($this->filters['order'])
+            ->paginate(10, ['*'], 'keywordsPage');
     }
 
     protected function formatTableData($data)
@@ -90,7 +72,8 @@ class KeywordsTable extends Component
                         'label' => $kw->keyword_category ? $kw->keyword_category->getTranslation('name', config('hiko.metadata_default_locale')) : '',
                     ],
                 ]);
-            })->toArray(),
+            })
+                ->toArray(),
         ];
     }
 }
