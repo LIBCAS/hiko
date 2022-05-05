@@ -73,6 +73,8 @@ class LetterBuilder extends Builder
                 });
             }
         }
+
+        return $this;
     }
 
     protected function addIdentityNameFilter(string $type, $search)
