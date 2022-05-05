@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Place;
 use App\Models\Keyword;
 use App\Models\Identity;
+use App\Builders\LetterBuilder;
 use Spatie\MediaLibrary\Models\Media;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
@@ -111,6 +112,11 @@ class Letter extends Model implements HasMedia
         $title .= $destination ? "({$destination['name']}) " : '';
 
         return $title;
+    }
+
+    public function newEloquentBuilder($query)
+    {
+            return new LetterBuilder($query);
     }
 
     protected function formatDate($day, $month, $year)

@@ -177,7 +177,7 @@ return [
     'only_my_records' => 'Jen mé záznamy',
     'yes' => 'Ano',
     'no' => 'Ne',
-    'basic_export' => 'Základní export',
+    'export_selected' => 'Export výběru',
     'description' => 'Popisek',
     'date_note' => 'Poznámka k datu',
     'author_inferred' => 'Autor je odvozený',

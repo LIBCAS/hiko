@@ -4,7 +4,6 @@ namespace App\Http\Livewire;
 
 use App\Models\Letter;
 use Livewire\Component;
-use Illuminate\Support\Str;
 use Livewire\WithPagination;
 
 class LettersTable extends Component
@@ -19,6 +18,7 @@ class LettersTable extends Component
     public function search()
     {
         $this->resetPage();
+        $this->emit('filtersChanged', $this->filters);
     }
 
     public function render()
@@ -33,8 +33,6 @@ class LettersTable extends Component
 
     protected function findLetters()
     {
-        $lang = config('hiko.metadata_default_locale');
-
         $query = Letter::with([
             'identities' => function ($subquery) {
                 $subquery->select('name', 'alternative_names')
@@ -57,68 +55,7 @@ class LettersTable extends Component
         ])
             ->select('id', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status');
 
-        if (isset($this->filters['id']) && !empty($this->filters['id'])) {
-            $query->where('id', 'LIKE', "%" . $this->filters['id'] . "%");
-        }
-
-        if (isset($this->filters['status']) && !empty($this->filters['status'])) {
-            $query->where('status', '=', $this->filters['status']);
-        }
-
-        if (isset($this->filters['after']) && !empty($this->filters['after'])) {
-            $query->whereDate('date_computed', '>=', $this->filters['after']);
-        }
-
-        if (isset($this->filters['before']) && !empty($this->filters['before'])) {
-            $query->whereDate('date_computed', '<=', $this->filters['before']);
-        }
-
-        if (isset($this->filters['signature']) && !empty($this->filters['signature'])) {
-            $query->whereRaw("LOWER(JSON_EXTRACT(copies, '$[*].signature')) like ?", ['%' . Str::lower($this->filters['signature']) . '%']);
-        }
-
-        if (isset($this->filters['author']) && !empty($this->filters['author'])) {
-            $query = $this->addIdentityNameFilter($query, 'author');
-        }
-
-        if (isset($this->filters['recipient']) && !empty($this->filters['recipient'])) {
-            $query = $this->addIdentityNameFilter($query, 'recipient');
-        }
-
-        if (isset($this->filters['origin']) && !empty($this->filters['origin'])) {
-            $query = $this->addPlaceFilter($query, 'origin');
-        }
-
-        if (isset($this->filters['destination']) && !empty($this->filters['destination'])) {
-            $query = $this->addPlaceFilter($query, 'destination');
-        }
-
-        if (isset($this->filters['keyword']) && !empty($this->filters['keyword'])) {
-            $query->whereHas('keywords', function ($subquery) use ($lang) {
-                $subquery
-                    ->whereRaw("LOWER(JSON_EXTRACT(name, '$.{$lang}')) like ?", ['%' . Str::lower($this->filters['keyword']) . '%']);
-            });
-        }
-
-        if (isset($this->filters['media'])) {
-            if ($this->filters['media'] === '1') {
-                $query->whereHas('media');
-            } elseif ($this->filters['media'] === '0') {
-                $query->whereDoesntHave('media');
-            }
-        }
-
-        if (isset($this->filters['editor']) && !empty($this->filters['editor'])) {
-            if (request()->user()->can('manage-users')) {
-                $query->whereHas('users', function ($subquery) {
-                    $subquery->where('users.name', 'LIKE', "%" . $this->filters['editor'] . "%");
-                });
-            } else if (request()->user()->can('manage-metadata')) {
-                $query->whereHas('users', function ($subquery) {
-                    $subquery->where('users.id', request()->user()->id);
-                });
-            }
-        }
+        $query->search($this->filters, config('hiko.metadata_default_locale'));
 
         return $query
             ->orderBy($this->filters['order'], $this->filters['direction'])
@@ -178,26 +115,5 @@ class LettersTable extends Component
                 ];
             })->toArray(),
         ];
-    }
-
-    protected function addIdentityNameFilter($query, string $type)
-    {
-        return $query->whereHas('identities', function ($subquery) use ($type) {
-            $subquery
-                ->where('role', '=', $type)
-                ->where(function ($namesubquery) use ($type) {
-                    $namesubquery->where('name', 'LIKE', "%" . $this->filters[$type] . "%")
-                        ->orWhereRaw('LOWER(alternative_names) like ?', ['%' . Str::lower($this->filters[$type]) . '%']);
-                });
-        });
-    }
-
-    protected function addPlaceFilter($query, string $type)
-    {
-        return $query->whereHas('places', function ($subquery) use ($type) {
-            $subquery
-                ->where('role', '=', $type)
-                ->where('name', 'LIKE', "%" . $this->filters[$type] . "%");
-        });
     }
 }

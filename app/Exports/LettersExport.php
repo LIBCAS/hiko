@@ -11,7 +11,13 @@ class LettersExport implements FromCollection, WithMapping, WithHeadings
 {
     public function collection()
     {
-        return Letter::all();
+        $query = Letter::search(request()->all(), config('hiko.metadata_default_locale'));
+
+        if (request()->has('order') && request()->has('direction')) {
+            $query->orderBy(request()->order, request()->direction);
+        }
+
+        return $query->get();
     }
 
     public function headings(): array
