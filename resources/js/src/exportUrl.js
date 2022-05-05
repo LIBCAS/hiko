@@ -7,5 +7,5 @@ window.updateExportUrl = (filters, el) => {
         })
         .join('&')
 
-    el.href = new URL(el.href).href.split('?')[0] + '&' + queryString
+    el.href = new URL(el.href).href.split('?')[0] + '?' + queryString
 }
