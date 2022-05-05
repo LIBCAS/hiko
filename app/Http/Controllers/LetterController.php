@@ -25,13 +25,11 @@ class LetterController extends Controller
 
     public function create()
     {
-        $letter = new Letter;
-
         return view('pages.letters.form', array_merge([
             'title' => __('hiko.new_letter'),
             'action' => route('letters.store'),
             'label' => __('hiko.create'),
-        ], $this->viewData($letter)));
+        ], $this->viewData(new Letter)));
     }
 
     public function store(LetterRequest $request)
