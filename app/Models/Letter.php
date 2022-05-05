@@ -116,7 +116,7 @@ class Letter extends Model implements HasMedia
 
     public function newEloquentBuilder($query)
     {
-            return new LetterBuilder($query);
+        return new LetterBuilder($query);
     }
 
     protected function formatDate($day, $month, $year)

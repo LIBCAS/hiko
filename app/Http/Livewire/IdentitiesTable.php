@@ -4,7 +4,6 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use App\Models\Identity;
-use Illuminate\Support\Str;
 use Livewire\WithPagination;
 
 class IdentitiesTable extends Component
@@ -32,46 +31,20 @@ class IdentitiesTable extends Component
 
     protected function findIdentities()
     {
-        $query = Identity::select('id', 'name', 'type', 'birth_year', 'death_year', 'alternative_names')
-            ->with([
-                'professions' => function ($subquery) {
-                    $subquery->select('name')
-                        ->orderBy('position');
-                },
-                'profession_categories' => function ($subquery) {
-                    $subquery->select('name')
-                        ->orderBy('position');
-                },
-            ]);
-
-        if (isset($this->filters['name']) && !empty($this->filters['name'])) {
-            $query->where('name', 'LIKE', "%" . $this->filters['name'] . "%")
-                ->orWhereRaw("LOWER(alternative_names) like ?", ["%" . Str::lower($this->filters['name']) . "%"]);
-        }
-
-        if (isset($this->filters['type']) && !empty($this->filters['type'])) {
-            $query->where('type', '=', $this->filters['type']);
-        }
-
-        if (isset($this->filters['profession']) && !empty($this->filters['profession'])) {
-            $query->whereHas('professions', function ($subquery) {
-                $subquery
-                    ->whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($this->filters['profession']) . '%'])
-                    ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($this->filters['profession']) . '%']);
-            });
-        }
-
-        if (isset($this->filters['category']) && !empty($this->filters['category'])) {
-            $query->whereHas('profession_categories', function ($subquery) {
-                $subquery
-                    ->whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($this->filters['category']) . '%'])
-                    ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($this->filters['category']) . '%']);
-            });
-        }
-
-        $query->orderBy($this->filters['order']);
-
-        return $query->paginate(10);
+        return Identity::with([
+            'professions' => function ($subquery) {
+                $subquery->select('name')
+                    ->orderBy('position');
+            },
+            'profession_categories' => function ($subquery) {
+                $subquery->select('name')
+                    ->orderBy('position');
+            },
+        ])
+            ->select('id', 'name', 'type', 'birth_year', 'death_year', 'alternative_names')
+            ->search($this->filters)
+            ->orderBy($this->filters['order'])
+            ->paginate(10);
     }
 
     protected function formatTableData($data)

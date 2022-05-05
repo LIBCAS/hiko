@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Letter;
 use App\Models\Profession;
+use App\Builders\IdentityBuilder;
 use App\Models\ProfessionCategory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -53,5 +54,10 @@ class Identity extends Model
         if ($this->death_year) {
             return "(–{$this->death_year})";
         }
+    }
+
+    public function newEloquentBuilder($query)
+    {
+        return new IdentityBuilder($query);
     }
 }
