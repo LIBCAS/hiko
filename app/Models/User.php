@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Role;
 use App\Models\Letter;
+use App\Builders\UserBuilder;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -60,5 +61,10 @@ class User extends Authenticatable
     public function letters()
     {
         return $this->belongsToMany(Letter::class);
+    }
+
+    public function newEloquentBuilder($query)
+    {
+        return new UserBuilder($query);
     }
 }

@@ -33,27 +33,10 @@ class UsersTable extends Component
 
     protected function findUsers()
     {
-        $query = User::select('id', 'name', 'role', 'deactivated_at');
-
-        if (isset($this->filters['name']) && !empty($this->filters['name'])) {
-            $query->where('name', 'LIKE', "%" . $this->filters['name'] . "%");
-        }
-
-        if (isset($this->filters['role']) && !empty($this->filters['role'])) {
-            $query->where('role', '=', $this->filters['role']);
-        }
-
-        if (isset($this->filters['status'])) {
-            if ($this->filters['status'] === '1') {
-                $query->where('deactivated_at', '=', null);
-            } else if ($this->filters['status'] === '0') {
-                $query->where('deactivated_at', '!=', null);
-            }
-        }
-
-        $query->orderBy($this->filters['order']);
-
-        return $query->paginate(10);
+        return User::select('id', 'name', 'role', 'deactivated_at')
+            ->search($this->filters)
+            ->orderBy($this->filters['order'])
+            ->paginate(10);
     }
 
     protected function formatTableData($data)
@@ -73,7 +56,8 @@ class UsersTable extends Component
                         'label' => $user->isDeactivated() ? __('hiko.inactive') : __('hiko.active'),
                     ],
                 ];
-            })->toArray(),
+            })
+                ->toArray(),
         ];
     }
 }
