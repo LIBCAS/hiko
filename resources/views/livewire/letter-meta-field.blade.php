@@ -19,7 +19,8 @@
                         <div>
                             <x-label for="{{ $fieldKey }}-{{ $field['key'] . '-' . $loop->parent->index }}"
                                 value="{{ $field['label'] }}" />
-                            <x-input wire:model.lazy="items.{{ $loop->parent->index }}.{{ $field['key'] }}"
+                                {{-- lazy modifier won't trigger change event if you don't navigate away to trigger the change event, see https://github.com/livewire/livewire/issues/2145 --}}
+                            <x-input wire:model.debounce.500ms="items.{{ $loop->parent->index }}.{{ $field['key'] }}"
                                 id="{{ $fieldKey }}-{{ $field['key'] . '-' . $loop->parent->index }}"
                                 class="block w-full mt-1" type="text" />
                         </div>

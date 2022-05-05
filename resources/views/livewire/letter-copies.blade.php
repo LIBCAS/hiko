@@ -7,7 +7,7 @@
             <div class="p-3 space-y-6 bg-gray-200 shadow">
                 <div>
                     <x-label for="ms_manifestation_{{ $loop->index }}" :value="__('hiko.ms_manifestation')" />
-                    <x-select wire:model.lazy="copies.{{ $loop->index }}.ms_manifestation" class="block w-full mt-1"
+                    <x-select wire:model.debounce.500ms="copies.{{ $loop->index }}.ms_manifestation" class="block w-full mt-1"
                         id="ms_manifestation_{{ $loop->index }}">
                         <option value="">
                             ---
@@ -21,7 +21,7 @@
                 </div>
                 <div>
                     <x-label for="type_{{ $loop->index }}" :value="__('hiko.doc_type')" />
-                    <x-select wire:model.lazy="copies.{{ $loop->index }}.type" id="type_{{ $loop->index }}"
+                    <x-select wire:model.debounce.500ms="copies.{{ $loop->index }}.type" id="type_{{ $loop->index }}"
                         class="block w-full mt-1">
                         <option value="">
                             ---
@@ -35,7 +35,7 @@
                 </div>
                 <div>
                     <x-label for="preservation_{{ $loop->index }}" :value="__('hiko.preservation')" />
-                    <x-select wire:model.lazy="copies.{{ $loop->index }}.preservation"
+                    <x-select wire:model.debounce.500ms="copies.{{ $loop->index }}.preservation"
                         id="preservation_{{ $loop->index }}" class="block w-full mt-1">
                         <option value="">
                             ---
@@ -49,7 +49,7 @@
                 </div>
                 <div>
                     <x-label for="copy_{{ $loop->index }}" :value="__('hiko.type')" />
-                    <x-select wire:model.lazy="copies.{{ $loop->index }}.copy" id="type_{{ $loop->index }}"
+                    <x-select wire:model.debounce.500ms="copies.{{ $loop->index }}.copy" id="type_{{ $loop->index }}"
                         class="block w-full mt-1">
                         <option value="">
                             ---
@@ -63,18 +63,18 @@
                 </div>
                 <div>
                     <x-label for="manifestation_notes_{{ $loop->index }}" :value="__('hiko.manifestation_notes')" />
-                    <x-textarea wire:model.lazy="copies.{{ $loop->index }}.manifestation_notes"
+                    <x-textarea wire:model.debounce.500ms="copies.{{ $loop->index }}.manifestation_notes"
                         id="manifestation_notes_{{ $loop->index }}" class="block w-full mt-1">
                     </x-textarea>
                 </div>
                 <div>
                     <x-label for="l_number_{{ $loop->index }}" :value="__('hiko.l_number')" />
-                    <x-input wire:model.lazy="copies.{{ $loop->index }}.l_number" id="l_number_{{ $loop->index }}"
+                    <x-input wire:model.debounce.500ms="copies.{{ $loop->index }}.l_number" id="l_number_{{ $loop->index }}"
                         class="block w-full mt-1" type="text" />
                 </div>
                 <div>
                     <x-label for="repository_{{ $loop->index }}" :value="__('hiko.repository')" />
-                    <x-input wire:model.lazy="copies.{{ $loop->index }}.repository"
+                    <x-input wire:model.debounce.500ms="copies.{{ $loop->index }}.repository"
                         id="repository_{{ $loop->index }}" class="block w-full mt-1" type="text"
                         list="repository_datalist_{{ $loop->index }}" />
                     <datalist id="repository_datalist_{{ $loop->index }}">
@@ -89,7 +89,7 @@
                 </div>
                 <div>
                     <x-label for="archive_{{ $loop->index }}" :value="__('hiko.archive')" />
-                    <x-input wire:model.lazy="copies.{{ $loop->index }}.archive" id="archive_{{ $loop->index }}"
+                    <x-input wire:model.debounce.500ms="copies.{{ $loop->index }}.archive" id="archive_{{ $loop->index }}"
                         class="block w-full mt-1" type="text" list="archive_datalist_{{ $loop->index }}" />
                     <datalist id="archive_datalist_{{ $loop->index }}">
                         @isset($locations['archive'])
@@ -103,7 +103,7 @@
                 </div>
                 <div>
                     <x-label for="collection_{{ $loop->index }}" :value="__('hiko.collection')" />
-                    <x-input wire:model.lazy="copies.{{ $loop->index }}.collection"
+                    <x-input wire:model.debounce.500ms="copies.{{ $loop->index }}.collection"
                         id="collection_{{ $loop->index }}" class="block w-full mt-1" type="text"
                         list="collection_datalist_{{ $loop->index }}" />
                     <datalist id="collection_datalist_{{ $loop->index }}">
@@ -118,12 +118,12 @@
                 </div>
                 <div>
                     <x-label for="signature_{{ $loop->index }}" :value="__('hiko.signature')" />
-                    <x-input wire:model.lazy="copies.{{ $loop->index }}.signature"
+                    <x-input wire:model.debounce.500ms="copies.{{ $loop->index }}.signature"
                         id="signature_{{ $loop->index }}" class="block w-full mt-1" type="text" />
                 </div>
                 <div>
                     <x-label for="location_note_{{ $loop->index }}" :value="__('hiko.location_note')" />
-                    <x-textarea wire:model.lazy="copies.{{ $loop->index }}.location_note"
+                    <x-textarea wire:model.debounce.500ms="copies.{{ $loop->index }}.location_note"
                         id="location_note_{{ $loop->index }}" class="block w-full mt-1">
                     </x-textarea>
                 </div>
