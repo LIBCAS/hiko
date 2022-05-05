@@ -2,36 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\IdentitiesExport;
 use App\Models\Identity;
 use App\Models\Profession;
-use Illuminate\Http\Request;
+use App\Exports\IdentitiesExport;
 use App\Models\ProfessionCategory;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Requests\IdentityRequest;
 
 class IdentityController extends Controller
 {
-    protected $person_rules = [
-        'surname' => ['required', 'string', 'max:255'],
-        'forename' => ['nullable', 'string', 'max:255'],
-        'birth_year' => ['nullable', 'string', 'max:255'],
-        'death_year' => ['nullable', 'string', 'max:255'],
-        'nationality' => ['nullable', 'string', 'max:255'],
-        'gender' => ['nullable', 'string', 'max:255'],
-        'note' => ['nullable'],
-        'viaf_id' => ['nullable', 'integer', 'numeric'],
-        'type' => ['required', 'string', 'max:255'],
-        'category' => ['nullable', 'exists:profession_categories,id'],
-        'profession' => ['nullable', 'exists:professions,id'],
-    ];
-
-    protected $institution_rules = [
-        'name' => ['required', 'string', 'max:255'],
-        'note' => ['nullable'],
-        'viaf_id' => ['nullable', 'integer', 'numeric'],
-        'type' => ['required', 'string', 'max:255'],
-    ];
-
     public function index()
     {
         return view('pages.identities.index', [
@@ -56,9 +35,9 @@ class IdentityController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(IdentityRequest $request)
     {
-        $validated = $this->validateRequest($request);
+        $validated = $request->validated();
 
         $identity = Identity::create($validated);
 
@@ -84,9 +63,9 @@ class IdentityController extends Controller
         ]);
     }
 
-    public function update(Request $request, Identity $identity)
+    public function update(IdentityRequest $request, Identity $identity)
     {
-        $validated = $this->validateRequest($request);
+        $validated = $request->validated();
 
         $identity->update($validated);
 
@@ -109,31 +88,6 @@ class IdentityController extends Controller
     public function export()
     {
         return Excel::download(new IdentitiesExport, 'identities.xlsx');
-    }
-
-    protected function validateRequest(Request $request)
-    {
-        $validated = null;
-
-        if ($request->type === 'institution') {
-            $validated = $request->validate($this->institution_rules);
-        }
-
-        if ($request->type === 'person') {
-            // odstraní null, nutné pro správnou validaci
-            $category = empty($request->category) ? null : array_filter($request->category);
-            $request->request->set('category', empty($category) ? null : $category);
-
-            $profession = empty($request->profession) ? null : array_filter($request->profession);
-            $request->request->set('profession', empty($profession) ? null : $profession);
-
-            $validated = $request->validate($this->person_rules);
-            $name = $validated['surname'];
-            $name .= $validated['forename'] ? ', ' . $validated['forename'] : '';
-            $validated['name'] = $name;
-        }
-
-        return $validated;
     }
 
     protected function attachProfessionsAndCategories(Identity $identity, $validated)
