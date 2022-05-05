@@ -206,4 +206,5 @@ return [
     'date_is_range' => 'Datum je uvedené v rozmezí',
     'letters_to' => 'Dopisy pro: :name',
     'letters_from' => 'Dopisy od: :name',
+    'help' => 'Nápověda',
 ];

@@ -206,4 +206,5 @@ return [
     'date_is_range' => 'Date range',
     'letters_to' => 'Letters to: :name',
     'letters_from' => 'Letters from: :name',
+    'help' => 'Help',
 ];
