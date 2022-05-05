@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Letter;
 use App\Models\Identity;
 use App\Models\Language;
+use App\Jobs\LetterSaved;
 use Illuminate\Http\Request;
 use App\Exports\LettersExport;
 use App\Http\Requests\LetterRequest;
@@ -70,6 +71,8 @@ class LetterController extends Controller
         $letter->update($request->validated());
 
         $this->attachRelated($request, $letter);
+
+        LetterSaved::dispatch($letter);
 
         return redirect()
             ->route('letters.edit', $letter->id)
