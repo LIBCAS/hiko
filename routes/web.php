@@ -348,7 +348,7 @@ Route::prefix('ajax')->group(function () {
 });
 
 Route::prefix('dev')->group(function () {
-    Route::get('optimize', [DevToolsController::class, 'optimize'])
+    Route::get('optimize', [DevToolsController::class, 'cache'])
         ->middleware(['auth', 'can:debug']);
 
     Route::get('clear', [DevToolsController::class, 'clear'])

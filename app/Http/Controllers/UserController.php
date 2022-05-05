@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use App\Notifications\NewUserPasswordCreate;
 
 class UserController extends Controller
 {
@@ -38,15 +36,9 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate(array_merge($this->rules, [
+        $user = User::create($request->validate(array_merge($this->rules, [
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-        ]));
-
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'role' => $validated['role'],
-        ]);
+        ])));
 
         return redirect()
             ->route('users.edit', $user->id)
@@ -71,14 +63,11 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate($this->rules);
+        $validated['deactivated_at'] = isset($validated['deactivated_at']) && $validated['deactivated_at'] === 'on'
+            ? null
+            : now()->format('Y-m-d H:i:s');
 
-        $user->update([
-            'name' => $validated['name'],
-            'role' => $validated['role'],
-            'deactivated_at' => isset($validated['deactivated_at']) && $validated['deactivated_at'] === 'on'
-                ? null
-                : now()->format('Y-m-d H:i:s'),
-        ]);
+        $user->update($validated);
 
         return redirect()
             ->route('users.edit', $user->id)

@@ -35,12 +35,7 @@ class LocationController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate($this->rules);
-
-        $location = Location::create([
-            'name' => $validated['name'],
-            'type' => $validated['type'],
-        ]);
+        $location = Location::create($request->validate($this->rules));
 
         return redirect()
             ->route('locations.edit', $location->id)
@@ -61,12 +56,7 @@ class LocationController extends Controller
 
     public function update(Request $request, Location $location)
     {
-        $validated = $request->validate($this->rules);
-
-        $location->update([
-            'name' => $validated['name'],
-            'type' => $validated['type'],
-        ]);
+        $location->update($request->validate($this->rules));
 
         return redirect()
             ->route('locations.edit', $location->id)
