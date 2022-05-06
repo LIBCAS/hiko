@@ -1,6 +1,3 @@
-@push('scripts')
-    <script src="{{ asset('dist/editor.js') }}"></script>
-@endpush
 <x-app-layout :title="$title">
     <ul class="flex flex-wrap mb-6 space-x-6 text-sm">
         <li>
