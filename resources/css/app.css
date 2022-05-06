@@ -76,3 +76,51 @@ html {
 .choices__list--multiple .choices__item.is-highlighted {
     @apply bg-primary-dark border-primary-dark;
 }
+
+.prose .ql-align-right {
+    text-align: right;
+}
+
+.prose .ql-align-center {
+    text-align: center;
+}
+
+.prose .ql-align-justify {
+    text-align: justify;
+}
+
+.prose .ql-indent-1 {
+    text-indent: 1em;
+}
+
+.prose .ql-indent-2 {
+    text-indent: 2em;
+}
+
+.prose .ql-indent-3 {
+    text-indent: 3em;
+}
+
+.prose .ql-indent-4 {
+    text-indent: 4em;
+}
+
+.prose .ql-indent-5 {
+    text-indent: 5em;
+}
+
+.prose .ql-indent-6 {
+    text-indent: 6em;
+}
+
+.prose .ql-indent-7 {
+    text-indent: 7em;
+}
+
+.prose .ql-indent-8 {
+    text-indent: 8em;
+}
+
+.prose .ql-indent-9 {
+    text-indent: 9em;
+}
