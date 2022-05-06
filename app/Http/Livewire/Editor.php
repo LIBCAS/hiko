@@ -7,14 +7,12 @@ use Livewire\Component;
 class Editor extends Component
 {
     public $letter;
-    public $loading;
 
     public function save($html)
     {
-        $this->loading = false;
         $this->letter->content = $html;
         $this->letter->save();
-        $this->loading = true;
+        $this->emit('saved');
     }
 
     public function render()
