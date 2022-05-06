@@ -32,7 +32,7 @@
                 <a href="https://github.com/LIBCAS/hiko/wiki" target="_blank"
                     class="inline-flex items-center hover:underline">
                     <x-icons.question-mark-circle class="w-5 h-5 mr-1" />
-                    <span>{{ __('app.help') }}</span>
+                    <span>{{ __('hiko.help') }}</span>
                 </a>
             </p>
             <p class="mt-2 text-sm text-gray-500">
