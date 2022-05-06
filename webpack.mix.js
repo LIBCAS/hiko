@@ -34,9 +34,17 @@ mix.postCss('resources/css/app.css', '', [
 ])
 
 mix.js('resources/js/images.js', '')
-mix.postCss('resources/css/images.css', '', [require('postcss-import')])
+mix.postCss('resources/css/images.css', '', [
+    require('postcss-import'),
+    require('autoprefixer'),
+])
 
 mix.js('resources/js/editor.js', '')
+mix.postCss('resources/css/editor.css', '', [
+    require('postcss-import'),
+    require('tailwindcss'),
+    require('autoprefixer'),
+])
 
 if (mix.inProduction()) {
     mix.version()

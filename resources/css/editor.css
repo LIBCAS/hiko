@@ -1,0 +1,20 @@
+@import './../../node_modules/quill/dist/quill.snow.css';
+
+.ql-container.ql-snow,
+.ql-toolbar.ql-snow {
+    @apply border border-primary rounded-sm;
+}
+
+.ql-editor p,
+.ql-editor ol,
+.ql-editor ul,
+.ql-editor pre,
+.ql-editor blockquote,
+.ql-editor h1,
+.ql-editor h2,
+.ql-editor h3,
+.ql-editor h4,
+.ql-editor h5,
+.ql-editor h6 {
+    @apply mb-5 !important;
+}

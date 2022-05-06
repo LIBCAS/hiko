@@ -1,71 +1,32 @@
-/* global Alpine */
+const Quill = require('Quill')
 
-import { Editor } from '@tiptap/core'
-import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
+const QuillDeltaToHtmlConverter =
+    require('quill-delta-to-html').QuillDeltaToHtmlConverter
 
-document.addEventListener('alpine:init', () => {
-    Alpine.data('editor', (content) => {
-        let editor
+window.editor = function () {
+    return {
+        quill: null,
+        initEditor: () => {
+            this.quill = new Quill('#editor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ header: [1, 2, 3, 4, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        ['blockquote', { list: 'ordered' }, { list: 'bullet' }],
+                        [{ indent: '-1' }, { indent: '+1' }],
+                        [{ align: [] }],
+                        ['clean'],
+                    ],
+                },
+            })
+        },
+        getContent: () => {
+            const converter = new QuillDeltaToHtmlConverter(
+                this.quill.getContents().ops
+            )
 
-        return {
-            isActive(type, opts = {}) {
-                return editor.isActive(type, opts)
-            },
-            setParagraph() {
-                editor.chain().focus().setParagraph().run()
-            },
-            toggleBold() {
-                editor.chain().focus().toggleBold().run()
-            },
-            toggleItalic() {
-                editor.chain().focus().toggleItalic().run()
-            },
-            toggleStrike() {
-                editor.chain().focus().toggleStrike().run()
-            },
-            toggleHeading(level) {
-                editor.chain().toggleHeading({ level: level }).focus().run()
-            },
-            toggleBulletList() {
-                editor.chain().focus().toggleBulletList().run()
-            },
-            toggleOrderedList() {
-                editor.chain().focus().toggleOrderedList().run()
-            },
-            setHorizontalRule() {
-                editor.chain().focus().setHorizontalRule().run()
-            },
-            toggleBlockquote() {
-                editor.chain().focus().toggleBlockquote().run()
-            },
-            toggleUnderline() {
-                editor.chain().focus().toggleUnderline().run()
-            },
-            undo() {
-                editor.chain().focus().undo().run()
-            },
-            redo() {
-                editor.chain().focus().redo().run()
-            },
-            updatedAt: Date.now(),
-            init() {
-                const self = this
-
-                editor = new Editor({
-                    element: self.$refs.editorReference,
-                    extensions: [StarterKit, Underline],
-                    content: content,
-                    onUpdate: ({ editor }) => {
-                        self.content = editor.getHTML()
-                    },
-                    onSelectionUpdate: () => {
-                        self.updatedAt = Date.now()
-                    },
-                })
-
-                window.editor = editor
-            },
-        }
-    })
-})
+            return converter.convert()
+        },
+    }
+}
