@@ -34,6 +34,12 @@ class ModsExportController extends Controller
             ],
         ];
 
+        $dateCreated = $this->dateCreated($letter);
+
+        if ($dateCreated) {
+            $record['dateCreated'] = $dateCreated;
+        }
+
         $arrayToXml = new ArrayToXml($record, [
             'rootElementName' => 'mods',
             '_attributes' => [
@@ -43,5 +49,61 @@ class ModsExportController extends Controller
         ]);
 
         return $arrayToXml->dropXmlDeclaration()->toXml();
+    }
+
+    protected function dateCreated($letter)
+    {
+        $dateCreatedStart = $this->formatDate($letter->date_day, $letter->date_month, $letter->date_year);
+        $dateCreatedEnd = $letter->date_is_range ? $this->formatDate($letter->date_day, $letter->date_month, $letter->date_year) : null;
+
+        $qualifiers = array_filter([
+            $letter->date_uncertain ? 'questionable' : null,
+            $letter->date_inferred ? 'inferred' : null,
+            $letter->date_approximate ? 'approximate' : null,
+        ]);
+
+
+        if ($dateCreatedStart && $dateCreatedEnd) {
+            return [
+                [
+                    '_attributes' => [
+                        'qualifier' => implode(' ', $qualifiers),
+                    ],
+                    '_value' => $dateCreatedStart . '-' . $dateCreatedEnd,
+                ],
+                [
+                    '_attributes' => [
+                        'point' => 'start',
+                    ],
+                    '_value' => $dateCreatedStart,
+                ],
+                [
+                    '_attributes' => [
+                        'point' => 'end',
+                    ],
+                    '_value' => $dateCreatedEnd,
+                ],
+            ];
+        }
+
+        return [
+            '_attributes' => [
+                'qualifier' => implode(' ', $qualifiers),
+            ],
+            '_value' => $dateCreatedStart,
+        ];
+    }
+
+    protected function formatDate($day, $month, $year)
+    {
+        if (!$day && !$month && !$year) {
+            return null;
+        }
+
+        $date = $day ? "{$day}." : '';
+        $date .= $month ? "{$month}." : '';
+        $date .= $year ? "{$year}" : '';
+
+        return $date;
     }
 }
