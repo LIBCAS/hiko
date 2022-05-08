@@ -40,6 +40,12 @@ class ModsExportController extends Controller
             $record['dateCreated'] = $dateCreated;
         }
 
+        $notes = $this->notes($letter);
+
+        if ($notes) {
+            $record['note'] = $notes;
+        }
+
         $arrayToXml = new ArrayToXml($record, [
             'rootElementName' => 'mods',
             '_attributes' => [
@@ -105,5 +111,33 @@ class ModsExportController extends Controller
         $date .= $year ? "{$year}" : '';
 
         return $date;
+    }
+
+    protected function notes($letter)
+    {
+        $notes = [];
+
+        $types = [
+            'date_note' => 'date',
+            'author_note' => 'statement of responsibility',
+            'recipient_note' => 'recipient',
+            'destination_note' => 'destination',
+            'origin_note' => 'origin',
+            'people_mentioned_note' => 'people mentioned',
+            'notes_public' => '',
+        ];
+
+        foreach ($types as $key => $type) {
+            if ($letter->{$key}) {
+                $notes[] = [
+                    '_attributes' => [
+                        'type' => $type,
+                    ],
+                    '_value' => $letter->$key,
+                ];
+            }
+        }
+
+        return $notes;
     }
 }
