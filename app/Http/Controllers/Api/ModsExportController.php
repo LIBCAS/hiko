@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Letter;
-use Spatie\ArrayToXml\ArrayToXml;
 use App\Http\Controllers\Controller;
 
 class ModsExportController extends Controller
@@ -12,7 +11,14 @@ class ModsExportController extends Controller
     {
         $result = '<?xml version="1.0" encoding="UTF-8"?><mods_records>';
 
-        Letter::where('status', '=', 'publish')->get()
+        Letter::where('status', '=', 'publish')
+            ->with('identities', 'places', 'keywords')
+            ->get()
+            ->map(function ($letter) {
+                $letter['identities_grouped'] = $letter->identities->groupBy('pivot.role')->toArray();
+                $letter['places_grouped'] = $letter->places->groupBy('pivot.role')->toArray();
+                return $letter;
+            })
             ->each(function ($letter) use (&$result) {
                 $result .= $this->createRecord($letter);
             });
@@ -26,35 +32,16 @@ class ModsExportController extends Controller
 
     protected function createRecord(Letter $letter)
     {
-        $record = [
-            'titleInfo' => [
-                'title' => [
-                    '_value' => $letter->name,
-                ],
-            ],
-        ];
+        //$record = '<mods version="3.7" xsi:schemaLocation="http://www.loc.gov/mods/v3 https://www.loc.gov/standards/mods/v3/mods-3-7.xsd">';
+        $record = '<mods version="3.7">';
+        $record .= "<titleInfo><title>{$letter->name}</title></titleInfo>";
+        $record .= $this->dateCreated($letter);
+        $record .= $this->notes($letter);
+        $record .= $this->identity($letter, 'author');
+        $record .= $this->identity($letter, 'recipient');
 
-        $dateCreated = $this->dateCreated($letter);
 
-        if ($dateCreated) {
-            $record['dateCreated'] = $dateCreated;
-        }
-
-        $notes = $this->notes($letter);
-
-        if ($notes) {
-            $record['note'] = $notes;
-        }
-
-        $arrayToXml = new ArrayToXml($record, [
-            'rootElementName' => 'mods',
-            '_attributes' => [
-                'version' => '3.7',
-                //'xsi:schemaLocation' => 'http://www.loc.gov/mods/v3 https://www.loc.gov/standards/mods/v3/mods-3-7.xsd',
-            ],
-        ]);
-
-        return $arrayToXml->dropXmlDeclaration()->toXml();
+        return "{$record}</mods>";
     }
 
     protected function dateCreated($letter)
@@ -68,36 +55,17 @@ class ModsExportController extends Controller
             $letter->date_approximate ? 'approximate' : null,
         ]);
 
+        $qualifiers = 'qualifier="' . implode(' ', $qualifiers) . '"';
+
 
         if ($dateCreatedStart && $dateCreatedEnd) {
-            return [
-                [
-                    '_attributes' => [
-                        'qualifier' => implode(' ', $qualifiers),
-                    ],
-                    '_value' => $dateCreatedStart . '-' . $dateCreatedEnd,
-                ],
-                [
-                    '_attributes' => [
-                        'point' => 'start',
-                    ],
-                    '_value' => $dateCreatedStart,
-                ],
-                [
-                    '_attributes' => [
-                        'point' => 'end',
-                    ],
-                    '_value' => $dateCreatedEnd,
-                ],
-            ];
+            $result = "<dateCreated {$qualifiers}>{$dateCreatedStart}</dateCreated>";
+            $result .= "<dateCreated _attributes=\"start\">{$dateCreatedStart}</dateCreated>";
+            $result .= "<dateCreated _attributes=\"end\">{$dateCreatedEnd}</dateCreated>";
+            return $result;
         }
 
-        return [
-            '_attributes' => [
-                'qualifier' => implode(' ', $qualifiers),
-            ],
-            '_value' => $dateCreatedStart,
-        ];
+        return "<dateCreated {$qualifiers}>{$dateCreatedStart}</dateCreated>";
     }
 
     protected function formatDate($day, $month, $year)
@@ -115,7 +83,7 @@ class ModsExportController extends Controller
 
     protected function notes($letter)
     {
-        $notes = [];
+        $notes = '';
 
         $types = [
             'date_note' => 'date',
@@ -129,15 +97,54 @@ class ModsExportController extends Controller
 
         foreach ($types as $key => $type) {
             if ($letter->{$key}) {
-                $notes[] = [
-                    '_attributes' => [
-                        'type' => $type,
-                    ],
-                    '_value' => $letter->$key,
-                ];
+                $note = str_replace('"', "'", $letter->{$key});
+                $notes .= "<note type=\"{$type}\">{$note}</note>";
             }
         }
 
         return $notes;
+    }
+
+    protected function identity($letter, $type)
+    {
+        if (!isset($letter->identities_grouped[$type])) {
+            return '';
+        }
+
+        $qualifiers = array_filter([
+            $letter->{$type . '_inferred'} ? 'inferred' : null,
+            $letter->{$type . '_uncertain'} ? 'questionable' : null,
+        ]);
+
+        $qualifiers = 'qualifier="' . implode(' ', $qualifiers) . '"';
+
+        $identities = '';
+
+        foreach ($letter->identities_grouped[$type] as $identity) {
+            $identities .= "<name {$qualifiers} type=\"";
+            $identities .= $identity['type'] === 'institution' ? 'corporate' : 'personal';
+            $identities .= '">';
+            $identities .= '<namePart>' . str_replace('"', "'", $identity['name']) . '</namePart>';
+            $identities .= $identity['pivot']['marked']
+                ? '<displayForm>' . str_replace('"', "'", $identity['pivot']['marked']) . '</displayForm>'
+                : '';
+            $identities .= $identity['birth_year'] || $identity['death_year']
+                ? "<namePart type=\"date\">{$identity['birth_year']}-{$identity['death_year']}</namePart>"
+                : '';
+            $identities .= '<role><roleTerm type="text">' . $type . '</roleTerm></role>';
+            $identities .= $identity['pivot']['marked']
+                ? '<displayForm>' . str_replace('"', "'", $identity['pivot']['marked']) . '</displayForm>'
+                : '';
+            $identities .= $identity['pivot']['salutation']
+                ? '<salut>' . str_replace('"', "'", $identity['pivot']['salutation']) . '</salut>'
+                : '';
+            $identities .= $identity['viaf_id']
+                ? '<nameIdentifier>' . str_replace('"', "'", $identity['viaf_id']) . '</nameIdentifier>'
+                : '';
+
+            $identities .= '</name>';
+        }
+
+        return $identities;
     }
 }
