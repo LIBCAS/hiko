@@ -39,6 +39,8 @@ class ModsExportController extends Controller
         $record .= $this->notes($letter);
         $record .= $this->identity($letter, 'author');
         $record .= $this->identity($letter, 'recipient');
+        $record .= $this->place($letter, 'origin');
+        $record .= $this->place($letter, 'destination');
 
 
         return "{$record}</mods>";
@@ -132,9 +134,6 @@ class ModsExportController extends Controller
                 ? "<namePart type=\"date\">{$identity['birth_year']}-{$identity['death_year']}</namePart>"
                 : '';
             $identities .= '<role><roleTerm type="text">' . $type . '</roleTerm></role>';
-            $identities .= $identity['pivot']['marked']
-                ? '<displayForm>' . str_replace('"', "'", $identity['pivot']['marked']) . '</displayForm>'
-                : '';
             $identities .= $identity['pivot']['salutation']
                 ? '<salut>' . str_replace('"', "'", $identity['pivot']['salutation']) . '</salut>'
                 : '';
@@ -146,5 +145,36 @@ class ModsExportController extends Controller
         }
 
         return $identities;
+    }
+
+    protected function place($letter, $type)
+    {
+        if (!isset($letter->places_grouped[$type])) {
+            return '';
+        }
+
+        $qualifiers = array_filter([
+            $letter->{$type . '_inferred'} ? 'inferred' : null,
+            $letter->{$type . '_uncertain'} ? 'questionable' : null,
+        ]);
+
+        $qualifiers = 'qualifier="' . implode(' ', $qualifiers) . '"';
+
+        $places = '';
+
+        foreach ($letter->places_grouped[$type] as $place) {
+            $places .= "<originInfo {$qualifiers} type=\"{$type}\">";
+            $places .= '<place><placeTerm>' . str_replace('"', "'", $place['name']) . '</placeTerm>';
+            $places .= $place['pivot']['marked']
+                ? '<placeTerm type="display">' . str_replace('"', "'", $place['pivot']['marked']) . '</placeTerm>'
+                : '';
+            $places .= $place['geoname_id']
+                ? '<placeTerm type="authority">' . str_replace('"', "'", $place['geoname_id']) . '</placeTerm>'
+                : '';
+            $places .= '</place>';
+            $places .= '</originInfo>';
+        }
+
+        return $places;
     }
 }
