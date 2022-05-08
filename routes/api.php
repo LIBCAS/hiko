@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ApiLetterController;
+use App\Http\Controllers\Api\ModsExportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,3 +23,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('letter/{uuid}', [ApiLetterController::class, 'show']);
 
 Route::get('letters', [ApiLetterController::class, 'index']);
+
+Route::get('mods-export', ModsExportController::class);
