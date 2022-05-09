@@ -41,6 +41,14 @@ class ModsExportController extends Controller
         $record .= $this->identity($letter, 'recipient');
         $record .= $this->place($letter, 'origin');
         $record .= $this->place($letter, 'destination');
+        $record .= $this->languages($letter->languages);
+        if ($letter->keywords || isset($letter->identities_grouped['mentioned'])) {
+            $record .= '<subject>';
+            $record .= $this->keywords($letter->keywords);
+            $record .= $this->mentioned($letter, 'mentioned');
+            $record .= '</subject>';
+        }
+
 
 
         return "{$record}</mods>";
@@ -176,5 +184,68 @@ class ModsExportController extends Controller
         }
 
         return $places;
+    }
+
+    protected function languages($languages)
+    {
+        $result = '';
+        foreach (explode(';', $languages) as $lang) {
+            $result .= '<language><languageTerm type="text">';
+            $result .= $lang;
+            $result .= '</languageTerm></language>';
+        }
+
+        return $result;
+    }
+
+    protected function keywords($keywords)
+    {
+        if (!$keywords) {
+            return '';
+        }
+
+        $codes = [
+            'en' => 'eng',
+            'cs' => 'cze',
+        ];
+
+        $result = '';
+
+        foreach ($keywords as $kw) {
+            $translations = $kw->getTranslations('name');
+
+            foreach ($translations as $lang => $translation) {
+                $result .= '<topic lang="' . $codes[$lang] . '">';
+                $result .= $translation;
+                $result .= '</topic>';
+            }
+        }
+
+        return $result;
+    }
+
+    protected function mentioned($letter)
+    {
+        if (!isset($letter->identities_grouped['mentioned'])) {
+            return '';
+        }
+
+        $result = '';
+
+        foreach ($letter->identities_grouped['mentioned'] as $identity) {
+            $result .= "<topic><name type=\">";
+            $result .= $identity['type'] === 'institution' ? 'corporate' : 'personal';
+            $result .= '">';
+            $result .= '<namePart>' . str_replace('"', "'", $identity['name']) . '</namePart>';
+            $result .= $identity['birth_year'] || $identity['death_year']
+                ? "<namePart type=\"date\">{$identity['birth_year']}-{$identity['death_year']}</namePart>"
+                : '';
+            $result .= $identity['viaf_id']
+                ? '<nameIdentifier>' . str_replace('"', "'", $identity['viaf_id']) . '</nameIdentifier>'
+                : '';
+            $result .= '</name></topic>';
+        }
+
+        return $result;
     }
 }
