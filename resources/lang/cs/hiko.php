@@ -196,4 +196,5 @@ return [
     'letters_to' => 'Dopisy pro: :name',
     'letters_from' => 'Dopisy od: :name',
     'help' => 'Nápověda',
+    'data_source' => 'Zdroj dat',
 ];
