@@ -1,5 +1,9 @@
 <?php
 
+/* TODO:
+ * - Refactor!
+ */
+
 namespace App\Http\Controllers\Api;
 
 use App\Models\Letter;
@@ -7,6 +11,11 @@ use App\Http\Controllers\Controller;
 
 class ModsExportController extends Controller
 {
+    protected $langCodes = [
+        'en' => 'eng',
+        'cs' => 'cze',
+    ];
+
     public function __invoke()
     {
         $result = '<?xml version="1.0" encoding="UTF-8"?><mods_records>';
@@ -34,6 +43,7 @@ class ModsExportController extends Controller
     {
         //$record = '<mods version="3.7" xsi:schemaLocation="http://www.loc.gov/mods/v3 https://www.loc.gov/standards/mods/v3/mods-3-7.xsd">';
         $record = '<mods version="3.7">';
+        $record .= "<recordInfo><recordIdentifier>{$letter->uuid}</recordIdentifier></recordInfo>";
         $record .= "<titleInfo><title>{$letter->name}</title></titleInfo>";
         $record .= $this->dateCreated($letter);
         $record .= $this->notes($letter);
@@ -42,14 +52,14 @@ class ModsExportController extends Controller
         $record .= $this->place($letter, 'origin');
         $record .= $this->place($letter, 'destination');
         $record .= $this->languages($letter->languages);
-        if ($letter->keywords || isset($letter->identities_grouped['mentioned'])) {
-            $record .= '<subject>';
-            $record .= $this->keywords($letter->keywords);
-            $record .= $this->mentioned($letter, 'mentioned');
-            $record .= '</subject>';
-        }
-
-
+        $record .= $this->keywords($letter->keywords);
+        $record .= $this->mentioned($letter, 'mentioned');
+        $record .= $this->abstract($letter->getTranslations('abstract'));
+        $record .= $this->incipit($letter->incipit);
+        $record .= $this->explicit($letter->explicit);
+        $record .= $this->related($letter->related_resources);
+        $record .= $this->copies($letter->copies);
+        $record .= $this->copyright($letter->copyright);
 
         return "{$record}</mods>";
     }
@@ -204,20 +214,15 @@ class ModsExportController extends Controller
             return '';
         }
 
-        $codes = [
-            'en' => 'eng',
-            'cs' => 'cze',
-        ];
-
         $result = '';
 
         foreach ($keywords as $kw) {
             $translations = $kw->getTranslations('name');
 
             foreach ($translations as $lang => $translation) {
-                $result .= '<topic lang="' . $codes[$lang] . '">';
+                $result .= '<subject><topic lang="' . $this->langCodes[$lang] . '">';
                 $result .= $translation;
-                $result .= '</topic>';
+                $result .= '</topic></subject>';
             }
         }
 
@@ -233,7 +238,7 @@ class ModsExportController extends Controller
         $result = '';
 
         foreach ($letter->identities_grouped['mentioned'] as $identity) {
-            $result .= "<topic><name type=\">";
+            $result .= "<subject><topic><name type=\">";
             $result .= $identity['type'] === 'institution' ? 'corporate' : 'personal';
             $result .= '">';
             $result .= '<namePart>' . str_replace('"', "'", $identity['name']) . '</namePart>';
@@ -243,9 +248,117 @@ class ModsExportController extends Controller
             $result .= $identity['viaf_id']
                 ? '<nameIdentifier>' . str_replace('"', "'", $identity['viaf_id']) . '</nameIdentifier>'
                 : '';
-            $result .= '</name></topic>';
+            $result .= '</name></topic></subject>';
         }
 
         return $result;
+    }
+
+    protected function abstract($abstract)
+    {
+        $result = '';
+
+        foreach ($abstract as $lang => $translation) {
+            $result .= '<abstract lang="' . $this->langCodes[$lang] . '">';
+            $result .= $translation;
+            $result .= '</abstract>';
+        }
+
+        return $result;
+    }
+
+    protected function incipit($incipit)
+    {
+        return $incipit
+            ? '<incipit>' . $incipit . '</incipit>'
+            : '';
+    }
+
+    protected function explicit($explicit)
+    {
+        return $explicit
+            ? '<explicit>' . $explicit . '</explicit>'
+            : '';
+    }
+
+    protected function related($resources)
+    {
+        if (!$resources) {
+            return '';
+        }
+
+        $result = '';
+
+
+        foreach ($resources as $resource) {
+            $title = str_replace('"', "'", $resource['title']);
+
+            $result .= !empty($resource['link']) ?
+                '<relatedItem displayLabel="' . $title . '" href="' . $resource['link'] . '" />'
+                : '<relatedItem displayLabel="' . $title . '"/>';
+        }
+
+        return $result;
+    }
+
+    protected function copies($copies)
+    {
+        if (!$copies) {
+            return '';
+        }
+
+        $result = '<location>';
+
+        foreach ((array) $copies as $c) {
+            if ($c['l_number']) {
+                $result .= '<shelfLocator>' . str_replace('"', "'", $c['l_number']) . '</shelfLocator>';
+            }
+
+            if ($c['repository']) {
+                $result .= '<repository>' . str_replace('"', "'", $c['repository']) . '</repository>';
+            }
+
+            if ($c['archive']) {
+                $result .= '<archive>' . str_replace('"', "'", $c['archive']) . '</archive>';
+            }
+
+            if ($c['collection']) {
+                $result .= '<collection>' . str_replace('"', "'", $c['collection'])  . '</collection>';
+            }
+
+            if ($c['signature']) {
+                $result .= '<shelfLocator>' . str_replace('"', "'", $c['signature'])  . '</shelfLocator>';
+            }
+
+            if ($c['type']) {
+                $result .= '<genre type="documentType">' . str_replace('"', "'", $c['type']) . '</genre>';
+            }
+
+            if ($c['preservation']) {
+                $result .= '<shelfLocator type="preservation">' . str_replace('"', "'", $c['preservation']) . '</shelfLocator>';
+            }
+
+            if ($c['copy']) {
+                $result .= '<form>' . str_replace('"', "'", $c['copy']) . '</form>';
+            }
+
+            if ($c['location_note']) {
+                $result .= '<note type="location">' . str_replace('"', "'", $c['location_note']) . '</note>';
+            }
+
+            if ($c['manifestation_notes']) {
+                $result .= '<note type="manifestation">' . str_replace('"', "'", $c['manifestation_notes']) . '</note>';
+            }
+        }
+
+        $result .= '</location>';
+        return $result;
+    }
+
+    protected function copyright($copyright)
+    {
+        return $copyright
+            ? '<rights>' . $copyright . '</rights>'
+            : '';
     }
 }
