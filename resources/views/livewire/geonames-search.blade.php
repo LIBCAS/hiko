@@ -8,7 +8,7 @@
         @if (strlen($search) >= 2)
             <div class="absolute z-50 w-full mt-1 text-sm bg-purple-100 rounded-md"
                 x-show.transition.opacity.duration.200="isVisible">
-                <ul>
+                <ul class="mb-8">
                     @foreach ($searchResults as $city)
                         <li class="border border-primary-dark">
                             <button type="button" class="w-full p-2 text-left"
@@ -17,10 +17,13 @@
                             </button>
                         </li>
                     @endforeach
+                    <li class="w-full p-1 text-xs text-center text-white bg-primary">
+                        {{ __('hiko.data_source') }}: GeoNames
+                    </li>
                 </ul>
             </div>
             @if (!empty($error))
-                <div class="px-1 py-3 text-red-700 text-sm">{{ $error }}</div>
+                <div class="px-1 py-3 text-sm text-red-700">{{ $error }}</div>
             @endif
         @endif
     </div>
