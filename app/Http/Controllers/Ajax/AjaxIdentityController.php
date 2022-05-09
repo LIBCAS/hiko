@@ -13,14 +13,14 @@ class AjaxIdentityController extends Controller
         return empty($request->query('search'))
             ? []
             : Identity::where('name', 'like', '%' . $request->query('search') . '%')
-            ->select('id', 'name')
+            ->select('id', 'name', 'birth_year', 'death_year')
             ->take(15)
             ->get()
             ->map(function ($identity) {
                 return [
                     'id' => $identity->id,
                     'value' => $identity->id,
-                    'label' => $identity->name,
+                    'label' => "{$identity->name} ({$identity->birth_year}-{$identity->death_year})",
                 ];
             })
             ->toArray();

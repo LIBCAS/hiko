@@ -13,14 +13,14 @@ class AjaxPlaceController extends Controller
         return empty($request->query('search'))
             ? []
             : Place::where('name', 'like', '%' . $request->query('search') . '%')
-            ->select('id', 'name')
+            ->select('id', 'name', 'country', 'latitude', 'longitude')
             ->take(15)
             ->get()
             ->map(function ($place) {
                 return [
                     'id' => $place->id,
                     'value' => $place->id,
-                    'label' => $place->name,
+                    'label' => "{$place->name} ({$place->country}, {$place->latitude},{$place->longitude})",
                 ];
             })
             ->toArray();

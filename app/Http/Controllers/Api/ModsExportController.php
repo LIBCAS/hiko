@@ -43,7 +43,10 @@ class ModsExportController extends Controller
     {
         //$record = '<mods version="3.7" xsi:schemaLocation="http://www.loc.gov/mods/v3 https://www.loc.gov/standards/mods/v3/mods-3-7.xsd">';
         $record = '<mods version="3.7">';
-        $record .= "<recordInfo><recordIdentifier>{$letter->uuid}</recordIdentifier></recordInfo>";
+        $record .= '<recordInfo>';
+        $record .= "<recordIdentifier>{$letter->uuid}</recordIdentifier>";
+        $record .= '<recordOrigin>' .  config('app.name') . '</recordOrigin>';
+        $record .= '</recordInfo>';
         $record .= "<titleInfo><title>{$letter->name}</title></titleInfo>";
         $record .= $this->dateCreated($letter);
         $record .= $this->notes($letter);
