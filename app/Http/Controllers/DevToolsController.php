@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Letter;
 use Illuminate\Support\Facades\Artisan;
 
 class DevToolsController extends Controller
@@ -16,5 +17,15 @@ class DevToolsController extends Controller
     public function clear()
     {
         Artisan::call('optimize:clear');
+    }
+
+    public function flushSearchIndex()
+    {
+        Letter::all()->unsearchable();
+    }
+
+    public function buildSearchIndex()
+    {
+        Letter::all()->searchable();
     }
 }
