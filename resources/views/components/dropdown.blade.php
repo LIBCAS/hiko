@@ -1,6 +1,9 @@
 <div class="relative" x-data="{ open: false }" @click.away="open = false" @close.stop="open = false">
     <button @click="open = ! open"  {!! $attributes->merge(['class' => 'flex items-center text-sm']) !!}>
         {{ $label }}
+        @isset($icon)
+            <x-dynamic-component :component="$icon" class="w-5 h-5" />
+        @endisset
         <div class="ml-1">
             <svg class="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                 <path fill-rule="evenodd"
