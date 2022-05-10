@@ -8,9 +8,10 @@ class Editor extends Component
 {
     public $letter;
 
-    public function save($html)
+    public function save($html, $plainText)
     {
         $this->letter->content = $html;
+        $this->letter->content_stripped = $plainText;
         $this->letter->save();
         $this->emit('saved');
     }
