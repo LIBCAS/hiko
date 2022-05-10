@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Place;
 use App\Models\Keyword;
 use App\Models\Identity;
+use Laravel\Scout\Searchable;
 use App\Builders\LetterBuilder;
 use Spatie\MediaLibrary\Models\Media;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,7 @@ class Letter extends Model implements HasMedia
     use HasTranslations;
     use HasMediaTrait;
     use HasFactory;
+    use Searchable;
 
     public $translatable = ['abstract'];
 
@@ -33,6 +35,19 @@ class Letter extends Model implements HasMedia
     {
         $this->addMediaConversion('thumb')
             ->width(320);
+    }
+
+    public function searchableAs()
+    {
+        return 'letter_index';
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'id' => $this->id,
+            'content_stripped' => $this->content_stripped,
+        ];
     }
 
     public function identities()
