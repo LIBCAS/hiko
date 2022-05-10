@@ -19,6 +19,7 @@ use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionController;
 use App\Http\Controllers\Ajax\AjaxKeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
+use App\Http\Controllers\LanguageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -358,5 +359,8 @@ Route::prefix('dev')->group(function () {
 Route::get('account', AccountController::class)
     ->name('account')
     ->middleware(['auth']);
+
+Route::get('lang/{lang}', LanguageController::class)
+    ->name('lang');
 
 require __DIR__ . '/auth.php';

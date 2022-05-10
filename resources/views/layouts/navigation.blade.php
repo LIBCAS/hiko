@@ -5,7 +5,21 @@
                 {{ config('app.name') }}
             </a>
         </div>
-        <div class="hidden sm:flex sm:items-center sm:ml-6">
+        <div class="hidden space-x-6 sm:flex sm:items-center sm:ml-6">
+            <x-dropdown label="" icon="icons.translate" :alignRight="true">
+                <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
+                    <a href="{{ route('lang', 'cs') }}"
+                        class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
+                        CS
+                    </a>
+                </div>
+                <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
+                    <a href="{{ route('lang', 'en') }}"
+                        class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
+                        EN
+                    </a>
+                </div>
+            </x-dropdown>
             <x-dropdown label="{{ Auth::user()->name }}" :alignRight="true">
                 <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
                     <a href="{{ route('account') }}"
@@ -26,9 +40,9 @@
         <button @click="open = ! open"
             class="p-2 text-gray-500 rounded-md sm:hidden hover:text-gray-700 hover:bg-gray-100 focus:text-gray-500">
             <svg class="w-6 h-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round"
+                <path :class="{ 'hidden': open, 'inline-flex': !open }" class="inline-flex" stroke-linecap="round"
                     stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round"
+                <path :class="{ 'hidden': !open, 'inline-flex': open }" class="hidden" stroke-linecap="round"
                     stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
@@ -47,7 +61,7 @@
             @endcan
         @endforeach
     </div>
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+    <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             @foreach ($menuItems as $item)
                 @can($item['ability'])
