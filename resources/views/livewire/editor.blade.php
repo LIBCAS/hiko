@@ -1,9 +1,9 @@
 <div class="flex-1">
     <form x-data="editor()" x-init="initEditor(); window.livewire.on('saved', () => { initEditor() })" class="bg-white">
-        <div id="editor" class="prose w-full max-w-full text-base">
+        <div id="editor" class="w-full max-w-full text-base prose">
             {!! $letter->content !!}
         </div>
-        <x-button-simple x-on:click="$wire.save(getContent())" type="button" class="w-full"
+        <x-button-simple x-on:click="$wire.save(getContent(), getPlainText())" type="button" class="w-full"
             wire:loading.attr="disabled">
             {{ __('hiko.save') }}
         </x-button-simple>

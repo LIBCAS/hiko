@@ -6,10 +6,12 @@ use App\Models\User;
 use App\Models\Place;
 use App\Models\Keyword;
 use App\Models\Identity;
+use Laravel\Scout\Searchable;
 use App\Builders\LetterBuilder;
 use Spatie\MediaLibrary\Models\Media;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
+use TeamTNT\TNTSearch\Indexer\TNTIndexer;
 use Spatie\MediaLibrary\HasMedia\HasMedia;
 use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,6 +21,7 @@ class Letter extends Model implements HasMedia
     use HasTranslations;
     use HasMediaTrait;
     use HasFactory;
+    use Searchable;
 
     public $translatable = ['abstract'];
 
@@ -33,6 +36,20 @@ class Letter extends Model implements HasMedia
     {
         $this->addMediaConversion('thumb')
             ->width(320);
+    }
+
+    public function searchableAs()
+    {
+        return 'letter_index';
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'id' => $this->id,
+            'nameNgrams' => (new TNTIndexer)->buildTrigrams($this->content_stripped),
+            'content_stripped' => $this->content_stripped,
+        ];
     }
 
     public function identities()

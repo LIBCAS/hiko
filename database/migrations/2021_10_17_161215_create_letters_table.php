@@ -49,6 +49,7 @@ class CreateLettersTable extends Migration
             $table->text('explicit')->nullable();
             $table->text('incipit')->nullable();
             $table->longText('content')->nullable();
+            $table->longText('content_stripped')->nullable();
             $table->longText('history')->nullable();
             $table->text('copyright')->nullable();
             $table->text('languages')->nullable();

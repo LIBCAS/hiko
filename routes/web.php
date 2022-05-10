@@ -354,6 +354,12 @@ Route::prefix('dev')->group(function () {
 
     Route::get('clear', [DevToolsController::class, 'clear'])
         ->middleware(['auth', 'can:debug']);
+
+    Route::get('flush-index', [DevToolsController::class, 'flushSearchIndex'])
+        ->middleware(['auth', 'can:debug']);
+
+    Route::get('build-index', [DevToolsController::class, 'buildSearchIndex'])
+        ->middleware(['auth', 'can:debug']);
 });
 
 Route::get('account', AccountController::class)

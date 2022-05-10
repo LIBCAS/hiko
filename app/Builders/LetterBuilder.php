@@ -2,13 +2,18 @@
 
 namespace App\Builders;
 
+use App\Models\Letter;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Builder;
 
 class LetterBuilder extends Builder
 {
-    public function search($filters, $lang)
+    public function filter($filters, $lang)
     {
+        if (isset($filters['fulltext']) && !empty($filters['fulltext'])) {
+            $this->whereIn('id', Letter::search($filters['fulltext'])->keys()->toArray());
+        }
+
         if (isset($filters['id']) && !empty($filters['id'])) {
             $this->where('id', 'LIKE', "%" . $filters['id'] . "%");
         }

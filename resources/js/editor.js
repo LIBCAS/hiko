@@ -28,5 +28,9 @@ window.editor = function () {
 
             return converter.convert()
         },
+
+        getPlainText: () => {
+            return this.quill.getText().replace(/(\r\n|\n|\r)/g, ' ')
+        },
     }
 }

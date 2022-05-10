@@ -55,7 +55,7 @@ class LettersTable extends Component
         ])
             ->select('id', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status');
 
-        $query->search($this->filters, config('hiko.metadata_default_locale'));
+        $query->filter($this->filters, config('hiko.metadata_default_locale'));
 
         return $query
             ->orderBy($this->filters['order'], $this->filters['direction'])
