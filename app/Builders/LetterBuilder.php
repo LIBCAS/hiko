@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class LetterBuilder extends Builder
 {
-    public function search($filters, $lang)
+    public function filter($filters, $lang)
     {
         if (isset($filters['id']) && !empty($filters['id'])) {
             $this->where('id', 'LIKE', "%" . $filters['id'] . "%");
