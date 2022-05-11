@@ -16,11 +16,22 @@ class SimilarNamesController extends Controller
 
         $searchQuery = Identity::search($request->query('search'));
 
-        return Identity::select('id', 'name', 'birth_year', 'death_year')
+        return Identity::select('id', 'name', 'birth_year', 'death_year', 'alternative_names')
             ->whereIn('id', $searchQuery->keys()->toArray())
             ->get()
             ->reject(function ($identity) use ($request) {
-                return !$this->similar($request->query('search'), $identity->name);
+                $similarAlternativeName = false;
+
+                foreach ((array) $identity->alternative_names as $name) {
+                    if ($this->similar($request->query('search'), $name)) {
+                        $similarAlternativeName = true;
+                        break;
+                    }
+                }
+
+                $hasSimilarName = $this->similar($request->query('search'), $identity->name) || $similarAlternativeName;
+
+                return !$hasSimilarName;
             })
             ->map(function ($identity) {
                 return [

@@ -28,9 +28,19 @@ class Identity extends Model
 
     public function toSearchableArray()
     {
+        $names = $this->alternative_names;
+        $names[] = $this->name;
+
+        $names = collect($names)
+            ->reject(function ($name) {
+                return empty($name);
+            })
+            ->unique()
+            ->implode(', ');
+
         return [
             'id' => $this->id,
-            'name' => $this->name,
+            'names' => $names,
         ];
     }
 
