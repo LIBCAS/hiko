@@ -36,7 +36,6 @@ class SimilarNamesController extends Controller
             ->map(function ($identity) {
                 return [
                     'id' => $identity->id,
-                    'value' => $identity->id,
                     'label' => "{$identity->name} ({$identity->birth_year}-{$identity->death_year})",
                 ];
             })
@@ -46,8 +45,8 @@ class SimilarNamesController extends Controller
     protected function similar($string1, $string2)
     {
         return levenshtein(
-            strtolower(removeAccents($string1)),
-            strtolower(removeAccents($string2)),
+            trim(strtolower(removeAccents($string1))),
+            trim(strtolower(removeAccents($string2))),
         ) <= 3;
     }
 }

@@ -1,16 +1,18 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="{ type: '{{ $identity->type ? $identity->type : 'person' }}' }" action="{{ $action }}"
-        method="post" onkeydown="return event.key != 'Enter';" class="max-w-sm space-y-6">
+    <form x-data="identityForm({ type: '{{ $identity->type ? $identity->type : 'person' }}', similarNamesUrl: '{{ route('ajax.identities.similar') }}', id: '{{ $identity->id }}', surname: '{{ $identity->surname }}', name: '{{ $identity->name }}', forename: '{{ $identity->forename }}' })"
+        x-init="$watch('fullName', () => findSimilarNames($data))"
+        action="{{ $action }}" method="post"
+        onkeydown="return event.key != 'Enter';" class="max-w-sm space-y-6">
         @csrf
         @isset($method)
             @method($method)
         @endisset
-        <livewire:identity-form-switcher :types="$types" :identityType="$selectedType" :identity="$identity"
-            :selectedProfessions="$selectedProfessions" :selectedCategories="$selectedCategories" />
+        <livewire:identity-form-switcher :types="$types" :identityType="$selectedType" :identity="$identity" :selectedProfessions="$selectedProfessions"
+            :selectedCategories="$selectedCategories" />
         <div x-data="{ open: false }" class="p-3 bg-gray-200 border rounded-md shadow">
             <button type="button" @click="open = !open"
-                class="inline-flex items-center font-semibold text-primary hover:underline text-sm">
+                class="inline-flex items-center text-sm font-semibold text-primary hover:underline">
                 <x-icons.user-group class="h-4 mr-2" /> <span>{{ __('hiko.search_viaf') }}</span>
             </button>
             <span x-show="open" x-transition.duration.500ms>
@@ -19,8 +21,7 @@
         </div>
         <div>
             <x-label for="viaf_id" value="VIAF ID" />
-            <x-input id="viaf_id" class="block w-full mt-1" type="text" name="viaf_id"
-                :value="old('viaf_id', $identity->viaf_id)" />
+            <x-input id="viaf_id" class="block w-full mt-1" type="text" name="viaf_id" :value="old('viaf_id', $identity->viaf_id)" />
             @error('viaf_id')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
@@ -33,6 +34,20 @@
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
+        <template x-if="Object.keys(similarNames).length > 0">
+            <div role="alert" class="p-2 text-sm bg-red-100 border border-red-400">
+                <p>
+                    <strong>
+                        {{ __('hiko.similar_name_exists') }}
+                    </strong>
+                </p>
+                <ul>
+                    <template x-for="identity, index in Object.keys(similarNames)" :key="index">
+                        <li x-text="similarNames[index].label"></li>
+                    </template>
+                </ul>
+            </div>
+        </template>
         <x-button-simple class="w-full">
             {{ $label }}
         </x-button-simple>

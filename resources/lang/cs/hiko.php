@@ -197,4 +197,5 @@ return [
     'letters_from' => 'Dopisy od: :name',
     'help' => 'Nápověda',
     'data_source' => 'Zdroj dat',
+    'similar_name_exists' => 'Podobné jméno už existuje!',
 ];
