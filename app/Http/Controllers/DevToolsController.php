@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Letter;
+use App\Models\Keyword;
 use Illuminate\Support\Facades\Artisan;
 
 class DevToolsController extends Controller
@@ -23,11 +24,13 @@ class DevToolsController extends Controller
     {
         Letter::all()->unsearchable();
         Identity::all()->unsearchable();
+        Keyword::all()->unsearchable();
     }
 
     public function buildSearchIndex()
     {
         Letter::all()->searchable();
         Identity::all()->searchable();
+        Keyword::all()->searchable();
     }
 }

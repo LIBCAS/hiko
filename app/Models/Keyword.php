@@ -8,15 +8,31 @@ use App\Builders\KeywordBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Scout\Searchable;
 
 class Keyword extends Model
 {
     use HasTranslations;
     use HasFactory;
+    use Searchable;
 
     public $translatable = ['name'];
 
     protected $guarded = ['id'];
+
+    public function searchableAs()
+    {
+        return 'keyword_index';
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'id' => $this->id,
+            'cs' => $this->getTranslation('name', 'cs'),
+            'en' => $this->getTranslation('name', 'en'),
+        ];
+    }
 
     public function keyword_category()
     {
