@@ -31,7 +31,7 @@ class PlacesTable extends Component
 
     protected function findPlaces()
     {
-        return Place::select('id', 'name', 'latitude', 'longitude', 'country')
+        return Place::select('id', 'name', 'division', 'latitude', 'longitude', 'country')
             ->search($this->filters)
             ->orderBy($this->filters['order'])
             ->paginate(10);
@@ -40,7 +40,7 @@ class PlacesTable extends Component
     protected function formatTableData($data)
     {
         return [
-            'header' => [__('hiko.name'), __('hiko.country'), __('hiko.coordinates')],
+            'header' => [__('hiko.name'), __('hiko.division'), __('hiko.country'), __('hiko.coordinates')],
             'rows' => $data->map(function ($place) {
                 $hasLatLng = $place->latitude && $place->longitude;
                 return [
@@ -52,6 +52,9 @@ class PlacesTable extends Component
                             ],
                             'name' => 'tables.edit-link',
                         ],
+                    ],
+                    [
+                        'label' => $place->division,
                     ],
                     [
                         'label' => $place->country,

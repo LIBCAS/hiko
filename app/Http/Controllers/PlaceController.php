@@ -13,6 +13,7 @@ class PlaceController extends Controller
     protected $rules = [
         'name' => ['required', 'string', 'max:255'],
         'country' => ['required', 'string', 'max:255'],
+        'division' => ['nullable'],
         'note' => ['nullable'],
         'latitude' => ['nullable', 'numeric'],
         'longitude' => ['nullable', 'numeric'],
@@ -26,6 +27,7 @@ class PlaceController extends Controller
         $this->attributes = [
             'name' => __('hiko.name'),
             'country' => __('hiko.country'),
+            'division' => __('hiko.division'),
             'latitude' => __('hiko.latitude'),
             'longitude' => __('hiko.longitude'),
             'geoname_id' => 'Geoname ID',

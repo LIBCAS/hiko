@@ -20,6 +20,7 @@ class PlacesExport extends \PhpOffice\PhpSpreadsheet\Cell\StringValueBinder impl
         return [
             'id',
             'name',
+            'division',
             'country',
             'note',
             'latitude',
@@ -33,6 +34,7 @@ class PlacesExport extends \PhpOffice\PhpSpreadsheet\Cell\StringValueBinder impl
         return [
             $place->id,
             $place->name,
+            $place->division,
             $place->country,
             $place->note,
             $place->latitude,

@@ -18,6 +18,7 @@ class CreatePlacesTable extends Migration
             $table->timestamps();
             $table->string('name');
             $table->string('country')->nullable();
+            $table->string('division')->nullable();
             $table->text('note')->nullable();
             $table->double('latitude')->nullable();
             $table->double('longitude')->nullable();

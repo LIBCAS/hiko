@@ -45,6 +45,7 @@ return [
     'new_place' => 'Nové místo',
     'note' => 'Poznámka',
     'country' => 'Země',
+    'division' => 'Územní jednotka',
     'search_geolocation' => 'Vyhledat souřadnice',
     'coordinates' => 'Souřadnice',
     'latitude' => 'Zeměpisná šířka',

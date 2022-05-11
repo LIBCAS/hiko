@@ -45,6 +45,7 @@ return [
     'new_place' => 'New place',
     'note' => 'Note',
     'country' => 'Country',
+    'division' => 'Administrative division',
     'search_geolocation' => 'Search location',
     'coordinates' => 'Coordinates',
     'latitude' => 'Latitude',
