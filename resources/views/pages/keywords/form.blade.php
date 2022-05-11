@@ -1,31 +1,31 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form onkeydown="return event.key != 'Enter';" action="{{ $action }}" method="post" class="max-w-sm space-y-3"
-        autocomplete="off">
+    <form x-data="keywordForm({ similarNamesUrl: '{{ route('ajax.keywords.similar') }}', id: '{{ $keyword->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" onkeydown="return event.key != 'Enter';"
+        action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
         @endisset
         <div>
             <x-label for="cs" value="CS" />
-            <x-input id="cs" class="block w-full mt-1" type="text" name="cs"
-                :value="old('cs', $keyword->translations['name']['cs'] ?? null)" />
+            <x-input id="cs" class="block w-full mt-1" type="text" name="cs" :value="old('cs', $keyword->translations['name']['cs'] ?? null)"
+                x-on:change="search = $el.value" />
             @error('cs')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
         <div>
             <x-label for="en" value="EN" />
-            <x-input id="en" class="block w-full mt-1" type="text" name="en"
-                :value="old('cs', $keyword->translations['name']['en'] ?? null)" />
+            <x-input id="en" class="block w-full mt-1" type="text" name="en" :value="old('cs', $keyword->translations['name']['en'] ?? null)"
+                x-on:change="search = $el.value" />
             @error('en')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
+        <x-alert-similar-names />
         <div>
             <x-label for="category" :value="__('hiko.category')" />
-            <x-select name="category" id="category" class="block w-full mt-1"
-                x-data="ajaxChoices({url: '{{ route('ajax.keywords.category') }}', element: $el })"
+            <x-select name="category" id="category" class="block w-full mt-1" x-data="ajaxChoices({ url: '{{ route('ajax.keywords.category') }}', element: $el })"
                 x-init="initSelect()">
                 @if ($category)
                     <option value="{{ $category['id'] }}" selected>{{ $category['label'] }}</option>
