@@ -23,13 +23,13 @@ class SimilarNamesController extends Controller
                 $similarAlternativeName = false;
 
                 foreach ((array) $identity->alternative_names as $name) {
-                    if ($this->similar($request->query('search'), $name)) {
+                    if (similar($request->query('search'), $name)) {
                         $similarAlternativeName = true;
                         break;
                     }
                 }
 
-                $hasSimilarName = $this->similar($request->query('search'), $identity->name) || $similarAlternativeName;
+                $hasSimilarName = similar($request->query('search'), $identity->name) || $similarAlternativeName;
 
                 return !$hasSimilarName;
             })
@@ -40,13 +40,5 @@ class SimilarNamesController extends Controller
                 ];
             })
             ->toArray();
-    }
-
-    protected function similar($string1, $string2)
-    {
-        return levenshtein(
-            trim(strtolower(removeAccents($string1))),
-            trim(strtolower(removeAccents($string2))),
-        ) <= 3;
     }
 }

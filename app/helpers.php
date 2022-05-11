@@ -18,3 +18,13 @@ if (!function_exists('removeAccents')) {
         return $transliterator->transliterate($string);
     }
 }
+
+if (!function_exists('similar')) {
+    function similar(string $string1, string $string2)
+    {
+        return levenshtein(
+            trim(strtolower(removeAccents($string1))),
+            trim(strtolower(removeAccents($string2))),
+        ) <= 3;
+    }
+}
