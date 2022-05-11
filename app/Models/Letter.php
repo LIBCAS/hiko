@@ -8,8 +8,10 @@ use App\Models\Keyword;
 use App\Models\Identity;
 use Laravel\Scout\Searchable;
 use App\Builders\LetterBuilder;
+use Spatie\Image\Manipulations;
 use Spatie\MediaLibrary\Models\Media;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Translatable\HasTranslations;
 use TeamTNT\TNTSearch\Indexer\TNTIndexer;
 use Spatie\MediaLibrary\HasMedia\HasMedia;
@@ -36,6 +38,12 @@ class Letter extends Model implements HasMedia
     {
         $this->addMediaConversion('thumb')
             ->width(320);
+
+        if (Storage::disk('local')->exists('public/watermark/logo.png')) {
+            $this->addMediaConversion('watermark')
+                ->watermark(storage_path('app/public/watermark/logo.png'))
+                ->watermarkPosition(Manipulations::POSITION_CENTER);
+        }
     }
 
     public function searchableAs()
