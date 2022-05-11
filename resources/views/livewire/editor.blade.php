@@ -1,6 +1,6 @@
 <div class="flex-1">
     <form x-data="editor()" x-init="initEditor(); window.livewire.on('saved', () => { initEditor() })" class="bg-white">
-        <div id="editor" class="w-full max-w-full text-base prose">
+        <div id="editor" class="w-full max-w-full font-sans text-base prose">
             {!! $letter->content !!}
         </div>
         <x-button-simple x-on:click="$wire.save(getContent(), getPlainText())" type="button" class="w-full"
