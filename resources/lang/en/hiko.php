@@ -197,4 +197,5 @@ return [
     'letters_from' => 'Letters from: :name',
     'help' => 'Help',
     'data_source' => 'Source of data',
+    'similar_name_exists' => 'Similar name exists!',
 ];

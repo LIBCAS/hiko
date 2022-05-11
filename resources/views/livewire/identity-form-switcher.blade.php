@@ -17,16 +17,17 @@
             <div class="space-y-6">
                 <div class="required">
                     <x-label for="surname" :value="__('hiko.surname')" />
-                    <x-input id="surname" class="block w-full mt-1" type="text" name="surname"
-                        :value="old('surname', $identity->surname)" required />
+                    <x-input x-model="surname" id="surname" class="block w-full mt-1" type="text" name="surname"
+                        x-on:change="fullName = surname + ' ' + forename" :value="old('surname', $identity->surname)"
+                        required />
                     @error('surname')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>
                 <div>
                     <x-label for="forename" :value="__('hiko.forename')" />
-                    <x-input id="forename" class="block w-full mt-1" type="text" name="forename"
-                        :value="old('forename', $identity->forename)" />
+                    <x-input x-model="forename" id="forename" class="block w-full mt-1" type="text" name="forename"
+                        x-on:change="fullName = surname + ' ' + forename" :value="old('forename', $identity->forename)" />
                     @error('forename')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
@@ -59,8 +60,7 @@
                 </div>
                 <div>
                     <x-label for="gender" :value="__('hiko.gender')" />
-                    <x-input id="gender" class="block w-full mt-1" type="text" name="gender"
-                        :value="old('gender', $identity->gender)" />
+                    <x-input id="gender" class="block w-full mt-1" type="text" name="gender" :value="old('gender', $identity->gender)" />
                     @error('gender')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
@@ -68,16 +68,15 @@
                 <div class="space-y-6">
                     <livewire:repeated-select :items="$selectedProfessions" fieldLabel="{{ __('hiko.profession') }}"
                         fieldKey="profession" route="ajax.professions" />
-                    <livewire:repeated-select :items="$selectedCategories"
-                        fieldLabel="{{ __('hiko.professions_category') }}" fieldKey="category"
-                        route="ajax.professions.category" />
+                    <livewire:repeated-select :items="$selectedCategories" fieldLabel="{{ __('hiko.professions_category') }}"
+                        fieldKey="category" route="ajax.professions.category" />
                 </div>
             </div>
         @else
             <div class="required">
                 <x-label for="name" :value="__('Název')" />
-                <x-input id="name" class="block w-full mt-1" type="text" name="name"
-                    :value="old('name', $identity->name)" required />
+                <x-input x-model="name" x-on:change="fullName = name" id="name"
+                    class="block w-full mt-1" type="text" name="name" :value="old('name', $identity->name)" required />
                 @error('name')
                     <div class="text-red-600">{{ $message }}</div>
                 @enderror

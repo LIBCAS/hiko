@@ -22,10 +22,12 @@ class DevToolsController extends Controller
     public function flushSearchIndex()
     {
         Letter::all()->unsearchable();
+        Identity::all()->unsearchable();
     }
 
     public function buildSearchIndex()
     {
         Letter::all()->searchable();
+        Identity::all()->searchable();
     }
 }

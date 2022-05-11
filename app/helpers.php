@@ -10,3 +10,11 @@ if (!function_exists('computeDate')) {
         ]);
     }
 }
+
+if (!function_exists('removeAccents')) {
+    function removeAccents($string)
+    {
+        $transliterator = Transliterator::createFromRules(':: Any-Latin; :: Latin-ASCII; :: NFD; :: [:Nonspacing Mark:] Remove; :: Lower(); :: NFC;', Transliterator::FORWARD);
+        return $transliterator->transliterate($string);
+    }
+}
