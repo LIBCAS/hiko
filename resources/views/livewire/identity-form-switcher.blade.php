@@ -32,6 +32,7 @@
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>
+                <x-alert-similar-names />
                 <div class="flex space-x-6">
                     <div>
                         <x-label for="birth_year" :value="__('hiko.birth_year')" />
@@ -81,6 +82,7 @@
                     <div class="text-red-600">{{ $message }}</div>
                 @enderror
             </div>
+            <x-alert-similar-names />
         @endif
     </div>
 </div>

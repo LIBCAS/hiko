@@ -2,7 +2,21 @@
 
 .ql-container.ql-snow,
 .ql-toolbar.ql-snow {
-    @apply border border-primary rounded-sm;
+    @apply border rounded-sm border-primary;
+}
+
+.ql-toolbar.ql-snow {
+    @apply sticky top-0 z-10 bg-purple-100 opacity-100;
+}
+
+.ql-snow.ql-toolbar button:hover,
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar .ql-picker-label:hover,
+.ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke,
+.ql-snow.ql-toolbar .ql-picker-item:hover,
+.ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke,
+.ql-snow.ql-toolbar button:hover .ql-fill {
+    @apply text-primary stroke-primary fill-primary;
 }
 
 .ql-editor p,

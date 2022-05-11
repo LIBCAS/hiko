@@ -19,6 +19,7 @@ use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionController;
 use App\Http\Controllers\Ajax\AjaxKeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
+use App\Http\Controllers\Ajax\SimilarKeywordsController;
 use App\Http\Controllers\Ajax\SimilarNamesController;
 use App\Http\Controllers\LanguageController;
 
@@ -350,6 +351,10 @@ Route::prefix('ajax')->group(function () {
 
     Route::get('keyword', AjaxKeywordController::class)
         ->name('ajax.keywords')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('keyword/similar', SimilarKeywordsController::class)
+        ->name('ajax.keywords.similar')
         ->middleware(['auth', 'can:manage-metadata']);
 });
 

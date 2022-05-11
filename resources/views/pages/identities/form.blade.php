@@ -1,8 +1,6 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="identityForm({ type: '{{ $identity->type ? $identity->type : 'person' }}', similarNamesUrl: '{{ route('ajax.identities.similar') }}', id: '{{ $identity->id }}', surname: '{{ $identity->surname }}', name: '{{ $identity->name }}', forename: '{{ $identity->forename }}' })"
-        x-init="$watch('fullName', () => findSimilarNames($data))"
-        action="{{ $action }}" method="post"
+    <form x-data="identityForm({ type: '{{ $identity->type ? $identity->type : 'person' }}', similarNamesUrl: '{{ route('ajax.identities.similar') }}', id: '{{ $identity->id }}', surname: '{{ $identity->surname }}', name: '{{ $identity->name }}', forename: '{{ $identity->forename }}' })" x-init="$watch('fullName', () => findSimilarNames($data))" action="{{ $action }}" method="post"
         onkeydown="return event.key != 'Enter';" class="max-w-sm space-y-6">
         @csrf
         @isset($method)
@@ -34,20 +32,6 @@
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
-        <template x-if="Object.keys(similarNames).length > 0">
-            <div role="alert" class="p-2 text-sm bg-red-100 border border-red-400">
-                <p>
-                    <strong>
-                        {{ __('hiko.similar_name_exists') }}
-                    </strong>
-                </p>
-                <ul>
-                    <template x-for="identity, index in Object.keys(similarNames)" :key="index">
-                        <li x-text="similarNames[index].label"></li>
-                    </template>
-                </ul>
-            </div>
-        </template>
         <x-button-simple class="w-full">
             {{ $label }}
         </x-button-simple>
