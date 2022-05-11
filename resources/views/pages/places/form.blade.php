@@ -9,15 +9,14 @@
         @endisset
         <div class="required">
             <x-label for="name" :value="__('hiko.name')" />
-            <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $place->name)"
-                required />
+            <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $place->name)" required />
             @error('name')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
         <div class="required">
             <x-label for="country" :value="__('hiko.country')" />
-            <x-select x-data="choices({element: $el })" x-init="initSelect()" id="country" class="block w-full mt-1"
+            <x-select x-data="choices({ element: $el })" x-init="initSelect()" id="country" class="block w-full mt-1"
                 name="country">
                 @foreach ($countries as $country)
                     <option value="{{ $country->name }}"
@@ -27,6 +26,13 @@
                 @endforeach
             </x-select>
             @error('country')
+                <div class="text-red-600">{{ $message }}</div>
+            @enderror
+        </div>
+        <div>
+            <x-label for="division" :value="__('hiko.division')" />
+            <x-input id="division" class="block w-full mt-1" type="text" name="division" :value="old('division', $place->division)" />
+            @error('division')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
@@ -48,24 +54,21 @@
         </div>
         <div>
             <x-label for="latitude" :value="__('hiko.latitude')" />
-            <x-input id="latitude" class="block w-full mt-1" type="text" name="latitude"
-                :value="old('latitude', $place->latitude)" />
+            <x-input id="latitude" class="block w-full mt-1" type="text" name="latitude" :value="old('latitude', $place->latitude)" />
             @error('latitude')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
         <div>
             <x-label for="longitude" :value="__('hiko.longitude')" />
-            <x-input id="longitude" class="block w-full mt-1" type="text" name="longitude"
-                :value="old('longitude', $place->longitude)" />
+            <x-input id="longitude" class="block w-full mt-1" type="text" name="longitude" :value="old('longitude', $place->longitude)" />
             @error('longitude')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
         <div>
             <x-label for="geoname_id" :value="__('Geoname ID')" />
-            <x-input id="geoname_id" class="block w-full mt-1" type="text" name="geoname_id"
-                :value="old('geoname_id', $place->geoname_id)" />
+            <x-input id="geoname_id" class="block w-full mt-1" type="text" name="geoname_id" :value="old('geoname_id', $place->geoname_id)" />
             @error('geoname_id')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
