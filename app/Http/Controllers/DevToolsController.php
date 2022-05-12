@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Letter;
 use App\Models\Keyword;
+use App\Models\Identity;
+use App\Models\KeywordCategory;
 use Illuminate\Support\Facades\Artisan;
 
 class DevToolsController extends Controller
@@ -25,6 +27,7 @@ class DevToolsController extends Controller
         Letter::all()->unsearchable();
         Identity::all()->unsearchable();
         Keyword::all()->unsearchable();
+        KeywordCategory::all()->unsearchable();
     }
 
     public function buildSearchIndex()
@@ -32,5 +35,6 @@ class DevToolsController extends Controller
         Letter::all()->searchable();
         Identity::all()->searchable();
         Keyword::all()->searchable();
+        KeywordCategory::all()->searchable();
     }
 }
