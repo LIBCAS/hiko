@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\AccountController;
@@ -382,6 +383,9 @@ Route::prefix('dev')->group(function () {
     Route::get('build-index', [DevToolsController::class, 'buildSearchIndex'])
         ->middleware(['auth', 'can:debug']);
 });
+
+Route::get('image/{letter}/{imageId}', ImageController::class)
+    ->name('image');
 
 Route::get('account', AccountController::class)
     ->name('account')
