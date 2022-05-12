@@ -16,10 +16,8 @@ class LetterResource extends JsonResource
             foreach ($this->getMedia() as $media) {
                 if ($media->getCustomProperty('status') === 'publish') {
                     $record['media'][] = [
-                        'thumb' => asset($media->getUrl('thumb')),
-                        'full' => config('hiko.show_watermark')
-                            ? $media->getUrl('watermark')
-                            : asset($media->getUrl()),
+                        'thumb' => route('image', [$this, $media->id, 'size' => 'thumb']),
+                        'full' => route('image', [$this, $media->id, 'size' => 'full']),
                         'description' => $media->getCustomProperty('description'),
                     ];
                 }
