@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Place;
 use App\Models\Letter;
 use App\Models\Keyword;
 use App\Models\Identity;
@@ -28,6 +29,7 @@ class DevToolsController extends Controller
         Identity::all()->unsearchable();
         Keyword::all()->unsearchable();
         KeywordCategory::all()->unsearchable();
+        Place::all()->unsearchable();
     }
 
     public function buildSearchIndex()
@@ -36,5 +38,6 @@ class DevToolsController extends Controller
         Identity::all()->searchable();
         Keyword::all()->searchable();
         KeywordCategory::all()->searchable();
+        Place::all()->searchable();
     }
 }
