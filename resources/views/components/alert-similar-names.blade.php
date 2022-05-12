@@ -6,8 +6,8 @@
             </strong>
         </p>
         <ul>
-            <template x-for="identity, index in Object.keys(similarNames)" :key="index">
-                <li x-text="similarNames[index].label"></li>
+            <template x-for="(item, index) in Object.values(similarNames)" :key="index">
+                <li x-text="item.label"></li>
             </template>
         </ul>
     </div>
