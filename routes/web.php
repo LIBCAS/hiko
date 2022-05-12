@@ -8,6 +8,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\KeywordController;
 use App\Http\Controllers\DevToolsController;
 use App\Http\Controllers\IdentityController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\LetterPreviewController;
@@ -15,13 +16,13 @@ use App\Http\Controllers\Ajax\AjaxPlaceController;
 use App\Http\Controllers\KeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxKeywordController;
 use App\Http\Controllers\Ajax\AjaxIdentityController;
+use App\Http\Controllers\Ajax\SimilarItemsController;
+use App\Http\Controllers\Ajax\SimilarNamesController;
 use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionController;
+use App\Http\Controllers\Ajax\SimilarKeywordsController;
 use App\Http\Controllers\Ajax\AjaxKeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
-use App\Http\Controllers\Ajax\SimilarKeywordsController;
-use App\Http\Controllers\Ajax\SimilarNamesController;
-use App\Http\Controllers\LanguageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -353,8 +354,8 @@ Route::prefix('ajax')->group(function () {
         ->name('ajax.keywords')
         ->middleware(['auth', 'can:manage-metadata']);
 
-    Route::get('keyword/similar', SimilarKeywordsController::class)
-        ->name('ajax.keywords.similar')
+    Route::get('items/similar', SimilarItemsController::class)
+        ->name('ajax.items.similar')
         ->middleware(['auth', 'can:manage-metadata']);
 });
 
