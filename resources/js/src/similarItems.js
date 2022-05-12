@@ -7,7 +7,11 @@ window.similarItems = function (params) {
                 context.similarNames = []
             }
 
-            fetch(params.similarNamesUrl + '&search=' + this.search)
+            let url = new URL(params.similarNamesUrl)
+
+            url.searchParams.append('search', context.search)
+
+            fetch(url.href)
                 .then((response) => response.json())
                 .then((data) => {
                     context.similarNames = data

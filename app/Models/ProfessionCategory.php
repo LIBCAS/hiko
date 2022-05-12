@@ -7,15 +7,31 @@ use App\Builders\ProfessionBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Scout\Searchable;
 
 class ProfessionCategory extends Model
 {
     use HasFactory;
     use HasTranslations;
+    use Searchable;
 
     public $translatable = ['name'];
 
     protected $guarded = ['id'];
+
+    public function searchableAs()
+    {
+        return 'profession_category_index';
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'id' => $this->id,
+            'cs' => $this->getTranslation('name', 'cs'),
+            'en' => $this->getTranslation('name', 'en'),
+        ];
+    }
 
     public function identities()
     {

@@ -18,6 +18,7 @@ use App\Http\Controllers\Ajax\AjaxKeywordController;
 use App\Http\Controllers\Ajax\AjaxIdentityController;
 use App\Http\Controllers\Ajax\SimilarItemsController;
 use App\Http\Controllers\Ajax\SimilarNamesController;
+use App\Http\Controllers\Ajax\SimilarPlacesController;
 use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionController;
 use App\Http\Controllers\Ajax\SimilarKeywordsController;
@@ -349,6 +350,11 @@ Route::prefix('ajax')->group(function () {
     Route::get('place', AjaxPlaceController::class)
         ->name('ajax.places')
         ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('places/similar', SimilarPlacesController::class)
+        ->name('ajax.places.similar')
+        ->middleware(['auth', 'can:manage-metadata']);
+
 
     Route::get('keyword', AjaxKeywordController::class)
         ->name('ajax.keywords')

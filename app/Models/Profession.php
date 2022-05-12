@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Identity;
+use Laravel\Scout\Searchable;
 use App\Builders\ProfessionBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
@@ -12,10 +13,25 @@ class Profession extends Model
 {
     use HasTranslations;
     use HasFactory;
+    use Searchable;
 
     public $translatable = ['name'];
 
     protected $guarded = ['id'];
+
+    public function searchableAs()
+    {
+        return 'profession_index';
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'id' => $this->id,
+            'cs' => $this->getTranslation('name', 'cs'),
+            'en' => $this->getTranslation('name', 'en'),
+        ];
+    }
 
     public function identities()
     {
