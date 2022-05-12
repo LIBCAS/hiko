@@ -1,27 +1,28 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form onkeydown="return event.key != 'Enter';" action="{{ $action }}" method="post" class="max-w-sm space-y-3"
-        autocomplete="off">
+    <form x-data="similarItems({ similarNamesUrl: '{{ route('ajax.items.similar', ['model' => 'ProfessionCategory']) }}', id: '{{ $professionCategory->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" onkeydown="return event.key != 'Enter';"
+        action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
         @endisset
         <div>
             <x-label for="cs" value="CS" />
-            <x-input id="cs" class="block w-full mt-1" type="text" name="cs"
-                :value="old('cs', $professionCategory->translations['name']['cs'] ?? null)" />
+            <x-input id="cs" class="block w-full mt-1" type="text" name="cs" :value="old('cs', $professionCategory->translations['name']['cs'] ?? null)"
+                x-on:change="search = $el.value" />
             @error('cs')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
         <div>
             <x-label for="en" value="EN" />
-            <x-input id="en" class="block w-full mt-1" type="text" name="en"
-                :value="old('cs', $professionCategory->translations['name']['en'] ?? null)" />
+            <x-input id="en" class="block w-full mt-1" type="text" name="en" :value="old('cs', $professionCategory->translations['name']['en'] ?? null)"
+                x-on:change="search = $el.value" />
             @error('en')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
+        <x-alert-similar-names />
         <x-button-simple class="w-full">
             {{ $label }}
         </x-button-simple>
@@ -32,8 +33,9 @@
                 {{ __('hiko.attached_persons_count') }}: {{ $professionCategory->identities->count() }}
             </p>
         @else
-            <form x-data="{ form: $el }" action="{{ route('professions.category.destroy', $professionCategory->id) }}"
-                method="post" class="max-w-sm mt-8">
+            <form x-data="{ form: $el }"
+                action="{{ route('professions.category.destroy', $professionCategory->id) }}" method="post"
+                class="max-w-sm mt-8">
                 @csrf
                 @method('DELETE')
                 <x-button-danger class="w-full"
