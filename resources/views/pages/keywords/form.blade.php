@@ -1,6 +1,6 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="keywordForm({ similarNamesUrl: '{{ route('ajax.keywords.similar') }}', id: '{{ $keyword->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" onkeydown="return event.key != 'Enter';"
+    <form x-data="similarItems({ similarNamesUrl: '{{ route('ajax.items.similar', ['model' => 'Keyword']) }}', id: '{{ $keyword->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" onkeydown="return event.key != 'Enter';"
         action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
         @csrf
         @isset($method)

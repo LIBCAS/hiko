@@ -1,14 +1,14 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form onkeydown="return event.key != 'Enter';" action="{{ $action }}" method="post" class="max-w-sm space-y-3"
-        autocomplete="off">
+    <form x-data="similarItems({ similarNamesUrl: '{{ route('ajax.items.similar', ['model' => 'KeywordCategory']) }}', id: '{{ $keywordCategory->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" onkeydown="return event.key != 'Enter';"
+        action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
         @endisset
         <div>
             <x-label for="cs" value="CS" />
-            <x-input id="cs" class="block w-full mt-1" type="text" name="cs"
+            <x-input id="cs" class="block w-full mt-1" type="text" name="cs" x-on:change="search = $el.value"
                 :value="old('cs', $keywordCategory->translations['name']['cs'] ?? null)" />
             @error('cs')
                 <div class="text-red-600">{{ $message }}</div>
@@ -16,12 +16,13 @@
         </div>
         <div>
             <x-label for="en" value="EN" />
-            <x-input id="en" class="block w-full mt-1" type="text" name="en"
+            <x-input id="en" class="block w-full mt-1" type="text" name="en" x-on:change="search = $el.value"
                 :value="old('cs', $keywordCategory->translations['name']['en'] ?? null)" />
             @error('en')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
+        <x-alert-similar-names />
         <x-button-simple class="w-full">
             {{ $label }}
         </x-button-simple>

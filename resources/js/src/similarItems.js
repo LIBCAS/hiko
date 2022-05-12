@@ -1,4 +1,4 @@
-window.keywordForm = function (params) {
+window.similarItems = function (params) {
     return {
         search: '',
         similarNames: [],
@@ -7,7 +7,7 @@ window.keywordForm = function (params) {
                 context.similarNames = []
             }
 
-            fetch(params.similarNamesUrl + '?search=' + this.search)
+            fetch(params.similarNamesUrl + '&search=' + this.search)
                 .then((response) => response.json())
                 .then((data) => {
                     context.similarNames = data
