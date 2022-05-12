@@ -22,6 +22,7 @@ use App\Http\Controllers\Ajax\SimilarPlacesController;
 use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionController;
 use App\Http\Controllers\Ajax\SimilarKeywordsController;
+use App\Http\Controllers\Ajax\SimilarLocationsController;
 use App\Http\Controllers\Ajax\AjaxKeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
 
@@ -355,9 +356,12 @@ Route::prefix('ajax')->group(function () {
         ->name('ajax.places.similar')
         ->middleware(['auth', 'can:manage-metadata']);
 
-
     Route::get('keyword', AjaxKeywordController::class)
         ->name('ajax.keywords')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('locations/similar', SimilarLocationsController::class)
+        ->name('ajax.locations.similar')
         ->middleware(['auth', 'can:manage-metadata']);
 
     Route::get('items/similar', SimilarItemsController::class)
