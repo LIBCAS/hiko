@@ -1,7 +1,7 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form onkeydown="return event.key != 'Enter';" action="{{ $action }}" method="post" class="max-w-sm space-y-3"
-        autocomplete="off">
+    <form x-data="similarItems({ similarNamesUrl: '{{ route('ajax.locations.similar') }}', id: '{{ $location->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" onkeydown="return event.key != 'Enter';"
+        action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
@@ -9,16 +9,18 @@
         <div class="required">
             <x-label for="name" :value="__('hiko.name')" />
             <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $location->name)"
-                required />
+                x-on:change="search = $el.value" required />
             @error('name')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
+        <x-alert-similar-names />
         <div class="required">
             <x-label for="type" :value="__('hiko.type')" />
             <x-select id="type" class="block w-full mt-1" name="type" required>
                 @foreach ($types as $type)
-                    <option value="{{ $type }}" {{ old('type', $location->type) === $type ? 'selected' : '' }}>
+                    <option value="{{ $type }}"
+                        {{ old('type', $location->type) === $type ? 'selected' : '' }}>
                         {{ __("hiko.{$type}") }}
                     </option>
                 @endforeach
