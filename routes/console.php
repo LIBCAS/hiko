@@ -2,6 +2,7 @@
 
 use App\Imports\UsersImport;
 use App\Imports\KeywordsImport;
+use App\Imports\ProfessionsImport;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
@@ -27,3 +28,7 @@ Artisan::command('import:keyword', function () {
 Artisan::command('import:users', function () {
     $this->comment((new UsersImport)->import());
 })->purpose('Import users from previous version');
+
+Artisan::command('import:professions', function () {
+    $this->comment((new ProfessionsImport)->import());
+})->purpose('Import professions from previous version');
