@@ -105,7 +105,6 @@ class LetterRequest extends FormRequest
     {
         $this->merge([
             'languages' => empty($this->request->get('languages')) ? null : implode(';', $this->request->get('languages')),
-            'copies' => empty($this->request->get('copies')) ? null : json_decode($this->request->get('copies'), true),
             'authors' => empty($this->request->get('authors')) ? null : json_decode($this->request->get('authors'), true),
             'recipients' => empty($this->request->get('recipients')) ? null : json_decode($this->request->get('recipients'), true),
             'destinations' => empty($this->request->get('destinations')) ? null : json_decode($this->request->get('destinations'), true),
@@ -114,6 +113,11 @@ class LetterRequest extends FormRequest
                 'cs' => $this->request->get('abstract_cs'),
                 'en' => $this->request->get('abstract_en'),
             ],
+            'copies' => collect($this->copies) // reject empty copies
+                ->reject(function ($copy) {
+                    return empty(array_filter(array_values($copy)));
+                })
+                ->toArray(),
         ]);
 
         foreach ($this->rules() as $key => $fieldRules) {
