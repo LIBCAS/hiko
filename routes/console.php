@@ -1,5 +1,6 @@
 <?php
 
+use App\Imports\KeywordsImport;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
@@ -17,3 +18,7 @@ use Illuminate\Support\Facades\Artisan;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Artisan::command('import:keyword', function () {
+    $this->comment((new KeywordsImport)->import());
+})->purpose('Import keywords from previous version');
