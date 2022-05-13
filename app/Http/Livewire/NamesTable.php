@@ -10,12 +10,8 @@ class NamesTable extends Component
 {
     use WithPagination;
 
-    public $filters = [
-        'order' => 'cs',
-    ];
-
+    public $filters = [ 'order' => 'cs' ];
     public $model;
-
     public $routePrefix;
 
     public function search()
@@ -25,15 +21,15 @@ class NamesTable extends Component
 
     public function render()
     {
-        $professions = $this->findProfessions();
+        $items = $this->findItems();
 
         return view('livewire.names-table', [
-            'tableData' => $this->formatTableData($professions),
-            'pagination' => $professions,
+            'tableData' => $this->formatTableData($items),
+            'pagination' => $items,
         ]);
     }
 
-    protected function findProfessions()
+    protected function findItems()
     {
         return app('App\Models\\' . $this->model)::select('id', 'name', DB::raw("LOWER(JSON_EXTRACT(name, '$.cs')) AS cs"), DB::raw("LOWER(JSON_EXTRACT(name, '$.en')) AS en"))
             ->search($this->filters)
@@ -49,22 +45,22 @@ class NamesTable extends Component
 
         return [
             'header' => $header,
-            'rows' => $data->map(function ($profession) {
+            'rows' => $data->map(function ($item) {
                 $row = auth()->user()->cannot('manage-metadata')
                     ? []
                     : [
                         [
                             'label' => __('hiko.edit'),
-                            'link' => route("{$this->routePrefix}.edit", $profession->id),
+                            'link' => route("{$this->routePrefix}.edit", $item->id),
                         ],
                     ];
 
                 return array_merge($row, [
                     [
-                        'label' => $profession->getTranslation('name', 'cs'),
+                        'label' => $item->getTranslation('name', 'cs', false),
                     ],
                     [
-                        'label' => $profession->getTranslation('name', 'en'),
+                        'label' => $item->getTranslation('name', 'en', false),
                     ],
                 ]);
             })
