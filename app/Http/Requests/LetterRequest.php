@@ -105,7 +105,6 @@ class LetterRequest extends FormRequest
     {
         $this->merge([
             'languages' => empty($this->request->get('languages')) ? null : implode(';', $this->request->get('languages')),
-            'related_resources' => empty($this->request->get('related_resources')) ? null : json_decode($this->request->get('related_resources'), true),
             'copies' => empty($this->request->get('copies')) ? null : json_decode($this->request->get('copies'), true),
             'authors' => empty($this->request->get('authors')) ? null : json_decode($this->request->get('authors'), true),
             'recipients' => empty($this->request->get('recipients')) ? null : json_decode($this->request->get('recipients'), true),
