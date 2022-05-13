@@ -3,6 +3,7 @@
 use App\Imports\UsersImport;
 use App\Imports\PlacesImport;
 use App\Imports\KeywordsImport;
+use App\Imports\IdentitiesImport;
 use App\Imports\ProfessionsImport;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -37,3 +38,7 @@ Artisan::command('import:professions', function () {
 Artisan::command('import:places', function () {
     $this->comment((new PlacesImport)->import());
 })->purpose('Import places from previous version');
+
+Artisan::command('import:identities', function () {
+    $this->comment((new IdentitiesImport)->import());
+})->purpose('Import identities from previous version');
