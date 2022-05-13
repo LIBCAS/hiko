@@ -28,6 +28,8 @@ class KeywordsImport
             DB::table('keywords')
                 ->insert($data);
         });
+
+        return 'Import klíčových slov byl úspěšný';
     }
 
     protected function prepare($data)

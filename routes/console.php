@@ -1,5 +1,6 @@
 <?php
 
+use App\Imports\UsersImport;
 use App\Imports\KeywordsImport;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -22,3 +23,7 @@ Artisan::command('inspire', function () {
 Artisan::command('import:keyword', function () {
     $this->comment((new KeywordsImport)->import());
 })->purpose('Import keywords from previous version');
+
+Artisan::command('import:users', function () {
+    $this->comment((new UsersImport)->import());
+})->purpose('Import users from previous version');
