@@ -49,6 +49,10 @@ class LetterRequest extends FormRequest
             'notes_private' => ['nullable'],
             'notes_public' => ['nullable'],
             'status' => ['required', 'string', 'max:255'],
+            'authors' => ['nullable'],
+            'recipients' => ['nullable'],
+            'destinations' => ['nullable'],
+            'origins' => ['nullable'],
         ];
     }
 
@@ -90,6 +94,10 @@ class LetterRequest extends FormRequest
             'notes_private',
             'notes_public',
             'status',
+            'authors',
+            'recipients',
+            'destinations',
+            'origins',
         ];
 
         $result = [];
@@ -105,10 +113,6 @@ class LetterRequest extends FormRequest
     {
         $this->merge([
             'languages' => empty($this->request->get('languages')) ? null : implode(';', $this->request->get('languages')),
-            'authors' => empty($this->request->get('authors')) ? null : json_decode($this->request->get('authors'), true),
-            'recipients' => empty($this->request->get('recipients')) ? null : json_decode($this->request->get('recipients'), true),
-            'destinations' => empty($this->request->get('destinations')) ? null : json_decode($this->request->get('destinations'), true),
-            'origins' => empty($this->request->get('origins')) ? null : json_decode($this->request->get('origins'), true),
             'abstract' => [
                 'cs' => $this->request->get('abstract_cs'),
                 'en' => $this->request->get('abstract_en'),

@@ -4,10 +4,10 @@
             <div wire:key="{{ $loop->index }}" class="p-3 space-y-6 bg-gray-200 shadow">
                 <div class="required">
                     <x-label :for="$fieldKey . '-' . $loop->index" :value="$label" />
-                    <div x-data="ajaxChoices({url: '{{ route($route) }}', element: document.getElementById('{{ $fieldKey . '-' . $loop->index }}'), change: (data) => { $wire.changeItemValue({{ $loop->index }}, data) } })"
-                        x-init="initSelect(); window.livewire.on('itemChanged', () => { initSelect() })" wire:key="{{ 'select-' . $loop->index }}">
-                        <x-select wire:model.lazy="items.{{ $loop->index }}.value" class="block w-full mt-1"
-                            :id="$fieldKey .'-'.$loop->index">
+                    <div x-data="ajaxChoices({ url: '{{ route($route) }}', element: document.getElementById('{{ $fieldKey . '-' . $loop->index }}'), change: (data) => { $wire.changeItemValue({{ $loop->index }}, data) } })" x-init="initSelect();
+                    window.livewire.on('itemChanged', () => { initSelect() })" wire:key="{{ 'select-' . $loop->index }}">
+                        <x-select wire:model.defer="items.{{ $loop->index }}.value" class="block w-full mt-1"
+                            name="{{ $fieldKey }}[{{ $loop->index }}][value] }}]" :id="$fieldKey . '-' . $loop->index">
                             @if (!empty($item['value']))
                                 <option value="{{ $item['value'] }}">{{ $item['label'] }}</option>
                             @endif
@@ -19,8 +19,8 @@
                         <div>
                             <x-label for="{{ $fieldKey }}-{{ $field['key'] . '-' . $loop->parent->index }}"
                                 value="{{ $field['label'] }}" />
-                                {{-- lazy modifier won't trigger change event if you don't navigate away to trigger the change event, see https://github.com/livewire/livewire/issues/2145 --}}
-                            <x-input wire:model.debounce.500ms="items.{{ $loop->parent->index }}.{{ $field['key'] }}"
+                            <x-input wire:model.defer="items.{{ $loop->parent->index }}.{{ $field['key'] }}"
+                                name="{{ $fieldKey }}[{{ $loop->parent->index }}][{{ $field['key'] }}]"
                                 id="{{ $fieldKey }}-{{ $field['key'] . '-' . $loop->parent->index }}"
                                 class="block w-full mt-1" type="text" />
                         </div>
@@ -32,6 +32,5 @@
         <button wire:click="addItem" type="button" class="mb-3 text-sm font-bold text-primary hover:underline">
             {{ __('hiko.add_new_item') }}
         </button>
-        <input type="hidden" name="{{ $fieldKey }}" value="{!! htmlspecialchars(json_encode($items), ENT_QUOTES, 'UTF-8') !!}">
     </fieldset>
 </div>
