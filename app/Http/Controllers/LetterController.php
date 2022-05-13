@@ -166,7 +166,7 @@ class LetterController extends Controller
         $items = [];
 
         foreach ((array) $request->{$fieldKey} as $key => $item) {
-            if ($item['value']) {
+            if (isset($item['value']) && $item['value']) {
                 $result = [
                     'position' => $key,
                     'role' => $role,
