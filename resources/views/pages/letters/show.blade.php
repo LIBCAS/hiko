@@ -405,6 +405,19 @@
             </table>
         @endforeach
     @endif
+    @if ($letter->copyright)
+        <h2 class="text-lg font-bold">Copyright</h2>
+        <table class="w-full mb-10 text-sm">
+            <tbody>
+                <tr class="align-baseline border-t border-b border-gray-200">
+                    <td class="w-1/5 py-2">Copyright</td>
+                    <td class="py-2">
+                        {{ $letter->copyright }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    @endif
     @if ($letter->related_resources)
         <h2 class="text-lg font-bold">Related resources</h2>
         <table class="w-full mb-10 text-sm">
@@ -433,13 +446,13 @@
         <h2 class="text-lg font-bold">
             Full text
         </h2>
-        <div class="mb-10 prose-sm prose p-3 bg-gray-200 shadow-sm">
+        <div class="p-3 mb-10 prose-sm prose bg-gray-200 shadow-sm">
             {!! $letter->content !!}
         </div>
     @endif
     <div class="flex flex-wrap mb-6 -m-x-1 gallery">
         @foreach ($letter->getMedia() as $image)
-            <div x-data="{open: false}" x-on:keydown.escape="open = false">
+            <div x-data="{ open: false }" x-on:keydown.escape="open = false">
                 <button x-on:click="open = true" class="block border" aria-label="{{ __('Zobrazit přílohu') }}">
                     <img src="{{ $image->getUrl('thumb') }}" alt="{{ __('Příloha') }}" loading="lazy"
                         class="w-full">

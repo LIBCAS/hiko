@@ -199,4 +199,5 @@ return [
     'help' => 'Nápověda',
     'data_source' => 'Zdroj dat',
     'similar_name_exists' => 'Podobné jméno už existuje!',
+    'copyright' => 'Copyright',
 ];

@@ -61,6 +61,11 @@
                         {{ __('hiko.manifestation_location') }}
                     </a>
                 </li>
+                <li class="border-b border-primary-light">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-copyright">
+                        {{ __('hiko.copyright') }}
+                    </a>
+                </li>
                 <li class="">
                     <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-status">
                         {{ __('hiko.status') }}
@@ -293,7 +298,6 @@
                         {{ __('hiko.content_description') }}
                     </legend>
                     <div>
-
                         <x-label for="languages" :value="__('hiko.language')" />
                         <x-select x-data="choices({ element: $el })" x-init="initSelect()" id="languages"
                             class="block w-full mt-1" name="languages[]" multiple>
@@ -399,6 +403,21 @@
                 <livewire:related-resources :resources="$letter->related_resources" />
                 <div class="h-1"></div>
                 <livewire:letter-copies :copies="$letter->copies" />
+                <div class="h-1"></div>
+                <fieldset id="a-copyright" class="p-3 space-y-6 shadow">
+                    <legend class="text-lg font-semibold">
+                        {{ __('hiko.copyright') }}
+                    </legend>
+                    <div>
+                        <x-label for="copyright" :value="__('hiko.copyright')" />
+                        <x-textarea name="copyright" id="copyright" class="block w-full mt-1">
+                            {{ old('copyright', $letter->copyright) }}
+                        </x-textarea>
+                        @error('copyright')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </fieldset>
                 <div class="h-1"></div>
                 <fieldset id="a-status" class="p-3 shadow">
                     <legend class="text-lg font-semibold">

@@ -199,4 +199,5 @@ return [
     'help' => 'Help',
     'data_source' => 'Source of data',
     'similar_name_exists' => 'Similar name exists!',
+    'copyright' => 'Copyright',
 ];
