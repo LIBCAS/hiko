@@ -63,13 +63,13 @@ class KeywordsTable extends Component
 
                 return array_merge($row, [
                     [
-                        'label' => $kw->getTranslation('name', 'cs'),
+                        'label' => $kw->getTranslation('name', 'cs', false),
                     ],
                     [
-                        'label' => $kw->getTranslation('name', 'en'),
+                        'label' => $kw->getTranslation('name', 'en', false),
                     ],
                     [
-                        'label' => $kw->keyword_category ? $kw->keyword_category->getTranslation('name', config('hiko.metadata_default_locale')) : '',
+                        'label' => $kw->keyword_category ? $kw->keyword_category->getTranslation('name', config('hiko.metadata_default_locale', false)) : '',
                     ],
                 ]);
             })

@@ -72,14 +72,18 @@ class IdentitiesTable extends Component
                         'label' => $identity->alternative_names,
                     ],
                     [
-                        'label' => collect($identity->professions)->map(function ($profession) {
-                            return $profession->getTranslation('name', config('hiko.metadata_default_locale'));
-                        })->toArray(),
+                        'label' => collect($identity->professions)
+                            ->map(function ($profession) {
+                                return $profession->getTranslation('name', config('hiko.metadata_default_locale'), false);
+                            })
+                            ->toArray(),
                     ],
                     [
-                        'label' => collect($identity->profession_categories)->map(function ($profession) {
-                            return $profession->getTranslation('name', config('hiko.metadata_default_locale'));
-                        })->toArray(),
+                        'label' => collect($identity->profession_categories)
+                            ->map(function ($profession) {
+                                return $profession->getTranslation('name', config('hiko.metadata_default_locale'), false);
+                            })
+                            ->toArray(),
                     ],
                 ];
             })->toArray(),
