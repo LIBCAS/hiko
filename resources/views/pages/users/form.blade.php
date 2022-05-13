@@ -1,15 +1,13 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form onkeydown="return event.key != 'Enter';" action="{{ $action }}" method="post" class="max-w-sm space-y-3"
-        autocomplete="off">
+    <form action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
         @endisset
         <div class="required">
             <x-label for="name" :value="__('hiko.name')" />
-            <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $user->name)"
-                required />
+            <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $user->name)" required />
             @error('name')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
@@ -17,8 +15,7 @@
         @if ($editEmail)
             <div class="required">
                 <x-label for="email" value="E-mail" />
-                <x-input id="email" class="block w-full mt-1" type="email" name="email"
-                    :value="old('email', $user->email)" required />
+                <x-input id="email" class="block w-full mt-1" type="email" name="email" :value="old('email', $user->email)" required />
                 @error('email')
                     <div class="text-red-600">{{ $message }}</div>
                 @enderror
@@ -38,8 +35,7 @@
             @enderror
         </div>
         @if ($editStatus)
-            <x-checkbox name="deactivated_at" label="{{ __('hiko.active_user') }}"
-                :checked="old('deactivated_at') == 'on' || $active" />
+            <x-checkbox name="deactivated_at" label="{{ __('hiko.active_user') }}" :checked="old('deactivated_at') == 'on' || $active" />
         @endif
         <x-button-simple class="w-full">
             {{ $label }}

@@ -75,8 +75,7 @@
                     <x-form-errors />
                 </div>
             @endif
-            <form action="{{ $action }}" method="post" onkeydown="return event.key != 'Enter';"
-                class="max-w-sm space-y-6 md:-mt-6" autocomplete="off">
+            <form action="{{ $action }}" method="post" class="max-w-sm space-y-6 md:-mt-6" autocomplete="off">
                 @csrf
                 @isset($method)
                     @method($method)

@@ -1,7 +1,6 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="identityForm({ type: '{{ $identity->type ? $identity->type : 'person' }}', similarNamesUrl: '{{ route('ajax.identities.similar') }}', id: '{{ $identity->id }}', surname: '{{ $identity->surname }}', name: '{{ $identity->name }}', forename: '{{ $identity->forename }}' })" x-init="$watch('fullName', () => findSimilarNames($data))" action="{{ $action }}" method="post"
-        onkeydown="return event.key != 'Enter';" class="max-w-sm space-y-6">
+    <form x-data="identityForm({ type: '{{ $identity->type ? $identity->type : 'person' }}', similarNamesUrl: '{{ route('ajax.identities.similar') }}', id: '{{ $identity->id }}', surname: '{{ $identity->surname }}', name: '{{ $identity->name }}', forename: '{{ $identity->forename }}' })" x-init="$watch('fullName', () => findSimilarNames($data))" action="{{ $action }}" method="post" class="max-w-sm space-y-6">
         @csrf
         @isset($method)
             @method($method)

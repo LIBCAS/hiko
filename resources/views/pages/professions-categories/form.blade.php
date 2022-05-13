@@ -1,7 +1,7 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="similarItems({ similarNamesUrl: '{{ route('ajax.items.similar', ['model' => 'ProfessionCategory']) }}', id: '{{ $professionCategory->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" onkeydown="return event.key != 'Enter';"
-        action="{{ $action }}" method="post" class="max-w-sm space-y-3" autocomplete="off">
+    <form x-data="similarItems({ similarNamesUrl: '{{ route('ajax.items.similar', ['model' => 'ProfessionCategory']) }}', id: '{{ $professionCategory->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" action="{{ $action }}" method="post"
+        class="max-w-sm space-y-3" autocomplete="off">
         @csrf
         @isset($method)
             @method($method)
