@@ -20,6 +20,7 @@ class UsersImport
                     'name' => $user->name,
                     'email' => $user->email,
                     'password' => Hash::make(bin2hex(openssl_random_pseudo_bytes(8))),
+                    'role' => 'editor',
                 ]);
             });
 
