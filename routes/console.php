@@ -1,6 +1,7 @@
 <?php
 
 use App\Imports\UsersImport;
+use App\Imports\PlacesImport;
 use App\Imports\KeywordsImport;
 use App\Imports\ProfessionsImport;
 use Illuminate\Foundation\Inspiring;
@@ -32,3 +33,7 @@ Artisan::command('import:users', function () {
 Artisan::command('import:professions', function () {
     $this->comment((new ProfessionsImport)->import());
 })->purpose('Import professions from previous version');
+
+Artisan::command('import:places', function () {
+    $this->comment((new PlacesImport)->import());
+})->purpose('Import places from previous version');
