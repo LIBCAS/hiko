@@ -13,36 +13,27 @@ class RegenerateNames implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $letter;
+    protected $identites;
 
-    public function __construct(Letter $letter)
+    public function __construct($identites)
     {
-        $this->letter = $letter;
+        $this->identites = $identites;
     }
 
     public function handle()
     {
-        $this->letter->authors()->each(function ($author) {
-            $this->regenerate($author);
+        $this->identites->each(function ($identity) {
+            $identity->alternative_names = $identity->letters
+                ->map(function ($letter) {
+                    return $letter->pivot->marked;
+                })
+                ->reject(function ($marked) {
+                    return empty($marked);
+                })
+                ->unique()
+                ->toArray();
+
+            $identity->save();
         });
-
-        $this->letter->recipients()->each(function ($recipient) {
-            $this->regenerate($recipient);
-        });
-    }
-
-    protected function regenerate($identity)
-    {
-        $identity->alternative_names = $identity->letters
-            ->map(function ($letter) {
-                return $letter->pivot->marked;
-            })
-            ->reject(function ($marked) {
-                return empty($marked);
-            })
-            ->unique()
-            ->toArray();
-
-        $identity->save();
     }
 }

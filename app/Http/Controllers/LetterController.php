@@ -7,11 +7,11 @@ use App\Models\Identity;
 use App\Models\Language;
 use App\Jobs\LetterSaved;
 use Illuminate\Http\Request;
+use App\Jobs\RegenerateNames;
 use App\Exports\LettersExport;
 use App\Http\Requests\LetterRequest;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PalladioCharacterExport;
-use App\Jobs\RegenerateNames;
 
 class LetterController extends Controller
 {
@@ -40,7 +40,8 @@ class LetterController extends Controller
 
         $this->attachRelated($request, $letter);
 
-        RegenerateNames::dispatch($letter);
+        RegenerateNames::dispatch($letter->authors()->get());
+        RegenerateNames::dispatch($letter->recipients()->get());
 
         return redirect()
             ->route('letters.edit', $letter->id)
@@ -76,7 +77,8 @@ class LetterController extends Controller
         $this->attachRelated($request, $letter);
 
         LetterSaved::dispatch($letter);
-        RegenerateNames::dispatch($letter);
+        RegenerateNames::dispatch($letter->authors()->get());
+        RegenerateNames::dispatch($letter->recipients()->get());
 
         return redirect()
             ->route('letters.edit', $letter->id)
@@ -85,11 +87,17 @@ class LetterController extends Controller
 
     public function destroy(Letter $letter)
     {
+        $authors = $letter->authors()->get();
+        $recipients = $letter->recipients()->get();
+
         foreach ($letter->getMedia() as $media) {
             $media->delete();
         }
 
         $letter->delete();
+
+        RegenerateNames::dispatch($authors);
+        RegenerateNames::dispatch($recipients);
 
         return redirect()
             ->route('letters')
