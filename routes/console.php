@@ -1,12 +1,13 @@
 <?php
 
 use App\Imports\UsersImport;
+use App\Imports\ImagesImport;
 use App\Imports\PlacesImport;
 use App\Imports\LettersImport;
 use App\Imports\KeywordsImport;
 use App\Imports\IdentitiesImport;
-use App\Imports\ProfessionsImport;
 use App\Jobs\RegenerateLocations;
+use App\Imports\ProfessionsImport;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
@@ -48,6 +49,10 @@ Artisan::command('hiko:import-identities', function () {
 Artisan::command('hiko:import-letters', function () {
     $this->comment((new LettersImport)->import());
 })->purpose('Import letters from previous version');
+
+Artisan::command('hiko:import-media', function () {
+    $this->comment((new ImagesImport)->import());
+})->purpose('Import letters media from previous version');
 
 Artisan::command('hiko:regenerate-locations', function () {
     RegenerateLocations::dispatch();
