@@ -2,6 +2,7 @@
 
 use App\Imports\UsersImport;
 use App\Imports\PlacesImport;
+use App\Imports\LettersImport;
 use App\Imports\KeywordsImport;
 use App\Imports\IdentitiesImport;
 use App\Imports\ProfessionsImport;
@@ -42,3 +43,7 @@ Artisan::command('import:places', function () {
 Artisan::command('import:identities', function () {
     $this->comment((new IdentitiesImport)->import());
 })->purpose('Import identities from previous version');
+
+Artisan::command('import:letters', function () {
+    $this->comment((new LettersImport)->import());
+})->purpose('Import letters from previous version');
