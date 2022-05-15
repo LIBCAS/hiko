@@ -24,26 +24,26 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Artisan::command('import:keyword', function () {
+Artisan::command('hiko:import-keyword', function () {
     $this->comment((new KeywordsImport)->import());
 })->purpose('Import keywords from previous version');
 
-Artisan::command('import:users', function () {
+Artisan::command('hiko:import-users', function () {
     $this->comment((new UsersImport)->import());
 })->purpose('Import users from previous version');
 
-Artisan::command('import:professions', function () {
+Artisan::command('hiko:import-professions', function () {
     $this->comment((new ProfessionsImport)->import());
 })->purpose('Import professions from previous version');
 
-Artisan::command('import:places', function () {
+Artisan::command('hiko:import-places', function () {
     $this->comment((new PlacesImport)->import());
 })->purpose('Import places from previous version');
 
-Artisan::command('import:identities', function () {
+Artisan::command('hiko:import-identities', function () {
     $this->comment((new IdentitiesImport)->import());
 })->purpose('Import identities from previous version');
 
-Artisan::command('import:letters', function () {
+Artisan::command('hiko:import-letters', function () {
     $this->comment((new LettersImport)->import());
 })->purpose('Import letters from previous version');
