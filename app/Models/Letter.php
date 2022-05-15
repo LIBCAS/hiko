@@ -37,7 +37,7 @@ class Letter extends Model implements HasMedia
     public function registerMediaConversions(Media $media = null)
     {
         $this->addMediaConversion('thumb')
-            ->width(320);
+            ->width(180);
 
         if (Storage::disk('local')->exists('public/watermark/logo.png')) {
             $this->addMediaConversion('watermark')
