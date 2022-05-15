@@ -27,29 +27,5 @@ class LetterSaved implements ShouldQueue
         $this->letter->users()->syncWithoutDetaching(auth()->user()->id);
 
         $this->letter->saveQuietly();
-
-        $this->letter->authors()->each(function ($author) {
-            $this->regenerateNames($author);
-        });
-
-        $this->letter->recipients()->each(function ($recipient) {
-            $this->regenerateNames($recipient);
-        });
-    }
-
-    protected function regenerateNames($identity)
-    {
-        $names = $identity->letters
-            ->map(function ($letter) {
-                return $letter->pivot->marked;
-            })
-            ->reject(function ($marked) {
-                return empty($marked);
-            })
-            ->unique()
-            ->toArray();
-
-        $identity->alternative_names = $names;
-        $identity->save();
     }
 }

@@ -11,6 +11,7 @@ use App\Exports\LettersExport;
 use App\Http\Requests\LetterRequest;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PalladioCharacterExport;
+use App\Jobs\RegenerateNames;
 
 class LetterController extends Controller
 {
@@ -38,6 +39,8 @@ class LetterController extends Controller
         $letter = Letter::create($request->validated());
 
         $this->attachRelated($request, $letter);
+
+        RegenerateNames::dispatch($letter);
 
         return redirect()
             ->route('letters.edit', $letter->id)
@@ -73,6 +76,7 @@ class LetterController extends Controller
         $this->attachRelated($request, $letter);
 
         LetterSaved::dispatch($letter);
+        RegenerateNames::dispatch($letter);
 
         return redirect()
             ->route('letters.edit', $letter->id)
