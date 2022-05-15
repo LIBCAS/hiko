@@ -108,8 +108,6 @@ class LettersImport
 
     protected function attachPlaces($meta, $letterId)
     {
-
-
         collect(json_decode($meta))
             ->each(function ($place, $index) use ($letterId) {
                 try {
@@ -130,7 +128,6 @@ class LettersImport
 
     protected function attachKeywords($keywords, $letterId)
     {
-
         collect($keywords)->each(function ($keyword) use ($letterId) {
             try {
                 DB::table('keyword_letter')->insert([
