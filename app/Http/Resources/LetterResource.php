@@ -16,8 +16,8 @@ class LetterResource extends JsonResource
             foreach ($this->getMedia() as $media) {
                 if ($media->getCustomProperty('status') === 'publish') {
                     $record['media'][] = [
-                        'thumb' => route('image', [$this, $media->id, 'size' => 'thumb']),
-                        'full' => route('image', [$this, $media->id, 'size' => 'full']),
+                        'thumb' => route('image', [$this, $media, 'size' => 'thumb']),
+                        'full' => route('image', [$this, $media, 'size' => 'full']),
                         'description' => $media->getCustomProperty('description'),
                     ];
                 }

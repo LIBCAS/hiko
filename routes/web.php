@@ -384,7 +384,7 @@ Route::prefix('dev')->group(function () {
         ->middleware(['auth', 'can:debug']);
 });
 
-Route::get('image/{letter}/{imageId}', ImageController::class)
+Route::get('image/{letter:uuid}/{imageId}', ImageController::class)
     ->name('image');
 
 Route::get('account', AccountController::class)
