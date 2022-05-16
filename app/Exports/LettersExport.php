@@ -154,8 +154,8 @@ class LettersExport implements FromCollection, WithMapping, WithHeadings
                 ? collect($identities['mentioned'])->pluck('name')->implode('|')
                 : '',
             $letter->people_mentioned_note,
-            $letter->getTranslation('abstract', 'cs'),
-            $letter->getTranslation('abstract', 'en'),
+            $letter->getTranslation('abstract', 'cs', false),
+            $letter->getTranslation('abstract', 'en', false),
             $letter->explicit,
             $letter->incipit,
             $letter->content,

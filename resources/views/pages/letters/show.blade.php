@@ -247,7 +247,7 @@
     <h2 class="text-lg font-bold">Content</h2>
     <table class="w-full mb-10 text-sm">
         <tbody>
-            @if ($letter->getTranslation('abstract', 'cs'))
+            @if ($letter->getTranslation('abstract', 'cs', false))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="w-1/5 py-2">Abstract CS</td>
                     <td class="py-2">
@@ -255,7 +255,7 @@
                     </td>
                 </tr>
             @endif
-            @if ($letter->getTranslation('abstract', 'en'))
+            @if ($letter->getTranslation('abstract', 'en', false))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="w-1/5 py-2">Abstract EN</td>
                     <td class="py-2">

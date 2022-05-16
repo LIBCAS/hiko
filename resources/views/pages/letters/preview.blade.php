@@ -221,10 +221,10 @@
                     </h3>
                     <ul>
                         <li>
-                            {{ $letter->getTranslation('abstract', 'cs') }}
+                            {{ $letter->getTranslation('abstract', 'cs', false) }}
                         </li>
                         <li>
-                            {{ $letter->getTranslation('abstract', 'en') }}
+                            {{ $letter->getTranslation('abstract', 'en', false) }}
                         </li>
                     </ul>
                 @endif
