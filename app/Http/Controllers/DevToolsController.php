@@ -49,4 +49,9 @@ class DevToolsController extends Controller
         ProfessionCategory::all()->searchable();
         Location::all()->searchable();
     }
+
+    public function symlink()
+    {
+        Artisan::call('storage:link');
+    }
 }

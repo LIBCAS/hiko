@@ -22,7 +22,6 @@ use App\Http\Controllers\Ajax\SimilarNamesController;
 use App\Http\Controllers\Ajax\SimilarPlacesController;
 use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionController;
-use App\Http\Controllers\Ajax\SimilarKeywordsController;
 use App\Http\Controllers\Ajax\SimilarLocationsController;
 use App\Http\Controllers\Ajax\AjaxKeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
@@ -381,6 +380,9 @@ Route::prefix('dev')->group(function () {
         ->middleware(['auth', 'can:debug']);
 
     Route::get('build-index', [DevToolsController::class, 'buildSearchIndex'])
+        ->middleware(['auth', 'can:debug']);
+
+    Route::get('symlink', [DevToolsController::class, 'symlink'])
         ->middleware(['auth', 'can:debug']);
 });
 
