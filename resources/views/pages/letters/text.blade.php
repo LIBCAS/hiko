@@ -21,20 +21,10 @@
         <div class="z-50 flex-1">
             <div class="top-0 space-y-6 overflow-y-scroll border h-96 md:sticky">
                 @foreach ($images as $image)
-                    <div x-data="{open: false}" x-on:keydown.escape="open = false">
-                        <button x-on:click="open = true" class="block border"
-                            aria-label="{{ __('Zobrazit přílohu') }}">
-                            <img src="{{ $image->getUrl() }}" alt="{{ __('Příloha') }}" loading="lazy"
-                                class="w-full">
-                        </button>
-                        <div x-show="open" x-on:click="open = false" style="display:none"
-                            class="fixed inset-0 p-4 bg-black bg-opacity-75">
-                            <div class="flex items-center justify-center w-full h-full" x-on:click.away="open = false">
-                                <img src="{{ $image->getUrl() }}" alt="{{ __('Příloha') }}" class="block border"
-                                    loading="lazy">
-                            </div>
-                        </div>
-                    </div>
+                    <a href="{{ $image->getUrl() }}" target="_blank">
+                        <img src="{{ $image->getUrl() }}" alt="{{ __('Příloha') }}" class="block border"
+                            loading="lazy">
+                    </a>
                 @endforeach
             </div>
         </div>

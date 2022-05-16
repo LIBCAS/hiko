@@ -1,15 +1,13 @@
 <div class="mt-12">
     <h2 class="font-bold uppercase">{{ __('hiko.edit_attachments') }}</h2>
-    <div x-data="{ sortlist: null }" x-init="
-        sortlist = new Sortable($refs.list, {
-            handle: '.handle',
-            animation: 150,
-            ghostClass: 'bg-gray-300',
-            onUpdate: function(e) {
-                $wire.reorder(this.toArray());
-            }
-        });
-        ">
+    <div x-data="{ sortlist: null }" x-init="sortlist = new Sortable($refs.list, {
+        handle: '.handle',
+        animation: 150,
+        ghostClass: 'bg-gray-300',
+        onUpdate: function(e) {
+            $wire.reorder(this.toArray());
+        }
+    });">
         <div class="max-w-3xl space-y-3 border border-primary-light" x-ref="list">
             @foreach ($attachedImages as $image)
                 <div data-id="{{ $image->id }}" wire:key="{{ $image->id }}"
@@ -31,20 +29,10 @@
                     <button type="button" class="outline-none handle">
                         <x-icons.hand class="h-8 text-primary " />
                     </button>
-                    <div x-data="{open: false}" x-on:keydown.escape="open = false">
-                        <button x-on:click="open = true" class="block border"
-                            aria-label="{{ __('hiko.show_attachment') }}">
-                            <img src="{{ $image->getUrl('thumb') }}" alt="{{ __('hiko.attachment') }}"
-                                loading="lazy" class="w-48">
-                        </button>
-                        <div x-show="open" x-on:click="open = false" style="display:none"
-                            class="fixed inset-0 z-50 p-4 bg-black bg-opacity-75">
-                            <div class="flex justify-center w-full" x-on:click.away="open = false">
-                                <img src="{{ $image->getUrl() }}" alt="{{ __('hiko.attachment') }}"
-                                    class="block border" loading="lazy">
-                            </div>
-                        </div>
-                    </div>
+                    <a href="{{ $image->getUrl() }}" target="_blank" class="block border" aria-label="{{ __('hiko.show_attachment') }}">
+                        <img src="{{ $image->getUrl('thumb') }}" alt="{{ __('hiko.attachment') }}" loading="lazy"
+                            class="w-48">
+                    </a>
                     <div class="w-full max-w-sm">
                         <form class="w-full max-w-sm space-y-1"
                             wire:submit.prevent="edit({{ $image->id }}, Object.fromEntries(new FormData($event.target)))">
@@ -59,13 +47,11 @@
                             <div>
                                 <div>
                                     <x-radio name="status" label="{{ __('hiko.draft') }}" value="private"
-                                        :checked="$image->getCustomProperty('status') === 'private'" name="status"
-                                        required />
+                                        :checked="$image->getCustomProperty('status') === 'private'" name="status" required />
                                 </div>
                                 <div>
                                     <x-radio name="status" label="{{ __('hiko.publish') }}" value="publish"
-                                        :checked="$image->getCustomProperty('status') === 'publish'" name="status"
-                                        required />
+                                        :checked="$image->getCustomProperty('status') === 'publish'" name="status" required />
                                 </div>
                             </div>
                             <x-button-simple class="w-full">
