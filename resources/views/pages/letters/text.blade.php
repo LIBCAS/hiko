@@ -22,7 +22,7 @@
             <div class="top-0 space-y-6 overflow-y-scroll border h-96 md:sticky">
                 @foreach ($images as $image)
                     <a href="{{ $image->getUrl() }}" target="_blank">
-                        <img src="{{ $image->getUrl() }}" alt="{{ __('Příloha') }}" class="block border"
+                        <img src="{{ $image->getUrl() }}" alt="{{ __('hiko.attachment') }}" class="block border"
                             loading="lazy">
                     </a>
                 @endforeach

@@ -19,13 +19,13 @@ class ImageForm extends Component
             'images' => ['required'],
             'images.*' => ['required', 'mimes:jpeg,jpg,png', 'max:500'],
         ], [
-            'images.required' => __('Nahrajte přílohu'),
-            'images.*.required' => __('Nahrajte přílohu'),
-            'images.*.mimes' => __('Příloha musí být ve formátu jpg nebo png'),
-            'images.*.max' => __('Maximální velikost příloh je 500KB'),
+            'images.required' => __('hiko.upload_attachment'),
+            'images.*.required' => __('hiko.upload_attachment'),
+            'images.*.mimes' => __('hiko.attachment_format_requirement'),
+            'images.*.max' => __('hiko.attachment_max_size'),
         ], [
-            'images' => __('Přílohy'),
-            'images.*' => __('Příloha'),
+            'images' => __('hiko.attachments'),
+            'images.*' => __('hiko.attachment'),
         ]);
 
         collect($this->images)->each(function ($image) {

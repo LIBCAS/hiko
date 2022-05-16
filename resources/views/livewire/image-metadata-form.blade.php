@@ -42,7 +42,7 @@
                                     {{ $image->getCustomProperty('description') }}</x-textarea>
                             </div>
                             <legend class="font-semibold">
-                                {{ __('Viditelnost') }}
+                                {{ __('hiko.visibility') }}
                             </legend>
                             <div>
                                 <div>

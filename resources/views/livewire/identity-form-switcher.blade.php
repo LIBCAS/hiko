@@ -75,7 +75,7 @@
             </div>
         @else
             <div class="required">
-                <x-label for="name" :value="__('Název')" />
+                <x-label for="name" :value="__('hiko.title')" />
                 <x-input x-model="name" x-on:change="fullName = name" id="name"
                     class="block w-full mt-1" type="text" name="name" :value="old('name', $identity->name)" required />
                 @error('name')

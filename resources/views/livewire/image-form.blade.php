@@ -22,7 +22,7 @@
             <input wire:ignore wire:model="images" type="file" x-ref="input" multiple data-allow-reorder="true"
                 data-max-file-size="500KB" accept="image/png, image/jpeg">
             <x-button-simple class="w-full">
-                {{ __('Vložit') }}
+                {{ __('hiko.insert') }}
             </x-button-simple>
         </div>
     </form>
