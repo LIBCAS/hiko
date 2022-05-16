@@ -20,6 +20,12 @@
                     <div class="text-red-600">{{ $message }}</div>
                 @enderror
             </div>
+        @else
+            <div class="required">
+                <x-label for="email" value="E-mail" />
+                <x-input id="email" class="block w-full mt-1 cursor-no-drop bg-gray-300" type="email" :value="old('email', $user->email)"
+                    readonly />
+            </div>
         @endif
         <div class="required">
             <x-label for="role" :value="__('Role')" />
