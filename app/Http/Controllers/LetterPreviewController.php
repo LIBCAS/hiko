@@ -8,6 +8,9 @@ class LetterPreviewController extends Controller
 {
     public function __invoke()
     {
+        // FIX: temporary hack
+        ini_set('memory_limit', '256M');
+
         return view('pages.letters.preview', [
             'title' => __('hiko.letters_preview'),
             'letters' => Letter::with('identities', 'places', 'keywords')
