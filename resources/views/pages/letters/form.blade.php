@@ -93,7 +93,7 @@
                         <div>
                             <x-label for="date_year" :value="__('hiko.year')" />
                             <x-input id="date_year" class="block w-full mt-1" type="text" name="date_year"
-                                :value="old('date_year', $letter->date_year)" min="0" max="{{ date('Y') }}" type="number" />
+                                :value="old('date_year', $letter->date_year)" max="{{ date('Y') }}" type="number" />
                             @error('date_year')
                                 <div class="text-red-600">{{ $message }}</div>
                             @enderror
@@ -101,7 +101,7 @@
                         <div>
                             <x-label for="date_month" :value="__('hiko.month')" />
                             <x-input id="date_month" class="block w-full mt-1" type="text" name="date_month"
-                                :value="old('date_month', $letter->date_month)" min="1" max="12" type="number" />
+                                :value="old('date_month', $letter->date_month)" min="0" max="12" type="number" />
                             @error('date_month')
                                 <div class="text-red-600">{{ $message }}</div>
                             @enderror
@@ -109,7 +109,7 @@
                         <div>
                             <x-label for="date_day" :value="__('hiko.day')" />
                             <x-input id="date_day" class="block w-full mt-1" type="text" name="date_day"
-                                :value="old('date_day', $letter->date_day)" min="1" max="31" type="number" />
+                                :value="old('date_day', $letter->date_day)" min="0" max="31" type="number" />
                             @error('date_day')
                                 <div class="text-red-600">{{ $message }}</div>
                             @enderror
@@ -144,7 +144,7 @@
                             <div x-show="isRange">
                                 <x-label for="range_year" :value="__('hiko.year') . ' 2'" />
                                 <x-input id="range_year" class="block w-full mt-1" type="text" name="range_year"
-                                    :value="old('range_year', $letter->range_year)" min="0" max="{{ date('Y') }}" type="number" />
+                                    :value="old('range_year', $letter->range_year)" max="{{ date('Y') }}" type="number" />
                                 @error('range_year')
                                     <div class="text-red-600">{{ $message }}</div>
                                 @enderror
@@ -152,7 +152,7 @@
                             <div x-show="isRange">
                                 <x-label for="range_month" :value="__('hiko.month') . ' 2'" />
                                 <x-input id="range_month" class="block w-full mt-1" type="text" name="range_month"
-                                    :value="old('range_month', $letter->range_month)" min="1" max="12" type="number" />
+                                    :value="old('range_month', $letter->range_month)" min="0" max="12" type="number" />
                                 @error('range_month')
                                     <div class="text-red-600">{{ $message }}</div>
                                 @enderror
@@ -160,7 +160,7 @@
                             <div x-show="isRange">
                                 <x-label for="range_day" :value="__('hiko.day') . ' 2'" />
                                 <x-input id="range_day" class="block w-full mt-1" type="text" name="range_day"
-                                    :value="old('range_day', $letter->range_day)" min="1" max="31" type="number" />
+                                    :value="old('range_day', $letter->range_day)" min="0" max="31" type="number" />
                                 @error('range_day')
                                     <div class="text-red-600">{{ $message }}</div>
                                 @enderror
