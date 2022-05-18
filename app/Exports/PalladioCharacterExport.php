@@ -97,17 +97,21 @@ class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadin
             $this->getDate($letter),
             $letter->date_year,
             $letter->date_month,
-            $mainCharacterPlace->name,
+            isset($mainCharacterPlace->name) ? $mainCharacterPlace->name : '',
             $this->getLatLong($mainCharacterPlace),
-            $sideCharacterPlace->name,
+            isset($sideCharacterPlace->name) ? $sideCharacterPlace->name : '',
             $this->getLatLong($sideCharacterPlace),
             strtolower(str_replace(';', '|', $letter->languages)),
             $letter->keywords->map(function ($kw) {
                 return $kw->getTranslation('name', config('hiko.metadata_default_locale'));
             })->implode('|'),
-            $letter->keywords->map(function ($kw) {
+            $letter->keywords->reject(function ($kw) {
+                return $kw->keyword_category === null;
+            })->map(function ($kw) {
                 return $kw->keyword_category->getTranslation('name', config('hiko.metadata_default_locale'));
-            })->implode('|'),
+            })
+                ->unique()
+                ->implode('|'),
             collect($letter->identities->where('role', '=', 'mentioned')->pluck('name')->implode('|'))->toArray()[0],
             !empty($letter->copies) ? $letter->copies[0]['type'] : '',
             !empty($letter->copies) ? $letter->copies[0]['preservation'] : '',
