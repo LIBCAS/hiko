@@ -59,6 +59,10 @@ class LetterBuilder extends Builder
             });
         }
 
+        if (isset($filters['mentioned']) && !empty($filters['mentioned'])) {
+            $this->addIdentityNameFilter('mentioned', $filters['mentioned']);
+        }
+
         if (isset($filters['media']) && $filters['media'] !== '') {
             if ($filters['media']) {
                 $this->whereHas('media');
