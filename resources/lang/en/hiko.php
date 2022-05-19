@@ -210,4 +210,9 @@ return [
     'new_password_settings' => 'New password settings',
     'insert' => 'Insert',
     'visibility' => 'Visibility',
+    'merge_field' => 'Record to merge',
+    'merge_field_required' => 'Select record to merge',
+    'merge' => 'Merge',
+    'confirm_merge' => 'Are you sure you want to merge this items?',
+    'merged' => 'Records were merged, you can now remove this item',
 ];

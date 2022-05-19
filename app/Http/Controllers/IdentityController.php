@@ -29,6 +29,7 @@ class IdentityController extends Controller
                     'action' => route('identities.store'),
                     'label' => __('hiko.create'),
                     'canRemove' => false,
+                    'canMerge' => false,
                 ],
                 $this->viewData(new Identity)
             )
@@ -50,6 +51,8 @@ class IdentityController extends Controller
 
     public function edit(Identity $identity)
     {
+        $hasLetters = $identity->letters->isNotEmpty();
+
         return view(
             'pages.identities.form',
             array_merge(
@@ -58,7 +61,8 @@ class IdentityController extends Controller
                     'method' => 'PUT',
                     'action' => route('identities.update', $identity),
                     'label' => __('hiko.edit'),
-                    'canRemove' => $identity->letters->isEmpty(),
+                    'canRemove' => !$hasLetters,
+                    'canMerge' => $hasLetters,
                 ],
                 $this->viewData($identity)
             )

@@ -210,4 +210,9 @@ return [
     'new_password_settings' => 'Nastavení nového hesla',
     'insert' => 'Vložit',
     'visibility' => 'Viditelnost',
+    'merge_field' => 'Záznam, do kterého má být sloučena současná položka',
+    'merge_field_required' => 'Nejprve vyberte záznam, do kterého má být sloučeno',
+    'merge' => 'Sloučit',
+    'confirm_merge' => 'Opravdu chcete sloučit vybrané záznamy?',
+    'merged' => 'Záznamy byly sloučeny, můžete pokračovat smazáním této položky',
 ];
