@@ -25,6 +25,7 @@ use App\Http\Controllers\Ajax\AjaxProfessionController;
 use App\Http\Controllers\Ajax\SimilarLocationsController;
 use App\Http\Controllers\Ajax\AjaxKeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
+use App\Http\Controllers\MergeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -392,6 +393,10 @@ Route::get('image/{letter:uuid}/{imageId}', ImageController::class)
 Route::get('account', AccountController::class)
     ->name('account')
     ->middleware(['auth']);
+
+Route::post('merge', MergeController::class)
+    ->name('merge')
+    ->middleware(['auth', 'can:manage-metadata']);
 
 Route::get('lang/{lang}', LanguageController::class)
     ->name('lang');

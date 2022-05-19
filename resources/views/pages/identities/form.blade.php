@@ -1,6 +1,7 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="identityForm({ type: '{{ $identity->type ? $identity->type : 'person' }}', similarNamesUrl: '{{ route('ajax.identities.similar') }}', id: '{{ $identity->id }}', surname: '{{ $identity->surname }}', name: '{{ $identity->name }}', forename: '{{ $identity->forename }}' })" x-init="$watch('fullName', () => findSimilarNames($data))" action="{{ $action }}" method="post" class="max-w-sm space-y-6">
+    <form x-data="identityForm({ type: '{{ $identity->type ? $identity->type : 'person' }}', similarNamesUrl: '{{ route('ajax.identities.similar') }}', id: '{{ $identity->id }}', surname: '{{ $identity->surname }}', name: '{{ $identity->name }}', forename: '{{ $identity->forename }}' })" x-init="$watch('fullName', () => findSimilarNames($data))" action="{{ $action }}" method="post"
+        class="max-w-sm space-y-6">
         @csrf
         @isset($method)
             @method($method)
@@ -35,12 +36,15 @@
             {{ $label }}
         </x-button-simple>
     </form>
-    @if ($identity->id)
+    @if ($canMerge)
+        <x-merge-form :oldId="$identity->id" model="identity" route="{{ route('ajax.identities') }}" />
+    @endif
+    @if ($canRemove)
         <form x-data="{ form: $el }" action="{{ route('identities.destroy', $identity->id) }}" method="post"
             class="max-w-sm mt-8">
             @csrf
             @method('DELETE')
-            <x-button-danger class="w-full"
+            <x-button-danger type="button" class="w-full"
                 x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
                 {{ __('hiko.remove') }}
             </x-button-danger>
