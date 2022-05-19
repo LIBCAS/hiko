@@ -17,7 +17,7 @@
                         @foreach ($tableData['rows'] as $row)
                             <tr class="text-sm text-gray-900 hover:bg-gray-100">
                                 @foreach ($row as $item)
-                                    <td class="px-3 py-2 whitespace-nowrap">
+                                    <td class="max-w-sm px-3 py-2">
                                         @if (isset($item['component']))
                                             <x-dynamic-component :component="$item['component']['name']"
                                                 :args="$item['component']['args']" />
