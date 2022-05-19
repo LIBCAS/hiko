@@ -35,7 +35,7 @@
             {{ $label }}
         </x-button-simple>
     </form>
-    @if ($identity->id)
+    @if ($canRemove)
         <form x-data="{ form: $el }" action="{{ route('identities.destroy', $identity->id) }}" method="post"
             class="max-w-sm mt-8">
             @csrf

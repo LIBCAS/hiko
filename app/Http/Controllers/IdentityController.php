@@ -21,18 +21,18 @@ class IdentityController extends Controller
 
     public function create()
     {
-        $identity = new Identity;
-
-        return view('pages.identities.form', [
-            'title' => __('hiko.new_identity'),
-            'identity' => $identity,
-            'action' => route('identities.store'),
-            'label' => __('hiko.create'),
-            'types' => $this->getTypes(),
-            'selectedType' => $this->getSelectedType($identity),
-            'selectedProfessions' => $this->getSelectedProfessions($identity),
-            'selectedCategories' => $this->getSelectedCategories($identity),
-        ]);
+        return view(
+            'pages.identities.form',
+            array_merge(
+                [
+                    'title' => __('hiko.new_identity'),
+                    'action' => route('identities.store'),
+                    'label' => __('hiko.create'),
+                    'canRemove' => false,
+                ],
+                $this->viewData(new Identity)
+            )
+        );
     }
 
     public function store(IdentityRequest $request)
@@ -50,17 +50,19 @@ class IdentityController extends Controller
 
     public function edit(Identity $identity)
     {
-        return view('pages.identities.form', [
-            'title' => __('hiko.identity') . ': ' . $identity->id,
-            'identity' => $identity,
-            'method' => 'PUT',
-            'action' => route('identities.update', $identity),
-            'label' => __('hiko.edit'),
-            'types' => $this->getTypes(),
-            'selectedType' => $this->getSelectedType($identity),
-            'selectedProfessions' => $this->getSelectedProfessions($identity),
-            'selectedCategories' => $this->getSelectedCategories($identity),
-        ]);
+        return view(
+            'pages.identities.form',
+            array_merge(
+                [
+                    'title' => __('hiko.identity') . ': ' . $identity->id,
+                    'method' => 'PUT',
+                    'action' => route('identities.update', $identity),
+                    'label' => __('hiko.edit'),
+                    'canRemove' => $identity->letters->isEmpty(),
+                ],
+                $this->viewData($identity)
+            )
+        );
     }
 
     public function update(IdentityRequest $request, Identity $identity)
@@ -88,6 +90,17 @@ class IdentityController extends Controller
     public function export()
     {
         return Excel::download(new IdentitiesExport, 'identities.xlsx');
+    }
+
+    protected function viewData(Identity $identity)
+    {
+        return [
+            'identity' => $identity,
+            'types' => $this->getTypes(),
+            'selectedType' => $this->getSelectedType($identity),
+            'selectedProfessions' => $this->getSelectedProfessions($identity),
+            'selectedCategories' => $this->getSelectedCategories($identity),
+        ];
     }
 
     protected function attachProfessionsAndCategories(Identity $identity, $validated)
