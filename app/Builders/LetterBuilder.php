@@ -8,14 +8,37 @@ use Illuminate\Database\Eloquent\Builder;
 
 class LetterBuilder extends Builder
 {
+    public function before($date)
+    {
+        $this->whereDate('date_computed', '<=', $date);
+
+        return $this;
+    }
+
+    public function after($date)
+    {
+        $this->whereDate('date_computed', '>=', $date);
+
+        return $this;
+    }
+
+    public function fulltext($query)
+    {
+        if (!empty($query)) {
+            $this->whereIn('id', Letter::search($query)->keys()->toArray());
+        }
+
+        return $this;
+    }
+
     public function filter($filters, $lang)
     {
-        if (isset($filters['fulltext']) && !empty($filters['fulltext'])) {
-            $this->whereIn('id', Letter::search($filters['fulltext'])->keys()->toArray());
+        if (isset($filters['fulltext'])) {
+            $this->fulltext($filters['fulltext']);
         }
 
         if (isset($filters['id']) && !empty($filters['id'])) {
-            $this->where('id', 'LIKE', "%" . $filters['id'] . "%");
+            $this->where('id', 'LIKE', '%' . $filters['id'] . '%');
         }
 
         if (isset($filters['status']) && !empty($filters['status'])) {
@@ -23,11 +46,11 @@ class LetterBuilder extends Builder
         }
 
         if (isset($filters['after']) && !empty($filters['after'])) {
-            $this->whereDate('date_computed', '>=', $filters['after']);
+            $this->after($filters['after']);
         }
 
         if (isset($filters['before']) && !empty($filters['before'])) {
-            $this->whereDate('date_computed', '<=', $filters['before']);
+            $this->before($filters['before']);
         }
 
         if (isset($filters['signature']) && !empty($filters['signature'])) {
