@@ -12,7 +12,9 @@ class ApiLetterController extends Controller
 {
     public function index(Request $request)
     {
-        return new LetterCollection($this->prepareQuery($request));
+        return new LetterCollection(
+            $this->prepareQuery($request)->paginate($this->limit($request))
+        );
     }
 
     public function show($uuid)
@@ -42,14 +44,53 @@ class ApiLetterController extends Controller
 
     protected function prepareQuery(Request $request)
     {
-        $order = $request->input('order') && in_array($request->input('order'), ['asc', 'desc'])
-            ? $request->input('order')
-            : 'asc';
+        $query = Letter::with($this->relationships($request))
+            ->where('status', 'publish');
 
-        $limit = $request->input('limit') && ((int) $request->input('limit') > 0) && ((int) $request->input('limit') <= 100)
-            ? (int) $request->input('limit')
-            : 10;
+        $query = $this->addScopeByRole($query, $request, 'author', 'identities');
+        $query = $this->addScopeByRole($query, $request, 'recipient', 'identities');
+        $query = $this->addScopeByRole($query, $request, 'origin', 'places');
+        $query = $this->addScopeByRole($query, $request, 'destination', 'places');
 
+        if ($request->input('keyword')) {
+            $query->whereHas('keywords', function ($subquery) use ($request) {
+                $subquery->whereIn('keywords.id', array_map('intval', explode(',', $request->input('keyword'))));
+            });
+        }
+
+        if ($request->input('after')) {
+            $query->after($request->input('after'));
+        }
+
+        if ($request->input('before')) {
+            $query->before($request->input('before'));
+        }
+
+        return $query->orderBy('date_computed', $this->order($request));
+    }
+
+    protected function sanitizedIds($ids)
+    {
+        $ids = explode(',', $ids);
+        $ids = array_map('trim', $ids);
+        return array_filter($ids);
+    }
+
+    protected function addScopeByRole($query, $request, $role, $type)
+    {
+        if ($request->input($role)) {
+            $query->whereHas($type, function ($subquery) use ($request, $role, $type) {
+                $subquery
+                    ->where('role', $role)
+                    ->whereIn("{$type}.id", array_map('intval', explode(',', $request->input($role))));
+            });
+        }
+
+        return $query;
+    }
+
+    protected function relationships(Request $request)
+    {
         $with = [];
 
         if ($request->input('author') || $request->input('recipient')) {
@@ -74,49 +115,24 @@ class ApiLetterController extends Controller
             };
         }
 
-        $query = Letter::with($with)->where('status', 'publish');
-
-        $query = $this->addScopeByRole($query, $request, 'author', 'identities');
-        $query = $this->addScopeByRole($query, $request, 'recipient', 'identities');
-        $query = $this->addScopeByRole($query, $request, 'origin', 'places');
-        $query = $this->addScopeByRole($query, $request, 'destination', 'places');
-
-        if ($request->input('keyword')) {
-            $query->whereHas('keywords', function ($subquery) use ($request) {
-                $subquery->whereIn('keywords.id', array_map('intval', explode(',', $request->input('keyword'))));
-            });
-        }
-
-        if ($request->input('after')) {
-            $query->whereDate('date_computed', '>=', $request->input('after'));
-        }
-
-        if ($request->input('before')) {
-            $query->whereDate('date_computed', '<=', $request->input('before'));
-        }
-
-        return $query
-            ->orderBy('date_computed', $order)
-            ->paginate($limit);
+        return $with;
     }
 
-    protected function sanitizedIds($ids)
+    protected function limit(Request $request)
     {
-        $ids = explode(',', $ids);
-        $ids = array_map('trim', $ids);
-        return array_filter($ids);
+        $limit = (int) $request->input('limit', 10);
+
+        return $limit > 0 && $limit <= 100
+            ? $limit
+            : 10;
     }
 
-    protected function addScopeByRole($query, $request, $role, $type)
+    protected function order(Request $request)
     {
-        if ($request->input($role)) {
-            $query->whereHas($type, function ($subquery) use ($request, $role, $type) {
-                $subquery
-                    ->where('role', $role)
-                    ->whereIn("{$type}.id", array_map('intval', explode(',', $request->input($role))));
-            });
-        }
+        $order = $request->input('order', 'asc');
 
-        return $query;
+        return in_array($order, ['asc', 'desc'])
+            ? $order
+            : 'asc';
     }
 }
