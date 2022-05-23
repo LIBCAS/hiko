@@ -8,6 +8,9 @@ class LetterCollection extends ResourceCollection
 {
     public function toArray($request)
     {
-        return $this->collection;
+        return [
+            'data' => $this->collection,
+            'collection' => config('app.name'),
+        ];
     }
 }
