@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\api\FacetsController;
 use App\Http\Controllers\Api\ApiLetterController;
 use App\Http\Controllers\Api\ModsExportController;
 
@@ -19,6 +20,8 @@ use App\Http\Controllers\Api\ModsExportController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('facets', FacetsController::class);
 
 Route::get('letter/{uuid}', [ApiLetterController::class, 'show']);
 
