@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Ajax;
 
-use App\Models\Place;
 use Illuminate\Http\Request;
+use App\Services\SearchPlace;
 use App\Http\Controllers\Controller;
 
 class SimilarPlacesController extends Controller
@@ -14,17 +14,8 @@ class SimilarPlacesController extends Controller
             return [];
         }
 
-        $searchQuery = Place::search($request->query('search'));
+        $search = new SearchPlace;
 
-        return Place::select('id', 'name', 'division')
-            ->whereIn('id', $searchQuery->keys()->toArray())
-            ->get()
-            ->map(function ($place) {
-                return [
-                    'id' => $place->id,
-                    'label' => "{$place->name} ({$place->division}-{$place->country})",
-                ];
-            })
-            ->toArray();
+        return $search($request->input('search'))->toArray();
     }
 }
