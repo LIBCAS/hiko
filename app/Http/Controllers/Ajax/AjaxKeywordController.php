@@ -2,27 +2,26 @@
 
 namespace App\Http\Controllers\Ajax;
 
-use App\Models\Keyword;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Services\SearchKeyword;
 use App\Http\Controllers\Controller;
 
 class AjaxKeywordController extends Controller
 {
     public function __invoke(Request $request)
     {
-        return empty($request->query('search'))
-            ? []
-            : Keyword::whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($request->query('search')) . '%'])
-            ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($request->query('search')) . '%'])
-            ->select('id', 'name')
-            ->take(15)
-            ->get()
-            ->map(function ($keyword) {
+        if (empty($request->query('search'))) {
+            return [];
+        }
+
+        $search = new SearchKeyword;
+
+        return $search($request->query('search'))
+            ->map(function ($kw) {
                 return [
-                    'id' => $keyword->id,
-                    'value' => $keyword->id,
-                    'label' => $keyword->getTranslation('name', config('hiko.metadata_default_locale')),
+                    'id' => $kw->id,
+                    'value' => $kw->id,
+                    'label' => $kw->getTranslation('name', config('hiko.metadata_default_locale')),
                 ];
             })
             ->toArray();
