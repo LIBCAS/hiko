@@ -36,7 +36,7 @@ class SimilarNamesController extends Controller
             ->map(function ($identity) {
                 return [
                     'id' => $identity->id,
-                    'label' => "{$identity->name} ({$identity->birth_year}-{$identity->death_year})",
+                    'label' => "{$identity->name} {$identity->dates}",
                 ];
             })
             ->toArray();

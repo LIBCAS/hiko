@@ -20,7 +20,7 @@ class AjaxIdentityController extends Controller
                 return [
                     'id' => $identity->id,
                     'value' => $identity->id,
-                    'label' => "{$identity->name} ({$identity->birth_year}-{$identity->death_year})",
+                    'label' => "{$identity->name} {$identity->dates}",
                 ];
             })
             ->toArray();
