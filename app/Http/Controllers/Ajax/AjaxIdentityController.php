@@ -2,25 +2,26 @@
 
 namespace App\Http\Controllers\Ajax;
 
-use App\Http\Controllers\Controller;
-use App\Models\Identity;
 use Illuminate\Http\Request;
+use App\Services\SearchIdentity;
+use App\Http\Controllers\Controller;
 
 class AjaxIdentityController extends Controller
 {
     public function __invoke(Request $request)
     {
-        return empty($request->query('search'))
-            ? []
-            : Identity::where('name', 'like', '%' . $request->query('search') . '%')
-            ->select('id', 'name', 'birth_year', 'death_year')
-            ->take(15)
-            ->get()
+        if (empty($request->query('search'))) {
+            return [];
+        }
+
+        $search = new SearchIdentity;
+
+        return $search($request->input('search'))
             ->map(function ($identity) {
                 return [
-                    'id' => $identity->id,
-                    'value' => $identity->id,
-                    'label' => "{$identity->name} {$identity->dates}",
+                    'id' => $identity['id'],
+                    'value' => $identity['id'],
+                    'label' => $identity['label'],
                 ];
             })
             ->toArray();
