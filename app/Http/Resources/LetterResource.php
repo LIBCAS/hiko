@@ -38,6 +38,7 @@ class LetterResource extends JsonResource
                 'date' => $this->pretty_date,
                 'computed' => $this->date_computed,
             ],
+            'signatures' => collect($this->copies)->pluck('signature')->toArray(),
             'authors' => isset($identities['author'])
                 ? $identities['author']->pluck('name')->toArray()
                 : [],
