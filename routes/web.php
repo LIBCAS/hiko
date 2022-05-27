@@ -3,11 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\MergeController;
 use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\KeywordController;
 use App\Http\Controllers\DevToolsController;
+use App\Http\Controllers\EditLinkController;
 use App\Http\Controllers\IdentityController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\LocationController;
@@ -25,7 +27,6 @@ use App\Http\Controllers\Ajax\AjaxProfessionController;
 use App\Http\Controllers\Ajax\SimilarLocationsController;
 use App\Http\Controllers\Ajax\AjaxKeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
-use App\Http\Controllers\MergeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -386,6 +387,10 @@ Route::prefix('dev')->group(function () {
     Route::get('symlink', [DevToolsController::class, 'symlink'])
         ->middleware(['auth', 'can:debug']);
 });
+
+Route::get('edit/{letter:uuid}', EditLinkController::class)
+    ->name('edit-link')
+    ->middleware(['auth']);
 
 Route::get('image/{letter:uuid}/{imageId}', ImageController::class)
     ->name('image');
