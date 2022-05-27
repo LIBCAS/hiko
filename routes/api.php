@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\api\FacetsController;
+use App\Http\Controllers\Api\FacetsController;
 use App\Http\Controllers\Api\ApiLetterController;
 use App\Http\Controllers\Api\ModsExportController;
 
