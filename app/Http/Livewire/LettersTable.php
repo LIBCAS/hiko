@@ -53,7 +53,7 @@ class LettersTable extends Component
                 $subquery->select('users.id', 'name');
             },
         ])
-            ->select('id', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status');
+            ->select('id', 'uuid', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status');
 
         $query->filter($this->filters, config('hiko.metadata_default_locale'));
 
@@ -69,6 +69,7 @@ class LettersTable extends Component
             'rows' => $data->map(function ($letter) {
                 $identities = $letter->identities->groupBy('pivot.role')->toArray();
                 $places = $letter->places->groupBy('pivot.role')->toArray();
+                $showPublicUrl = $letter->status === 'publish' && !empty(config('hiko.public_url'));
 
                 return [
                     [
@@ -110,7 +111,9 @@ class LettersTable extends Component
                         'label' => $letter->media->count(),
                     ],
                     [
-                        'label' => __("hiko.{$letter->status}"),
+                        'label' => __("hiko.{$letter->status}"),  // public_url
+                        'link' => $showPublicUrl ? config('hiko.public_url') . '?letter=' . $letter->uuid : '',
+                        'external' => $showPublicUrl,
                     ],
                 ];
             })->toArray(),

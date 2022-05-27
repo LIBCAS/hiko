@@ -6,5 +6,6 @@ return [
     'metadata_default_locale' => env('METADATA_DEFAULT_LOCALE', 'cs'),
     'version' => '1.0.1',
     'show_watermark' => env('SHOW_WATERMARK', true),
+    'public_url' => env('PUBLIC_LETTERS_URL', ''),
 ];
 
