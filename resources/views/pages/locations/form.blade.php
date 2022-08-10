@@ -29,9 +29,12 @@
                 <div class="text-red-600">{{ $message }}</div>
             @enderror
         </div>
-        <x-button-simple class="w-full">
+        <x-button-simple class="w-full" name="action" value="edit">
             {{ $label }}
         </x-button-simple>
+        <x-button-inverted class="w-full text-black bg-white" name="action" value="create">
+            {{ $label }} {{ __('hiko.and_create_new') }}
+        </x-button-inverted>
     </form>
     @if ($location->id)
         <form x-data="{ form: $el }" action="{{ route('locations.destroy', $location->id) }}" method="post"

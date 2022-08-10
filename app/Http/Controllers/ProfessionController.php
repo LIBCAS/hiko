@@ -33,6 +33,8 @@ class ProfessionController extends Controller
 
     public function store(Request $request)
     {
+        $redirectRoute = $request->action === 'create' ? 'professions.create' : 'professions.edit';
+
         $validated = $request->validate($this->rules);
 
         $profession = Profession::create([
@@ -43,8 +45,8 @@ class ProfessionController extends Controller
         ]);
 
         return redirect()
-            ->route('professions.edit', $profession->id)
-            ->with('success', __('hiko.saved.'));
+            ->route($redirectRoute, $profession->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function edit(Profession $profession)
@@ -60,6 +62,8 @@ class ProfessionController extends Controller
 
     public function update(Request $request, Profession $profession)
     {
+        $redirectRoute = $request->action === 'create' ? 'professions.create' : 'professions.edit';
+
         $validated = $request->validate($this->rules);
 
         $profession->update([
@@ -70,7 +74,7 @@ class ProfessionController extends Controller
         ]);
 
         return redirect()
-            ->route('professions.edit', $profession->id)
+            ->route($redirectRoute, $profession->id)
             ->with('success', __('hiko.saved'));
     }
 
