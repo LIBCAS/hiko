@@ -54,12 +54,14 @@ class PlaceController extends Controller
 
     public function store(Request $request)
     {
+        $redirectRoute = $request->action === 'create' ? 'places.create' : 'places.edit';
+
         $validated = $request->validate($this->rules);
 
         $place = Place::create($validated);
 
         return redirect()
-            ->route('places.edit', $place->id)
+            ->route($redirectRoute, $place->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -77,6 +79,8 @@ class PlaceController extends Controller
 
     public function update(Request $request, Place $place)
     {
+        $redirectRoute = $request->action === 'create' ? 'places.create' : 'places.edit';
+
         $validated = $request->validate(
             $this->rules,
             [],
@@ -86,7 +90,7 @@ class PlaceController extends Controller
         $place->update($validated);
 
         return redirect()
-            ->route('places.edit', $place->id)
+            ->route($redirectRoute, $place->id)
             ->with('success', __('hiko.saved'));
     }
 

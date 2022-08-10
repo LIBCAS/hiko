@@ -38,6 +38,8 @@ class KeywordController extends Controller
 
     public function store(Request $request)
     {
+        $redirectRoute = $request->action === 'create' ? 'keywords.create' : 'keywords.edit';
+
         $validated = $request->validate($this->rules);
 
         $keyword = Keyword::create([
@@ -54,7 +56,7 @@ class KeywordController extends Controller
         $keyword->save();
 
         return redirect()
-            ->route('keywords.edit', $keyword->id)
+            ->route($redirectRoute, $keyword->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -72,6 +74,8 @@ class KeywordController extends Controller
 
     public function update(Request $request, Keyword $keyword)
     {
+        $redirectRoute = $request->action === 'create' ? 'keywords.create' : 'keywords.edit';
+
         $validated = $request->validate($this->rules);
 
         $keyword->update([
@@ -90,7 +94,7 @@ class KeywordController extends Controller
         $keyword->save();
 
         return redirect()
-            ->route('keywords.edit', $keyword->id)
+            ->route($redirectRoute, $keyword->id)
             ->with('success', __('hiko.saved'));
     }
 

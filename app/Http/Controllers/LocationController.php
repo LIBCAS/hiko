@@ -35,10 +35,12 @@ class LocationController extends Controller
 
     public function store(Request $request)
     {
+        $redirectRoute = $request->action === 'create' ? 'locations.create' : 'locations.edit';
+
         $location = Location::create($request->validate($this->rules));
 
         return redirect()
-            ->route('locations.edit', $location->id)
+            ->route($redirectRoute, $location->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -56,10 +58,12 @@ class LocationController extends Controller
 
     public function update(Request $request, Location $location)
     {
+        $redirectRoute = $request->action === 'create' ? 'locations.create' : 'locations.edit';
+
         $location->update($request->validate($this->rules));
 
         return redirect()
-            ->route('locations.edit', $location->id)
+            ->route($redirectRoute, $location->id)
             ->with('success', __('hiko.saved'));
     }
 

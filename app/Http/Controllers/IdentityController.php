@@ -38,6 +38,8 @@ class IdentityController extends Controller
 
     public function store(IdentityRequest $request)
     {
+        $redirectRoute = $request->action === 'create' ? 'identities.create' : 'identities.edit';
+
         $validated = $request->validated();
 
         $identity = Identity::create($validated);
@@ -45,7 +47,7 @@ class IdentityController extends Controller
         $this->attachProfessionsAndCategories($identity, $validated);
 
         return redirect()
-            ->route('identities.edit', $identity->id)
+            ->route($redirectRoute, $identity->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -71,6 +73,8 @@ class IdentityController extends Controller
 
     public function update(IdentityRequest $request, Identity $identity)
     {
+        $redirectRoute = $request->action === 'create' ? 'identities.create' : 'identities.edit';
+
         $validated = $request->validated();
 
         $identity->update($validated);
@@ -78,7 +82,7 @@ class IdentityController extends Controller
         $this->attachProfessionsAndCategories($identity, $validated);
 
         return redirect()
-            ->route('identities.edit', $identity->id)
+            ->route($redirectRoute, $identity->id)
             ->with('success', __('hiko.saved'));
     }
 

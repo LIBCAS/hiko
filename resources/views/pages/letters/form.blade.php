@@ -436,9 +436,12 @@
                     @enderror
                 </fieldset>
                 <div class="h-1"></div>
-                <x-button-simple class="w-full" onclick="preventLeaving = false">
+                <x-button-simple class="w-full" onclick="preventLeaving = false" name="action" value="edit">
                     {{ $label }}
                 </x-button-simple>
+                <x-button-inverted class="w-full text-black bg-white" onclick="preventLeaving = false" name="action" value="create">
+                    {{ $label }} {{ __('hiko.and_create_new') }}
+                </x-button-inverted>
             </form>
             @if ($letter->id)
                 <form x-data="{ form: $el }" action="{{ route('letters.destroy', $letter->id) }}" method="post"

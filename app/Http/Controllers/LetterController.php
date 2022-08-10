@@ -36,6 +36,8 @@ class LetterController extends Controller
 
     public function store(LetterRequest $request)
     {
+        $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';
+
         $letter = Letter::create($request->validated());
 
         $this->attachRelated($request, $letter);
@@ -44,7 +46,7 @@ class LetterController extends Controller
         RegenerateNames::dispatch($letter->recipients()->get());
 
         return redirect()
-            ->route('letters.edit', $letter->id)
+            ->route($redirectRoute, $letter->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -72,6 +74,8 @@ class LetterController extends Controller
 
     public function update(LetterRequest $request, Letter $letter)
     {
+        $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';
+
         $letter->update($request->validated());
 
         $this->attachRelated($request, $letter);
@@ -81,7 +85,7 @@ class LetterController extends Controller
         RegenerateNames::dispatch($letter->recipients()->get());
 
         return redirect()
-            ->route('letters.edit', $letter->id)
+            ->route($redirectRoute, $letter->id)
             ->with('success', __('hiko.saved'));
     }
 
