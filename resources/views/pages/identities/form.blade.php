@@ -1,5 +1,6 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    <x-form-errors />
     <form x-data="identityForm({ type: '{{ $identity->type ? $identity->type : 'person' }}', similarNamesUrl: '{{ route('ajax.identities.similar') }}', id: '{{ $identity->id }}', surname: '{{ $identity->surname }}', name: '{{ $identity->name }}', forename: '{{ $identity->forename }}' })" x-init="$watch('fullName', () => findSimilarNames($data))" action="{{ $action }}" method="post"
         class="max-w-sm space-y-6">
         @csrf
