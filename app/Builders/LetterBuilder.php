@@ -74,8 +74,6 @@ class LetterBuilder extends Builder
         }
 
         if (isset($filters['keyword']) && !empty($filters['keyword'])) {
-            $this->keyword($filters['media']);
-
             $this->whereHas('keywords', function ($subquery) use ($filters, $lang) {
                 $subquery
                     ->whereRaw("LOWER(JSON_EXTRACT(name, '$.{$lang}')) like ?", ['%' . Str::lower($filters['keyword']) . '%']);
