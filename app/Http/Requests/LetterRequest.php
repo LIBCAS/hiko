@@ -44,7 +44,7 @@ class LetterRequest extends FormRequest
             'abstract' => ['nullable'],
             'explicit' => ['nullable', 'string', 'max:255'],
             'incipit' => ['nullable', 'string', 'max:255'],
-            'copyright' => ['nullable', 'string', 'max:255'],
+            'copyright' => ['nullable', 'string'],
             'languages' => ['nullable', 'string', 'max:255'],
             'notes_private' => ['nullable'],
             'notes_public' => ['nullable'],
