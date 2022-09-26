@@ -8,21 +8,21 @@ use Illuminate\Database\Eloquent\Builder;
 
 class LetterBuilder extends Builder
 {
-    public function before($date)
+    public function before($date): LetterBuilder
     {
         $this->whereDate('date_computed', '<=', $date);
 
         return $this;
     }
 
-    public function after($date)
+    public function after($date): LetterBuilder
     {
         $this->whereDate('date_computed', '>=', $date);
 
         return $this;
     }
 
-    public function fulltext($query)
+    public function fulltext($query): LetterBuilder
     {
         if (!empty($query)) {
             $this->whereIn('id', Letter::search($query)->keys()->toArray());
@@ -31,14 +31,17 @@ class LetterBuilder extends Builder
         return $this;
     }
 
-    public function filter($filters, $lang)
+    public function filter($filters, $lang): LetterBuilder
     {
         if (isset($filters['fulltext'])) {
             $this->fulltext($filters['fulltext']);
         }
 
         if (isset($filters['abstract'])) {
-            $this->where('abstract', 'LIKE', '%' . Str::lower($filters['abstract']) . '%');
+            $this->where(function ($query) use ($filters) {
+                $query->whereRaw("LOWER(JSON_EXTRACT(abstract, '$.cs')) like ?", ['%' . Str::lower($filters['abstract']) . '%']);
+                $query->orWhereRaw("LOWER(JSON_EXTRACT(abstract, '$.en')) like ?", ['%' . Str::lower($filters['abstract']) . '%']);
+            });
         }
 
         if (isset($filters['id']) && !empty($filters['id'])) {
@@ -111,7 +114,7 @@ class LetterBuilder extends Builder
         return $this;
     }
 
-    protected function addIdentityNameFilter(string $type, $search)
+    protected function addIdentityNameFilter(string $type, $search): LetterBuilder
     {
         $this->whereHas('identities', function ($subquery) use ($type, $search) {
             $subquery
@@ -125,7 +128,7 @@ class LetterBuilder extends Builder
         return $this;
     }
 
-    protected function addPlaceFilter(string $type, $search)
+    protected function addPlaceFilter(string $type, $search): LetterBuilder
     {
         $this->whereHas('places', function ($subquery) use ($type, $search) {
             $subquery
