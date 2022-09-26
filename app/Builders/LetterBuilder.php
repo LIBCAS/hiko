@@ -37,6 +37,10 @@ class LetterBuilder extends Builder
             $this->fulltext($filters['fulltext']);
         }
 
+        if (isset($filters['abstract'])) {
+            $this->where('abstract', 'LIKE', '%' . Str::lower($filters['abstract']) . '%');
+        }
+
         if (isset($filters['id']) && !empty($filters['id'])) {
             $this->where('id', 'LIKE', '%' . $filters['id'] . '%');
         }

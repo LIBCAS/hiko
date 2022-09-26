@@ -47,6 +47,10 @@
             <x-input wire:model.defer="filters.fulltext" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
+            <span class="block text-sm">{{ __('hiko.abstract') }}</span>
+            <x-input wire:model.defer="filters.abstract" class="block w-full px-2 text-sm lg:w-32" type="text" />
+        </label>
+        <label>
             <span class="block text-sm">
                 {{ __('hiko.media') }}
             </span>
