@@ -37,4 +37,9 @@ class Place extends Model
     {
         return new PlaceBuilder($query);
     }
+
+    protected function asJson($value)
+    {
+        return json_encode($value, JSON_UNESCAPED_UNICODE);
+    }
 }

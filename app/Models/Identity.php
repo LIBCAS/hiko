@@ -85,4 +85,9 @@ class Identity extends Model
     {
         return new IdentityBuilder($query);
     }
+
+    protected function asJson($value)
+    {
+        return json_encode($value, JSON_UNESCAPED_UNICODE);
+    }
 }

@@ -48,4 +48,9 @@ class Keyword extends Model
     {
         return new KeywordBuilder($query);
     }
+
+    protected function asJson($value)
+    {
+        return json_encode($value, JSON_UNESCAPED_UNICODE);
+    }
 }
