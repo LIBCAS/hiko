@@ -2,12 +2,16 @@
 
 namespace App\Imports;
 
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class PlacesImport
 {
-    public function import()
+    /**
+     * @throws FileNotFoundException
+     */
+    public function import(): string
     {
         if (!Storage::disk('local')->exists('imports/place.json')) {
             return 'Soubor neexistuje';

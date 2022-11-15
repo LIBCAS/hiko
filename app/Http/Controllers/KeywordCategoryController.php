@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Models\KeywordCategory;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\KeywordCategoriesExport;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class KeywordCategoryController extends Controller
 {
@@ -24,7 +26,7 @@ class KeywordCategoryController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'keywords.category.create' : 'keywords.category.edit';
 
@@ -53,7 +55,7 @@ class KeywordCategoryController extends Controller
         ]);
     }
 
-    public function update(Request $request, KeywordCategory $keywordCategory)
+    public function update(Request $request, KeywordCategory $keywordCategory): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'keywords.category.create' : 'keywords.category.edit';
 
@@ -71,7 +73,7 @@ class KeywordCategoryController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function destroy(KeywordCategory $keywordCategory)
+    public function destroy(KeywordCategory $keywordCategory): RedirectResponse
     {
         $keywordCategory->delete();
 
@@ -80,7 +82,7 @@ class KeywordCategoryController extends Controller
             ->with('success', __('hiko.removed'));
     }
 
-    public function export()
+    public function export(): BinaryFileResponse
     {
         return Excel::download(new KeywordCategoriesExport, 'keywords-categories.xlsx');
     }

@@ -18,8 +18,8 @@ class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadin
     public $role;
     public $mainCharacter;
 
-    private $fileName;
-    private $headers = [
+    private string $fileName;
+    private array $headers = [
         'Content-Type' => 'text/csv',
     ];
 
@@ -97,9 +97,9 @@ class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadin
             $this->getDate($letter),
             $letter->date_year,
             $letter->date_month,
-            isset($mainCharacterPlace->name) ? $mainCharacterPlace->name : '',
+            $mainCharacterPlace->name ?? '',
             $this->getLatLong($mainCharacterPlace),
-            isset($sideCharacterPlace->name) ? $sideCharacterPlace->name : '',
+            $sideCharacterPlace->name ?? '',
             $this->getLatLong($sideCharacterPlace),
             strtolower(str_replace(';', '|', $letter->languages)),
             $letter->keywords->map(function ($kw) {
@@ -159,7 +159,7 @@ class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadin
             : (int) $year - (int) $person->birth_year;
     }
 
-    protected function getDate($letter)
+    protected function getDate($letter): string
     {
         $date = !empty($letter->date_year)
             ? $letter->date_year
@@ -172,7 +172,7 @@ class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadin
         return $date;
     }
 
-    protected function getLatLong($place)
+    protected function getLatLong($place): string
     {
         return empty($place->latitude) && empty($place->longitude)
             ? ''

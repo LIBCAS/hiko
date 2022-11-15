@@ -2,12 +2,10 @@
 
 namespace App\Models;
 
-use App\Models\User;
-use App\Models\Place;
-use App\Models\Keyword;
-use App\Models\Identity;
 use Laravel\Scout\Searchable;
 use App\Builders\LetterBuilder;
+use League\Flysystem\FileNotFoundException;
+use Spatie\Image\Exceptions\InvalidManipulation;
 use Spatie\Image\Manipulations;
 use Spatie\MediaLibrary\Models\Media;
 use Illuminate\Database\Eloquent\Model;
@@ -25,7 +23,7 @@ class Letter extends Model implements HasMedia
     use HasFactory;
     use Searchable;
 
-    public $translatable = ['abstract'];
+    public array $translatable = ['abstract'];
 
     protected $guarded = ['id', 'uuid'];
 
@@ -34,6 +32,10 @@ class Letter extends Model implements HasMedia
         'related_resources' => 'array',
     ];
 
+    /**
+     * @throws FileNotFoundException
+     * @throws InvalidManipulation
+     */
     public function registerMediaConversions(Media $media = null)
     {
         $this->addMediaConversion('thumb')
@@ -46,12 +48,12 @@ class Letter extends Model implements HasMedia
         }
     }
 
-    public function searchableAs()
+    public function searchableAs(): string
     {
         return 'letter_index';
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'id' => $this->id,
@@ -60,66 +62,66 @@ class Letter extends Model implements HasMedia
         ];
     }
 
-    public function identities()
+    public function identities(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Identity::class)
             ->withPivot('position', 'role', 'marked', 'salutation')
             ->orderBy('pivot_position', 'asc');
     }
 
-    public function places()
+    public function places(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Place::class)
             ->withPivot('position', 'role', 'marked')
             ->orderBy('pivot_position', 'asc');
     }
 
-    public function origins()
+    public function origins(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->places()->where('role', '=', 'origin');
     }
 
-    public function destinations()
+    public function destinations(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->places()->where('role', '=', 'destination');
     }
 
-    public function keywords()
+    public function keywords(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Keyword::class);
     }
 
-    public function authors()
+    public function authors(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->identities()->where('role', '=', 'author');
     }
 
-    public function recipients()
+    public function recipients(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->identities()->where('role', '=', 'recipient');
     }
 
-    public function mentioned()
+    public function mentioned(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->identities()->where('role', '=', 'mentioned');
     }
 
-    public function users()
+    public function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(User::class);
     }
 
-    public function getPrettyDateAttribute()
+    public function getPrettyDateAttribute(): string
     {
         return $this->formatDate($this->date_day, $this->date_month, $this->date_year);
     }
 
-    public function getPrettyRangeDateAttribute()
+    public function getPrettyRangeDateAttribute(): string
     {
         return $this->formatDate($this->range_day, $this->range_month, $this->range_year);
     }
 
-    public function getNameAttribute()
+    public function getNameAttribute(): string
     {
         $identities = $this->identities->groupBy('pivot.role')->toArray();
         $places = $this->places->groupBy('pivot.role')->toArray();
@@ -139,12 +141,12 @@ class Letter extends Model implements HasMedia
         return $title;
     }
 
-    public function newEloquentBuilder($query)
+    public function newEloquentBuilder($query): LetterBuilder
     {
         return new LetterBuilder($query);
     }
 
-    protected function formatDate($day, $month, $year)
+    protected function formatDate($day, $month, $year): string
     {
         $day = $day && $day != 0 ? $day : '?';
         $month = $month && $month != 0 ? $month : '?';

@@ -31,7 +31,7 @@ class LetterBuilder extends Builder
         return $this;
     }
 
-    public function filter($filters, $lang): LetterBuilder
+    public function filter($filters): LetterBuilder
     {
         if (isset($filters['fulltext'])) {
             $this->fulltext($filters['fulltext']);

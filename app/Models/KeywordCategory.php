@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Keyword;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Scout\Searchable;
 use App\Builders\KeywordBuilder;
 use Illuminate\Database\Eloquent\Model;
@@ -15,16 +15,16 @@ class KeywordCategory extends Model
     use HasFactory;
     use Searchable;
 
-    public $translatable = ['name'];
+    public array $translatable = ['name'];
 
     protected $guarded = ['id'];
 
-    public function searchableAs()
+    public function searchableAs(): string
     {
         return 'keyword_category_index';
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'id' => $this->id,
@@ -33,12 +33,12 @@ class KeywordCategory extends Model
         ];
     }
 
-    public function keywords()
+    public function keywords(): HasMany
     {
         return $this->hasMany(Keyword::class);
     }
 
-    public function newEloquentBuilder($query)
+    public function newEloquentBuilder($query): KeywordBuilder
     {
         return new KeywordBuilder($query);
     }

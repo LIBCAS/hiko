@@ -55,7 +55,7 @@ class LettersTable extends Component
         ])
             ->select('id', 'uuid', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status');
 
-        $query->filter($this->filters, config('hiko.metadata_default_locale'));
+        $query->filter($this->filters);
 
         return $query
             ->orderBy($this->filters['order'], $this->filters['direction'])
@@ -91,16 +91,16 @@ class LettersTable extends Component
                         'label' => collect($letter->copies)->pluck('signature')->toArray(),
                     ],
                     [
-                        'label' => collect(isset($identities['author']) ? $identities['author'] : [])->pluck('name')->ToArray(),
+                        'label' => collect($identities['author'] ?? [])->pluck('name')->ToArray(),
                     ],
                     [
-                        'label' => collect(isset($identities['recipient']) ? $identities['recipient'] : [])->pluck('name')->ToArray(),
+                        'label' => collect($identities['recipient'] ?? [])->pluck('name')->ToArray(),
                     ],
                     [
-                        'label' => collect(isset($places['origin']) ? $places['origin'] : [])->pluck('name')->ToArray(),
+                        'label' => collect($places['origin'] ?? [])->pluck('name')->ToArray(),
                     ],
                     [
-                        'label' => collect(isset($places['destination']) ? $places['destination'] : [])->pluck('name')->ToArray(),
+                        'label' => collect($places['destination'] ?? [])->pluck('name')->ToArray(),
                     ],
                     [
                         'label' => collect($letter->keywords)->map(function ($kw) {

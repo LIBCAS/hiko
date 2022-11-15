@@ -18,12 +18,12 @@ class NewUserPasswordCreate extends Notification
         $this->user = $user;
     }
 
-    public function via()
+    public function via(): array
     {
         return ['mail'];
     }
 
-    public function toMail()
+    public function toMail(): MailMessage
     {
         $url = url(route('password.reset', [
             'token' => app('auth.password.broker')->createToken($this->user),
@@ -41,7 +41,7 @@ class NewUserPasswordCreate extends Notification
             ->line(new HtmlString("<a href='{$passwordRequest}'>{$passwordRequest}</a>"));
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         return [];
     }

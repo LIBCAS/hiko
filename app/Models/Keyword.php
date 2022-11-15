@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use App\Models\Letter;
-use App\Models\KeywordCategory;
 use App\Builders\KeywordBuilder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
@@ -16,16 +15,16 @@ class Keyword extends Model
     use HasFactory;
     use Searchable;
 
-    public $translatable = ['name'];
+    public array $translatable = ['name'];
 
     protected $guarded = ['id'];
 
-    public function searchableAs()
+    public function searchableAs(): string
     {
         return 'keyword_index';
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'id' => $this->id,
@@ -34,17 +33,17 @@ class Keyword extends Model
         ];
     }
 
-    public function keyword_category()
+    public function keyword_category(): BelongsTo
     {
         return $this->belongsTo(KeywordCategory::class);
     }
 
-    public function letters()
+    public function letters(): BelongsTo
     {
         return $this->belongsTo(Letter::class);
     }
 
-    public function newEloquentBuilder($query)
+    public function newEloquentBuilder($query): KeywordBuilder
     {
         return new KeywordBuilder($query);
     }

@@ -2,31 +2,29 @@
 
 namespace App\Models;
 
-use App\Models\Letter;
-use App\Models\Profession;
-use Laravel\Scout\Searchable;
 use App\Builders\IdentityBuilder;
-use App\Models\ProfessionCategory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Laravel\Scout\Searchable;
 
 class Identity extends Model
 {
     use HasFactory;
     use Searchable;
 
-    protected $guarded = ['id'];
+    protected array $guarded = ['id'];
 
-    protected $casts = [
+    protected array $casts = [
         'alternative_names' => 'array',
     ];
 
-    public function searchableAs()
+    public function searchableAs(): string
     {
         return 'identity_index';
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         $names = $this->alternative_names;
         $names[] = $this->name;
@@ -44,19 +42,19 @@ class Identity extends Model
         ];
     }
 
-    public function professions()
+    public function professions(): BelongsToMany
     {
         return $this->belongsToMany(Profession::class)
             ->withPivot('position');
     }
 
-    public function profession_categories()
+    public function profession_categories(): BelongsToMany
     {
         return $this->belongsToMany(ProfessionCategory::class)
             ->withPivot('position');
     }
 
-    public function letters()
+    public function letters(): BelongsToMany
     {
         return $this->belongsToMany(Letter::class)
             ->withPivot('marked');
@@ -81,7 +79,7 @@ class Identity extends Model
         }
     }
 
-    public function newEloquentBuilder($query)
+    public function newEloquentBuilder($query): IdentityBuilder
     {
         return new IdentityBuilder($query);
     }

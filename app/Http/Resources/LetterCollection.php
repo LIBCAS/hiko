@@ -7,7 +7,7 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class LetterCollection extends ResourceCollection
 {
-    public function toArray($request)
+    public function toArray($request): array
     {
         return [
             'data' => $this->collection,
@@ -15,7 +15,7 @@ class LetterCollection extends ResourceCollection
         ];
     }
 
-    public function with($request)
+    public function with($request): array
     {
         return [
             'meta' => [

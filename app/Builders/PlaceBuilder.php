@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class PlaceBuilder extends Builder
 {
-    public function search($filters)
+    public function search($filters): PlaceBuilder
     {
         if (isset($filters['name']) && !empty($filters['name'])) {
             $this->where('name', 'LIKE', "%" . $filters['name'] . "%");

@@ -2,12 +2,16 @@
 
 namespace App\Imports;
 
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProfessionsImport
 {
-    public function import()
+    /**
+     * @throws FileNotFoundException
+     */
+    public function import(): string
     {
         if (!Storage::disk('local')->exists('imports/profession.json')) {
             return 'Soubor neexistuje';
@@ -24,7 +28,7 @@ class ProfessionsImport
         return 'Import profesí byl úspěšný';
     }
 
-    protected function prepare($data)
+    protected function prepare($data): array
     {
         return [
             'id' => $data->id,

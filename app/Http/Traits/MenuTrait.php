@@ -6,7 +6,7 @@ use Illuminate\Support\Str;
 
 trait MenuTrait
 {
-    public function getMenu()
+    public function getMenu(): array
     {
         $items = [
             [

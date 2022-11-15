@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\Letter;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;

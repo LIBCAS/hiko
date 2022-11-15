@@ -9,7 +9,7 @@ class Language extends Model
 {
     use Sushi;
 
-    public function getRows()
+    public function getRows(): array
     {
         $languages = json_decode(file_get_contents(resource_path() . '/data/languages.json'), true);
 

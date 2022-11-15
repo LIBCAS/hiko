@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 
 class SimilarLocationsController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): array
     {
         if (!$request->has('search')) {
             return [];

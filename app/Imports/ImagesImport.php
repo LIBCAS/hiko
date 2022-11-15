@@ -3,12 +3,16 @@
 namespace App\Imports;
 
 use App\Models\Letter;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class ImagesImport
 {
-    public function import()
+    /**
+     * @throws FileNotFoundException
+     */
+    public function import(): string
     {
         if (!Storage::disk('local')->exists('imports/letter.json')) {
             return 'Soubor neexistuje';
@@ -40,7 +44,7 @@ class ImagesImport
         return 'Import obrázků byl úspěšný';
     }
 
-    protected function downloadFile($url, $name)
+    protected function downloadFile($url, $name): bool
     {
         $fileInfo = pathinfo($url);
         $url = $fileInfo['dirname'] . '/' . rawurlencode($fileInfo['filename'] . '.' . $fileInfo['extension']);

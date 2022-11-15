@@ -29,8 +29,8 @@ class KeywordCategoriesExport implements FromCollection, WithMapping, WithHeadin
 
         return [
             $keyword->id,
-            isset($name['cs']) ? $name['cs'] : '',
-            isset($name['en']) ? $name['en'] : '',
+            $name['cs'] ?? '',
+            $name['en'] ?? '',
         ];
     }
 }

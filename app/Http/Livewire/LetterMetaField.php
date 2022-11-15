@@ -7,7 +7,6 @@ use Livewire\Component;
 class LetterMetaField extends Component
 {
     public $items;
-    public $fieldKey;
     public $fields;
     public $route;
     public $label;
@@ -38,7 +37,7 @@ class LetterMetaField extends Component
 
     public function changeItemValue($index, $data)
     {
-        $this->items[$index]['label'] = $data['label'] ? $data['label'] : '';
+        $this->items[$index]['label'] = $data['label'] ?: '';
         $this->items[$index]['value'] = $data['label'] ? $data['value'] : '';
     }
 

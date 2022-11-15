@@ -31,8 +31,8 @@ class KeywordsExport implements FromCollection, WithMapping, WithHeadings
 
         return [
             $keyword->id,
-            isset($name['cs']) ? $name['cs'] : '',
-            isset($name['en']) ? $name['en'] : '',
+            $name['cs'] ?? '',
+            $name['en'] ?? '',
             $category ? implode(' | ', array_values($category->getTranslations('name'))) : '',
         ];
     }

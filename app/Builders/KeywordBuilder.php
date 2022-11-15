@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class KeywordBuilder extends Builder
 {
-    public function search($filters)
+    public function search($filters): KeywordBuilder
     {
         if (isset($filters['cs']) && !empty($filters['cs'])) {
             $this->whereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($filters['cs']) . '%']);

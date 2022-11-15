@@ -6,7 +6,10 @@ use Exception;
 
 class Viaf
 {
-    public function search($query)
+    /**
+     * @throws Exception
+     */
+    public function search($query): \Illuminate\Support\Collection
     {
         if (empty($query)) {
             throw new Exception(
