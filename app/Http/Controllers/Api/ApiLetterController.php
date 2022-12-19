@@ -120,7 +120,7 @@ class ApiLetterController extends Controller
             : 10;
     }
 
-    protected function order(Request $request)
+    protected function order(Request $request): string
     {
         $order = $request->input('order', 'asc');
 

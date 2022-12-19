@@ -6,13 +6,14 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class LetterResource extends JsonResource
 {
-    public function toArray($request)
+    public function toArray($request): array
     {
         $record = $request->basic === '1'
             ? $this->getBasicRecord()
             : $this->getDetailedRecord();
 
         if ($request->media === '1') {
+            $record['media'] = [];
             foreach ($this->getMedia() as $media) {
                 if ($media->getCustomProperty('status') === 'publish') {
                     $record['media'][] = [
@@ -27,7 +28,7 @@ class LetterResource extends JsonResource
         return $record;
     }
 
-    protected function getBasicRecord()
+    protected function getBasicRecord(): array
     {
         $identities = $this->identities->groupBy('pivot.role');
         $places = $this->places->groupBy('pivot.role');
@@ -54,7 +55,7 @@ class LetterResource extends JsonResource
         ];
     }
 
-    protected function getDetailedRecord()
+    protected function getDetailedRecord(): array
     {
         $identities = $this->identities->groupBy('pivot.role');
         $places = $this->places->groupBy('pivot.role');
@@ -66,9 +67,9 @@ class LetterResource extends JsonResource
                 'date' => $this->pretty_date,
                 'date_range' => $this->date_is_range ? $this->pretty_range_date : '',
                 'date_marked' => $this->date_marked,
-                'date_uncertain' => (bool) $this->date_uncertain,
-                'date_approximate' => (bool) $this->date_approximate,
-                'date_inferred' => (bool) $this->date_inferred,
+                'date_uncertain' => (bool)$this->date_uncertain,
+                'date_approximate' => (bool)$this->date_approximate,
+                'date_inferred' => (bool)$this->date_inferred,
                 'date_note' => $this->date_note,
             ],
             'authors' => [
@@ -80,8 +81,8 @@ class LetterResource extends JsonResource
                         ];
                     })->toArray()
                     : [],
-                'inferred' => (bool) $this->author_inferred,
-                'uncertain' => (bool) $this->author_uncertain,
+                'inferred' => (bool)$this->author_inferred,
+                'uncertain' => (bool)$this->author_uncertain,
                 'note' => $this->author_note,
             ],
             'recipients' => [
@@ -94,8 +95,8 @@ class LetterResource extends JsonResource
                         ];
                     })->toArray()
                     : [],
-                'inferred' => (bool) $this->recipient_inferred,
-                'uncertain' => (bool) $this->recipient_uncertain,
+                'inferred' => (bool)$this->recipient_inferred,
+                'uncertain' => (bool)$this->recipient_uncertain,
                 'note' => $this->recipient_note,
             ],
             'origins' => [
@@ -107,8 +108,8 @@ class LetterResource extends JsonResource
                         ];
                     })->toArray()
                     : [],
-                'inferred' => (bool) $this->origin_inferred,
-                'uncertain' => (bool) $this->origin_uncertain,
+                'inferred' => (bool)$this->origin_inferred,
+                'uncertain' => (bool)$this->origin_uncertain,
                 'note' => $this->origin_note,
             ],
             'destinations' => [
@@ -120,8 +121,8 @@ class LetterResource extends JsonResource
                         ];
                     })->toArray()
                     : [],
-                'inferred' => (bool) $this->destination_inferred,
-                'uncertain' => (bool) $this->destination_uncertain,
+                'inferred' => (bool)$this->destination_inferred,
+                'uncertain' => (bool)$this->destination_uncertain,
                 'note' => $this->destination_note,
             ],
             'mentioned' => [
@@ -135,8 +136,8 @@ class LetterResource extends JsonResource
                     return $kw->getTranslations('name');
                 })
                 ->toArray(),
-            'copies' => (array) $this->copies,
-            'related_resources' => (array) $this->related_resources,
+            'copies' => (array)$this->copies,
+            'related_resources' => (array)$this->related_resources,
             'abstract' => $this->getTranslations('abstract'),
             'explicit' => $this->explicit,
             'incipit' => $this->incipit,

@@ -13,9 +13,9 @@ class Identity extends Model
     use HasFactory;
     use Searchable;
 
-    protected array $guarded = ['id'];
+    protected $guarded = ['id'];
 
-    protected array $casts = [
+    protected $casts = [
         'alternative_names' => 'array',
     ];
 

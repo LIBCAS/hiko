@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Laravel\Scout\Searchable;
 use App\Builders\LetterBuilder;
 use League\Flysystem\FileNotFoundException;
@@ -23,7 +24,7 @@ class Letter extends Model implements HasMedia
     use HasFactory;
     use Searchable;
 
-    public array $translatable = ['abstract'];
+    public $translatable = ['abstract'];
 
     protected $guarded = ['id', 'uuid'];
 
@@ -62,51 +63,51 @@ class Letter extends Model implements HasMedia
         ];
     }
 
-    public function identities(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function identities(): BelongsToMany
     {
         return $this->belongsToMany(Identity::class)
             ->withPivot('position', 'role', 'marked', 'salutation')
             ->orderBy('pivot_position', 'asc');
     }
 
-    public function places(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function places(): BelongsToMany
     {
         return $this->belongsToMany(Place::class)
             ->withPivot('position', 'role', 'marked')
             ->orderBy('pivot_position', 'asc');
     }
 
-    public function origins(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function origins(): BelongsToMany
     {
         return $this->places()->where('role', '=', 'origin');
     }
 
-    public function destinations(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function destinations(): BelongsToMany
     {
         return $this->places()->where('role', '=', 'destination');
     }
 
-    public function keywords(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function keywords(): BelongsToMany
     {
         return $this->belongsToMany(Keyword::class);
     }
 
-    public function authors(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function authors(): BelongsToMany
     {
         return $this->identities()->where('role', '=', 'author');
     }
 
-    public function recipients(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function recipients(): BelongsToMany
     {
         return $this->identities()->where('role', '=', 'recipient');
     }
 
-    public function mentioned(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function mentioned(): BelongsToMany
     {
         return $this->identities()->where('role', '=', 'mentioned');
     }
 
-    public function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class);
     }
