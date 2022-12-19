@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Identity;
 use Laravel\Scout\Searchable;
 use App\Builders\ProfessionBuilder;
 use Illuminate\Database\Eloquent\Model;

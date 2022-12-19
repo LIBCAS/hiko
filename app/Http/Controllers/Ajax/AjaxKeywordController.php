@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 
 class AjaxKeywordController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): array
     {
         if (empty($request->query('search'))) {
             return [];

@@ -3,13 +3,14 @@
 namespace App\Exports;
 
 use App\Models\Letter;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\FromCollection;
 
 class LettersExport implements FromCollection, WithMapping, WithHeadings
 {
-    public function collection()
+    public function collection(): Collection
     {
         $query = Letter::filter(request()->all(), config('hiko.metadata_default_locale'));
 

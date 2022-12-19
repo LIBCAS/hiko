@@ -3,13 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Location;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Exports\LocationsExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class LocationController extends Controller
 {
-    protected $rules = [
+    protected array $rules = [
         'name' => ['required', 'string', 'max:255'],
         'type' => ['required', 'string'],
     ];
@@ -33,7 +35,7 @@ class LocationController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'locations.create' : 'locations.edit';
 
@@ -56,7 +58,7 @@ class LocationController extends Controller
         ]);
     }
 
-    public function update(Request $request, Location $location)
+    public function update(Request $request, Location $location): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'locations.create' : 'locations.edit';
 
@@ -67,7 +69,7 @@ class LocationController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function destroy(Location $location)
+    public function destroy(Location $location): RedirectResponse
     {
         $location->delete();
 
@@ -76,12 +78,12 @@ class LocationController extends Controller
             ->with('success', __('hiko.removed'));
     }
 
-    public function export()
+    public function export(): BinaryFileResponse
     {
         return Excel::download(new LocationsExport, 'locations.xlsx');
     }
 
-    protected function getTypes()
+    protected function getTypes(): array
     {
         return ['repository', 'collection', 'archive'];
     }

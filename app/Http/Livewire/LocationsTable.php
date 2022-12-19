@@ -10,7 +10,7 @@ class LocationsTable extends Component
 {
     use WithPagination;
 
-    public $filters = [
+    public array $filters = [
         'order' => 'name',
     ];
 
@@ -39,7 +39,7 @@ class LocationsTable extends Component
             ->paginate(10);
     }
 
-    protected function formatTableData($data)
+    protected function formatTableData($data): array
     {
         return [
             'header' => [__('hiko.name'), __('hiko.type')],

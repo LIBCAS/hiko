@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 
 class AjaxIdentityController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): array
     {
         if (empty($request->query('search'))) {
             return [];

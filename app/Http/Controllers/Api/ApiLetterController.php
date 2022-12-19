@@ -10,14 +10,14 @@ use App\Http\Resources\LetterCollection;
 
 class ApiLetterController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): LetterCollection
     {
         return new LetterCollection(
             $this->prepareQuery($request)->paginate($this->limit($request))
         );
     }
 
-    public function show($uuid)
+    public function show($uuid): LetterResource
     {
         $letter = Letter::where('uuid', $uuid)
             ->where('status', 'publish')
@@ -69,13 +69,6 @@ class ApiLetterController extends Controller
         return $query->orderBy('date_computed', $this->order($request));
     }
 
-    protected function sanitizedIds($ids)
-    {
-        $ids = explode(',', $ids);
-        $ids = array_map('trim', $ids);
-        return array_filter($ids);
-    }
-
     protected function addScopeByRole($query, $request, $role, $type)
     {
         if ($request->input($role)) {
@@ -89,7 +82,7 @@ class ApiLetterController extends Controller
         return $query;
     }
 
-    protected function relationships(Request $request)
+    protected function relationships(Request $request): array
     {
         $with = [];
 
@@ -118,7 +111,7 @@ class ApiLetterController extends Controller
         return $with;
     }
 
-    protected function limit(Request $request)
+    protected function limit(Request $request): int
     {
         $limit = (int) $request->input('limit', 10);
 

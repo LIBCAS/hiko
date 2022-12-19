@@ -14,12 +14,12 @@ class Location extends Model
 
     protected $guarded = ['id'];
 
-    public function searchableAs()
+    public function searchableAs(): string
     {
         return 'location_index';
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'id' => $this->id,
@@ -27,7 +27,7 @@ class Location extends Model
         ];
     }
 
-    public function newEloquentBuilder($query)
+    public function newEloquentBuilder($query): LocationBuilder
     {
         return new LocationBuilder($query);
     }

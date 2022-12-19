@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Role;
-use App\Models\Letter;
 use App\Builders\UserBuilder;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;

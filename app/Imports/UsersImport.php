@@ -3,12 +3,16 @@
 namespace App\Imports;
 
 use App\Models\User;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class UsersImport
 {
-    public function import()
+    /**
+     * @throws FileNotFoundException
+     */
+    public function import(): string
     {
         if (!Storage::disk('local')->exists('imports/users.json')) {
             return 'Soubor neexistuje';

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Identity;
 use App\Builders\ProfessionBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;

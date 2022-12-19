@@ -29,8 +29,8 @@ class ProfessionsExport implements FromCollection, WithMapping, WithHeadings
 
         return [
             $profession->id,
-            isset($name['cs']) ? $name['cs'] : '',
-            isset($name['en']) ? $name['en'] : '',
+            $name['cs'] ?? '',
+            $name['en'] ?? '',
         ];
     }
 }

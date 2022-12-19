@@ -19,7 +19,7 @@ class LetterFactory extends Factory
      *
      * @return array
      */
-    public function definition()
+    public function definition(): array
     {
         $date = $this->faker->date('Y n j');
         $date2 = $this->faker->date('Y n j');
@@ -80,7 +80,6 @@ class LetterFactory extends Factory
                 'cs' => $this->faker->paragraph(),
                 'en' => $this->faker->paragraph(),
             ],
-            'content' => $this->faker->paragraph(),
             'languages' => 'Czech;Latin',
             'notes_private' => $this->faker->paragraph(),
             'notes_public' => $this->faker->paragraph(),

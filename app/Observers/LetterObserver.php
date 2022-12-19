@@ -12,7 +12,7 @@ class LetterObserver
     public function creating(Letter $letter)
     {
         $user = Auth::user();
-        $user = $user ? $user : User::first();
+        $user = $user ?: User::first();
         $letter->uuid = Str::uuid();
         $letter->history = date('Y-m-d H:i:s') . ' – ' . $user->name . "\n";
         $letter->date_computed = computeDate($letter);
@@ -21,7 +21,7 @@ class LetterObserver
     public function created(Letter $letter)
     {
         $user = Auth::user();
-        $user = $user ? $user : User::first();
+        $user = $user ?: User::first();
         $letter->users()->attach($user->id);
     }
 }

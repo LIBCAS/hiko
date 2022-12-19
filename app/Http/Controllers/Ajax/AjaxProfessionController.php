@@ -9,7 +9,7 @@ use App\Http\Controllers\Controller;
 
 class AjaxProfessionController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): array
     {
         return empty($request->query('search'))
             ? []

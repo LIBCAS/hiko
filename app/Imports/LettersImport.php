@@ -4,13 +4,17 @@ namespace App\Imports;
 
 use App\Models\User;
 use App\Models\Letter;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class LettersImport
 {
-    public function import()
+    /**
+     * @throws FileNotFoundException
+     */
+    public function import(): string
     {
         if (!Storage::disk('local')->exists('imports/letter.json')) {
             return 'Soubor neexistuje';
@@ -50,10 +54,10 @@ class LettersImport
                         'origin_uncertain' => $letter->origin_uncertain,
                         'origin_note' => $letter->origin_note,
                         'people_mentioned_note' => $letter->people_mentioned_notes,
-                        'copies' => $letter->copies ? $letter->copies : null,
-                        'related_resources' => $letter->related_resources ? $letter->related_resources : null,
+                        'copies' => $letter->copies ?: null,
+                        'related_resources' => $letter->related_resources ?: null,
                         'abstract' => json_encode([
-                            'en' => $letter->abstract ? $letter->abstract : '',
+                            'en' => $letter->abstract ?: '',
                             'cs' => '',
                         ]),
                         'explicit' => $letter->explicit,
@@ -96,8 +100,8 @@ class LettersImport
                             'letter_id' => $letterId,
                             'role' => $role,
                             'position' => array_search($identity->id, $identities),
-                            'marked' => isset($identity->marked) ? $identity->marked : '',
-                            'salutation' => isset($identity->salutation) ? $identity->salutation : '',
+                            'marked' => $identity->marked ?? '',
+                            'salutation' => $identity->salutation ?? '',
                         ]);
                     } catch (\Illuminate\Database\QueryException $ex) {
                         dump($ex->getMessage());
@@ -117,7 +121,7 @@ class LettersImport
                             'letter_id' => $letterId,
                             'role' => $place->type,
                             'position' => $index,
-                            'marked' => isset($place->marked) ? $place->marked : '',
+                            'marked' => $place->marked ?? '',
                         ]);
                     }
                 } catch (\Illuminate\Database\QueryException $ex) {

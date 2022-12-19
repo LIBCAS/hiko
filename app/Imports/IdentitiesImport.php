@@ -2,12 +2,13 @@
 
 namespace App\Imports;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class IdentitiesImport
 {
-    public function import()
+    public function import(): string
     {
         if (!Storage::disk('local')->exists('imports/person.json')) {
             return 'Soubor neexistuje';
@@ -54,7 +55,7 @@ class IdentitiesImport
                             "{$key}_id" => $profession,
                             'position' => $index,
                         ]);
-                } catch (\Illuminate\Database\QueryException $ex) {
+                } catch (QueryException $ex) {
                     dump($ex->getMessage());
                 }
             });

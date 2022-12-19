@@ -14,13 +14,16 @@ class MergeRelationships
     public $model;
 
     protected $affectedLetters;
-    protected $models = [
+    protected array $models = [
         'identity' => [
             'handler' => 'handleIdentity',
             'relationship' => 'identities',
         ],
     ];
 
+    /**
+     * @throws Exception
+     */
     public function __construct($oldId, $newId, $model)
     {
         if (!array_key_exists($model, $this->models)) {
@@ -40,6 +43,9 @@ class MergeRelationships
         call_user_func([$this, $this->models[$this->model]['handler']]);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function handleIdentity()
     {
         try {

@@ -3,10 +3,14 @@
 namespace App\Services;
 
 use Exception;
+use Illuminate\Support\Collection;
 
 class Geonames
 {
-    public function search($query)
+    /**
+     * @throws Exception
+     */
+    public function search($query): Collection
     {
         if (empty($query)) {
             throw new Exception(
@@ -33,7 +37,7 @@ class Geonames
         return collect($result->geonames)->map(function ($place) {
             return [
                 'adminName' => $place->adminName1,
-                'country' => isset($place->countryName) ? $place->countryName : '',
+                'country' => $place->countryName ?? '',
                 'latitude' => $place->lat,
                 'longitude' => $place->lng,
                 'name' => $place->name,
