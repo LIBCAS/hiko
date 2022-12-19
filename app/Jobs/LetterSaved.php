@@ -13,7 +13,7 @@ class LetterSaved implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $letter;
+    protected Letter $letter;
 
     public function __construct(Letter $letter)
     {

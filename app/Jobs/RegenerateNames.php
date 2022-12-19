@@ -7,12 +7,13 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Support\Collection;
 
 class RegenerateNames implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $identites;
+    protected Collection $identites;
 
     public function __construct($identites)
     {
@@ -21,18 +22,19 @@ class RegenerateNames implements ShouldQueue
 
     public function handle()
     {
-        $this->identites->each(function ($identity) {
-            $identity->alternative_names = $identity->letters
-                ->map(function ($letter) {
-                    return $letter->pivot->marked;
-                })
-                ->reject(function ($marked) {
-                    return empty($marked);
-                })
-                ->unique()
-                ->toArray();
+        $this->identites
+            ->each(function ($identity) {
+                $identity->alternative_names = $identity->letters
+                    ->map(function ($letter) {
+                        return $letter->pivot->marked;
+                    })
+                    ->reject(function ($marked) {
+                        return empty($marked);
+                    })
+                    ->unique()
+                    ->toArray();
 
-            $identity->save();
-        });
+                $identity->save();
+            });
     }
 }
