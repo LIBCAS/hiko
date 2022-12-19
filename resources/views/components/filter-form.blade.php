@@ -13,4 +13,7 @@
             </svg>
         </div>
     </x-button-simple>
+    <button type="button" wire:click="resetFilters" class="flex justify-center p-2 lg:justify-start text-red-700 focus:border-red-700" title="{{__('hiko.clear_filters')}}">
+        <x-icons.x-circle class="w-6 h-6" />
+    </button>
 </form>
