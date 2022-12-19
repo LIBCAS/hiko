@@ -6,12 +6,15 @@ use App\Models\Identity;
 use App\Models\Profession;
 use App\Exports\IdentitiesExport;
 use App\Models\ProfessionCategory;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Requests\IdentityRequest;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class IdentityController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         return view('pages.identities.index', [
             'title' => __('hiko.identities'),
@@ -19,7 +22,7 @@ class IdentityController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(): View
     {
         return view(
             'pages.identities.form',
@@ -36,7 +39,7 @@ class IdentityController extends Controller
         );
     }
 
-    public function store(IdentityRequest $request)
+    public function store(IdentityRequest $request): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'identities.create' : 'identities.edit';
 
@@ -51,7 +54,7 @@ class IdentityController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function edit(Identity $identity)
+    public function edit(Identity $identity): View
     {
         $hasLetters = $identity->letters->isNotEmpty();
 
@@ -71,7 +74,7 @@ class IdentityController extends Controller
         );
     }
 
-    public function update(IdentityRequest $request, Identity $identity)
+    public function update(IdentityRequest $request, Identity $identity): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'identities.create' : 'identities.edit';
 
@@ -86,7 +89,7 @@ class IdentityController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function destroy(Identity $identity)
+    public function destroy(Identity $identity): RedirectResponse
     {
         $identity->delete();
 
@@ -95,12 +98,12 @@ class IdentityController extends Controller
             ->with('success', __('hiko.removed'));
     }
 
-    public function export()
+    public function export(): BinaryFileResponse
     {
         return Excel::download(new IdentitiesExport, 'identities.xlsx');
     }
 
-    protected function viewData(Identity $identity)
+    protected function viewData(Identity $identity): array
     {
         return [
             'identity' => $identity,
@@ -131,12 +134,12 @@ class IdentityController extends Controller
         }
     }
 
-    protected function getTypes()
+    protected function getTypes(): array
     {
         return ['person', 'institution'];
     }
 
-    protected function getSelectedProfessions(Identity $identity)
+    protected function getSelectedProfessions(Identity $identity): array
     {
         if (!request()->old('profession') && !$identity->professions) {
             return [];
@@ -144,7 +147,7 @@ class IdentityController extends Controller
 
         $professions = request()->old('profession')
             ? Profession::whereIn('id', request()->old('profession'))
-            ->orderByRaw('FIELD(id, ' . implode(',', request()->old('profession')) . ')')->get()
+                ->orderByRaw('FIELD(id, ' . implode(',', request()->old('profession')) . ')')->get()
             : $identity->professions->sortBy('pivot.position');
 
         return $professions
@@ -157,7 +160,7 @@ class IdentityController extends Controller
             ->toArray();
     }
 
-    protected function getSelectedCategories(Identity $identity)
+    protected function getSelectedCategories(Identity $identity): array
     {
         if (!request()->old('category') && !$identity->profession_categories) {
             return [];
@@ -165,7 +168,7 @@ class IdentityController extends Controller
 
         $categories = request()->old('category')
             ? ProfessionCategory::whereIn('id', request()->old('category'))
-            ->orderByRaw('FIELD(id, ' . implode(',', request()->old('category')) . ')')->get()
+                ->orderByRaw('FIELD(id, ' . implode(',', request()->old('category')) . ')')->get()
             : $identity->profession_categories->sortBy('pivot.position');
 
         return $categories
@@ -178,7 +181,7 @@ class IdentityController extends Controller
             ->toArray();
     }
 
-    protected function getSelectedType(Identity $identity)
+    protected function getSelectedType(Identity $identity): string
     {
         if (!request()->old('type') && !$identity->type) {
             return 'person';

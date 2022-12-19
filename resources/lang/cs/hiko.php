@@ -214,4 +214,5 @@ return [
     'confirm_merge' => 'Opravdu chcete sloučit vybrané záznamy?',
     'merged' => 'Záznamy byly sloučeny, můžete pokračovat smazáním této položky',
     'and_create_new' => '& vytvořit další',
+    'clear_filters' => 'Vymazat filtry',
 ];

@@ -5,18 +5,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Models\KeywordCategory;
+use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\KeywordCategoriesExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class KeywordCategoryController extends Controller
 {
-    protected $rules = [
+    protected array $rules = [
         'cs' => ['max:255', 'required_without:en'],
         'en' => ['max:255', 'required_without:cs'],
     ];
 
-    public function create()
+    public function create(): View
     {
         return view('pages.keywords-categories.form', [
             'title' => __('hiko.new_keyword_category'),
@@ -44,7 +45,7 @@ class KeywordCategoryController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function edit(KeywordCategory $keywordCategory)
+    public function edit(KeywordCategory $keywordCategory): View
     {
         return view('pages.keywords-categories.form', [
             'title' => __('hiko.keyword_category') . ': ' . $keywordCategory->id,

@@ -3,6 +3,7 @@
 namespace App\Http\Livewire;
 
 use App\Models\Letter;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -10,7 +11,7 @@ class LettersTable extends Component
 {
     use WithPagination;
 
-    public $filters = [
+    public array $filters = [
         'order' => 'updated_at',
         'direction' => 'desc',
     ];
@@ -19,6 +20,14 @@ class LettersTable extends Component
     {
         $this->resetPage();
         $this->emit('filtersChanged', $this->filters);
+        session()->put('lettersTableFilters', $this->filters);
+    }
+
+    public function mount()
+    {
+        if (session()->has('lettersTableFilters')) {
+            $this->filters = session()->get('lettersTableFilters');
+        }
     }
 
     public function render()
@@ -31,7 +40,13 @@ class LettersTable extends Component
         ]);
     }
 
-    protected function findLetters()
+    public function resetFilters()
+    {
+        $this->reset();
+        $this->search();
+    }
+
+    protected function findLetters(): LengthAwarePaginator
     {
         $query = Letter::with([
             'identities' => function ($subquery) {
@@ -62,7 +77,7 @@ class LettersTable extends Component
             ->paginate(10);
     }
 
-    protected function formatTableData($data)
+    protected function formatTableData($data): array
     {
         return [
             'header' => ['', 'ID', __('hiko.date'), __('hiko.signature'), __('hiko.author'), __('hiko.recipient'), __('hiko.origin'), __('hiko.destination'), __('hiko.keywords'), __('hiko.media'), __('hiko.status')],

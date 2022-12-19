@@ -3,6 +3,7 @@
 namespace App\Http\Livewire;
 
 use App\Models\Location;
+use Illuminate\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -14,14 +15,27 @@ class LocationsTable extends Component
         'order' => 'name',
     ];
 
-    public $types;
+    public array $types;
 
     public function search()
     {
         $this->resetPage();
+        session()->put('locationsTableFilters', $this->filters);
     }
 
-    public function render()
+    public function resetFilters()
+    {
+        $this->reset('filters');
+        $this->search();
+    }
+    public function mount()
+    {
+        if (session()->has('locationsTableFilters')) {
+            $this->filters = session()->get('locationsTableFilters');
+        }
+    }
+
+    public function render(): View
     {
         $locations = $this->findLocations();
 

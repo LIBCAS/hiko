@@ -14,7 +14,7 @@ class RegenerateLocations implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $keys = ['repository', 'collection', 'archive'];
+    protected array $keys = ['repository', 'collection', 'archive'];
 
     public function handle()
     {
@@ -37,7 +37,7 @@ class RegenerateLocations implements ShouldQueue
         }
     }
 
-    protected function loadData()
+    protected function loadData(): array
     {
         $result = [];
 

@@ -10,13 +10,27 @@ class PlacesTable extends Component
 {
     use WithPagination;
 
-    public $filters = [
+    public array $filters = [
         'order' => 'name',
     ];
 
     public function search()
     {
         $this->resetPage();
+        session()->put('placesTableFilters', $this->filters);
+    }
+
+    public function resetFilters()
+    {
+        $this->reset();
+        $this->search();
+    }
+
+    public function mount()
+    {
+        if (session()->has('placesTableFilters')) {
+            $this->filters = session()->get('placesTableFilters');
+        }
     }
 
     public function render()
@@ -37,7 +51,7 @@ class PlacesTable extends Component
             ->paginate(10);
     }
 
-    protected function formatTableData($data)
+    protected function formatTableData($data): array
     {
         return [
             'header' => [__('hiko.name'), __('hiko.division'), __('hiko.country'), __('hiko.coordinates')],

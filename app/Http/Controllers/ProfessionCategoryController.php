@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Models\ProfessionCategory;
+use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProfessionCategoriesExport;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProfessionCategoryController extends Controller
 {
-    protected $rules = [
+    protected array $rules = [
         'cs' => ['max:255', 'required_without:en'],
         'en' => ['max:255', 'required_without:cs'],
     ];
 
-    public function create()
+    public function create(): View
     {
         return view('pages.professions-categories.form', [
             'title' => __('hiko.new_professions_category'),
@@ -24,7 +27,7 @@ class ProfessionCategoryController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'professions.category.create' : 'professions.category.edit';
 
@@ -42,7 +45,7 @@ class ProfessionCategoryController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function edit(ProfessionCategory $professionCategory)
+    public function edit(ProfessionCategory $professionCategory): View
     {
         return view('pages.professions-categories.form', [
             'title' => __('hiko.professions_category') . ': ' . $professionCategory->id,
@@ -53,7 +56,7 @@ class ProfessionCategoryController extends Controller
         ]);
     }
 
-    public function update(Request $request, ProfessionCategory $professionCategory)
+    public function update(Request $request, ProfessionCategory $professionCategory): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'professions.category.create' : 'professions.category.edit';
 
@@ -71,7 +74,7 @@ class ProfessionCategoryController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function destroy(ProfessionCategory $professionCategory)
+    public function destroy(ProfessionCategory $professionCategory): RedirectResponse
     {
         $professionCategory->delete();
 
@@ -80,7 +83,7 @@ class ProfessionCategoryController extends Controller
             ->with('success', __('hiko.removed'));
     }
 
-    public function export()
+    public function export(): BinaryFileResponse
     {
         return Excel::download(new ProfessionCategoriesExport, 'profession-categories.xlsx');
     }

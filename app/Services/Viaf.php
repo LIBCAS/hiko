@@ -3,13 +3,14 @@
 namespace App\Services;
 
 use Exception;
+use Illuminate\Support\Collection;
 
 class Viaf
 {
     /**
      * @throws Exception
      */
-    public function search($query): \Illuminate\Support\Collection
+    public function search($query): Collection
     {
         if (empty($query)) {
             throw new Exception(
@@ -22,7 +23,7 @@ class Viaf
         }
 
         try {
-            $url = 'http://viaf.org/viaf/AutoSuggest?query=' . urlencode($query);
+            $url = 'https://viaf.org/viaf/AutoSuggest?query=' . urlencode($query);
             $result = json_decode(file_get_contents($url));
         } catch (Exception $e) {
             throw new Exception(__('hiko.viaf_unavailable'), 503);

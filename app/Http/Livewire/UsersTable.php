@@ -5,20 +5,36 @@ namespace App\Http\Livewire;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class UsersTable extends Component
 {
     use WithPagination;
 
-    public $filters = [
+    public array $filters = [
         'order' => 'name',
     ];
 
-    public $roles;
+    public array $roles;
 
     public function search()
     {
         $this->resetPage();
+        session()->put('usersTableFilters', $this->filters);
+    }
+
+    public function resetFilters()
+    {
+        $this->reset('filters');
+        $this->search();
+    }
+
+    public function mount()
+    {
+        if (session()->has('usersTableFilters')) {
+            $this->filters = session()->get('usersTableFilters');
+        }
     }
 
     public function render()
@@ -39,7 +55,7 @@ class UsersTable extends Component
             ->paginate(10);
     }
 
-    protected function formatTableData($data)
+    protected function formatTableData($data): array
     {
         return [
             'header' => [__('hiko.name'), __('hiko.role'), __('hiko.status')],

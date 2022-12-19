@@ -6,10 +6,11 @@ use Livewire\Component;
 
 class LetterMetaField extends Component
 {
-    public $items;
-    public $fields;
-    public $route;
-    public $label;
+    public array $items;
+    public array $fields;
+    public string $route;
+    public string $label;
+    public string $fieldKey;
 
     public function addItem()
     {

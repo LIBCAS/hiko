@@ -10,7 +10,7 @@ use App\Http\Controllers\Controller;
 
 class FacetsController extends Controller
 {
-    protected $models = [
+    protected array $models = [
         'identity' => 'searchIdentity',
         'place' => 'searchPlace',
         'keyword' => 'searchKeyword',
@@ -36,14 +36,12 @@ class FacetsController extends Controller
 
     protected function searchIdentity(string $query)
     {
-        $search = new SearchIdentity;
-        return $search($query);
+        return (new SearchIdentity())($query);
     }
 
     protected function searchPlace(string $query)
     {
-        $search = new SearchPlace;
-        return $search($query);
+        return (new SearchPlace())($query);
     }
 
     protected function searchKeyword(string $query)

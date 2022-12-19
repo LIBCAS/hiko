@@ -3,13 +3,15 @@
 namespace App\Http\Livewire;
 
 use App\Services\Viaf;
+use Illuminate\Support\Collection;
+use Illuminate\View\View;
 use Livewire\Component;
 
 class ViafSearch extends Component
 {
-    public $search = '';
-    public $searchResults = [];
-    public $error = '';
+    public string $search = '';
+    public string $error = '';
+    public Collection $searchResults;
 
     public function selectIdentity($id)
     {
@@ -20,14 +22,15 @@ class ViafSearch extends Component
         ]);
     }
 
-    public function render()
+    public function render(): View
     {
+        $this->searchResults = collect([]);
+        $this->error = '';
+
         if (strlen($this->search) >= 2) {
             try {
                 $this->searchResults = (new Viaf)->search($this->search);
-                $this->error = '';
             } catch (\Throwable $th) {
-                $this->searchResults = [];
                 $this->error = $th->getMessage();
             }
         }

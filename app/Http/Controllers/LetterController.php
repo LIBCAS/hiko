@@ -6,16 +6,19 @@ use App\Models\Letter;
 use App\Models\Identity;
 use App\Models\Language;
 use App\Jobs\LetterSaved;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Jobs\RegenerateNames;
 use App\Exports\LettersExport;
 use App\Http\Requests\LetterRequest;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PalladioCharacterExport;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class LetterController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         return view('pages.letters.index', [
             'title' => __('hiko.letters'),
@@ -25,7 +28,7 @@ class LetterController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(): View
     {
         return view('pages.letters.form', array_merge([
             'title' => __('hiko.new_letter'),
@@ -34,7 +37,7 @@ class LetterController extends Controller
         ], $this->viewData(new Letter)));
     }
 
-    public function store(LetterRequest $request)
+    public function store(LetterRequest $request): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';
 
@@ -50,7 +53,7 @@ class LetterController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function show(Letter $letter)
+    public function show(Letter $letter): View
     {
         $letter->load('identities', 'places', 'keywords');
 
@@ -62,7 +65,7 @@ class LetterController extends Controller
         ]);
     }
 
-    public function edit(Letter $letter)
+    public function edit(Letter $letter): View
     {
         return view('pages.letters.form', array_merge([
             'title' => __('hiko.letter') . ': ' .  $letter->id,
@@ -72,7 +75,7 @@ class LetterController extends Controller
         ], $this->viewData($letter)));
     }
 
-    public function update(LetterRequest $request, Letter $letter)
+    public function update(LetterRequest $request, Letter $letter): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';
 
@@ -89,7 +92,7 @@ class LetterController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function destroy(Letter $letter)
+    public function destroy(Letter $letter): RedirectResponse
     {
         $authors = $letter->authors()->get();
         $recipients = $letter->recipients()->get();
@@ -125,17 +128,17 @@ class LetterController extends Controller
         ]);
     }
 
-    public function export()
+    public function export(): BinaryFileResponse
     {
         return Excel::download(new LettersExport, 'letters.xlsx');
     }
 
-    public function exportPalladioCharacter(Request $request)
+    public function exportPalladioCharacter(Request $request): PalladioCharacterExport
     {
         return new PalladioCharacterExport($request->role);
     }
 
-    protected function viewData(Letter $letter)
+    protected function viewData(Letter $letter): array
     {
         return [
             'letter' => $letter,
@@ -173,7 +176,7 @@ class LetterController extends Controller
         $letter->identities()->attach($mentioned);
     }
 
-    protected function prepareAttachmentData(Request $request, string $fieldKey, $role, $pivotFields = [])
+    protected function prepareAttachmentData(Request $request, string $fieldKey, $role, $pivotFields = []): array
     {
         if (!isset($request->{$fieldKey})) {
             return [];

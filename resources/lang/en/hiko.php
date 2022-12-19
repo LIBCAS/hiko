@@ -214,4 +214,5 @@ return [
     'confirm_merge' => 'Are you sure you want to merge this items?',
     'merged' => 'Records were merged, you can now remove this item',
     'and_create_new' => 'and create new',
+    'clear_filters' => 'Clear filters',
 ];

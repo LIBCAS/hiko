@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use Illuminate\View\View;
 use Livewire\Component;
 use App\Models\Identity;
 use Livewire\WithPagination;
@@ -10,16 +11,30 @@ class IdentitiesTable extends Component
 {
     use WithPagination;
 
-    public $filters = [
+    public array $filters = [
         'order' => 'name',
     ];
 
     public function search()
     {
         $this->resetPage();
+        session()->put('identitiesTableFilters', $this->filters);
     }
 
-    public function render()
+    public function resetFilters()
+    {
+        $this->reset('filters');
+        $this->search();
+    }
+
+    public function mount()
+    {
+        if (session()->has('identitiesTableFilters')) {
+            $this->filters = session()->get('identitiesTableFilters');
+        }
+    }
+    
+    public function render(): View
     {
         $identities = $this->findIdentities();
 
@@ -47,7 +62,7 @@ class IdentitiesTable extends Component
             ->paginate(10);
     }
 
-    protected function formatTableData($data)
+    protected function formatTableData($data): array
     {
         return [
             'header' => [__('hiko.name'), __('hiko.type'), __('hiko.dates'), __('hiko.alternative_names'), __('hiko.professions'), __('hiko.category')],

@@ -3,27 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\Keyword;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Exports\KeywordsExport;
 use App\Models\KeywordCategory;
+use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class KeywordController extends Controller
 {
-    protected $rules = [
+    protected array $rules = [
         'cs' => ['max:255', 'required_without:en'],
         'en' => ['max:255', 'required_without:cs'],
         'category' => ['nullable', 'exists:keyword_categories,id'],
     ];
 
-    public function index()
+    public function index(): View
     {
         return view('pages.keywords.index', [
             'title' => __('hiko.keywords'),
         ]);
     }
 
-    public function create()
+    public function create(): View
     {
         $keyword = new Keyword;
 
@@ -36,7 +39,7 @@ class KeywordController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'keywords.create' : 'keywords.edit';
 
@@ -60,7 +63,7 @@ class KeywordController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function edit(Keyword $keyword)
+    public function edit(Keyword $keyword): View
     {
         return view('pages.keywords.form', [
             'title' => __('hiko.keyword') . ': ' . $keyword->id,
@@ -72,7 +75,7 @@ class KeywordController extends Controller
         ]);
     }
 
-    public function update(Request $request, Keyword $keyword)
+    public function update(Request $request, Keyword $keyword): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'keywords.create' : 'keywords.edit';
 
@@ -98,7 +101,7 @@ class KeywordController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function destroy(Keyword $keyword)
+    public function destroy(Keyword $keyword): RedirectResponse
     {
         $keyword->delete();
 
@@ -107,12 +110,12 @@ class KeywordController extends Controller
             ->with('success', __('hiko.removed'));
     }
 
-    public function export()
+    public function export(): BinaryFileResponse
     {
         return Excel::download(new KeywordsExport, 'keywords.xlsx');
     }
 
-    protected function getCategory(Keyword $keyword)
+    protected function getCategory(Keyword $keyword): ?array
     {
         if (!$keyword->keyword_category && !request()->old('category')) {
             return null;

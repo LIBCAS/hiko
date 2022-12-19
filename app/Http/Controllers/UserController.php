@@ -3,17 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    protected $rules = [
+    protected array $rules = [
         'name' => ['required', 'string', 'max:255'],
         'role' => ['required', 'string'],
         'deactivated_at' => [],
     ];
 
-    public function index()
+    public function index(): View
     {
         return view('pages.users.index', [
             'title' => __('hiko.users'),
@@ -21,7 +23,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(): View
     {
         return view('pages.users.form', [
             'title' => __('hiko.new_account'),
@@ -34,7 +36,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $user = User::create($request->validate(array_merge($this->rules, [
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
@@ -45,7 +47,7 @@ class UserController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function edit(User $user)
+    public function edit(User $user): View
     {
         return view('pages.users.form', [
             'title' => __('hiko.account') . ': ' . $user->name,
@@ -56,11 +58,11 @@ class UserController extends Controller
             'roles' => $this->getRoles(),
             'editEmail' => false,
             'editStatus' => true,
-            'active' => empty($user->deactivated_at) ? true : false,
+            'active' => empty($user->deactivated_at),
         ]);
     }
 
-    public function update(Request $request, User $user)
+    public function update(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate($this->rules);
         $validated['deactivated_at'] = isset($validated['deactivated_at']) && $validated['deactivated_at'] === 'on'
@@ -74,7 +76,7 @@ class UserController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user): RedirectResponse
     {
         $user->delete();
 
@@ -83,7 +85,7 @@ class UserController extends Controller
             ->with('success', __('hiko.removed'));
     }
 
-    protected function getRoles()
+    protected function getRoles(): array
     {
         return ['admin', 'editor', 'guest', 'developer'];
     }

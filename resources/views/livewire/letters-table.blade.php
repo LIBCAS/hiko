@@ -128,7 +128,6 @@
                     value="desc" />
             </div>
         </div>
-        </label>
     </x-filter-form>
     <x-table :tableData="$tableData" />
     <div class="w-full pl-1 mt-3">
