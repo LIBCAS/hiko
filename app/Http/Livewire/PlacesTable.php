@@ -32,7 +32,7 @@ class PlacesTable extends Component
             $this->filters = session()->get('placesTableFilters');
         }
     }
-    
+
     public function render()
     {
         $places = $this->findPlaces();
