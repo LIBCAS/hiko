@@ -10,13 +10,27 @@ class NamesTable extends Component
 {
     use WithPagination;
 
-    public $filters = [ 'order' => 'cs' ];
-    public $model;
-    public $routePrefix;
+    public array $filters = ['order' => 'cs'];
+    public string $model;
+    public string $routePrefix;
 
     public function search()
     {
         $this->resetPage("{$this->model}Page");
+        session()->put("{$this->model}TableFilters", $this->filters);
+    }
+
+    public function resetFilters()
+    {
+        $this->reset('filters');
+        $this->search();
+    }
+
+    public function mount()
+    {
+        if (session()->has("{$this->model}TableFilters")) {
+            $this->filters = session()->get("{$this->model}TableFilters");
+        }
     }
 
     public function render()
@@ -37,7 +51,7 @@ class NamesTable extends Component
             ->paginate(10, ['*'], "{$this->model}Page");
     }
 
-    protected function formatTableData($data)
+    protected function formatTableData($data): array
     {
         $header = auth()->user()->cannot('manage-metadata')
             ? ['CS', 'EN']
