@@ -15,7 +15,7 @@
         "@tailwindcss/typography": "^0.5.1",
         "alpinejs": "^3.4.2",
         "autoprefixer": "^10.4.7",
-        "browser-sync": "^2.27.7",
+        "browser-sync": "^2.27.11",
         "browser-sync-webpack-plugin": "^2.3.0",
         "eslint": "^8.9.0",
         "eslint-config-prettier": "^8.3.0",
