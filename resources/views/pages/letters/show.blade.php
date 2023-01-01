@@ -172,12 +172,12 @@
     <h2 class="text-lg font-bold">Places</h2>
     <table class="w-full mb-10 text-sm">
         <tbody>
-            @if (isset($letter->places['origin']))
+            @if (isset($places['origin']))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="w-1/5 py-2">Origin</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
-                            @foreach ($letter->places['origin'] as $origin)
+                            @foreach ($places['origin'] as $origin)
                                 <li class="mb-1">
                                     {{ $origin['name'] }}
                                     @if ($origin['pivot']['marked'])
@@ -207,12 +207,12 @@
                     </td>
                 </tr>
             @endif
-            @if (isset($letter->places['destination']))
+            @if (isset($places['destination']))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="w-1/5 py-2">Destination</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
-                            @foreach ($letter->places['destination'] as $destination)
+                            @foreach ($places['destination'] as $destination)
                                 <li class="mb-1">
                                     {{ $destination['name'] }}
                                     @if ($destination['pivot']['marked'])
@@ -458,5 +458,4 @@
             </a>
         @endforeach
     </div>
-
 </x-app-layout>
