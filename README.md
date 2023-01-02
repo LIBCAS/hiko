@@ -6,4 +6,4 @@ Vývoj HIKO byl v letech 2020 - 2022 podpořen z programu NAKI Ministerstva kult
 
 Na vývoji spolupracovaly Knihovna AV ČR, v. v. i., Masarykův ústav a Archiv AV ČR, v. v. i. a Památník národního písemnictví.
 
-Informace o instalaci a dokumentace je na https://github.com/LIBCAS/hiko/wiki/
+Informace o instalaci a dokumentace je na https://github.com/LIBCAS/hiko/wiki/HIKO-software-pro-evidenci-historick%C3%A9-korespondence
