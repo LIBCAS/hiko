@@ -114,6 +114,7 @@ return [
     'ascending' => 'Vzestupně',
     'descending' => 'Sestupně',
     'order_direction' => 'Řazení',
+    'by_letter_id' => 'Podle ID dopisu',
     'by_letter_date' => 'Podle data dopisu',
     'by_update' => 'Podle data úpravy',
     'publish' => 'Veřejné',

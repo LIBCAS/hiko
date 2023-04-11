@@ -114,6 +114,7 @@ return [
     'ascending' => 'Ascending',
     'descending' => 'Descending',
     'order_direction' => 'Order',
+    'by_letter_id' => 'By ID of letter',
     'by_letter_date' => 'By date of letter',
     'by_update' => 'By update',
     'publish' => 'Published',

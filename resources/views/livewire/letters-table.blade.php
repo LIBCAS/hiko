@@ -107,6 +107,9 @@
                 {{ __('hiko.order_by') }}
             </span>
             <x-select wire:model.defer="filters.order" class="w-full px-2 text-sm lg:w-40">
+                <option value='id'>
+                    {{ __('hiko.by_letter_id') }}
+                </option>
                 <option value='updated_at'>
                     {{ __('hiko.by_update') }}
                 </option>
