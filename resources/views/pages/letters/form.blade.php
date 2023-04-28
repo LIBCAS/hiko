@@ -361,12 +361,12 @@
                     </div>
                     <div>
                         <x-label for="mentioned" :value="__('hiko.mentioned')" />
-                        <x-select name="mentioned[]" class="block w-full mt-1" id="mentioned" x-data="ajaxChoices({ url: '{{ route('ajax.identities') }}', element: $el })"
-                            x-init="initSelect()" multiple>
-                            @foreach ($selectedMentioned as $mention)
-                                <option value="{{ $mention['value'] }}" selected>{{ $mention['label'] }}</option>
-                            @endforeach
-                        </x-select>
+                            <x-select name="mentioned[]" class="block w-full mt-1" id="mentioned" x-data="ajaxChoices({ url: '{{ route('ajax.identities') }}', element: $el })"
+                                x-init="initSelect()" multiple @input.debounce.500ms="search">
+                                @foreach ($selectedMentioned as $mention)
+                                    <option value="{{ $mention['value'] }}" selected>{{ $mention['label'] }}</option>
+                                @endforeach
+                            </x-select>
                         @error('mentioned')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
@@ -465,6 +465,29 @@
                         return '{{ __('hiko.confirm_leave') }}'
                     }
                 }
+
+
+// Add a debounce function
+function debounce(func, wait, immediate) {
+  var timeout;
+  return function() {
+    var context = this, args = arguments;
+    var later = function() {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    };
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func.apply(context, args);
+  };
+}
+
+// Use debounce with the AJAX request
+var searchInput = document.getElementById('mentioned');
+searchInput.addEventListener('input', debounce(function(e) {
+  // Make AJAX request here
+}, 500));
             </script>
         @endproduction
     @endpush

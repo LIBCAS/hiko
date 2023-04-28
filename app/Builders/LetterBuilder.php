@@ -80,6 +80,24 @@ class LetterBuilder extends Builder
             $this->addPlaceFilter('destination', $filters['destination']);
         }
 
+        if (isset($filters['repository'])) {
+            $this->where(function ($query) use ($filters) {
+                $query->whereRaw("JSON_EXTRACT(copies, '$[*].repository') like ?", ['%' . $filters['repository'] . '%']);
+            });
+        }
+
+        if (isset($filters['archive'])) {
+            $this->where(function ($query) use ($filters) {
+                $query->whereRaw("JSON_EXTRACT(copies, '$[*].archive') like ?", ['%' . $filters['archive'] . '%']);
+            });
+        }
+
+        if (isset($filters['collection'])) {
+            $this->where(function ($query) use ($filters) {
+                $query->whereRaw("JSON_EXTRACT(copies, '$[*].collection') like ?", ['%' . $filters['collection'] . '%']);
+            });
+        }
+
         if (isset($filters['keyword']) && !empty($filters['keyword'])) {
             $this->whereHas('keywords', function ($subquery) use ($filters) {
                 $subquery
@@ -88,6 +106,15 @@ class LetterBuilder extends Builder
                     ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($filters['keyword']) . '%']);
             });
         }
+
+        if (isset($filters['languages']) && !empty($filters['languages'])) {
+            $this->where(function ($query) use ($filters) {
+                foreach (explode(';', $filters['languages']) as $lang) {
+                    $query->orWhereRaw("LOWER(languages) like ?", ['%' . Str::lower(trim($lang)) . '%']);
+                }
+            });
+        }
+
 
         if (isset($filters['mentioned']) && !empty($filters['mentioned'])) {
             $this->addIdentityNameFilter('mentioned', $filters['mentioned']);

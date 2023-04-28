@@ -130,6 +130,7 @@ return [
     'signature' => 'Signatura',
     'doc_type' => 'Typ dokumentu',
     'language' => 'Jazyk',
+    'in_english' => '(in English)',
     'ms_manifestation_E' => 'Extract',
     'ms_manifestation_S' => 'MS Copy',
     'ms_manifestation_D' => 'MS Draft',

@@ -35,6 +35,18 @@
             <x-input wire:model.defer="filters.destination" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
+            <span class="block text-sm">{{ __('hiko.repository') }}</span>
+            <x-input wire:model.defer="filters.repository" class="block w-full px-2 text-sm lg:w-32" type="text" />
+        </label>
+        <label>
+            <span class="block text-sm">{{ __('hiko.archive') }}</span>
+            <x-input wire:model.defer="filters.archive" class="block w-full px-2 text-sm lg:w-32" type="text" />
+        </label>
+        <label>
+            <span class="block text-sm">{{ __('hiko.collection') }}</span>
+            <x-input wire:model.defer="filters.collection" class="block w-full px-2 text-sm lg:w-32" type="text" />
+        </label>
+        <label>
             <span class="block text-sm">{{ __('hiko.keywords') }}</span>
             <x-input wire:model.defer="filters.keyword" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
@@ -49,6 +61,10 @@
         <label>
             <span class="block text-sm">{{ __('hiko.abstract') }}</span>
             <x-input wire:model.defer="filters.abstract" class="block w-full px-2 text-sm lg:w-32" type="text" />
+        </label>
+        <label>
+            <span class="block text-sm">{{ __('hiko.language') }} {{ __('hiko.in_english') }}</span>
+            <x-input wire:model.defer="filters.languages" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">
@@ -107,14 +123,14 @@
                 {{ __('hiko.order_by') }}
             </span>
             <x-select wire:model.defer="filters.order" class="w-full px-2 text-sm lg:w-40">
-                <option value='id'>
-                    {{ __('hiko.by_letter_id') }}
-                </option>
                 <option value='updated_at'>
                     {{ __('hiko.by_update') }}
                 </option>
                 <option value='date_computed'>
                     {{ __('hiko.by_letter_date') }}
+                </option>
+                <option value='id'>
+                    {{ __('hiko.by_letter_id') }}
                 </option>
             </x-select>
         </label>
@@ -140,8 +156,8 @@
 
 @push('scripts')
     <script>
-        Livewire.on('filtersChanged', filters => {
-            updateExportUrl(filters, document.getElementById('export-url'));
-        })
+    Livewire.on('filtersChanged', filters => {
+        updateExportUrl(filters, document.getElementById('export-url'));
+    })
     </script>
 @endpush
