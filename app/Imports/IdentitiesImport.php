@@ -22,8 +22,8 @@ class IdentitiesImport
                 DB::table('identities')
                     ->insert([
                         'name' => $identity->name,
-                        'created_at' => $identity->created === '0000-00-00 00:00:00' ? now() : $identity->created,
-                        'updated_at' => $identity->modified === '0000-00-00 00:00:00' ? now() : $identity->modified,
+                        'created_at' => $identity->created_at === '0000-00-00 00:00:00' ? now() : $identity->created_at,
+                        'updated_at' => $identity->updated_at === '0000-00-00 00:00:00' ? now() : $identity->updated_at,
                         'surname' => $identity->surname,
                         'forename' => $identity->forename,
                         'birth_year' => $identity->birth_year,
@@ -31,6 +31,7 @@ class IdentitiesImport
                         'note' => $identity->note,
                         'viaf_id' => $identity->viaf,
                         'nationality' => $identity->nationality,
+                        'alternative_names' => is_array($identity->alternative_names) ? json_encode($identity->alternative_names) : $identity->alternative_names,
                         'gender' => $identity->gender,
                         'type' => $identity->type === 'institution' ? 'institution' : 'person',
                         'id' => $identity->id,
