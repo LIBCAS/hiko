@@ -66,6 +66,10 @@ class ApiLetterController extends Controller
             $query->before($request->input('before'));
         }
 
+        if ($request->input('content')) {
+            $query->before($request->input('content'));
+        }
+
         return $query->orderBy('date_computed', $this->order($request));
     }
 

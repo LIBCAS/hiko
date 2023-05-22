@@ -14,11 +14,21 @@ class IdentitiesImport
             return 'Soubor neexistuje';
         }
 
-        collect(json_decode(Storage::disk('local')->get('imports/person.json')))
-            ->reject(function ($identity) {
-                return empty($identity->name);
-            })
-            ->each(function ($identity) {
+        $json = Storage::disk('local')->get('imports/person.json');
+        $identities = json_decode($json);
+
+        if (!$identities) {
+            return 'Chyba při dekódování JSON';
+        }
+
+        $importCount = 0;
+
+        foreach ($identities as $identity) {
+            if (empty($identity->name)) {
+                continue;
+            }
+
+            try {
                 DB::table('identities')
                     ->insert([
                         'name' => $identity->name,
@@ -29,7 +39,7 @@ class IdentitiesImport
                         'birth_year' => $identity->birth_year,
                         'death_year' => $identity->death_year,
                         'note' => $identity->note,
-                        'viaf_id' => $identity->viaf,
+                        'viaf_id' => $identity->viaf_id,
                         'nationality' => $identity->nationality,
                         'alternative_names' => is_array($identity->alternative_names) ? json_encode($identity->alternative_names) : $identity->alternative_names,
                         'gender' => $identity->gender,
@@ -37,28 +47,40 @@ class IdentitiesImport
                         'id' => $identity->id,
                     ]);
 
+                $importCount++;
                 $this->attach($identity->id, $identity->profession_short, 'profession_category');
                 $this->attach($identity->id, $identity->profession_detailed, 'profession');
-            });
+            } catch (QueryException $ex) {
+                dump($ex->getMessage());
+            }
+        }
 
-        return 'Import identit byl úspěšný';
+        if ($importCount > 0) {
+            return "Import identit byl úspěšný. Počet importovaných záznamů: $importCount";
+        } else {
+            return 'Žádné záznamy nebyly importovány';
+        }
     }
 
     protected function attach($identityId, $professions, $key)
     {
-        collect(array_filter(explode(';', $professions)))
-            ->each(function ($profession, $index) use ($identityId, $key) {
+        $professionArray = array_filter(explode(';', $professions));
 
-                try {
-                    DB::table("identity_{$key}")
-                        ->insert([
-                            'identity_id' => $identityId,
-                            "{$key}_id" => $profession,
-                            'position' => $index,
-                        ]);
-                } catch (QueryException $ex) {
-                    dump($ex->getMessage());
-                }
-            });
+        if (empty($professionArray)) {
+            return;
+        }
+
+        foreach ($professionArray as $index => $profession) {
+            try {
+                DB::table("identity_{$key}")
+                    ->insert([
+                        'identity_id' => $identityId,
+                        "{$key}_id" => $profession,
+                        'position' => $index,
+                    ]);
+            } catch (QueryException $ex) {
+                dump($ex->getMessage());
+            }
+        }
     }
 }
