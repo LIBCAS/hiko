@@ -67,7 +67,7 @@ class ApiLetterController extends Controller
         }
 
         if ($request->input('content')) {
-            $query->before($request->input('content'));
+            $query->where('content', 'LIKE', '%' . $request->input('content') . '%');
         }
 
         return $query->orderBy('date_computed', $this->order($request));
