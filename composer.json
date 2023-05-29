@@ -9,6 +9,11 @@
     "license": "MIT",
     "require": {
         "php": "^7.4|^8.0",
+        "ext-intl": "*",
+        "ext-json": "*",
+        "ext-openssl": "*",
+        "ext-pdo": "*",
+        "barryvdh/laravel-debugbar": "^3.7",
         "calebporzio/sushi": "^2.3",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
@@ -20,14 +25,9 @@
         "maatwebsite/excel": "^3.1",
         "spatie/laravel-medialibrary": "^7.20",
         "spatie/laravel-translatable": "^4.6",
-        "teamtnt/laravel-scout-tntsearch-driver": "^11.6",
-        "ext-json": "*",
-        "ext-intl": "*",
-        "ext-openssl": "*",
-        "ext-pdo": "*"
+        "teamtnt/laravel-scout-tntsearch-driver": "^11.6"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.6",
         "brianium/paratest": "^6.6",
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",

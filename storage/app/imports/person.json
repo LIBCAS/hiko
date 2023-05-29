@@ -1,0 +1,19 @@
+[
+  {
+    "name": "Value 2",
+    "created_at": "0000-00-00 00:00:00",
+    "updated_at": "0000-00-00 00:00:00",
+    "surname": "Value",
+    "forename": "Value",
+    "birth_year": 1980,
+    "death_year": null,
+    "note": "Lorem ipsum dolor sit amet",
+    "viaf_id": "123456",
+    "nationality": "American",
+    "alternative_names": ["Johnny", "Jonathan"],
+    "gender": "male",
+    "type": "person",
+    "profession_short": 25,
+    "profession_detailed": 42
+  }
+]

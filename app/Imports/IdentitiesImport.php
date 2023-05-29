@@ -22,34 +22,32 @@ class IdentitiesImport
         }
 
         $importCount = 0;
+        $lastId = DB::table('identities')->max('id');
 
         foreach ($identities as $identity) {
-            if (empty($identity->name)) {
-                continue;
-            }
-
             try {
-                DB::table('identities')
-                    ->insert([
-                        'name' => $identity->name,
-                        'created_at' => $identity->created_at === '0000-00-00 00:00:00' ? now() : $identity->created_at,
-                        'updated_at' => $identity->updated_at === '0000-00-00 00:00:00' ? now() : $identity->updated_at,
-                        'surname' => $identity->surname,
-                        'forename' => $identity->forename,
-                        'birth_year' => $identity->birth_year,
-                        'death_year' => $identity->death_year,
-                        'note' => $identity->note,
-                        'viaf_id' => $identity->viaf_id,
-                        'nationality' => $identity->nationality,
-                        'alternative_names' => is_array($identity->alternative_names) ? json_encode($identity->alternative_names) : $identity->alternative_names,
-                        'gender' => $identity->gender,
-                        'type' => $identity->type === 'institution' ? 'institution' : 'person',
-                        'id' => $identity->id,
-                    ]);
+                $lastId++;
+                $identityId = DB::table('identities')->insertGetId([
+                    'id' => $lastId,
+                    'name' => $identity->name,
+                    'created_at' => $identity->created_at === '0000-00-00 00:00:00' ? now() : $identity->created_at,
+                    'updated_at' => $identity->updated_at === '0000-00-00 00:00:00' ? now() : $identity->updated_at,
+                    'surname' => $identity->surname,
+                    'forename' => $identity->forename,
+                    'birth_year' => $identity->birth_year,
+                    'death_year' => $identity->death_year,
+                    'note' => $identity->note,
+                    'viaf_id' => $identity->viaf_id,
+                    'nationality' => $identity->nationality,
+                    'alternative_names' => is_array($identity->alternative_names) ? json_encode($identity->alternative_names) : $identity->alternative_names,
+                    'gender' => $identity->gender,
+                    'type' => $identity->type === 'institution' ? 'institution' : 'person',
+                ]);
 
                 $importCount++;
-                $this->attach($identity->id, $identity->profession_short, 'profession_category');
-                $this->attach($identity->id, $identity->profession_detailed, 'profession');
+
+                $this->attach($identityId, $identity->profession_short, 'profession_category');
+                $this->attach($identityId, $identity->profession_detailed, 'profession');
             } catch (QueryException $ex) {
                 dump($ex->getMessage());
             }
