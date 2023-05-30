@@ -107,29 +107,25 @@ class LettersImport
 
     }
 
-    protected function attachIdentities($identities, $meta, $role, $letterId)
-    {
-        collect($meta)
-            ->each(function ($identity) use ($identities, $letterId, $role) {
-                if (is_object($identity) && isset($identity->id)) {
-                    $index = array_search($identity->id, $identities);
-
-                    if ($index !== false) {
-                        try {
-                            DB::table('identity_letter')->insert([
-                                'identity_id' => $identity->id,
-                                'letter_id' => $letterId,
-                                'role' => $role,
-                                'position' => array_search($identity->id, $identities),
-                                'marked' => $identity->marked ?? '',
-                                'salutation' => $identity->salutation ?? '',
-                            ]);
-                        } catch (\Illuminate\Database\QueryException $ex) {
-                            dump($ex->getMessage());
-                        }
-                    } 
-                } 
-            });
+    protected function attachIdentities($identities, $meta, $role, $letterId) {
+        collect($meta)->each(function ($identity) use ($identities, $letterId, $role) {
+            if (is_object($identity) && isset($identity->id)) {
+                if ($identity->id == $identities) {
+                    try {
+                        DB::table('identity_letter')->insert([
+                            'identity_id' => $identity->id,
+                            'letter_id' => $letterId,
+                            'role' => $role,
+                            'position' => 0,
+                            'marked' => $identity->marked ?? '',
+                            'salutation' => $identity->salutation ?? '',
+                        ]);
+                    } catch (\Illuminate\Database\QueryException $ex) {
+                        dump($ex->getMessage());
+                    }
+                }
+            }
+        });
     }
 
     protected function attachPlaces($meta, $letterId)
