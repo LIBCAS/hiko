@@ -16,3 +16,5 @@ yarn-error.log
 public/dist/
 webpack.config.js
 storage/medialibrary/temp/*
+storage/app/imports/letter.json
+storage/app/imports/LETTERS_NAVOD.json
