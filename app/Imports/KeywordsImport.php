@@ -17,20 +17,15 @@ class KeywordsImport
             return 'Soubor neexistuje';
         }
 
-        $keywords = collect(json_decode(Storage::disk('local')->get('imports/keyword.json')))
-            ->groupBy('is_category');
+        $keywords = collect(json_decode(Storage::disk('local')->get('imports/keyword.json')));
+        
+        $uniqueKeywords = $keywords->unique('namecz');
 
-        $keywords['1']->each(function ($category) {
-            DB::table('keyword_categories')
-                ->insert($this->prepare($category));
-        });
-
-        $keywords['0']->each(function ($kw) {
+        $uniqueKeywords->each(function ($kw) {
             $data = $this->prepare($kw);
             $data['keyword_category_id'] = $kw->categories ? (int) $kw->categories : null;
 
-            DB::table('keywords')
-                ->insert($data);
+            DB::table('keywords')->insert($data);
         });
 
         return 'Import klíčových slov byl úspěšný';
@@ -38,14 +33,25 @@ class KeywordsImport
 
     protected function prepare($data): array
     {
+        $lastCategoryId = DB::table('keyword_categories')->max('id') ?? 0;
+        $lastKeywordId = DB::table('keywords')->max('id') ?? 0;
+
+        $newKeywordId = $lastKeywordId + 1;
+        $categoryId = $data->is_category ? $lastCategoryId + 1 : ($data->categories ?? null);
+
+        if ($categoryId && !DB::table('keyword_categories')->where('id', $categoryId)->exists()) {
+            $categoryId = null;
+        }
+
         return [
-            'id' => $data->id,
+            'id' => $data->is_category ? $lastCategoryId + 1 : $newKeywordId,
             'created_at' => now(),
             'updated_at' => now(),
             'name' => json_encode([
                 'cs' => $data->namecz,
                 'en' => $data->name,
             ], JSON_UNESCAPED_UNICODE),
+            'keyword_category_id' => $categoryId,
         ];
     }
 }
