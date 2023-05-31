@@ -32,11 +32,14 @@ class ProfessionsImport
 
     protected function prepare($data): array
     {
-        $lastId = DB::table('professions')->orderByDesc('id')->value('id') ?? 0;
-        $id = $lastId + 1;
+        $lastProfessionId = DB::table('professions')->orderByDesc('id')->value('id') ?? 0;
+        $professionId = $lastProfessionId + 1;
+
+        $lastCategorytId = DB::table('profession_categories')->orderByDesc('id')->value('id') ?? 0;
+        $categoryId = $lastCategorytId + 1;
 
         return [
-            'id' => $id,
+            'id' => $data->palladio === '0' ? $professionId : $categoryId,
             'created_at' => now(),
             'updated_at' => now(),
             'name' => json_encode([
