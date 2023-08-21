@@ -35,6 +35,11 @@ return [
     */
 
     'channels' => [
+        'tenant' => [
+            'driver' => 'single',
+            'level' => env('LOG_LEVEL', 'debug'),
+        ],
+
         'stack' => [
             'driver' => 'stack',
             'channels' => ['single'],

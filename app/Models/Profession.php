@@ -14,6 +14,8 @@ class Profession extends Model
     use HasFactory;
     use Searchable;
 
+    protected $connection = 'tenant';
+
     public $translatable = ['name'];
 
     protected $guarded = ['id'];

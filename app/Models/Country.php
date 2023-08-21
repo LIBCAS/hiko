@@ -9,6 +9,8 @@ class Country extends Model
 {
     use Sushi;
 
+    protected $connection = 'tenant';
+
     public function getRows()
     {
         $countries = json_decode(file_get_contents(resource_path() . '/data/countries.json'), true);

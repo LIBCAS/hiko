@@ -15,6 +15,8 @@ class Keyword extends Model
     use HasFactory;
     use Searchable;
 
+    protected $connection = 'tenant';
+
     public array $translatable = ['name'];
 
     protected $guarded = ['id'];
