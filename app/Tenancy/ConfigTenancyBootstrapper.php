@@ -15,6 +15,7 @@ class ConfigTenancyBootstrapper implements TenancyBootstrapper
     {
         config([
             'app.name' => $tenant->name,
+            'database.default' => 'tenant',
             'database.connections.tenant.prefix' => $tenant->id . '__',
             'logging.default' => 'tenant',
             'logging.channels.tenant.path' => storage_path() . '/../logs/' . $tenant->id . '/laravel.log',  // Here the stancl/tenancy package automatically sets the value of `storage_path()` as `'/storage/tenant' . $tenant->id`
