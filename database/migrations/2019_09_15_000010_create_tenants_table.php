@@ -16,9 +16,9 @@ class CreateTenantsTable extends Migration
     public function up(): void
     {
         Schema::create('tenants', function (Blueprint $table) {
-            $table->string('id')->primary();
+            $table->increments('id');
             $table->string('name');
-            $table->string('table_prefix');
+            $table->string('table_prefix')->unique();
             $table->integer('main_character')->nullable();
             $table->string('metadata_default_locale')->default('en');
             $table->string('version')->nullable();
