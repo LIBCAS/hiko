@@ -7,7 +7,7 @@ use App\Models\Tenant;
 
 return [
     'tenant_model' => Tenant::class,
-    'id_generator' => Stancl\Tenancy\UUIDGenerator::class,
+    'id_generator' => null, // We want auto-incremented tenant ids instead of uuids
 
     'domain_model' => Domain::class,
 
