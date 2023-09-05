@@ -20,7 +20,6 @@ webpack.config.js
 storage/medialibrary/temp/*
 storage/app/imports/letter.json
 storage/app/imports/LETTERS_NAVOD.json
-vhost.conf
 /certs
 /database/export
 /database/import
