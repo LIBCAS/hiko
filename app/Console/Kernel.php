@@ -14,8 +14,8 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         Commands\CreateTenant::class,
-        Commands\MergeSqlExports::class,
         Commands\MigrateCentral::class,
+        Commands\PrepareOldSqlImports::class,
     ];
 
     /**
