@@ -52,7 +52,8 @@ class PrepareOldSqlImports extends Command
             $content = str_replace('CREATE TABLE `', 'CREATE TABLE `' . $tenant->table_prefix . '__', $content);
             $content = str_replace('ALTER TABLE `', 'ALTER TABLE `' . $tenant->table_prefix . '__', $content);
             $content = str_replace('INSERT INTO `', 'INSERT INTO `' . $tenant->table_prefix . '__', $content);
-            $content = str_replace('ADD CONSTRAINT `', 'ADD CONSTRAINT `' . $tenant->id . '_', $content);
+            // $content = str_replace('ADD CONSTRAINT `', 'ADD CONSTRAINT `' . $tenant->id . '_', $content);
+            $content = str_replace('CONSTRAINT `', 'CONSTRAINT `' . $tenant->id . '_', $content);
             $content = str_replace(' REFERENCES `', ' REFERENCES `' . $tenant->table_prefix . '__', $content);
 
             File::put($importFilePath, $content);
