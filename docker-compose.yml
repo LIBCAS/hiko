@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                uid: ${UID}
+        container_name: hiko_laravel_app
+        environment:
+            - APACHE_RUN_USER=#1000
+            - APACHE_RUN_GROUP=#1000
+        volumes:
+            - .:/var/www/html
+            - ./vhost.conf:/opt/docker/etc/httpd/vhost.conf
+            - ./certs/hiko.test.crt:/etc/ssl/certs/hiko.test.crt
+            - ./certs/hiko.test.key:/etc/ssl/private/hiko.test.key
+        ports:
+            - "80:80"
+            - "443:443"
+        depends_on:
+            - mysql
+
+    mysql:
+        image: mysql:5.7
+        container_name: hiko_mysql_db
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+        ports:
+            - "3307:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: hiko_phpmyadmin
+        links:
+            - mysql
+        environment:
+            PMA_HOST: mysql
+            PMA_PORT: 3306
+        ports:
+            - '8080:80'
+
+    mailhog:
+        image: mailhog/mailhog
+        container_name: hiko_mailhog
+        ports:
+            - "8025:8025"   # Web UI
+            - "1025:1025"   # SMTP server
+
+volumes:
+    mysql_data:

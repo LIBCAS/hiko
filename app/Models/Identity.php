@@ -13,6 +13,8 @@ class Identity extends Model
     use HasFactory;
     use Searchable;
 
+    protected $connection = 'tenant';
+
     protected $guarded = ['id'];
 
     protected $casts = [

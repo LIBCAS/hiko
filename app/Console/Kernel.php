@@ -13,7 +13,9 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        Commands\CreateTenant::class,
+        Commands\MigrateCentral::class,
+        Commands\PrepareOldSqlImports::class,
     ];
 
     /**

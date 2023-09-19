@@ -24,6 +24,8 @@ class Letter extends Model implements HasMedia
     use HasFactory;
     use Searchable;
 
+    protected $connection = 'tenant';
+
     public $translatable = ['abstract'];
 
     protected $guarded = ['id', 'uuid'];

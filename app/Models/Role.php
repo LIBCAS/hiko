@@ -9,6 +9,8 @@ class Role extends Model
 {
     use Sushi;
 
+    protected $connection = 'tenant';
+
     public function getRows()
     {
         return [

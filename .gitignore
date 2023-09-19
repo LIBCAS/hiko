@@ -5,6 +5,8 @@
 /vendor
 .env
 .env.backup
+.env.dev
+.env.prod
 .phpunit.result.cache
 docker-compose.override.yml
 Homestead.json
@@ -18,3 +20,6 @@ webpack.config.js
 storage/medialibrary/temp/*
 storage/app/imports/letter.json
 storage/app/imports/LETTERS_NAVOD.json
+/certs
+/database/export
+/database/import
