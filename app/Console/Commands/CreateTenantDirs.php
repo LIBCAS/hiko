@@ -119,5 +119,8 @@ class CreateTenantDirs extends Command
     }
 
     // To delete all tenanat-related storage_path directories while testing:
-    // cd ./storage; find . -maxdepth 1 ! -name '.' ! -name 'debugbar' ! -name 'framework' ! -name 'indexes' ! -name 'logs' -exec rm -rf {} +;
+    // cd ./storage; find . -maxdepth 1 ! -name '.' ! -name '.gitignore' ! -name 'app' ! -name 'debugbar' ! -name 'framework' ! -name 'indexes' ! -name 'logs' -exec rm -rf {} +;
+
+    // If using Docker, after running this artisan command:
+    // sudo chown -R application:application /var/www/html/storage/
 }
