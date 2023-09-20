@@ -2,10 +2,8 @@
 
 namespace App\Tenancy;
 
-use Illuminate\Support\Facades\DB;
 use Stancl\Tenancy\Contracts\TenancyBootstrapper;
 use Stancl\Tenancy\Contracts\Tenant;
-use Illuminate\Support\Facades\Log;
 
 class ConfigTenancyBootstrapper implements TenancyBootstrapper
 {
@@ -18,7 +16,7 @@ class ConfigTenancyBootstrapper implements TenancyBootstrapper
             'database.default' => 'tenant',
             'database.connections.tenant.prefix' => $tenant->table_prefix . '__',
             'logging.default' => 'tenant',
-            'logging.channels.tenant.path' => storage_path() . '/../logs/' . $tenant->table_prefix . '/laravel.log',  // Here the stancl/tenancy package automatically sets the value of `storage_path()` as `'/storage/tenant' . $tenant->table_prefix`
+            'logging.channels.tenant.path' => storage_path() . '/logs/laravel.log',
             'hiko.geonames_username' => $tenant->geonames_username,
             'hiko.main_character' => $tenant->main_character,
             'hiko.metadata_default_locale' => $tenant->metadata_default_locale,

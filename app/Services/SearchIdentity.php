@@ -8,8 +8,11 @@ class SearchIdentity
 {
     public function __invoke(string $query, int $limit = 10)
     {
-        return Identity::select('id', 'name', 'birth_year', 'death_year')
-            ->whereIn('id', Identity::search($query)->keys()->toArray())
+        return Identity::query()
+            ->select('id', 'name', 'birth_year', 'death_year')
+            ->where('name', 'like', '%' . $query . '%')
+            ->orWhere('surname', 'like', '%' . $query . '%')
+            ->orWhere('forename', 'like', '%' . $query . '%')
             ->take($limit)
             ->get()
             ->map(function ($identity) {

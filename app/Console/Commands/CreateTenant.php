@@ -6,7 +6,7 @@ use App\Models\Tenant;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Stancl\Tenancy\Database\Models\Domain;
+use Illuminate\Support\Facades\File;
 
 class CreateTenant extends Command
 {
@@ -18,7 +18,8 @@ class CreateTenant extends Command
     {
         parent::__construct();
 
-        $this->appDomain = str_replace('https://', '', config('app.url'));
+        $this->appDomain = str_replace('https://', '', config('app.url_prod'));
+        $this->appDomain = str_replace('http://', '', $this->appDomain);
     }
 
     public function handle()
@@ -48,6 +49,77 @@ class CreateTenant extends Command
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            // create tenant related storage_path directories
+            if (!File::exists(storage_path($tenantPrefix))) {
+                File::makeDirectory(storage_path($tenantPrefix), 0755, false);
+            }
+
+            if (!File::exists(storage_path($tenantPrefix . '/app'))) {
+                File::makeDirectory(storage_path($tenantPrefix . '/app'), 0755, false);
+            }
+
+            if (!File::exists(storage_path($tenantPrefix . '/app/imports'))) {
+                File::makeDirectory(storage_path($tenantPrefix . '/app/imports'), 0755, false);
+            }
+
+            if (!File::exists(storage_path($tenantPrefix . '/app/livewire-tmp'))) {
+                File::makeDirectory(storage_path($tenantPrefix . '/app/livewire-tmp'), 0755, false);
+            }
+
+            if (!File::exists(storage_path($tenantPrefix . '/app/public'))) {
+                File::makeDirectory(storage_path($tenantPrefix . '/app/public'), 0755, false);
+            }
+
+            if (!File::exists(storage_path($tenantPrefix . '/debugbar'))) {
+                File::makeDirectory(storage_path($tenantPrefix . '/debugbar'), 0755, false);
+            }
+
+            if (!File::exists(storage_path($tenantPrefix . '/framework'))) {
+                File::makeDirectory(storage_path($tenantPrefix . '/framework'), 0755, false);
+            }
+
+            if (!File::exists(storage_path($tenantPrefix . '/framework/cache'))) {
+                File::makeDirectory(storage_path($tenantPrefix . '/framework/cache'), 0755, false);
+            }
+
+            if (!File::exists(storage_path($tenantPrefix . '/framework/cache/data'))) {
+                File::makeDirectory(storage_path($tenantPrefix . '/framework/cache/data'), 0755, false);
+            }
+
+            if (!File::exists(storage_path($tenantPrefix . '/framework/sessions'))) {
+                File::makeDirectory(storage_path($tenantPrefix . '/framework/sessions'), 0755, false);
+            }
+
+            if (!File::exists(storage_path($tenantPrefix . '/framework/testing'))) {
+                File::makeDirectory(storage_path($tenantPrefix . '/framework/testing'), 0755, false);
+            }
+
+            if (!File::exists(storage_path($tenantPrefix . '/framework/views'))) {
+                File::makeDirectory(storage_path($tenantPrefix . '/framework/views'), 0755, false);
+            }
+
+            if (!File::exists(storage_path($tenantPrefix . '/indexes'))) {
+                File::makeDirectory(storage_path($tenantPrefix . '/indexes'), 0755, false);
+            }
+
+            if (!File::exists(storage_path($tenantPrefix . '/logs'))) {
+                File::makeDirectory(storage_path($tenantPrefix . '/logs'), 0755, false);
+            }
+
+            // create tenant related public_path directories
+            if (!File::exists(public_path('storage'))) {
+                File::makeDirectory(public_path('storage'), 0755, false);
+            }
+
+            // create a symlink pointing from `public/storage/tenantPrefix` to `storage/tenantPrefix/app/public`
+            if (!File::exists(public_path('storage/' . $tenantPrefix))) {
+                File::link(storage_path($tenantPrefix . '/app/public'), public_path('storage/' . $tenantPrefix));
+                File::makeDirectory(public_path('storage/' . $tenantPrefix), 0755, false);
+            }
+
+            // Get the newly created tenant
+            $tenant = Tenant::find($newTenantId);
 
             $this->info('Tenant and domain have been created successfully.');
         } catch (\Exception $e) {
