@@ -7,6 +7,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Symfony\Component\Process\Process;
 
 class CreateTenant extends Command
 {
@@ -114,8 +115,12 @@ class CreateTenant extends Command
 
             // create a symlink pointing from `public/storage/tenantPrefix` to `storage/tenantPrefix/app/public`
             if (!File::exists(public_path('storage/' . $tenantPrefix))) {
-                File::link(storage_path($tenantPrefix . '/app/public'), public_path('storage/' . $tenantPrefix));
-                File::makeDirectory(public_path('storage/' . $tenantPrefix), 0755, false);
+                $process = new Process(['ln', '-s', "../../storage/$tenantPrefix/app/public/", "./public/storage/$tenantPrefix"]);
+                $process->run();
+
+                if (!$process->isSuccessful()) {
+                    $this->error("Failed to create a symlink pointing from '/public/storage/$tenantPrefix' to '/storage/$tenantPrefix/app/public'");
+                }
             }
 
             // Get the newly created tenant
