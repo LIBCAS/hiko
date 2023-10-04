@@ -25,7 +25,7 @@ class LetterBuilder extends Builder
     public function fulltext($query): LetterBuilder
     {
         if (!empty($query)) {
-            $this->whereIn('id', Letter::search($query)->keys()->toArray());
+            $this->where('content_stripped', 'like', '%' . $query . '%');
         }
 
         return $this;
