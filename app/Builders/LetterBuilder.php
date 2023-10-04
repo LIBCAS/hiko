@@ -24,6 +24,8 @@ class LetterBuilder extends Builder
 
     public function fulltext($query): LetterBuilder
     {
+        $query = trim($query);
+
         if (!empty($query)) {
             $this->where('content_stripped', 'like', '%' . $query . '%');
         }

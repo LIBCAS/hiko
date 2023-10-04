@@ -10,14 +10,14 @@ class SimilarNamesController extends Controller
 {
     public function __invoke(Request $request): array
     {
-        if (!$request->has('search')) {
+        $query = trim($request->query('search'));
+
+        if (!$request->has('search') || empty($query)) {
             return [];
         }
 
-        $searchQuery = Identity::search($request->query('search'));
-
         return Identity::select('id', 'name', 'birth_year', 'death_year', 'alternative_names')
-            ->whereIn('id', $searchQuery->keys()->toArray())
+            ->whereRaw('REPLACE(name, ",", "") LIKE ?', '%' . $query . '%')
             ->get()
             ->reject(function ($identity) use ($request) {
                 $similarAlternativeName = false;
