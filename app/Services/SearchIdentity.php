@@ -8,6 +8,12 @@ class SearchIdentity
 {
     public function __invoke(string $query, int $limit = 10)
     {
+        $query = trim($query);
+
+        if (empty($query)) {
+            return [];
+        }
+
         return Identity::query()
             ->select('id', 'name', 'birth_year', 'death_year')
             ->where('name', 'like', '%' . $query . '%')

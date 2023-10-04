@@ -10,14 +10,14 @@ class SimilarLocationsController extends Controller
 {
     public function __invoke(Request $request): array
     {
-        if (!$request->has('search')) {
+        $query = trim($request->query('search'));
+
+        if (!$request->has('search') || empty($query)) {
             return [];
         }
 
-        $searchQuery = Location::search($request->query('search'));
-
         return Location::select('id', 'name')
-            ->whereIn('id', $searchQuery->keys()->toArray())
+            ->where('name', 'like', '%' . $query . '%')
             ->get()
             ->map(function ($item) {
                 return [

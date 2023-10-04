@@ -8,6 +8,12 @@ class SearchPlace
 {
     public function __invoke(string $query, int $limit = 10)
     {
+        $query = trim($query);
+
+        if (empty($query)) {
+            return [];
+        }
+
         return Place::query()
             ->select('id', 'name', 'division', 'country')
             ->where('name', 'like', '%' . $query . '%')

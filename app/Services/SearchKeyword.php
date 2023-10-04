@@ -8,8 +8,14 @@ class SearchKeyword
 {
     public function __invoke(string $query, int $limit = 10)
     {
+        $query = trim($query);
+
+        if (empty($query)) {
+            return [];
+        }
+
         return Keyword::select('id', 'name')
-            ->whereIn('id', Keyword::search($query)->keys()->toArray())
+            ->where('name', 'like', '%' . $query . '%')
             ->take($limit)
             ->get();
     }
