@@ -21,7 +21,7 @@ class AjaxKeywordController extends Controller
                 return [
                     'id' => $kw->id,
                     'value' => $kw->id,
-                    'label' => $kw->getTranslation('name', config('hiko.metadata_default_locale')),
+                    'label' => $kw->getTranslation('name', session('locale', config('hiko.metadata_default_locale'))),
                 ];
             })
             ->toArray();
