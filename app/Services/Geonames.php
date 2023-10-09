@@ -22,7 +22,7 @@ class Geonames
             );
         }
 
-        $url = 'https://secure.geonames.org/searchJSON?maxRows=10&username=' . config('hiko.geonames_username') . '&q=' . urlencode($query);
+        $url = 'https://secure.geonames.org/searchJSON?maxRows=10&username=hiko_cz&q=' . urlencode($query);
 
         try {
             $result = json_decode(file_get_contents($url));
