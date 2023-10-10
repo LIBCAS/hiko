@@ -46,8 +46,8 @@ Artisan::command('hiko:import-identities', function () {
     $this->comment((new IdentitiesImport)->import());
 })->purpose('Import identities from previous version');
 
-Artisan::command('hiko:import-letters', function () {
-    $this->comment((new LettersImport)->import());
+Artisan::command('hiko:import-letters {prefix}', function ($prefix) {
+    $this->comment((new LettersImport)->import($prefix));
 })->purpose('Import letters from previous version');
 
 Artisan::command('hiko:import-media', function () {
