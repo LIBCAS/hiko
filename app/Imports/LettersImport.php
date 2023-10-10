@@ -14,9 +14,8 @@ class LettersImport
     /**
      * @throws FileNotFoundException
      */
-    public function import(): string
+    public function import($prefix): string
     {
-
         if (!Storage::disk('local')->exists('imports/letter.json')) {
             return 'Soubor neexistuje';
         }
@@ -26,6 +25,14 @@ class LettersImport
 
         if (!$letters) {
             return 'Chyba při dekódování JSON';
+        }
+
+        $tenantId = DB::table('tenants')->where('table_prefix', $prefix)->value('id');
+
+        if (!$tenantId) {
+            return 'Tenant s prefixem "' . $prefix . '" neexistuje';
+        } else {
+            tenancy()->initialize($tenantId);
         }
 
         $importCount = 0;
