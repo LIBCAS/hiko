@@ -20,11 +20,13 @@ class LetterController extends Controller
 {
     public function index(): View
     {
+        $mainCharacter = config('hiko.main_character')
+            ? Identity::where('id', '=', config('hiko.main_character'))->select('surname')->first()
+            : null;
+
         return view('pages.letters.index', [
             'title' => __('hiko.letters'),
-            'mainCharacter' => config('hiko.main_character')
-                ? Identity::where('id', '=', config('hiko.main_character'))->select('surname')->first()->surname
-                : null,
+            'mainCharacter' => $mainCharacter ? $mainCharacter->surname : null,
         ]);
     }
 
