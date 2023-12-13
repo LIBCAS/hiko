@@ -26,6 +26,7 @@ class IdentityRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'surname' => ['required', 'string', 'max:255'],
             'forename' => ['nullable', 'string', 'max:255'],
+            'general_name_modifier' => ['nullable', 'string', 'max:255'],
             'birth_year' => ['nullable', 'string', 'max:255'],
             'death_year' => ['nullable', 'string', 'max:255'],
             'nationality' => ['nullable', 'string', 'max:255'],

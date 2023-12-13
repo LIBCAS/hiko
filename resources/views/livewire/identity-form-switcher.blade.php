@@ -32,6 +32,10 @@
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>
+                <div>
+                    <x-label for="general_name_modifier" :value="__('hiko.general_name_modifier')" />
+                    <x-input id="general_name_modifier" class="block w-full mt-1" type="text" name="general_name_modifier" :value="old('general_name_modifier', $identity->general_name_modifier)" />
+                </div>
                 <x-alert-similar-names />
                 <div class="flex space-x-6">
                     <div>

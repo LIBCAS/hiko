@@ -25,6 +25,7 @@ class IdentityFactory extends Factory
 
         $surname = $type === 'person' ? $this->faker->lastName() : null;
         $firstname = $type === 'person' ? $this->faker->firstName() : null;
+        $general_name_modifier = $type === 'person' ? $this->faker->generalNameModifier() : null;
 
         return [
             'name' => $type === 'person' ? "{$surname}, {$firstname}" : $this->faker->company(),

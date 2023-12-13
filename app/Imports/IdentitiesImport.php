@@ -34,6 +34,7 @@ class IdentitiesImport
                     'updated_at' => $identity->updated_at === '0000-00-00 00:00:00' ? now() : $identity->updated_at,
                     'surname' => $identity->surname,
                     'forename' => $identity->forename,
+                    'general_name_modifier' => $identity->general_name_modifier,
                     'birth_year' => $identity->birth_year,
                     'death_year' => $identity->death_year,
                     'note' => $identity->note,
