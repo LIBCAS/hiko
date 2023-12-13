@@ -38,7 +38,7 @@ class IdentitiesImport
                     'birth_year' => $identity->birth_year,
                     'death_year' => $identity->death_year,
                     'note' => $identity->note,
-                    'viaf_id' => $identity->viaf_id,
+                    'related_identity_resources' => $identity->related_identity_resources ? json_encode($identity->related_identity_resources) : null,
                     'nationality' => $identity->nationality,
                     'alternative_names' => is_array($identity->alternative_names) ? json_encode($identity->alternative_names) : $identity->alternative_names,
                     'gender' => $identity->gender,

@@ -6,6 +6,7 @@ return [
     'guest' => 'Guest',
     'developer' => 'Developer',
     'name' => 'Name',
+    'name_2' => 'Title',
     'role' => 'Role',
     'status' => 'Status',
     'active' => 'Active',

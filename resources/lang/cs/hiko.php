@@ -6,6 +6,7 @@ return [
     'guest' => 'Divák',
     'developer' => 'Vývojář',
     'name' => 'Jméno',
+    'name_2' => 'Název',
     'role' => 'Role',
     'status' => 'Status',
     'active' => 'Aktivní',
