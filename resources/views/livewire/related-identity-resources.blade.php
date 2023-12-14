@@ -1,8 +1,8 @@
 <div>
-    <fieldset id="a-related-identity-resource" class="p-3 space-y-6 shadow" wire:loading.attr="disabled">
-        <legend class="text-lg font-semibold">
+    <fieldset id="a-related-identity-resource" class="p-3 space-y-3 rounded-md shadow" wire:loading.attr="disabled">
+        <p class="text-lg font-semibold">
             {{ __('hiko.related_resources') }}
-        </legend>
+        </p>
         @foreach ($resources as $resource)
             <div wire:key="{{ $loop->index }}" class="p-3 space-y-6 bg-gray-200 shadow">
                 <div class="required">
