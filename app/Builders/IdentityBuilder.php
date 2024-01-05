@@ -14,6 +14,10 @@ class IdentityBuilder extends Builder
                 ->orWhereRaw("LOWER(alternative_names) like ?", ["%" . Str::lower($filters['name']) . "%"]);
         }
 
+        if (isset($filters['related_names']) && !empty($filters['related_names'])) {
+            $this->where('related_names', 'LIKE', "%" . $filters['related_names'] . "%");
+        }
+
         if (isset($filters['type']) && !empty($filters['type'])) {
             $this->where('type', '=', $filters['type']);
         }
@@ -32,6 +36,10 @@ class IdentityBuilder extends Builder
                     ->whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($filters['category']) . '%'])
                     ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($filters['category']) . '%']);
             });
+        }
+
+        if (isset($filters['note']) && !empty($filters['note'])) {
+            $this->where('note', 'LIKE', "%" . $filters['note'] . "%");
         }
 
         return $this;

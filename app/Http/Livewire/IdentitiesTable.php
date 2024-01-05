@@ -56,16 +56,31 @@ class IdentitiesTable extends Component
                     ->orderBy('position');
             },
         ])
-            ->select('id', 'name', 'type', 'birth_year', 'death_year', 'alternative_names')
+            ->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names')
             ->search($this->filters)
             ->orderBy($this->filters['order'])
             ->paginate(10);
     }
 
+    protected function formatRelatedNames($relatedNames): string
+    {
+        $relatedNamesArray = json_decode($relatedNames, true);
+
+        if (is_array($relatedNamesArray)) {
+            $formattedNames = array_map(function ($name) {
+                return $name['surname'] . ' ' . $name['forename'] . ' ' . $name['general_name_modifier'];
+            }, $relatedNamesArray);
+
+            return implode(', ', $formattedNames);
+        }
+
+        return '';
+    }
+
     protected function formatTableData($data): array
     {
         return [
-            'header' => [__('hiko.name'), __('hiko.type'), __('hiko.dates'), __('hiko.alternative_names'), __('hiko.professions'), __('hiko.category')],
+            'header' => [__('hiko.name'), __('hiko.type'), __('hiko.dates'), __('hiko.related_names'), __('hiko.professions'), __('hiko.category')],
             'rows' => $data->map(function ($identity) {
                 return [
                     [
@@ -84,7 +99,7 @@ class IdentitiesTable extends Component
                         'label' => $identity->dates,
                     ],
                     [
-                        'label' => $identity->alternative_names,
+                        'label' => $this->formatRelatedNames($identity->related_names),
                     ],
                     [
                         'label' => collect($identity->professions)
