@@ -96,7 +96,7 @@ return [
     'destination' => 'Místo určení',
     'content_description' => 'Popis obsahu',
     'related_resources' => 'Související zdroje',
-    'related_names' => 'Varianta jména',
+    'related_names' => 'Další jména',
     'manifestation_location' => 'Manifestace a uložení',
     'year' => 'Rok',
     'month' => 'Měsíc',
