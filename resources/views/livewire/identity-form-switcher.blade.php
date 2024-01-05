@@ -37,6 +37,7 @@
                     <x-input id="general_name_modifier" class="block w-full mt-1" type="text" name="general_name_modifier" :value="old('general_name_modifier', $identity->general_name_modifier)" />
                 </div>
                 <x-alert-similar-names />
+                <livewire:related-names :related_names="$identity->related_names" />
                 <div class="flex space-x-6">
                     <div>
                         <x-label for="birth_year" :value="__('hiko.birth_year')" />

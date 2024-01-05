@@ -33,6 +33,7 @@ class IdentityRequest extends FormRequest
             'gender' => ['nullable', 'string', 'max:255'],
             'note' => ['nullable'],
             'related_identity_resources' => ['nullable'],
+            'related_names' => ['nullable'],
             'type' => ['required', 'string', 'max:255'],
             'category' => ['nullable', 'exists:profession_categories,id'],
             'profession' => ['nullable', 'exists:professions,id'],

@@ -96,6 +96,7 @@ return [
     'destination' => 'Destination',
     'content_description' => 'Content description',
     'related_resources' => 'Related resources',
+    'related_names' => 'Variant of the name',
     'manifestation_location' => 'Manifestations and locations',
     'year' => 'Year',
     'month' => 'Month',
