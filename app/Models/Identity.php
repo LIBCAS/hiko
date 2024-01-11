@@ -20,6 +20,7 @@ class Identity extends Model
     protected $casts = [
         'alternative_names' => 'array',
         'related_identity_resources' => 'array',
+        'related_names' => 'array',
     ];
 
     public function searchableAs(): string

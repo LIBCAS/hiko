@@ -23,15 +23,15 @@ class RelatedNames extends Component
         $this->related_names = array_values($this->related_names);
     }
 
-    public function mount($related_names)
+    public function mount()
     {
-        if (is_string($related_names)) {
-            $this->related_names = json_decode($related_names, true);
-        } else {
-            $this->related_names = $related_names;
+        if (request()->old('related_names')) {
+            $this->related_names = request()->old('related_names');
         }
 
-        $this->related_names = $this->related_names ?? [];
+        if (empty($this->related_names)) {
+            $this->related_names = [];
+        }
     }
 
     public function render()

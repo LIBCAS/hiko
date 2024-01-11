@@ -64,17 +64,26 @@ class IdentitiesTable extends Component
 
     protected function formatRelatedNames($relatedNames): string
     {
-        $relatedNamesArray = json_decode($relatedNames, true);
-
-        if (is_array($relatedNamesArray)) {
+        if (is_array($relatedNames)) {
+            // If $relatedNames is already an array, use it directly
             $formattedNames = array_map(function ($name) {
                 return $name['surname'] . ' ' . $name['forename'] . ' ' . $name['general_name_modifier'];
-            }, $relatedNamesArray);
+            }, $relatedNames);
+        } else {
+            // If $relatedNames is a string, decode it first
+            $relatedNamesArray = json_decode($relatedNames, true);
 
-            return implode(', ', $formattedNames);
+            if (is_array($relatedNamesArray)) {
+                $formattedNames = array_map(function ($name) {
+                    return $name['surname'] . ' ' . $name['forename'] . ' ' . $name['general_name_modifier'];
+                }, $relatedNamesArray);
+            } else {
+                // Handle the case where $relatedNames is neither an array nor a valid JSON string
+                return '';
+            }
         }
 
-        return '';
+        return implode(', ', $formattedNames);
     }
 
     protected function formatTableData($data): array
