@@ -150,7 +150,7 @@
                         <ul class="list-disc list-inside">
                             @foreach ($identities['mentioned'] as $mentioned)
                                 <li class="mb-1">
-                                    {{ $mentioned['name'] }}
+                                    <a href="{{ route('identities.edit', $mentioned['id']) }}" target="_blank" class="underline">{{ $mentioned['name'] }}</a>
                                 </li>
                             @endforeach
                         </ul>
