@@ -35,6 +35,13 @@
             <p class="mt-6 text-sm">
                 {{ __('hiko.attached_persons_count') }}: {{ $professionCategory->identities->count() }}
             </p>
+            <ul class="mt-6">
+                @foreach ($professionCategory->identities as $identity)
+                    <li class="max-w-sm mt-1">
+                        <a href="{{ route('identities.edit', $identity->id) }}" class="text-sm font-semibold text-primary-dark hover:underline">{{ $identity->name }} {{ $identity->surname }}</a>
+                    </li>
+                @endforeach
+            </ul>
         @else
             <form x-data="{ form: $el }"
                 action="{{ route('professions.category.destroy', $professionCategory->id) }}" method="post"
