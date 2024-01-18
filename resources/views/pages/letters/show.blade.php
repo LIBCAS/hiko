@@ -75,7 +75,7 @@
                         <ul class="list-disc list-inside">
                             @foreach ($identities['author'] as $author)
                                 <li class="mb-1">
-                                    {{ $author['name'] }}
+                                    <a href="{{ route('identities.edit', $author['id']) }}" target="_blank" class="underline">{{ $author['name'] }}</a>
                                     @if ($author['pivot']['marked'])
                                         <span class="block pl-3 text-gray-500">
                                             Marked as: {{ $author['pivot']['marked'] }}
@@ -110,7 +110,7 @@
                         <ul class="list-disc list-inside">
                             @foreach ($identities['recipient'] as $recipient)
                                 <li class="mb-1">
-                                    {{ $recipient['name'] }}
+                                    <a href="{{ route('identities.edit', $recipient['id']) }}" target="_blank" class="underline">{{ $recipient['name'] }}</a>
                                     @if ($recipient['pivot']['marked'])
                                         <span class="block pl-3 text-gray-500">
                                             Marked as: {{ $recipient['pivot']['marked'] }}
@@ -179,7 +179,7 @@
                         <ul class="list-disc list-inside">
                             @foreach ($places['origin'] as $origin)
                                 <li class="mb-1">
-                                    {{ $origin['name'] }}
+                                    <a href="{{ route('places.edit', $origin['id']) }}" target="_blank" class="underline">{{ $origin['name'] }}</a>
                                     @if ($origin['pivot']['marked'])
                                         <span class="block pl-3 text-gray-500">
                                             Marked as: {{ $origin['pivot']['marked'] }}
@@ -214,7 +214,7 @@
                         <ul class="list-disc list-inside">
                             @foreach ($places['destination'] as $destination)
                                 <li class="mb-1">
-                                    {{ $destination['name'] }}
+                                    <a href="{{ route('places.edit', $destination['id']) }}" target="_blank" class="underline">{{ $destination['name'] }}</a>
                                     @if ($destination['pivot']['marked'])
                                         <span class="block pl-3 text-gray-500">
                                             Marked as: {{ $destination['pivot']['marked'] }}
@@ -299,7 +299,7 @@
                     <td class="py-2">
                         @foreach ($letter->keywords as $kw)
                             <li class="mb-1">
-                                {{ implode(' | ', array_values($kw->getTranslations('name'))) }}
+                                <a href="{{ route('keywords.edit', $kw['id']) }}" target="_blank" class="underline">{{ implode(' | ', array_values($kw->getTranslations('name'))) }}</a>
                             </li>
                         @endforeach
                     </td>
