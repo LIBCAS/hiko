@@ -38,7 +38,7 @@
             <ul class="mt-6">
                 @foreach ($profession->identities as $identity)
                     <li class="max-w-sm mt-1">
-                        <a href="{{ route('identities.edit', $identity->id) }}" class="text-sm font-semibold text-primary-dark hover:underline">{{ $identity->name }} {{ $identity->surname }}</a>
+                        <a href="{{ route('identities.edit', $identity->id) }}" class="text-sm font-semibold text-primary-dark hover:underline">{{ $identity->name }}</a>
                     </li>
                 @endforeach
             </ul>
