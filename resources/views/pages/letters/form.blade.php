@@ -184,6 +184,7 @@
                     </legend>
                     <livewire:letter-meta-field :items="$selectedAuthors" fieldKey="authors" route="ajax.identities"
                         :label="__('hiko.author_name')" :fields="[['label' => __('hiko.name_marked'), 'key' => 'marked']]" />
+                    <livewire:create-new-item-modal :route="route('identities.create')" :text="__('hiko.modal_new_identity')" />
                     <div>
                         <x-checkbox name="author_inferred" label="{{ __('hiko.author_inferred') }}"
                             :checked="boolval(old('author_inferred', $letter->author_inferred))" />
@@ -215,6 +216,7 @@
                             ['label' => __('hiko.name_marked'), 'key' => 'marked'],
                             ['label' => __('hiko.salutation'), 'key' => 'salutation'],
                         ]" />
+                    <livewire:create-new-item-modal :route="route('identities.create')" :text="__('hiko.modal_new_identity')" />
                     <div>
                         <x-checkbox name="recipient_inferred" label="{{ __('hiko.recipient_inferred') }}"
                             :checked="boolval(old('recipient_inferred', $letter->recipient_inferred))" />
@@ -243,6 +245,7 @@
                     </legend>
                     <livewire:letter-meta-field :items="$selectedOrigins" fieldKey="origins" route="ajax.places"
                         :label="__('hiko.name')" :fields="[['label' => __('hiko.name_marked'), 'key' => 'marked']]" />
+                    <livewire:create-new-item-modal :route="route('places.create')" :text="__('hiko.modal_new_place')" />
                     <div>
                         <x-checkbox name="origin_inferred" label="{{ __('hiko.origin_inferred') }}"
                             :checked="boolval(old('origin_inferred', $letter->origin_inferred))" />
@@ -271,6 +274,7 @@
                     </legend>
                     <livewire:letter-meta-field :items="$selectedDestinations" fieldKey="destinations" route="ajax.places"
                         :label="__('hiko.name')" :fields="[['label' => __('hiko.name_marked'), 'key' => 'marked']]" />
+                    <livewire:create-new-item-modal :route="route('places.create')" :text="__('hiko.modal_new_place')" />
                     <div>
                         <x-checkbox name="destination_inferred" label="{{ __('hiko.destination_inferred') }}"
                             :checked="boolval(old('destination_inferred', $letter->destination_inferred))" />
@@ -466,29 +470,64 @@
                     }
                 }
 
+                // Add a debounce function
+                function debounce(func, wait, immediate) {
+                  var timeout;
+                  return function() {
+                    var context = this, args = arguments;
+                    var later = function() {
+                      timeout = null;
+                      if (!immediate) func.apply(context, args);
+                    };
+                    var callNow = immediate && !timeout;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                    if (callNow) func.apply(context, args);
+                  };
+                }
 
-// Add a debounce function
-function debounce(func, wait, immediate) {
-  var timeout;
-  return function() {
-    var context = this, args = arguments;
-    var later = function() {
-      timeout = null;
-      if (!immediate) func.apply(context, args);
-    };
-    var callNow = immediate && !timeout;
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-    if (callNow) func.apply(context, args);
-  };
-}
+                // Use debounce with the AJAX request
+                var searchInput = document.getElementById('mentioned');
+                searchInput.addEventListener('input', debounce(function(e) {
+                  // Make AJAX request here
+                }, 500));
 
-// Use debounce with the AJAX request
-var searchInput = document.getElementById('mentioned');
-searchInput.addEventListener('input', debounce(function(e) {
-  // Make AJAX request here
-}, 500));
             </script>
         @endproduction
+            <script>
+                // Hide header and footer in modals
+                function hideHeaderFooterInIframe() {
+                    var modals = document.querySelectorAll('.modal-window');
+                    modals.forEach(function(modal) {
+                        var iframe = modal.querySelector('iframe');
+                        if (iframe) {
+                            var iframeContent = iframe.contentDocument || iframe.contentWindow.document;
+                            var header = iframeContent.querySelector('header');
+                            var footer = iframeContent.querySelector('footer');
+
+                            if (header) {
+                                header.style.display = 'none';
+                            }
+
+                            if (footer) {
+                                footer.style.display = 'none';
+                            }
+                        }
+                    });
+                }
+
+                // Function to handle iframe content load
+                function handleIframeLoad() {
+                    hideHeaderFooterInIframe();
+                }
+
+                // Listen for iframe load event and handle it
+                document.addEventListener('DOMContentLoaded', function() {
+                    var iframes = document.querySelectorAll('iframe');
+                    iframes.forEach(function(iframe) {
+                        iframe.addEventListener('load', handleIframeLoad);
+                    });
+                });
+            </script>
     @endpush
 </x-app-layout>

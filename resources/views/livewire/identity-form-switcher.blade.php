@@ -74,8 +74,10 @@
                 <div class="space-y-6">
                     <livewire:repeated-select :items="$selectedProfessions" fieldLabel="{{ __('hiko.profession') }}"
                         fieldKey="profession" route="ajax.professions" />
+                    <livewire:create-new-item-modal :route="route('professions.create')" :text="__('hiko.modal_new_profession')" />
                     <livewire:repeated-select :items="$selectedCategories" fieldLabel="{{ __('hiko.professions_category') }}"
                         fieldKey="category" route="ajax.professions.category" />
+                    <livewire:create-new-item-modal :route="route('professions.category.create')" :text="__('hiko.modal_new_profession_category')" />
                 </div>
             </div>
         @else
@@ -91,3 +93,41 @@
         @endif
     </div>
 </div>
+
+@push('scripts')
+    <script>
+        // Hide header and footer in modals
+        function hideHeaderFooterInIframe() {
+            var modals = document.querySelectorAll('.modal-window');
+            modals.forEach(function(modal) {
+                var iframe = modal.querySelector('iframe');
+                if (iframe) {
+                    var iframeContent = iframe.contentDocument || iframe.contentWindow.document;
+                    var header = iframeContent.querySelector('header');
+                    var footer = iframeContent.querySelector('footer');
+
+                    if (header) {
+                        header.style.display = 'none';
+                    }
+
+                    if (footer) {
+                        footer.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // Function to handle iframe content load
+        function handleIframeLoad() {
+            hideHeaderFooterInIframe();
+        }
+
+        // Listen for iframe load event and handle it
+        document.addEventListener('DOMContentLoaded', function() {
+            var iframes = document.querySelectorAll('iframe');
+            iframes.forEach(function(iframe) {
+                iframe.addEventListener('load', handleIframeLoad);
+            });
+        });
+    </script>
+@endpush
