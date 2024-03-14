@@ -137,7 +137,7 @@ class Letter extends Model implements HasMedia
         $title = "{$this->pretty_date} ";
         $title .= $author ? $author['name'] . ' ' : '';
         $title .= $origin ? "({$origin['name']}) " : '';
-        $title .= $recipient || $destination ? 'to ' : '';
+        $title .= $recipient || $destination ? '→ ' : '';
         $title .= $recipient ? $recipient['name'] . ' ' : '';
         $title .= $destination ? "({$destination['name']}) " : '';
 

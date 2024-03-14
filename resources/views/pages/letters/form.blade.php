@@ -184,7 +184,6 @@
                     </legend>
                     <livewire:letter-meta-field :items="$selectedAuthors" fieldKey="authors" route="ajax.identities"
                         :label="__('hiko.author_name')" :fields="[['label' => __('hiko.name_marked'), 'key' => 'marked']]" />
-                    <livewire:create-new-item-modal :route="route('identities.create')" :text="__('hiko.modal_new_identity')" />
                     <div>
                         <x-checkbox name="author_inferred" label="{{ __('hiko.author_inferred') }}"
                             :checked="boolval(old('author_inferred', $letter->author_inferred))" />
@@ -216,7 +215,6 @@
                             ['label' => __('hiko.name_marked'), 'key' => 'marked'],
                             ['label' => __('hiko.salutation'), 'key' => 'salutation'],
                         ]" />
-                    <livewire:create-new-item-modal :route="route('identities.create')" :text="__('hiko.modal_new_identity')" />
                     <div>
                         <x-checkbox name="recipient_inferred" label="{{ __('hiko.recipient_inferred') }}"
                             :checked="boolval(old('recipient_inferred', $letter->recipient_inferred))" />
@@ -323,6 +321,7 @@
                                 <option value="{{ $kw['value'] }}" selected>{{ $kw['label'] }}</option>
                             @endforeach
                         </x-select>
+                        <livewire:create-new-item-modal :route="route('keywords.create')" :text="__('hiko.modal_new_keyword')" />
                         @error('keywords')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror

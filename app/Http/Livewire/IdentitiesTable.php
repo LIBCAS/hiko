@@ -89,7 +89,7 @@ class IdentitiesTable extends Component
     protected function formatTableData($data): array
     {
         return [
-            'header' => [__('hiko.name'), __('hiko.type'), __('hiko.dates'), __('hiko.related_names'), __('hiko.professions'), __('hiko.category')],
+            'header' => [__('hiko.name'), __('hiko.type'), __('hiko.dates'), __('hiko.related_names'), __('hiko.professions'), __('hiko.category'), __('hiko.merge')],
             'rows' => $data->map(function ($identity) {
                 return [
                     [
@@ -123,6 +123,9 @@ class IdentitiesTable extends Component
                                 return $profession->getTranslation('name', config('hiko.metadata_default_locale'), false);
                             })
                             ->toArray(),
+                    ],
+                    [
+                        'label' => $identity->alternative_names
                     ],
                 ];
             })->toArray(),

@@ -17,34 +17,34 @@
         </li>
     </ul>
     <h2 class="text-lg font-bold">
-        Dates
+        {{ __('hiko.dates') }}
     </h2>
     <table class="w-full mb-10 text-sm">
         <tbody>
             <tr class="align-baseline border-t border-b border-gray-200">
                 <td class="w-1/5 py-2">
-                    Letter date
+                    {{ __('hiko.letter_date') }}
                 </td>
                 <td class="py-2">
                     {{ $letter->pretty_date }}@if ($letter->date_is_range)
                         –{{ $letter->pretty_range_date }}
                     @endif
                     @if ($letter->date_uncertain)
-                        <small class="block pl-3"><em>Uncertain date</em></small>
+                        <small class="block pl-3"><em>{{ __('hiko.uncertain_date') }}</em></small>
                     @endif
                     @if ($letter->date_inferred)
-                        <small class="block pl-3"><em>Inferred date</em></small>
+                        <small class="block pl-3"><em>{{ __('hiko.inferred_date') }}</em></small>
                     @endif
 
                     @if ($letter->date_approximate)
-                        <small class="block pl-3"><em>Approximate date</em></small>
+                        <small class="block pl-3"><em>{{ __('hiko.approximate_date') }}</em></small>
                     @endif
                 </td>
             </tr>
             @if ($letter->date_marked)
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="py-2">
-                        Date as marked
+                         {{ __('hiko.date_marked') }}
                     </td>
                     <td class="py-2">
                         {{ $letter->date_marked }}
@@ -54,7 +54,7 @@
             @if ($letter->date_note)
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="py-2">
-                        Notes on date
+                        {{ __('hiko.date_note') }}
                     </td>
                     <td class="py-2">
                         {{ $letter->date_note }}
@@ -64,13 +64,13 @@
         </tbody>
     </table>
     <h2 class="text-lg font-bold">
-        Persons and institutions
+        {{ __('hiko.identities') }}
     </h2>
     <table class="w-full mb-10 text-sm">
         <tbody>
             @if (isset($identities['author']))
                 <tr class="align-baseline border-t border-b border-gray-200">
-                    <td class="w-1/5 py-2">Author</td>
+                    <td class="w-1/5 py-2">{{ __('hiko.author') }}</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
                             @foreach ($identities['author'] as $author)
@@ -78,17 +78,17 @@
                                     <a href="{{ route('identities.edit', $author['id']) }}" target="_blank" class="underline">{{ $author['name'] }}</a>
                                     @if ($author['pivot']['marked'])
                                         <span class="block pl-3 text-gray-500">
-                                            Marked as: {{ $author['pivot']['marked'] }}
+                                            {{ __('hiko.marked_as') }}: {{ $author['pivot']['marked'] }}
                                         </span>
                                     @endif
                                 </li>
                             @endforeach
                         </ul>
                         @if ($letter->author_uncertain)
-                            <small class="block pl-3"><em>Uncertain author</em></small>
+                            <small class="block pl-3"><em>{{ __('hiko.uncertain_author') }}</em></small>
                         @endif
                         @if ($letter->author_inferred)
-                            <small class="block pl-3"><em>Inferred author</em></small>
+                            <small class="block pl-3"><em>{{ __('hiko.inferred_author') }}</em></small>
                         @endif
                     </td>
                 </tr>
@@ -96,7 +96,7 @@
             @if ($letter->author_note)
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="py-2">
-                        Notes on authors
+                        {{ __('hiko.author_note') }}
                     </td>
                     <td class="py-2">
                         {{ $letter->author_note }}
@@ -105,7 +105,7 @@
             @endif
             @if (isset($identities['recipient']))
                 <tr class="align-baseline border-t border-b border-gray-200">
-                    <td class="w-1/5 py-2">Recipients</td>
+                    <td class="w-1/5 py-2">{{ __('hiko.recipient') }}</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
                             @foreach ($identities['recipient'] as $recipient)
@@ -113,22 +113,22 @@
                                     <a href="{{ route('identities.edit', $recipient['id']) }}" target="_blank" class="underline">{{ $recipient['name'] }}</a>
                                     @if ($recipient['pivot']['marked'])
                                         <span class="block pl-3 text-gray-500">
-                                            Marked as: {{ $recipient['pivot']['marked'] }}
+                                            {{ __('hiko.marked_as') }}: {{ $recipient['pivot']['marked'] }}
                                         </span>
                                     @endif
                                     @if ($recipient['pivot']['salutation'])
                                         <span class="block pl-3 text-gray-500">
-                                            Salutation: {{ $recipient['pivot']['salutation'] }}
+                                            {{ __('hiko.salutation') }}: {{ $recipient['pivot']['salutation'] }}
                                         </span>
                                     @endif
                                 </li>
                             @endforeach
                         </ul>
                         @if ($letter->recipient_uncertain)
-                            <small class="block pl-3"><em>Uncertain recipient</em></small>
+                            <small class="block pl-3"><em>{{ __('hiko.uncertain_recipient') }}</em></small>
                         @endif
                         @if ($letter->recipient_inferred)
-                            <small class="block pl-3"><em>Inferred recipient</em></small>
+                            <small class="block pl-3"><em>{{ __('hiko.inferred_recipient') }}</em></small>
                         @endif
                     </td>
                 </tr>
@@ -136,7 +136,7 @@
             @if ($letter->recipient_note)
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="py-2">
-                        Notes on recipients
+                        {{ __('hiko.recipient_note') }}
                     </td>
                     <td class="py-2">
                         {{ $letter->recipient_note }}
@@ -169,12 +169,12 @@
             @endif
         </tbody>
     </table>
-    <h2 class="text-lg font-bold">Places</h2>
+    <h2 class="text-lg font-bold">{{ __('hiko.places') }}</h2>
     <table class="w-full mb-10 text-sm">
         <tbody>
             @if (isset($places['origin']))
                 <tr class="align-baseline border-t border-b border-gray-200">
-                    <td class="w-1/5 py-2">Origin</td>
+                    <td class="w-1/5 py-2">{{ __('hiko.origin') }}</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
                             @foreach ($places['origin'] as $origin)
@@ -182,17 +182,17 @@
                                     <a href="{{ route('places.edit', $origin['id']) }}" target="_blank" class="underline">{{ $origin['name'] }}</a>
                                     @if ($origin['pivot']['marked'])
                                         <span class="block pl-3 text-gray-500">
-                                            Marked as: {{ $origin['pivot']['marked'] }}
+                                            {{ __('hiko.marked_as_f') }}: {{ $origin['pivot']['marked'] }}
                                         </span>
                                     @endif
                                 </li>
                             @endforeach
                         </ul>
                         @if ($letter->origin_uncertain)
-                            <small class="block pl-3"><em>Uncertain origin</em></small>
+                            <small class="block pl-3"><em>{{ __('hiko.uncertain_origin') }}</em></small>
                         @endif
                         @if ($letter->origin_inferred)
-                            <small class="block pl-3"><em>Inferred origin</em></small>
+                            <small class="block pl-3"><em>{{ __('hiko.inferred_origin') }}</em></small>
                         @endif
                     </td>
                 </tr>
@@ -209,7 +209,7 @@
             @endif
             @if (isset($places['destination']))
                 <tr class="align-baseline border-t border-b border-gray-200">
-                    <td class="w-1/5 py-2">Destination</td>
+                    <td class="w-1/5 py-2">{{ __('hiko.destination') }}</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
                             @foreach ($places['destination'] as $destination)
@@ -217,17 +217,17 @@
                                     <a href="{{ route('places.edit', $destination['id']) }}" target="_blank" class="underline">{{ $destination['name'] }}</a>
                                     @if ($destination['pivot']['marked'])
                                         <span class="block pl-3 text-gray-500">
-                                            Marked as: {{ $destination['pivot']['marked'] }}
+                                            {{ __('hiko.marked_as') }}: {{ $destination['pivot']['marked'] }}
                                         </span>
                                     @endif
                                 </li>
                             @endforeach
                         </ul>
                         @if ($letter->destination_uncertain)
-                            <small class="block pl-3"><em>Uncertain destination</em></small>
+                            <small class="block pl-3"><em>{{ __('hiko.uncertain_destination') }}<</em></small>
                         @endif
                         @if ($letter->destination_inferred)
-                            <small class="block pl-3"><em>Inferred destination</em></small>
+                            <small class="block pl-3"><em>{{ __('hiko.inferred_destination') }}<</em></small>
                         @endif
                     </td>
                 </tr>
@@ -235,7 +235,7 @@
             @if ($letter->destination_note)
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="py-2">
-                        Notes on destination
+                        {{ __('hiko.destination_note') }}
                     </td>
                     <td class="py-2">
                         {{ $letter->destination_note }}
@@ -244,12 +244,12 @@
             @endif
         </tbody>
     </table>
-    <h2 class="text-lg font-bold">Content</h2>
+    <h2 class="text-lg font-bold">{{ __('hiko.content') }}</h2>
     <table class="w-full mb-10 text-sm">
         <tbody>
             @if ($letter->getTranslation('abstract', 'cs', false))
                 <tr class="align-baseline border-t border-b border-gray-200">
-                    <td class="w-1/5 py-2">Abstract CS</td>
+                    <td class="w-1/5 py-2">{{ __('hiko.abstract_cs') }}</td>
                     <td class="py-2">
                         {{ $letter->getTranslation('abstract', 'cs') }}
                     </td>
@@ -257,7 +257,7 @@
             @endif
             @if ($letter->getTranslation('abstract', 'en', false))
                 <tr class="align-baseline border-t border-b border-gray-200">
-                    <td class="w-1/5 py-2">Abstract EN</td>
+                    <td class="w-1/5 py-2">{{ __('hiko.abstract_en') }}</td>
                     <td class="py-2">
                         {{ $letter->getTranslation('abstract', 'en') }}
                     </td>
@@ -281,7 +281,7 @@
             @endif
             @if ($letter->languages)
                 <tr class="align-baseline border-t border-b border-gray-200">
-                    <td class="w-1/5 py-2">Languages</td>
+                    <td class="w-1/5 py-2">{{ __('hiko.languages') }}</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
                             @foreach (explode(';', $letter->languages) as $lang)
@@ -295,7 +295,7 @@
             @endif
             @if ($letter->keywords)
                 <tr class="align-baseline border-t border-b border-gray-200">
-                    <td class="py-2">Keywords</td>
+                    <td class="py-2">{{ __('hiko.keywords') }}</td>
                     <td class="py-2">
                         @foreach ($letter->keywords as $kw)
                             <li class="mb-1">
@@ -307,7 +307,7 @@
             @endif
             @if ($letter->notes_public)
                 <tr class="align-baseline border-t border-b border-gray-200">
-                    <td class="w-1/5 py-2">Notes on letter</td>
+                    <td class="w-1/5 py-2">{{ __('hiko.notes_letter') }}</td>
                     <td class="py-2">
                         {{ $letter->notes_public }}
                     </td>
@@ -316,7 +316,7 @@
         </tbody>
     </table>
     @if ($letter->copies)
-        <h2 class="text-lg font-bold">Repositories and versions</h2>
+        <h2 class="text-lg font-bold">{{ __('hiko.repositories_and_versions') }}</h2>
         @foreach ($letter->copies as $c)
             <table class="w-full mb-10 text-sm">
                 <tbody>
@@ -330,7 +330,7 @@
                     @endif
                     @if ($c['repository'])
                         <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">Repository</td>
+                            <td class="w-1/5 py-2">{{ __('hiko.repositor') }}</td>
                             <td class="py-2">
                                 {{ $c['repository'] }}
                             </td>
@@ -338,7 +338,7 @@
                     @endif
                     @if ($c['archive'])
                         <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">Archive</td>
+                            <td class="w-1/5 py-2">{{ __('hiko.archive') }}</td>
                             <td class="py-2">
                                 {{ $c['archive'] }}
                             </td>
@@ -346,7 +346,7 @@
                     @endif
                     @if ($c['collection'])
                         <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">Collection</td>
+                            <td class="w-1/5 py-2">{{ __('hiko.collection') }}</td>
                             <td class="py-2">
                                 {{ $c['collection'] }}
                             </td>
@@ -362,7 +362,7 @@
                     @endif
                     @if ($c['location_note'])
                         <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">Note on location</td>
+                            <td class="w-1/5 py-2">{{ __('hiko.note_location') }}</td>
                             <td class="py-2">
                                 {{ $c['location_note'] }}
                             </td>
@@ -370,7 +370,7 @@
                     @endif
                     @if ($c['type'])
                         <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">Document type</td>
+                            <td class="w-1/5 py-2">{{ __('hiko.doc_type') }}</td>
                             <td class="py-2">
                                 {{ $c['type'] }}
                             </td>
@@ -378,7 +378,7 @@
                     @endif
                     @if ($c['preservation'])
                         <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">Preservation</td>
+                            <td class="w-1/5 py-2">{{ __('hiko.preservation') }}</td>
                             <td class="py-2">
                                 {{ $c['preservation'] }}
                             </td>
@@ -386,7 +386,7 @@
                     @endif
                     @if ($c['copy'])
                         <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">Type of copy</td>
+                            <td class="w-1/5 py-2">{{ __('hiko.copy_type') }}</td>
                             <td class="py-2">
                                 {{ $c['copy'] }}
                             </td>
@@ -395,7 +395,7 @@
                     @if ($c['manifestation_notes'])
                         <tr class="align-baseline border-t border-b border-gray-200">
                             <td class="w-1/5 py-2">
-                                Notes on manifestation</td>
+                            {{ __('hiko.manifestation_notes') }}</td>
                             <td class="py-2">
                                 {{ $c['manifestation_notes'] }}
                             </td>
@@ -410,7 +410,7 @@
         <table class="w-full mb-10 text-sm">
             <tbody>
                 <tr class="align-baseline border-t border-b border-gray-200">
-                    <td class="w-1/5 py-2">Copyright</td>
+                    <td class="w-1/5 py-2">{{ __('hiko.copyright') }}</td>
                     <td class="py-2">
                         {{ $letter->copyright }}
                     </td>
@@ -419,7 +419,7 @@
         </table>
     @endif
     @if ($letter->related_resources)
-        <h2 class="text-lg font-bold">Related resources</h2>
+        <h2 class="text-lg font-bold">{{ __('hiko.related_resources') }} </h2>
         <table class="w-full mb-10 text-sm">
             <tbody>
                 <tr class="align-baseline border-t border-b border-gray-200">

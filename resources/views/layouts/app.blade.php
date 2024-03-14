@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name') }}</title>
+    <title>{{ __('hiko.correspondence') }} {{ config('app.name') }}</title>
     <link rel="stylesheet" href="{{ asset(mix('/app.css', 'dist')) }}">
     <script src="{{ asset(mix('/app.js', 'dist')) }}" defer></script>
     <link rel="icon" type="image/svg+xml"
@@ -36,7 +36,7 @@
                 </a>
             </p>
             <p class="mt-2 text-sm text-gray-500">
-                {{ date('Y') }} HIKO – {{ config('app.name') }}, v.{{ config('hiko.version') }}
+                {{ date('Y') }} HIKO – {{ __('hiko.correspondence') }} {{ config('app.name') }}, v.{{ config('hiko.version') }}
             </p>
         </div>
     </footer>

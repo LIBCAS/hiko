@@ -2,7 +2,7 @@
     <div class="flex flex-wrap justify-between py-3">
         <div class="flex items-center">
             <a href="{{ route('letters') }}" class="font-semibold">
-                {{ config('app.name') }}
+                {{ __('hiko.correspondence') }} {{ config('app.name') }}
             </a>
         </div>
         <div class="hidden space-x-6 sm:flex sm:items-center sm:ml-6">
