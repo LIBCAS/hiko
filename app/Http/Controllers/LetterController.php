@@ -252,4 +252,73 @@ class LetterController extends Controller
             })
             ->toArray();
     }
+
+    public function duplicate(Request $request, Letter $letter)
+    {
+        $duplicatedLetter = $letter->replicate();
+        $duplicatedLetter->save();
+
+        $this->duplicateRelatedEntities($letter, $duplicatedLetter);
+
+        RegenerateNames::dispatch($duplicatedLetter->authors()->get());
+        RegenerateNames::dispatch($duplicatedLetter->recipients()->get());
+
+        return redirect()
+            ->route('letters.edit', $duplicatedLetter->id)
+            ->with('success', __('hiko.duplicated'));
+    }
+
+    protected function duplicateRelatedEntities(Letter $sourceLetter, Letter $duplicatedLetter)
+    {
+
+        $duplicatedLetter->keywords()->sync($sourceLetter->keywords);
+        $duplicatedLetter->identities()->detach();
+        $duplicatedLetter->places()->detach();
+
+        $this->attachRelatedEntities('authors', 'author', $sourceLetter, $duplicatedLetter);
+        $this->attachRelatedEntities('recipients', 'recipient', $sourceLetter, $duplicatedLetter);
+
+        $this->attachRelatedEntities('origins', 'origin', $sourceLetter, $duplicatedLetter);
+        $this->attachRelatedEntities('destinations', 'destination', $sourceLetter, $duplicatedLetter);
+
+        $this->attachRelatedEntities('mentioned', 'mentioned', $sourceLetter, $duplicatedLetter);
+
+        $duplicatedLetter->languages = $sourceLetter->languages;
+        $duplicatedLetter->save();
+    }
+
+    protected function attachRelatedEntities(string $fieldKey, string $role, Letter $sourceLetter, Letter $duplicatedLetter)
+    {
+        $items = $this->prepareAttachmentDataForEntities($fieldKey, $role, $sourceLetter);
+
+        foreach ($items as $id => $attributes) {
+            if (in_array($role, ['author', 'recipient', 'mentioned'])) {
+                $duplicatedLetter->identities()->attach($id, $attributes);
+            } elseif (in_array($role, ['origin', 'destination'])) {
+                $duplicatedLetter->places()->attach($id, $attributes);
+            }
+        }
+    }
+
+    protected function prepareAttachmentDataForEntities(string $fieldKey, string $role, Letter $sourceLetter): array
+    {
+        $items = [];
+
+        foreach ($sourceLetter->{$fieldKey} as $key => $item) {
+            $result = [
+                'position' => $key,
+                'role' => $role,
+                'marked' => $item->pivot->marked,
+            ];
+
+            if ($role === 'recipient') {
+                $result['salutation'] = $item->pivot->salutation ?? null;
+            }
+
+            $items[$item->id] = $result;
+        }
+
+        return $items;
+    }
+
 }

@@ -6,6 +6,12 @@
             </a>
         </li>
         <li>
+            <a href="{{ route('letters.duplicate', $args['id']) }}" class="font-semibold text-primary hover:underline">
+                {{ __('hiko.duplicate') }}
+            </a>
+        </li>
+    @endcan
+        <li>
             <a href="{{ route('letters.text', $args['id']) }}" class="font-semibold text-primary hover:underline">
                 {{ __('hiko.full_text') }}
             </a>
@@ -15,7 +21,6 @@
                 {{ __('hiko.media') }}
             </a>
         </li>
-    @endcan
     @can('view-metadata')
         <li>
             <a href="{{ route('letters.show', $args['id']) }}" class="font-semibold text-primary hover:underline">

@@ -329,6 +329,10 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
         Route::get('preview', LetterPreviewController::class)
             ->name('letters.preview')
             ->middleware(['auth', 'can:view-metadata']);
+        
+        Route::get('letters/{letter}/duplicate', [LetterController::class, 'duplicate'])
+            ->name('letters.duplicate')
+            ->middleware(['auth', 'can:manage-metadata']);
     });
 
     Route::prefix('ajax')->group(function () {

@@ -18,6 +18,8 @@ return [
     'new_account' => 'Nový účet',
     'create' => 'Vytvořit',
     'edit' => 'Upravit',
+    'duplicate' => 'Duplikovat',
+    'duplicated' => 'Duplikováno.',
     'removed' => 'Odstraněno.',
     'saved' => 'Uloženo.',
     'active_user' => 'Aktivní uživatel',

@@ -18,6 +18,8 @@ return [
     'new_account' => 'New account',
     'create' => 'Create',
     'edit' => 'Edit',
+    'duplicate' => 'Duplicate',
+    'duplicated' => 'Duplicated.',
     'removed' => 'Removed.',
     'saved' => 'Saved.',
     'active_user' => 'Active user',
