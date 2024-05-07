@@ -17,6 +17,14 @@ class ProfessionBuilder extends Builder
             $this->whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($filters['en']) . '%']);
         }
 
+        if (isset($filters['category']) && !empty($filters['category'])) {
+            $this->whereHas('profession_category', function ($subquery) use ($filters) {
+                $subquery
+                    ->whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($filters['category']) . '%'])
+                    ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($filters['category']) . '%']);
+            });
+        }
+
         return $this;
     }
 }

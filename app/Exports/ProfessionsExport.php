@@ -11,7 +11,7 @@ class ProfessionsExport implements FromCollection, WithMapping, WithHeadings
 {
     public function collection()
     {
-        return Profession::all();
+        return Profession::all(); 
     }
 
     public function headings(): array
@@ -20,17 +20,20 @@ class ProfessionsExport implements FromCollection, WithMapping, WithHeadings
             'id',
             'cs',
             'en',
+            'category',
         ];
     }
 
     public function map($profession): array
     {
         $name = $profession->getTranslations('name');
+        $category = $profession->profession_category;
 
         return [
             $profession->id,
             $name['cs'] ?? '',
             $name['en'] ?? '',
+            $category ? implode(' | ', array_values($category->getTranslations('name'))) : '',
         ];
     }
 }

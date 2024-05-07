@@ -6,6 +6,7 @@ use App\Models\Profession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Exports\ProfessionsExport;
+use App\Models\ProfessionCategory;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -15,6 +16,7 @@ class ProfessionController extends Controller
     protected array $rules = [
         'cs' => ['max:255', 'required_without:en'],
         'en' => ['max:255', 'required_without:cs'],
+        'category' => ['nullable', 'exists:profession_categories,id'],
     ];
 
     public function index(): View
@@ -26,11 +28,14 @@ class ProfessionController extends Controller
 
     public function create(): View
     {
+        $profession = new Profession;
+
         return view('pages.professions.form', [
             'title' => __('hiko.new_profession'),
-            'profession' => new Profession,
+            'profession' => $profession,
             'action' => route('professions.store'),
             'label' => __('hiko.create'),
+            'category' => $this->getCategory($profession),
         ]);
     }
 
@@ -47,6 +52,12 @@ class ProfessionController extends Controller
             ],
         ]);
 
+        if (isset($validated['category'])) {
+            $profession->profession_category()->associate($validated['category']);
+        }
+
+        $profession->save();
+
         return redirect()
             ->route($redirectRoute, $profession->id)
             ->with('success', __('hiko.saved'));
@@ -60,6 +71,7 @@ class ProfessionController extends Controller
             'method' => 'PUT',
             'action' => route('professions.update', $profession),
             'label' => __('hiko.edit'),
+            'category' => $this->getCategory($profession),
         ]);
     }
 
@@ -75,6 +87,14 @@ class ProfessionController extends Controller
                 'en' => $validated['en'],
             ],
         ]);
+
+        $profession->profession_category()->dissociate();
+
+        if (isset($validated['category'])) {
+            $profession->profession_category()->associate($validated['category']);
+        }
+
+        $profession->save();
 
         return redirect()
             ->route($redirectRoute, $profession->id)
@@ -92,6 +112,24 @@ class ProfessionController extends Controller
 
     public function export(): BinaryFileResponse
     {
-        return Excel::download(new ProfessionsExport, 'professions.xlsx');
+        return Excel::download(new ProfesionsExport, 'professions.xlsx');
+    }
+
+    protected function getCategory(Profession $profession): ?array
+    {
+        if (!$profession->profession_category && !request()->old('category')) {
+            return null;
+        }
+
+        $id = request()->old('category') ? request()->old('category') : $profession->profession_category->id;
+
+        $category = request()->old('category')
+            ? ProfessionCategory::where('id', '=', request()->old('category'))->get()[0]
+            : $profession->profession_category;
+
+        return [
+            'id' => $id,
+            'label' => $category->getTranslation('name', config('hiko.metadata_default_locale')),
+        ];
     }
 }

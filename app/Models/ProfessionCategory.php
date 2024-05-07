@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Laravel\Scout\Searchable;
 use App\Builders\ProfessionBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Laravel\Scout\Searchable;
 
 class ProfessionCategory extends Model
 {
@@ -16,16 +17,16 @@ class ProfessionCategory extends Model
 
     protected $connection = 'tenant';
 
-    public $translatable = ['name'];
+    public array $translatable = ['name'];
 
     protected $guarded = ['id'];
 
-    public function searchableAs()
+    public function searchableAs(): string
     {
         return 'profession_category_index';
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'id' => $this->id,
@@ -34,12 +35,12 @@ class ProfessionCategory extends Model
         ];
     }
 
-    public function identities()
+    public function identities(): BelongsToMany
     {
         return $this->belongsToMany(Identity::class);
     }
 
-    public function newEloquentBuilder($query)
+    public function newEloquentBuilder($query): ProfessionBuilder
     {
         return new ProfessionBuilder($query);
     }
