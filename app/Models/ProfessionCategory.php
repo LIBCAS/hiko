@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Laravel\Scout\Searchable;
 use App\Builders\ProfessionBuilder;
@@ -33,6 +34,11 @@ class ProfessionCategory extends Model
             'cs' => $this->getTranslation('name', 'cs'),
             'en' => $this->getTranslation('name', 'en'),
         ];
+    }
+
+    public function professions()
+    {
+        return $this->hasMany('App\Models\Profession', 'profession_category_id');
     }
 
     public function identities(): BelongsToMany

@@ -28,15 +28,17 @@
     @if ($canMerge)
         <x-merge-form :oldId="$identity->id" model="identity" route="{{ route('ajax.identities') }}" />
     @endif
-    @if ($canRemove)
-        <form x-data="{ form: $el }" action="{{ route('identities.destroy', $identity->id) }}" method="post"
-            class="max-w-sm mt-8">
-            @csrf
-            @method('DELETE')
-            <x-button-danger type="button" class="w-full"
-                x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
-                {{ __('hiko.remove') }}
-            </x-button-danger>
-        </form>
-    @endif
+    @can('delete-metadata')
+        @if ($canRemove)
+            <form x-data="{ form: $el }" action="{{ route('identities.destroy', $identity->id) }}" method="post"
+                class="max-w-sm mt-8">
+                @csrf
+                @method('DELETE')
+                <x-button-danger type="button" class="w-full"
+                    x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
+                    {{ __('hiko.remove') }}
+                </x-button-danger>
+            </form>
+        @endif
+    @endcan
 </x-app-layout>

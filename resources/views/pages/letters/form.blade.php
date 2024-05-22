@@ -447,15 +447,17 @@
                 </x-button-inverted>
             </form>
             @if ($letter->id)
-                <form x-data="{ form: $el }" action="{{ route('letters.destroy', $letter->id) }}" method="post"
-                    class="max-w-sm mt-8">
-                    @csrf
-                    @method('DELETE')
-                    <x-button-danger class="w-full" onclick="preventLeaving = false"
-                        x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
-                        {{ __('hiko.remove') }}
-                    </x-button-danger>
-                </form>
+                @can('delete-metadata')
+                    <form x-data="{ form: $el }" action="{{ route('letters.destroy', $letter->id) }}" method="post"
+                        class="max-w-sm mt-8">
+                        @csrf
+                        @method('DELETE')
+                        <x-button-danger class="w-full" onclick="preventLeaving = false"
+                            x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
+                            {{ __('hiko.remove') }}
+                        </x-button-danger>
+                    </form>
+                @endcan
             @endif
         </div>
     </div>

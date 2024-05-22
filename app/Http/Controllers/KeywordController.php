@@ -64,7 +64,9 @@ class KeywordController extends Controller
     }
 
     public function edit(Keyword $keyword): View
-    {
+    {   
+        $keyword->load(['letters.identities', 'letters.places']);
+    
         return view('pages.keywords.form', [
             'title' => __('hiko.keyword') . ': ' . $keyword->id,
             'keyword' => $keyword,
@@ -73,7 +75,7 @@ class KeywordController extends Controller
             'label' => __('hiko.edit'),
             'category' => $this->getCategory($keyword),
         ]);
-    }
+    }   
 
     public function update(Request $request, Keyword $keyword): RedirectResponse
     {
@@ -120,7 +122,7 @@ class KeywordController extends Controller
         if (!$keyword->keyword_category && !request()->old('category')) {
             return null;
         }
-
+        
         $id = request()->old('category') ? request()->old('category') : $keyword->keyword_category->id;
 
         $category = request()->old('category')
@@ -131,5 +133,20 @@ class KeywordController extends Controller
             'id' => $id,
             'label' => $category->getTranslation('name', config('hiko.metadata_default_locale')),
         ];
+    }
+
+    protected function getLetters(Keyword $keyword): ?array
+    {
+        if ($keyword->letters->isEmpty() && !request()->old('letters')) {
+            return null;
+        }
+    
+        $letters = request()->old('letters') ? request()->old('letters') : $keyword->letters;
+    
+        return $letters->map(function ($letter) {
+            return [
+                'id' => $letter->id,
+            ];
+        })->toArray();
     }
 }

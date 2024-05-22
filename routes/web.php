@@ -94,7 +94,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
         Route::delete('{location}', [LocationController::class, 'destroy'])
             ->name('locations.destroy')
-            ->middleware(['auth', 'can:manage-metadata']);
+            ->middleware(['auth', 'can:delete-metadata']);
 
         Route::get('export', [LocationController::class, 'export'])
             ->name('locations.export')
@@ -124,7 +124,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
         Route::delete('{profession}', [ProfessionController::class, 'destroy'])
             ->name('professions.destroy')
-            ->middleware(['auth', 'can:manage-metadata']);
+            ->middleware(['auth', 'can:delete-metadata']);
 
         Route::get('export', [ProfessionController::class, 'export'])
             ->name('professions.export')
@@ -154,7 +154,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
         Route::delete('{professionCategory}', [ProfessionCategoryController::class, 'destroy'])
             ->name('professions.category.destroy')
-            ->middleware(['auth', 'can:manage-metadata']);
+            ->middleware(['auth', 'can:delete-metadata']);
 
         Route::get('export', [ProfessionCategoryController::class, 'export'])
             ->name('professions.category.export')
@@ -184,7 +184,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
         Route::delete('{keyword}', [KeywordController::class, 'destroy'])
             ->name('keywords.destroy')
-            ->middleware(['auth', 'can:manage-metadata']);
+            ->middleware(['auth', 'can:delete-metadata']);
 
         Route::get('export', [KeywordController::class, 'export'])
             ->name('keywords.export')
@@ -214,7 +214,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
         Route::delete('{keywordCategory}', [KeywordCategoryController::class, 'destroy'])
             ->name('keywords.category.destroy')
-            ->middleware(['auth', 'can:manage-metadata']);
+            ->middleware(['auth', 'can:delete-metadata']);
 
         Route::get('export', [KeywordCategoryController::class, 'export'])
             ->name('keywords.category.export')
@@ -244,7 +244,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
         Route::delete('{place}', [PlaceController::class, 'destroy'])
             ->name('places.destroy')
-            ->middleware(['auth', 'can:manage-metadata']);
+            ->middleware(['auth', 'can:delete-metadata']);
 
         Route::get('export', [PlaceController::class, 'export'])
             ->name('places.export')
@@ -308,7 +308,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
         Route::delete('{letter}', [LetterController::class, 'destroy'])
             ->name('letters.destroy')
-            ->middleware(['auth', 'can:manage-metadata']);
+            ->middleware(['auth', 'can:delete-metadata']);
 
         Route::get('export/palladio/character', [LetterController::class, 'exportPalladioCharacter'])
             ->name('letters.export.palladio.character')

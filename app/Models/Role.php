@@ -17,13 +17,12 @@ class Role extends Model
             [
                 'id' => 1,
                 'label' => 'admin',
-                'abilities' =>
-                'manage-metadata,view-metadata,manage-users',
+                'abilities' => 'manage-metadata,view-metadata,manage-users,delete-metadata',
             ],
             [
                 'id' => 2,
                 'label' => 'editor',
-                'abilities' => 'manage-metadata,view-metadata',
+                'abilities' => 'manage-metadata,view-metadata,delete-metadata',
             ],
             [
                 'id' => 3,
@@ -33,7 +32,12 @@ class Role extends Model
             [
                 'id' => 4,
                 'label' => 'developer',
-                'abilities' => 'manage-metadata,view-metadata,manage-users,debug',
+                'abilities' => 'manage-metadata,view-metadata,manage-users,delete-metadata,debug',
+            ],
+            [
+                'id' => 5,
+                'label' => 'contributor',
+                'abilities' => 'manage-metadata,view-metadata',
             ],
         ];
     }

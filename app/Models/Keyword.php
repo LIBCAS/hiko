@@ -5,21 +5,18 @@ namespace App\Models;
 use App\Builders\KeywordBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
 
 class Keyword extends Model
 {
-    use HasTranslations;
-    use HasFactory;
-    use Searchable;
+    use HasTranslations, HasFactory, Searchable;
 
     protected $connection = 'tenant';
-
-    public array $translatable = ['name'];
-
     protected $guarded = ['id'];
+    public array $translatable = ['name'];
 
     public function searchableAs(): string
     {
@@ -40,11 +37,11 @@ class Keyword extends Model
         return $this->belongsTo(KeywordCategory::class);
     }
 
-    public function letters(): BelongsTo
+    public function letters(): BelongsToMany
     {
-        return $this->belongsTo(Letter::class);
+        return $this->belongsToMany(Letter::class);
     }
-
+    
     public function newEloquentBuilder($query): KeywordBuilder
     {
         return new KeywordBuilder($query);
