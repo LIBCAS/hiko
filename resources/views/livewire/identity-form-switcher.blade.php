@@ -75,14 +75,7 @@
                     <livewire:repeated-select :items="$selectedProfessions" fieldLabel="{{ __('hiko.profession') }}"
                         fieldKey="profession" route="ajax.professions" />
                     @can('manage-metadata')
-                        <div class="flex flex-row space-between">
-                            <div class="width-1/2 text-left">
-                                <livewire:create-new-item-modal :route="route('professions.create')" :text="__('hiko.modal_new_profession')" />
-                            </div>
-                            <div class="width-1/2 text-left">
-                                <livewire:create-new-item-modal :route="route('professions.category.create')" :text="__('hiko.modal_new_profession_category')" />
-                            </div>
-                        </div>
+                        <livewire:create-new-item-modal :route="route('professions.create')" :text="__('hiko.modal_new_profession')" />
                     @endcan
                     <?php //<livewire:repeated-select :items="$selectedCategories" fieldLabel="{{ __('hiko.professions_category') }}" fieldKey="category" route="ajax.professions.category" /> ?>
                 </div>

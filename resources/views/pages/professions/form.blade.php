@@ -25,7 +25,7 @@
                     @enderror
                 </div>
                 <x-alert-similar-names />
-                <div>
+                <div class="required">
                     <x-label for="category" :value="__('hiko.category')" />
                     <x-select name="category" id="category" class="block w-full mt-1" x-data="ajaxChoices({ url: '{{ route('ajax.professions.category') }}', element: $el })"
                         x-init="initSelect()">
@@ -37,6 +37,7 @@
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>
+                <livewire:create-new-item-modal :route="route('professions.category.create')" :text="__('hiko.modal_new_profession_category')" />
                 <x-button-simple class="w-full" name="action" value="edit">
                     {{ $label }}
                 </x-button-simple>
@@ -82,4 +83,72 @@
             </div>
         @endif
     </div>
+    @push('scripts')
+        @production
+            <script>
+                var preventLeaving = true;
+                window.onbeforeunload = function(e) {
+                    if (preventLeaving) {
+                        return '{{ __('hiko.confirm_leave') }}'
+                    }
+                }
+
+                // Add a debounce function
+                function debounce(func, wait, immediate) {
+                  var timeout;
+                  return function() {
+                    var context = this, args = arguments;
+                    var later = function() {
+                      timeout = null;
+                      if (!immediate) func.apply(context, args);
+                    };
+                    var callNow = immediate && !timeout;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                    if (callNow) func.apply(context, args);
+                  };
+                }
+
+                // Use debounce with the AJAX request
+                var searchInput = document.getElementById('mentioned');
+                searchInput.addEventListener('input', debounce(function(e) {
+                  // Make AJAX request here
+                }, 500));
+
+            </script>
+        @endproduction
+            <script>
+                // Hide header and footer in modals
+                function hideHeaderFooterInIframe() {
+                    var modals = document.querySelectorAll('.modal-window');
+                    modals.forEach(function(modal) {
+                        var iframe = modal.querySelector('iframe');
+                        if (iframe) {
+                            var iframeContent = iframe.contentDocument || iframe.contentWindow.document;
+                            var header = iframeContent.querySelector('header');
+                            var footer = iframeContent.querySelector('footer');
+                            if (header) {
+                                header.style.display = 'none';
+                            }
+                            if (footer) {
+                                footer.style.display = 'none';
+                            }
+                        }
+                    });
+                }
+
+                // Function to handle iframe content load
+                function handleIframeLoad() {
+                    hideHeaderFooterInIframe();
+                }
+
+                // Listen for iframe load event and handle it
+                document.addEventListener('DOMContentLoaded', function() {
+                    var iframes = document.querySelectorAll('iframe');
+                    iframes.forEach(function(iframe) {
+                        iframe.addEventListener('load', handleIframeLoad);
+                    });
+                });
+            </script>
+    @endpush
 </x-app-layout>

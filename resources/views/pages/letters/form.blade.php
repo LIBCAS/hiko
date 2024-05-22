@@ -321,10 +321,10 @@
                                 <option value="{{ $kw['value'] }}" selected>{{ $kw['label'] }}</option>
                             @endforeach
                         </x-select>
-                        <livewire:create-new-item-modal :route="route('keywords.create')" :text="__('hiko.modal_new_keyword')" />
                         @error('keywords')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
+                        <livewire:create-new-item-modal :route="route('keywords.create')" :text="__('hiko.modal_new_keyword')" />
                     </div>
                     <div>
                         <x-label for="abstract_cs" :value="__('hiko.abstract') . ' CS'" />
@@ -373,6 +373,7 @@
                         @error('mentioned')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
+                        <livewire:create-new-item-modal :route="route('identities.create')" :text="__('hiko.modal_new_identity')" />
                     </div>
                     <div>
                         <x-label for="people_mentioned_note" :value="__('hiko.people_mentioned_note')" />

@@ -42,7 +42,7 @@
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>
-                <div><livewire:create-new-item-modal :route="route('professions.category.create')" :text="__('hiko.modal_new_profession_category')" /></div>
+                <livewire:create-new-item-modal :route="route('keywords.category.create')" :text="__('hiko.modal_new_keyword_category')" />
                 <x-button-simple class="w-full" name="action" value="edit">
                     {{ $label }}
                 </x-button-simple>
@@ -50,6 +50,7 @@
                     {{ $label }} {{ __('hiko.and_create_new') }}
                 </x-button-inverted>
             </form>
+            
             @if ($keyword->id)
                 @can('delete-metadata')
                     <form x-data="{ form: $el }" action="{{ route('keywords.destroy', $keyword->id) }}" method="post"
