@@ -77,7 +77,6 @@
                     @can('manage-metadata')
                         <livewire:create-new-item-modal :route="route('professions.create')" :text="__('hiko.modal_new_profession')" />
                     @endcan
-                    <?php //<livewire:repeated-select :items="$selectedCategories" fieldLabel="{{ __('hiko.professions_category') }}" fieldKey="category" route="ajax.professions.category" /> ?>
                 </div>
             </div>
         @else

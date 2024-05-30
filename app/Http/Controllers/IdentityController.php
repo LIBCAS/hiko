@@ -57,11 +57,7 @@ class IdentityController extends Controller
     public function edit(Identity $identity): View
     {
         $hasLetters = $identity->letters->isNotEmpty();
-        $selectedProfessions = $this->getSelectedProfessions($identity);
-        //dd($selectedProfessions); // TO-DO: Dump selected professions
-        $professionCategories = $this->getProfessionCategories($selectedProfessions);
-        //dd($professionCategories); // TO-DO: Dump selected professions
-        
+
         return view(
             'pages.identities.form',
             array_merge(
@@ -77,7 +73,6 @@ class IdentityController extends Controller
             )
         );
     }
-    
 
     public function update(IdentityRequest $request, Identity $identity): RedirectResponse
     {
@@ -152,48 +147,48 @@ class IdentityController extends Controller
 
         $professions = request()->old('profession')
             ? Profession::whereIn('id', request()->old('profession'))
-                ->orderByRaw('FIELD(id, ' . implode(',', request()->old('profession')) . ')')->get()
-            : $identity->professions->sortBy('pivot.position');
+            ->orderByRaw('FIELD(id, ' . implode(',', request()->old('profession')) . ')')->get()
+        : $identity->professions->sortBy('pivot.position');
 
-        return $professions
-            ->map(function ($profession) {
-                return [
-                    'value' => $profession->id,
-                    'label' => $profession->getTranslation('name', config('hiko.metadata_default_locale')),
-                ];
-            })
-            ->toArray();
+    return $professions
+        ->map(function ($profession) {
+            return [
+                'value' => $profession->id,
+                'label' => $profession->getTranslation('name', config('hiko.metadata_default_locale')),
+            ];
+        })
+        ->toArray();
+}
+
+protected function getSelectedCategories(Identity $identity): array
+{
+    if (!request()->old('category') && !$identity->profession_categories) {
+        return [];
     }
 
-    protected function getSelectedCategories(Identity $identity): array
-    {
-        if (!request()->old('category') && !$identity->profession_categories) {
-            return [];
-        }
+    $categories = request()->old('category')
+        ? ProfessionCategory::whereIn('id', request()->old('category'))
+            ->orderByRaw('FIELD(id, ' . implode(',', request()->old('category')) . ')')->get()
+        : $identity->profession_categories->sortBy('pivot.position');
 
-        $categories = request()->old('category')
-            ? ProfessionCategory::whereIn('id', request()->old('category'))
-                ->orderByRaw('FIELD(id, ' . implode(',', request()->old('category')) . ')')->get()
-            : $identity->profession_categories->sortBy('pivot.position');
+    return $categories
+        ->map(function ($category) {
+            return [
+                'value' => $category->id,
+                'label' => $category->getTranslation('name', config('hiko.metadata_default_locale')),
+            ];
+        })
+        ->toArray();
+}
 
-        return $categories
-            ->map(function ($category) {
-                return [
-                    'value' => $category->id,
-                    'label' => $category->getTranslation('name', config('hiko.metadata_default_locale')),
-                ];
-            })
-            ->toArray();
+protected function getSelectedType(Identity $identity): string
+{
+    if (!request()->old('type') && !$identity->type) {
+        return 'person';
     }
 
-    protected function getSelectedType(Identity $identity): string
-    {
-        if (!request()->old('type') && !$identity->type) {
-            return 'person';
-        }
-
-        return request()->old('type')
-            ? request()->old('type')
-            : $identity->type;
-    }
+    return request()->old('type')
+        ? request()->old('type')
+        : $identity->type;
+}
 }

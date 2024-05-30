@@ -3,7 +3,7 @@
         <p>
             {{ $fieldLabel }}
         </p>
-        @error($fieldKey)
+        @error('{{ $fieldKey }}')
             <div class="text-red-600">{{ $message }}</div>
         @enderror
         @foreach ($items as $item)
@@ -12,7 +12,7 @@
                     x-data="ajaxChoices({url: '{{ route($route) }}', element: $el, change: (data) => { $wire.changeItemValue({{ $loop->index }}, data) } })"
                     x-init="initSelect()">
                     @if (!empty($item['value']))
-                        <option value="{{ $item['value'] }}" selected>{{ $item['label'] }} @isset($categories[$item['value']]) ({{ $categories[$item['value']] }}) @endisset</option>
+                        <option value="{{ $item['value'] }}" selected>{{ $item['label'] }}</option>
                     @endif
                 </x-select>
                 <button wire:click="removeItem({{ $loop->index }})" type="button" class="ml-6 text-red-600"

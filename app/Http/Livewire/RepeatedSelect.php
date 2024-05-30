@@ -10,7 +10,6 @@ class RepeatedSelect extends Component
     public $fieldLabel;
     public $fieldKey;
     public $route;
-    public $categories;
 
     public function addItem()
     {
@@ -32,13 +31,11 @@ class RepeatedSelect extends Component
         $this->items[$index]['value'] = $data['label'] ? $data['value'] : '';
     }
 
-    public function mount($items, $categories, $fieldLabel, $fieldKey, $route)
+    public function mount()
     {
-        $this->items = $items;
-        $this->categories = $categories;
-        $this->fieldLabel = $fieldLabel;
-        $this->fieldKey = $fieldKey;
-        $this->route = $route;
+        if (empty($this->items)) {
+            $this->addItem();
+        }
     }
 
     public function render()
