@@ -58,9 +58,9 @@ class IdentityController extends Controller
     {
         $hasLetters = $identity->letters->isNotEmpty();
         $selectedProfessions = $this->getSelectedProfessions($identity);
-        dd($selectedProfessions); // Dump selected professions
+        //dd($selectedProfessions); // TO-DO: Dump selected professions
         $professionCategories = $this->getProfessionCategories($selectedProfessions);
-        dd($professionCategories); // Dump profession categories
+        //dd($professionCategories); // TO-DO: Dump selected professions
         
         return view(
             'pages.identities.form',
