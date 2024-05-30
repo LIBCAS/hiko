@@ -57,7 +57,11 @@ class IdentityController extends Controller
     public function edit(Identity $identity): View
     {
         $hasLetters = $identity->letters->isNotEmpty();
-
+        $selectedProfessions = $this->getSelectedProfessions($identity);
+        dd($selectedProfessions); // Dump selected professions
+        $professionCategories = $this->getProfessionCategories($selectedProfessions);
+        dd($professionCategories); // Dump profession categories
+        
         return view(
             'pages.identities.form',
             array_merge(
@@ -73,6 +77,7 @@ class IdentityController extends Controller
             )
         );
     }
+    
 
     public function update(IdentityRequest $request, Identity $identity): RedirectResponse
     {

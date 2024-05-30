@@ -51,6 +51,12 @@ trait MenuTrait
                 'icon' => 'icons.user-add',
                 'ability' => 'manage-users',
             ],
+            [
+                'route' => 'duplicates.index',
+                'name' => __('hiko.duplicates'),
+                'icon' => 'icons.duplicate',
+                'ability' => 'manage-users', //view-metadata
+            ],
         ];
 
         return collect($items)->map(function ($item) {

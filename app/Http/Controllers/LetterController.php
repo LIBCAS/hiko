@@ -15,6 +15,9 @@ use App\Http\Requests\LetterRequest;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PalladioCharacterExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\LetterController;
+
 
 class LetterController extends Controller
 {

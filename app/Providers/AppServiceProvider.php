@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use App\Services\DuplicateDetectionService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,7 +15,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->bind(DuplicateDetectionService::class, function ($app, $parameters) {
+            $prefixes = [];
+            return new DuplicateDetectionService($prefixes);
+        });
     }
 
     /**

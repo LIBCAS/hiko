@@ -1,4 +1,4 @@
-const Quill = require('quill')
+const Quill = require('quill').default;
 
 const QuillDeltaToHtmlConverter =
     require('quill-delta-to-html').QuillDeltaToHtmlConverter

@@ -20,6 +20,12 @@ class KeywordsTable extends Component
         $this->resetPage('keywordsPage');
     }
 
+    public function resetFilters()
+    {
+        $this->reset('filters');
+        $this->search();
+    }
+
     public function render()
     {
         $keywords = $this->findKeywords();

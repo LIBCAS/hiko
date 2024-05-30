@@ -14,6 +14,7 @@ use App\Http\Controllers\IdentityController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ProfessionController;
+use App\Http\Controllers\DuplicateDetectionController;
 use App\Http\Controllers\LetterPreviewController;
 use App\Http\Controllers\Ajax\AjaxPlaceController;
 use App\Http\Controllers\KeywordCategoryController;
@@ -394,6 +395,15 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
             ->middleware(['auth', 'can:debug']);
     });
 
+    Route::prefix('duplicates')->group(function () {
+        Route::get('/', [DuplicateDetectionController::class, 'index'])
+            ->name('duplicates.index')
+            ->middleware(['auth', 'can:view-metadata']);
+        Route::get('/detect-duplicates', [DuplicateDetectionController::class, 'detectDuplicates'])
+            ->name('duplicates.detect')
+            ->middleware(['auth', 'can:view-metadata']);
+    });
+
     Route::get('edit/{letter:uuid}', EditLinkController::class)
         ->name('edit-link')
         ->middleware(['auth']);
@@ -411,6 +421,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
     Route::get('lang/{lang}', LanguageController::class)
         ->name('lang');
+
 });
 
 require __DIR__ . '/auth.php';

@@ -42,7 +42,7 @@ class LettersTable extends Component
 
     public function resetFilters()
     {
-        $this->reset();
+        $this->reset('filters');
         $this->search();
     }
 

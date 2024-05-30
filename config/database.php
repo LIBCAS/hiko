@@ -55,6 +55,22 @@ return [
             ]) : [],
         ],
 
+
+    'hikomulti' => [
+        'driver' => 'mysql',
+        'host' => env('HIKOMULTI_DB_HOST', 'localhost'),
+        'port' => env('HIKOMULTI_DB_PORT', '3306'),
+        'database' => env('HIKOMULTI_DB_DATABASE', 'hikomulti'),
+        'username' => env('HIKOMULTI_DB_USERNAME', 'root'),
+        'password' => env('HIKOMULTI_DB_PASSWORD', 'root'),
+        'unix_socket' => env('HIKOMULTI_DB_SOCKET', ''),
+        'charset' => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
+        'prefix' => '',
+        'strict' => true,
+        'engine' => null,
+    ],
+
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DATABASE_URL'),
