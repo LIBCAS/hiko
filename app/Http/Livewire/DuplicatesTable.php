@@ -43,6 +43,12 @@ class DuplicatesTable extends Component
         $this->duplicates = collect();
     }
 
+    public function updatedFilters($value, $name)
+    {
+        // This method will be called automatically by Livewire whenever a filter is updated
+        $this->search();
+    }
+
     public function search()
     {
         $this->gotoPage(1);
@@ -63,7 +69,7 @@ class DuplicatesTable extends Component
             'rows' => $data->map(function ($duplicate) {
                 $letter1 = isset($duplicate['letter1']) ? (object) $duplicate['letter1'] : (object)['id' => '', 'prefix' => ''];
                 $letter2 = isset($duplicate['letter2']) ? (object) $duplicate['letter2'] : (object)['id' => '', 'prefix' => ''];
-                
+
                 return [
                     ['label' => $letter1->prefix],
                     ['label' => $letter1->id],
@@ -74,7 +80,7 @@ class DuplicatesTable extends Component
             })->toArray(),
         ];
     }
-    
+
     protected function findDuplicates(): Collection
     {
         $prefixes = $this->currentDatabase == $this->filters['database'] ? [$this->currentDatabase] : [$this->currentDatabase, $this->filters['database']];

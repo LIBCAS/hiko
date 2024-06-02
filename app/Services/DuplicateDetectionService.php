@@ -23,14 +23,14 @@ class DuplicateDetectionService
         ] : [
             'id', 'content',
         ];
-
+    
         foreach ($this->prefixes as $prefix) {
             $tableName = $prefix . '__letters';
-
+    
             if (!Schema::connection('hikomulti')->hasTable($tableName)) {
                 continue;
             }
-
+    
             try {
                 $lettersFromTable = DB::connection('hikomulti')
                     ->table($tableName)
@@ -40,17 +40,17 @@ class DuplicateDetectionService
                         return $query->whereNotNull('content');
                     })
                     ->get();
-
+    
                 $lettersFromTable->each(function ($letter) use ($prefix) {
                     $letter->prefix = $prefix;
                 });
-
+    
                 $letters = $letters->merge($lettersFromTable);
             } catch (\Exception $e) {
-                return response()->json(['error' => $e->getMessage()], 500);
+                \Log::error('Error retrieving letters from table ' . $tableName . ': ' . $e->getMessage());
             }
         }
-
+    
         return $letters;
     }
 
@@ -85,14 +85,14 @@ class DuplicateDetectionService
     {
         $words1 = explode(' ', $text1);
         $words2 = explode(' ', $text2);
-
+    
         $intersection = count(array_intersect($words1, $words2));
         $union = count(array_unique(array_merge($words1, $words2)));
-
+    
         $similarity = $intersection / $union;
-
+    
         return round($similarity, 3);
-    }
+    }    
 
     public function findPotentialDuplicates($letters, $threshold = 0.5)
     {
@@ -129,7 +129,7 @@ class DuplicateDetectionService
         }
     
         return $duplicates;
-    }    
+    }
 
     public function markDuplicates($duplicates)
     {
