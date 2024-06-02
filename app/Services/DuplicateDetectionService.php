@@ -23,34 +23,33 @@ class DuplicateDetectionService
         ] : [
             'id', 'content',
         ];
-    
+
         foreach ($this->prefixes as $prefix) {
             $tableName = $prefix . '__letters';
-    
+
             if (!Schema::connection('hikomulti')->hasTable($tableName)) {
                 continue;
             }
-    
+
             try {
-                $lettersFromTable = DB::connection('hikomulti')
-                    ->table($tableName)
+                DB::connection('hikomulti')->table($tableName)
                     ->select($columns)
                     ->whereNotNull('date_computed')
                     ->when($compareMethod === 'full_texts', function ($query) {
                         return $query->whereNotNull('content');
                     })
-                    ->get();
-    
-                $lettersFromTable->each(function ($letter) use ($prefix) {
-                    $letter->prefix = $prefix;
-                });
-    
-                $letters = $letters->merge($lettersFromTable);
+                    ->orderBy('id')
+                    ->chunk(1000, function ($lettersFromTable) use (&$letters, $prefix) {
+                        $lettersFromTable->each(function ($letter) use ($prefix) {
+                            $letter->prefix = $prefix;
+                        });
+                        $letters = $letters->merge($lettersFromTable);
+                    });
             } catch (\Exception $e) {
                 \Log::error('Error retrieving letters from table ' . $tableName . ': ' . $e->getMessage());
             }
         }
-    
+
         return $letters;
     }
 
@@ -70,12 +69,17 @@ class DuplicateDetectionService
                     unset($letter->content);
                 }
             } else {
-                if (isset($letter->date_computed) || isset($letter->explicit) || isset($letter->incipit) || isset($letter->copies) || isset($letter->languages) || isset($letter->recipient_note) || isset($letter->author_note) || isset($letter->date_note)) {
-                    $normalizedContent = $this->normalizeText($letter->date_computed, $letter->explicit, $letter->incipit, $letter->copies, $letter->languages, $letter->recipient_note, $letter->author_note, $letter->date_note);
-                    $letter->content_normalized = $normalizedContent;
-                } else {
-                    $letter->content_normalized = $this->normalizeText('');
-                }
+                $normalizedContent = $this->normalizeText(
+                    $letter->date_computed ?? '',
+                    $letter->explicit ?? '',
+                    $letter->incipit ?? '',
+                    $letter->copies ?? '',
+                    $letter->languages ?? '',
+                    $letter->recipient_note ?? '',
+                    $letter->author_note ?? '',
+                    $letter->date_note ?? ''
+                );
+                $letter->content_normalized = $normalizedContent;
             }
             return $letter;
         });
@@ -85,50 +89,36 @@ class DuplicateDetectionService
     {
         $words1 = explode(' ', $text1);
         $words2 = explode(' ', $text2);
-    
+
         $intersection = count(array_intersect($words1, $words2));
         $union = count(array_unique(array_merge($words1, $words2)));
-    
-        $similarity = $intersection / $union;
-    
-        return round($similarity, 3);
-    }    
+
+        return $union > 0 ? round($intersection / $union, 3) : 0;
+    }
 
     public function findPotentialDuplicates($letters, $threshold = 0.5)
     {
         $duplicates = [];
         $lettersArray = $letters->toArray();
-        $batchSize = 1000;
-        $numBatches = ceil(count($lettersArray) / $batchSize);
         $targetActive = count($this->prefixes) > 1;
-    
-        for ($batch = 0; $batch < $numBatches; $batch++) {
-            for ($i = $batch * $batchSize; $i < min(($batch + 1) * $batchSize, count($lettersArray)); $i++) {
-                for ($j = $i + 1; $j < count($lettersArray); $j++) {
-                    if ($targetActive && $lettersArray[$i]->prefix !== $lettersArray[$j]->prefix) {
-                        $similarity = $this->calculateSimilarity($lettersArray[$i]->content_normalized, $lettersArray[$j]->content_normalized);
-                        if ($similarity >= $threshold) {
-                            $duplicates[] = [
-                                'letter1' => $lettersArray[$i],
-                                'letter2' => $lettersArray[$j],
-                                'similarity' => $similarity,
-                            ];
-                        }
-                    } elseif (!$targetActive && $lettersArray[$i]->prefix === $lettersArray[$j]->prefix) {
-                        $similarity = $this->calculateSimilarity($lettersArray[$i]->content_normalized, $lettersArray[$j]->content_normalized);
-                        if ($similarity >= $threshold) {
-                            $duplicates[] = [
-                                'letter1' => $lettersArray[$i],
-                                'letter2' => $lettersArray[$j],
-                                'similarity' => $similarity,
-                            ];
-                        }
+
+        foreach ($lettersArray as $i => $letter1) {
+            for ($j = $i + 1; $j < count($lettersArray); $j++) {
+                $letter2 = $lettersArray[$j];
+                if ($targetActive && $letter1->prefix !== $letter2->prefix || !$targetActive && $letter1->prefix === $letter2->prefix) {
+                    $similarity = $this->calculateSimilarity($letter1->content_normalized, $letter2->content_normalized);
+                    if ($similarity >= $threshold) {
+                        $duplicates[] = [
+                            'letter1' => $letter1,
+                            'letter2' => $letter2,
+                            'similarity' => $similarity,
+                        ];
                     }
                 }
             }
         }
-    
-        return $duplicates;
+
+        return collect($duplicates)->sortByDesc('similarity')->values()->all();
     }
 
     public function markDuplicates($duplicates)

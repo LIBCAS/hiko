@@ -7,7 +7,6 @@ use Livewire\Component;
 use Illuminate\Support\Collection;
 use Livewire\WithPagination;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
 use App\Models\Tenant;
 
 class DuplicatesTable extends Component
@@ -38,14 +37,13 @@ class DuplicatesTable extends Component
         $options = $tenants->pluck('name', 'table_prefix');
         $this->options = $options;
 
-        $this->filters['database'] = $this->currentDatabase;
+        $this->filters['database'] = '';
 
         $this->duplicates = collect();
     }
 
     public function updatedFilters($value, $name)
     {
-        // This method will be called automatically by Livewire whenever a filter is updated
         $this->search();
     }
 
@@ -83,7 +81,7 @@ class DuplicatesTable extends Component
 
     protected function findDuplicates(): Collection
     {
-        $prefixes = $this->currentDatabase == $this->filters['database'] ? [$this->currentDatabase] : [$this->currentDatabase, $this->filters['database']];
+        $prefixes = $this->filters['database'] ? [$this->currentDatabase, $this->filters['database']] : [$this->currentDatabase];
         $duplicateDetectionService = new DuplicateDetectionService($prefixes);
         $duplicates = $duplicateDetectionService->processDuplicates($this->filters['compare']);
         $duplicates = collect($duplicates);

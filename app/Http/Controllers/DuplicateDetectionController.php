@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Identity;
 use App\Services\DuplicateDetectionService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Contracts\View\View;
 
@@ -13,7 +11,7 @@ class DuplicateDetectionController extends Controller
     public function detectDuplicates(): JsonResponse
     {
         try {
-            $duplicateDetectionService = new DuplicateDetectionService();
+            $duplicateDetectionService = new DuplicateDetectionService([]);
             $potentialDuplicates = $duplicateDetectionService->processDuplicates();
             return response()->json(['duplicates' => $potentialDuplicates], 200);
         } catch (\Exception $e) {
