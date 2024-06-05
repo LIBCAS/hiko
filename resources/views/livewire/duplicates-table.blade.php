@@ -1,7 +1,6 @@
 <div>
     <x-filter-form>
         <div>
-            
             <span class="block text-sm">
                 {{ __('hiko.order_direction') }}
             </span>
@@ -27,18 +26,13 @@
         <label>
             <span class="block text-sm">Target database</span>
             <x-select wire:model="filters.database" class="w-full px-2 text-sm lg:w-40" wire:change="search">
-                <option value="">---</option>
+                <option value="current">Current</option>
                 @foreach($options as $value => $name)
                     @if($currentDatabase !== $value)
-                        <option value="{{ $value ?? '' }}">{{ $name }}</option>
+                        <option value="{{ $value }}" {{ $currentDatabase == $value ? 'selected' : '' }}>{{ $name }}</option>
                     @endif
                 @endforeach
             </x-select>
-        </label>
-
-        <label>
-            <span class="block text-sm">Number of results</span>
-            <x-input wire:model="filters.perPage" class="block w-full px-2 text-sm lg:w-32" type="text" wire:change="search" />
         </label>
     </x-filter-form>
 

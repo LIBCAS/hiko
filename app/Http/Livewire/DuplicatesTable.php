@@ -15,15 +15,15 @@ class DuplicatesTable extends Component
 
     public array $filters = [
         'compare' => 'full_texts',
-        'threshold' => 0.5,
-        'database' => '',
-        'perPage' => 10,
+        'threshold' => 0.5, // Default threshold value
+        'database' => 'current',
     ];
 
     public string $currentDatabase;
     public Collection $duplicates;
     public bool $showFiltersMessage = true;
     public Collection $options;
+    public int $perPage = 10; // Default per page value
 
     public function mount()
     {
@@ -37,18 +37,20 @@ class DuplicatesTable extends Component
         $options = $tenants->pluck('name', 'table_prefix');
         $this->options = $options;
 
-        $this->filters['database'] = '';
+        $this->filters['database'] = 'current';
 
         $this->duplicates = collect();
     }
 
     public function updatedFilters($value, $name)
     {
+        \Log::info('Filters updated:', $this->filters); // Debugging log
         $this->search();
     }
 
     public function search()
     {
+        \Log::info('Searching duplicates for filters:', $this->filters); // Debugging log
         $this->gotoPage(1);
         $this->duplicates = $this->findDuplicates();
         $this->showFiltersMessage = $this->duplicates->isEmpty();
@@ -57,6 +59,7 @@ class DuplicatesTable extends Component
     public function resetFilters()
     {
         $this->reset('filters');
+        $this->filters['database'] = 'current';
         $this->search();
     }
 
@@ -81,7 +84,14 @@ class DuplicatesTable extends Component
 
     protected function findDuplicates(): Collection
     {
-        $prefixes = $this->filters['database'] ? [$this->currentDatabase, $this->filters['database']] : [$this->currentDatabase];
+        // Use the current database prefix or compare with the selected target database
+        $prefixes = [$this->currentDatabase];
+
+        if ($this->filters['database'] !== 'current') {
+            $prefixes[] = $this->filters['database'];
+        }
+
+        \Log::info('Finding duplicates for prefixes:', $prefixes); // Debugging log
         $duplicateDetectionService = new DuplicateDetectionService($prefixes);
         $duplicates = $duplicateDetectionService->processDuplicates($this->filters['compare']);
         $duplicates = collect($duplicates);
@@ -129,12 +139,11 @@ class DuplicatesTable extends Component
 
     public function render()
     {
-        $perPage = $this->filters['perPage'];
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
 
         $duplicates = $this->findDuplicates();
-        $currentPageDuplicates = $duplicates->forPage($currentPage, $perPage);
-        $paginator = new LengthAwarePaginator($currentPageDuplicates, $duplicates->count(), $perPage, $currentPage);
+        $currentPageDuplicates = $duplicates->forPage($currentPage, $this->perPage);
+        $paginator = new LengthAwarePaginator($currentPageDuplicates, $duplicates->count(), $this->perPage, $currentPage);
 
         return view('livewire.duplicates-table', [
             'tableData' => $this->formatTableData($currentPageDuplicates),
