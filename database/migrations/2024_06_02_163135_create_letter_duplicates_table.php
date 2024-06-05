@@ -28,8 +28,14 @@ class CreateLetterDuplicatesTable extends Migration
                     $table->string('letter2_prefix');
                     $table->decimal('similarity', 5, 3);
                     $table->timestamps();
-                    // $table->foreign('letter1_id')->references('id')->on('letters')->onDelete('cascade');
-                    // $table->foreign('letter2_id')->references('id')->on('letters')->onDelete('cascade');
+                    $table->index(['letter1_id', 'letter2_id']);
+                });
+            } else {
+                // Add indexes to existing table if they don't already exist
+                Schema::table($tableName, function (Blueprint $table) {
+                    if (!Schema::hasColumn($tableName, 'letter1_id')) {
+                        $table->index(['letter1_id', 'letter2_id']);
+                    }
                 });
             }
         }

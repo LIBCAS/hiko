@@ -12,7 +12,7 @@
 
         <label>
             <span class="block text-sm">Similarity {{ number_format($filters['threshold'], 2) }}</span>
-            <x-input type="range" min="0.5" max="1" step="0.1" wire:model="filters.threshold" class="text-primary accent-[#6d28d9]" wire:change="search" />
+            <x-input type="range" min="0.4" max="1" step="0.1" wire:model="filters.threshold" class="text-primary accent-[#6d28d9]" wire:change="search" />
         </label>
 
         <label>

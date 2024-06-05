@@ -19,36 +19,42 @@ class DuplicateDetectionService
     {
         $letters = collect();
         $columns = $compareMethod === 'meta_data' ? [
-            'id', 'date_computed', 'explicit', 'incipit', 'copies', 'languages', 'date_note', 'recipient_note', 'author_note'
+            'id', 'date_computed', 'explicit', 'incipit', 'copies', 'languages', 'date_note', 'recipient_note', 'author_note', 
+            'destination_note', 'origin_note', 'abstract', 'notes_public' // Added new fields
         ] : [
             'id', 'content',
         ];
 
         foreach ($this->prefixes as $prefix) {
             $tableName = $prefix . '__letters';
-
+        
             if (!Schema::connection('hiko_historicka_korespondence_cz')->hasTable($tableName)) {
                 continue;
             }
-
+        
             try {
-                DB::connection('hiko_historicka_korespondence_cz')->table($tableName)
+                // Fetch up to 200 records from the current table
+                $allLetters = DB::connection('hiko_historicka_korespondence_cz')->table($tableName)
                     ->select($columns)
                     ->whereNotNull('date_computed')
                     ->when($compareMethod === 'full_texts', function ($query) {
                         return $query->whereNotNull('content');
                     })
                     ->orderBy('id')
-                    ->chunk(1000, function ($lettersFromTable) use (&$letters, $prefix) {
-                        $lettersFromTable->each(function ($letter) use ($prefix) {
-                            $letter->prefix = $prefix;
-                        });
-                        $letters = $letters->merge($lettersFromTable);
+                    ->limit(200)
+                    ->get();
+        
+                // Process records in chunks of 100
+                $allLetters->chunk(100)->each(function ($lettersFromTable) use (&$letters, $prefix) {
+                    $lettersFromTable->each(function ($letter) use ($prefix) {
+                        $letter->prefix = $prefix;
                     });
+                    $letters = $letters->merge($lettersFromTable);
+                });
             } catch (\Exception $e) {
                 \Log::error('Error retrieving letters from table ' . $tableName . ': ' . $e->getMessage());
             }
-        }
+        }        
 
         return $letters;
     }
@@ -77,7 +83,11 @@ class DuplicateDetectionService
                     $letter->languages ?? '',
                     $letter->recipient_note ?? '',
                     $letter->author_note ?? '',
-                    $letter->date_note ?? ''
+                    $letter->date_note ?? '',
+                    $letter->destination_note ?? '', // Added new fields
+                    $letter->origin_note ?? '', // Added new fields
+                    $letter->abstract ?? '', // Added new fields
+                    $letter->notes_public ?? '' // Added new fields
                 );
                 $letter->content_normalized = $normalizedContent;
             }
