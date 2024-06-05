@@ -27,12 +27,12 @@ class DuplicateDetectionService
         foreach ($this->prefixes as $prefix) {
             $tableName = $prefix . '__letters';
 
-            if (!Schema::connection('hikomulti')->hasTable($tableName)) {
+            if (!Schema::connection('hiko_historicka_korespondence_cz')->hasTable($tableName)) {
                 continue;
             }
 
             try {
-                DB::connection('hikomulti')->table($tableName)
+                DB::connection('hiko_historicka_korespondence_cz')->table($tableName)
                     ->select($columns)
                     ->whereNotNull('date_computed')
                     ->when($compareMethod === 'full_texts', function ($query) {
