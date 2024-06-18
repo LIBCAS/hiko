@@ -5,6 +5,7 @@ namespace App\Imports;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\QueryException;
 
 class PlacesImport
 {
@@ -42,7 +43,7 @@ class PlacesImport
                 ]);
 
                 $importCount++;
-
+                        } catch (QueryException $ex) {
             } catch (QueryException $ex) {
                 dump($ex->getMessage());
             }

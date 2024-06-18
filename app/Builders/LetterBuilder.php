@@ -117,7 +117,6 @@ class LetterBuilder extends Builder
             });
         }
 
-
         if (isset($filters['mentioned']) && !empty($filters['mentioned'])) {
             $this->addIdentityNameFilter('mentioned', $filters['mentioned']);
         }
@@ -140,6 +139,10 @@ class LetterBuilder extends Builder
                     $subquery->where('users.id', request()->user()->id);
                 });
             }
+        }
+
+        if (isset($filters['note']) && !empty($filters['note'])) {
+            $this->addNoteFilter($filters['note']);
         }
 
         return $this;
@@ -165,6 +168,22 @@ class LetterBuilder extends Builder
             $subquery
                 ->where('role', '=', $type)
                 ->where('name', 'LIKE', "%{$search}%");
+        });
+
+        return $this;
+    }
+
+    protected function addNoteFilter($search): LetterBuilder
+    {
+        $this->where(function ($query) use ($search) {
+            $query->where('date_note', 'LIKE', '%' . $search . '%')
+                  ->orWhere('author_note', 'LIKE', '%' . $search . '%')
+                  ->orWhere('recipient_note', 'LIKE', '%' . $search . '%')
+                  ->orWhere('destination_note', 'LIKE', '%' . $search . '%')
+                  ->orWhere('origin_note', 'LIKE', '%' . $search . '%')
+                  ->orWhere('people_mentioned_note', 'LIKE', '%' . $search . '%')
+                  ->orWhere('notes_private', 'LIKE', '%' . $search . '%')
+                  ->orWhere('notes_public', 'LIKE', '%' . $search . '%');
         });
 
         return $this;

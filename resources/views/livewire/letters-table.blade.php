@@ -67,6 +67,10 @@
             <x-input wire:model.defer="filters.languages" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
+            <span class="block text-sm">{{ __('hiko.note') }}</span>
+            <x-input wire:model.defer="filters.note" class="block w-full px-2 text-sm lg:w-32" type="text"/>
+        </label>
+        <label>
             <span class="block text-sm">
                 {{ __('hiko.media') }}
             </span>
