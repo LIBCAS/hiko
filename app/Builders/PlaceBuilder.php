@@ -16,6 +16,10 @@ class PlaceBuilder extends Builder
             $this->where('country', 'LIKE', "%" . $filters['country'] . "%");
         }
 
+        if (isset($filters['note']) && !empty($filters['note'])) {
+            $this->where('note', 'LIKE', "%" . $filters['note'] . "%");
+        }
+
         return $this;
     }
 }
