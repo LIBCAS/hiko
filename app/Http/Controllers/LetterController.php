@@ -5,19 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Letter;
 use App\Models\Identity;
 use App\Models\Language;
-use App\Jobs\LetterSaved;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Jobs\RegenerateNames;
+use App\Jobs\LetterSaved;
 use App\Exports\LettersExport;
+use App\Exports\PalladioCharacterExport;
 use App\Http\Requests\LetterRequest;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\PalladioCharacterExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\LetterController;
-
 
 class LetterController extends Controller
 {
@@ -45,17 +42,13 @@ class LetterController extends Controller
     public function store(LetterRequest $request): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';
-
         $letter = Letter::create($request->validated());
 
         $this->attachRelated($request, $letter);
-
         RegenerateNames::dispatch($letter->authors()->get());
         RegenerateNames::dispatch($letter->recipients()->get());
 
-        return redirect()
-            ->route($redirectRoute, $letter->id)
-            ->with('success', __('hiko.saved'));
+        return redirect()->route($redirectRoute, $letter->id)->with('success', __('hiko.saved'));
     }
 
     public function show(Letter $letter): View
@@ -83,18 +76,14 @@ class LetterController extends Controller
     public function update(LetterRequest $request, Letter $letter): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';
-
         $letter->update($request->validated());
 
         $this->attachRelated($request, $letter);
-
         LetterSaved::dispatch($letter);
         RegenerateNames::dispatch($letter->authors()->get());
         RegenerateNames::dispatch($letter->recipients()->get());
 
-        return redirect()
-            ->route($redirectRoute, $letter->id)
-            ->with('success', __('hiko.saved'));
+        return redirect()->route($redirectRoute, $letter->id)->with('success', __('hiko.saved'));
     }
 
     public function destroy(Letter $letter): RedirectResponse
@@ -111,12 +100,10 @@ class LetterController extends Controller
         RegenerateNames::dispatch($authors);
         RegenerateNames::dispatch($recipients);
 
-        return redirect()
-            ->route('letters')
-            ->with('success', __('hiko.removed'));
+        return redirect()->route('letters.index')->with('success', __('hiko.removed'));
     }
 
-    public function images(Letter $letter)
+    public function images(Letter $letter): View
     {
         return view('pages.letters.images', [
             'title' => __('hiko.letter') . ': ' .  $letter->id,
@@ -124,7 +111,7 @@ class LetterController extends Controller
         ]);
     }
 
-    public function text(Letter $letter)
+    public function text(Letter $letter): View
     {
         return view('pages.letters.text', [
             'title' => __('hiko.full_text') . ' – ' . __('hiko.letter') . ': ' .  $letter->id,
@@ -153,7 +140,7 @@ class LetterController extends Controller
             'selectedDestinations' => $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
             'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
             'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
-            'languages' => collect(Language::all())->pluck('name'),
+            'languages' => Language::all()->pluck('name'),
             'selectedLanguages' => request()->old('languages')
                 ? (array) request()->old('languages')
                 : explode(';', $letter->languages),
@@ -181,14 +168,13 @@ class LetterController extends Controller
         $letter->identities()->attach($mentioned);
     }
 
-    protected function prepareAttachmentData(Request $request, string $fieldKey, $role, $pivotFields = []): array
+    protected function prepareAttachmentData(Request $request, string $fieldKey, string $role, array $pivotFields = []): array
     {
         if (!isset($request->{$fieldKey})) {
             return [];
         }
 
         $items = [];
-
         foreach ((array) $request->{$fieldKey} as $key => $item) {
             if (isset($item['value']) && $item['value']) {
                 $result = [
@@ -208,7 +194,7 @@ class LetterController extends Controller
         return $items;
     }
 
-    protected function getSelectedMetaFields(Letter $letter, string $fieldKey, $pivotFields)
+    protected function getSelectedMetaFields(Letter $letter, string $fieldKey, array $pivotFields): array
     {
         if (request()->old($fieldKey)) {
             return is_array(request()->old($fieldKey))
@@ -232,31 +218,29 @@ class LetterController extends Controller
             ->toArray();
     }
 
-    protected function getSelectedMeta(Letter $letter, $model, string $fieldKey)
+    protected function getSelectedMeta(Letter $letter, string $model, string $fieldKey): array
     {
         if (!request()->old($fieldKey) && !$letter->{$fieldKey}) {
             return [];
         }
 
         $items = request()->old($fieldKey)
-            ? app('App\Models\\' . $model)::whereIn('id', request()->old($fieldKey))
-            ->orderByRaw('FIELD(id, ' . implode(',', request()->old($fieldKey)) . ')')
-            ->get()
+            ? app("App\Models\\{$model}")::whereIn('id', request()->old($fieldKey))
+                ->orderByRaw('FIELD(id, ' . implode(',', request()->old($fieldKey)) . ')')
+                ->get()
             : $letter->{$fieldKey};
 
-        return $items
-            ->map(function ($item) {
-                return [
-                    'value' => $item->id,
-                    'label' => is_array($item->name)
-                        ? $item->getTranslation('name', config('hiko.metadata_default_locale'))
-                        : $item->name,
-                ];
-            })
-            ->toArray();
+        return $items->map(function ($item) {
+            return [
+                'value' => $item->id,
+                'label' => is_array($item->name)
+                    ? $item->getTranslation('name', config('hiko.metadata_default_locale'))
+                    : $item->name,
+            ];
+        })->toArray();
     }
 
-    public function duplicate(Request $request, Letter $letter)
+    public function duplicate(Request $request, Letter $letter): RedirectResponse
     {
         $duplicatedLetter = $letter->replicate();
         $duplicatedLetter->save();
@@ -266,24 +250,19 @@ class LetterController extends Controller
         RegenerateNames::dispatch($duplicatedLetter->authors()->get());
         RegenerateNames::dispatch($duplicatedLetter->recipients()->get());
 
-        return redirect()
-            ->route('letters.edit', $duplicatedLetter->id)
-            ->with('success', __('hiko.duplicated'));
+        return redirect()->route('letters.edit', $duplicatedLetter->id)->with('success', __('hiko.duplicated'));
     }
 
     protected function duplicateRelatedEntities(Letter $sourceLetter, Letter $duplicatedLetter)
     {
-
         $duplicatedLetter->keywords()->sync($sourceLetter->keywords);
         $duplicatedLetter->identities()->detach();
         $duplicatedLetter->places()->detach();
 
         $this->attachRelatedEntities('authors', 'author', $sourceLetter, $duplicatedLetter);
         $this->attachRelatedEntities('recipients', 'recipient', $sourceLetter, $duplicatedLetter);
-
         $this->attachRelatedEntities('origins', 'origin', $sourceLetter, $duplicatedLetter);
         $this->attachRelatedEntities('destinations', 'destination', $sourceLetter, $duplicatedLetter);
-
         $this->attachRelatedEntities('mentioned', 'mentioned', $sourceLetter, $duplicatedLetter);
 
         $duplicatedLetter->languages = $sourceLetter->languages;
@@ -323,5 +302,4 @@ class LetterController extends Controller
 
         return $items;
     }
-
 }

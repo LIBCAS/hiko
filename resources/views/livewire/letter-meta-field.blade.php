@@ -3,13 +3,17 @@
         @foreach ($items as $item)
             <div wire:key="{{ $loop->index }}" class="p-3 space-y-6 bg-gray-200 shadow">
                 <div class="required">
-                    <x-label :for="$fieldKey . '-' . $loop->index" :value="$label" />
+                    @if(isset($item['label']))
+                        <x-label :for="$fieldKey . '-' . $loop->index" :value="$item['label']" />
+                    @else
+                        <x-label :for="$fieldKey . '-' . $loop->index" value="No Label" />
+                    @endif
                     <div x-data="ajaxChoices({ url: '{{ route($route) }}', element: document.getElementById('{{ $fieldKey . '-' . $loop->index }}'), change: (data) => { $wire.changeItemValue({{ $loop->index }}, data) } })" x-init="initSelect();
                     window.livewire.on('itemChanged', () => { initSelect() })" wire:key="{{ 'select-' . $loop->index }}">
                         <x-select wire:model.defer="items.{{ $loop->index }}.value" class="block w-full mt-1"
-                            name="{{ $fieldKey }}[{{ $loop->index }}][value] }}]" :id="$fieldKey . '-' . $loop->index">
+                            name="{{ $fieldKey }}[{{ $loop->index }}][value]" :id="$fieldKey . '-' . $loop->index">
                             @if (!empty($item['value']))
-                                <option value="{{ $item['value'] }}">{{ $item['label'] }}</option>
+                                <option value="{{ $item['value'] }}">{{ $item['label'] ?? 'No Label' }}</option>
                             @endif
                         </x-select>
                         @if (strpos(route($route), 'identity') !== false)
