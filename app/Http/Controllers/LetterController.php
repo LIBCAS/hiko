@@ -24,11 +24,15 @@ class LetterController extends Controller
             ? Identity::where('id', '=', config('hiko.main_character'))->select('surname')->first()
             : null;
 
-        return view('pages.letters.index', [
-            'title' => __('hiko.letters'),
-            'mainCharacter' => $mainCharacter ? $mainCharacter->surname : null,
-        ]);
-    }
+        if (tenancy()->initialized) {
+            $tenant = tenant();
+        } else {
+        }
+            return view('pages.letters.index', [
+                'title' => __('hiko.letters'),
+                'mainCharacter' => $mainCharacter ? $mainCharacter->surname : null,
+            ]);
+        }
 
     public function create(): View
     {

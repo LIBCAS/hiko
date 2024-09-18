@@ -16,10 +16,7 @@ class Profession extends Model
     use HasFactory;
     use Searchable;
 
-    protected $connection = 'tenant';
-
     public array $translatable = ['name'];
-
     protected $guarded = ['id'];
 
     public function searchableAs(): string
@@ -46,7 +43,7 @@ class Profession extends Model
         return $this->belongsToMany(Identity::class);
     }
 
-    public function newEloquentBuilder($query):ProfessionBuilder
+    public function newEloquentBuilder($query): ProfessionBuilder
     {
         return new ProfessionBuilder($query);
     }
@@ -55,4 +52,20 @@ class Profession extends Model
     {
         return json_encode($value, JSON_UNESCAPED_UNICODE);
     }
+
+    public function getTable()
+    {
+        if ($this->getConnectionName() === 'tenant') {
+            $tenantPrefix = tenant('table_prefix'); // Fetch the tenant's table prefix
+            return $tenantPrefix . '__professions';  // Formulate the tenant-specific table name
+        }
+        
+        return 'global_professions';  // Default global table
+    }    
+
+    public function getConnectionName()
+    {
+        return tenant() ? 'tenant' : 'mysql';  // Determine connection based on tenant context
+    }
 }
+

@@ -41,9 +41,100 @@ use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 |
 */
 
+// routes/web.php
+Route::prefix('professions')->middleware('use.global.connection')->group(function () {
+    Route::get('/', [ProfessionController::class, 'index'])
+        ->name('professions')
+        ->middleware(['auth', 'can:view-metadata']);
+
+    Route::get('create', [ProfessionController::class, 'create'])
+        ->name('professions.create')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('{profession}/edit', [ProfessionController::class, 'edit'])
+        ->name('professions.edit')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::post('/', [ProfessionController::class, 'store'])
+        ->name('professions.store')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::put('{profession}', [ProfessionController::class, 'update'])
+        ->name('professions.update')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::delete('{profession}', [ProfessionController::class, 'destroy'])
+        ->name('professions.destroy')
+        ->middleware(['auth', 'can:delete-metadata']);
+
+    Route::get('export', [ProfessionController::class, 'export'])
+        ->name('professions.export')
+        ->middleware(['auth', 'can:manage-metadata']);
+});
+
+Route::prefix('professions/category')->middleware('use.global.connection')->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('professions');
+    });
+
+    Route::get('create', [ProfessionCategoryController::class, 'create'])
+        ->name('professions.category.create')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::get('{professionCategory}/edit', [ProfessionCategoryController::class, 'edit'])
+        ->name('professions.category.edit')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::post('/', [ProfessionCategoryController::class, 'store'])
+        ->name('professions.category.store')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::put('{professionCategory}', [ProfessionCategoryController::class, 'update'])
+        ->name('professions.category.update')
+        ->middleware(['auth', 'can:manage-metadata']);
+
+    Route::delete('{professionCategory}', [ProfessionCategoryController::class, 'destroy'])
+        ->name('professions.category.destroy')
+        ->middleware(['auth', 'can:delete-metadata']);
+
+    Route::get('export', [ProfessionCategoryController::class, 'export'])
+        ->name('professions.category.export')
+        ->middleware(['auth', 'can:manage-metadata']);
+});
+
 Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () {
     Route::get('/', function () {
         return redirect()->route('letters');
+    });
+
+    Route::prefix('identities')->group(function () {
+        Route::get('/', [IdentityController::class, 'index'])
+            ->name('identities')
+            ->middleware(['auth', 'can:view-metadata']);
+
+        Route::get('create', [IdentityController::class, 'create'])
+            ->name('identities.create')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('{identity}/edit', [IdentityController::class, 'edit'])
+            ->name('identities.edit')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::post('/', [IdentityController::class, 'store'])
+            ->name('identities.store')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::put('{identity}', [IdentityController::class, 'update'])
+            ->name('identities.update')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::delete('{identity}', [IdentityController::class, 'destroy'])
+            ->name('identities.destroy')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('export', [IdentityController::class, 'export'])
+            ->name('identities.export')
+            ->middleware(['auth', 'can:manage-metadata']);
     });
 
     Route::prefix('users')->group(function () {
@@ -99,66 +190,6 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
         Route::get('export', [LocationController::class, 'export'])
             ->name('locations.export')
-            ->middleware(['auth', 'can:manage-metadata']);
-    });
-
-    Route::prefix('professions')->group(function () {
-        Route::get('/', [ProfessionController::class, 'index'])
-            ->name('professions')
-            ->middleware(['auth', 'can:view-metadata']);
-
-        Route::get('create', [ProfessionController::class, 'create'])
-            ->name('professions.create')
-            ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::get('{profession}/edit', [ProfessionController::class, 'edit'])
-            ->name('professions.edit')
-            ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::post('/', [ProfessionController::class, 'store'])
-            ->name('professions.store')
-            ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::put('{profession}', [ProfessionController::class, 'update'])
-            ->name('professions.update')
-            ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::delete('{profession}', [ProfessionController::class, 'destroy'])
-            ->name('professions.destroy')
-            ->middleware(['auth', 'can:delete-metadata']);
-
-        Route::get('export', [ProfessionController::class, 'export'])
-            ->name('professions.export')
-            ->middleware(['auth', 'can:manage-metadata']);
-    });
-
-    Route::prefix('professions/category')->group(function () {
-        Route::get('/', function () {
-            return redirect()->route('professions');
-        });
-
-        Route::get('create', [ProfessionCategoryController::class, 'create'])
-            ->name('professions.category.create')
-            ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::get('{professionCategory}/edit', [ProfessionCategoryController::class, 'edit'])
-            ->name('professions.category.edit')
-            ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::post('/', [ProfessionCategoryController::class, 'store'])
-            ->name('professions.category.store')
-            ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::put('{professionCategory}', [ProfessionCategoryController::class, 'update'])
-            ->name('professions.category.update')
-            ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::delete('{professionCategory}', [ProfessionCategoryController::class, 'destroy'])
-            ->name('professions.category.destroy')
-            ->middleware(['auth', 'can:delete-metadata']);
-
-        Route::get('export', [ProfessionCategoryController::class, 'export'])
-            ->name('professions.category.export')
             ->middleware(['auth', 'can:manage-metadata']);
     });
 
@@ -249,36 +280,6 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
         Route::get('export', [PlaceController::class, 'export'])
             ->name('places.export')
-            ->middleware(['auth', 'can:manage-metadata']);
-    });
-
-    Route::prefix('identities')->group(function () {
-        Route::get('/', [IdentityController::class, 'index'])
-            ->name('identities')
-            ->middleware(['auth', 'can:view-metadata']);
-
-        Route::get('create', [IdentityController::class, 'create'])
-            ->name('identities.create')
-            ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::get('{identity}/edit', [IdentityController::class, 'edit'])
-            ->name('identities.edit')
-            ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::post('/', [IdentityController::class, 'store'])
-            ->name('identities.store')
-            ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::put('{identity}', [IdentityController::class, 'update'])
-            ->name('identities.update')
-            ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::delete('{identity}', [IdentityController::class, 'destroy'])
-            ->name('identities.destroy')
-            ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::get('export', [IdentityController::class, 'export'])
-            ->name('identities.export')
             ->middleware(['auth', 'can:manage-metadata']);
     });
 

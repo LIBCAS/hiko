@@ -46,15 +46,15 @@ class Identity extends Model
         ];
     }
 
-    public function professions(): BelongsToMany
+    public function professions()
     {
-        return $this->belongsToMany(Profession::class)
+        return $this->belongsToMany(GlobalProfession::class, 'identity_profession', 'identity_id', 'global_profession_id')
             ->withPivot('position');
     }
 
-    public function profession_categories(): BelongsToMany
+    public function professionCategories()
     {
-        return $this->belongsToMany(ProfessionCategory::class)
+        return $this->belongsToMany(GlobalProfessionCategory::class, 'identity_profession_category', 'identity_id', 'global_profession_category_id')
             ->withPivot('position');
     }
 

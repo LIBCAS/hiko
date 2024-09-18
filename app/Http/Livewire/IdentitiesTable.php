@@ -47,6 +47,7 @@ class IdentitiesTable extends Component
     protected function findIdentities()
     {
         return Identity::with([
+
             'professions' => function ($subquery) {
                 $subquery->select('name')
                     ->orderBy('position');
@@ -55,22 +56,24 @@ class IdentitiesTable extends Component
                 $subquery->select('name')
                     ->orderBy('position');
             },
+
         ])
-            ->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names')
-            ->search($this->filters)
-            ->orderBy($this->filters['order'])
-            ->paginate(10);
-    }
+        ->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names')
+        ->search($this->filters)
+        ->orderBy($this->filters['order'])
+        ->paginate(10);
+    }    
 
     protected function formatRelatedNames($relatedNames): string
     {
         if (is_array($relatedNames)) {
-            // If $relatedNames is already an array, use it directly
+
             $formattedNames = array_map(function ($name) {
                 return $name['surname'] . ' ' . $name['forename'] . ' ' . $name['general_name_modifier'];
             }, $relatedNames);
+
         } else {
-            // If $relatedNames is a string, decode it first
+
             $relatedNamesArray = json_decode($relatedNames, true);
 
             if (is_array($relatedNamesArray)) {
@@ -78,7 +81,6 @@ class IdentitiesTable extends Component
                     return $name['surname'] . ' ' . $name['forename'] . ' ' . $name['general_name_modifier'];
                 }, $relatedNamesArray);
             } else {
-                // Handle the case where $relatedNames is neither an array nor a valid JSON string
                 return '';
             }
         }
@@ -89,7 +91,15 @@ class IdentitiesTable extends Component
     protected function formatTableData($data): array
     {
         return [
-            'header' => [__('hiko.name'), __('hiko.type'), __('hiko.dates'), __('hiko.related_names'), __('hiko.professions'), __('hiko.category'), __('hiko.merge')],
+            'header' => [
+                __('hiko.name'),
+                __('hiko.type'),
+                __('hiko.dates'),
+                __('hiko.related_names'),
+                __('hiko.professions'),
+                __('hiko.category'),
+                __('hiko.merge')
+            ],
             'rows' => $data->map(function ($identity) {
                 return [
                     [
@@ -115,20 +125,19 @@ class IdentitiesTable extends Component
                             ->map(function ($profession) {
                                 return $profession->getTranslation('name', config('hiko.metadata_default_locale'), false);
                             })
-                            ->toArray(),
+                            ->implode(', '),
                     ],
                     [
                         'label' => collect($identity->profession_categories)
-                            ->map(function ($profession) {
-                                return $profession->getTranslation('name', config('hiko.metadata_default_locale'), false);
+                            ->map(function ($category) {
+                                return $category->getTranslation('name', config('hiko.metadata_default_locale'), false);
                             })
-                            ->toArray(),
-                    ],
+                            ->implode(', '),
                     [
-                        'label' => $identity->alternative_names
+                        'label' => implode(', ', (array)$identity->alternative_names),
                     ],
                 ];
             })->toArray(),
         ];
-    }
+    }    
 }

@@ -16,6 +16,7 @@ class ProfessionCategory extends Model
     use HasTranslations;
     use Searchable;
 
+    protected $table = 'global_profession_categories';
     protected $connection = 'tenant';
 
     public array $translatable = ['name'];
