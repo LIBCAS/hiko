@@ -6,10 +6,15 @@ use App\Models\Letter;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Stancl\Tenancy\Middleware\InitializeTenancyByRequestData;
 
 class LettersTable extends Component
 {
     use WithPagination;
+
+    protected $middleware = [
+        InitializeTenancyByRequestData::class
+    ];
 
     public array $filters = [
         'order' => 'updated_at',
@@ -33,7 +38,6 @@ class LettersTable extends Component
     public function render()
     {
         $letters = $this->findLetters();
-
         return view('livewire.letters-table', [
             'tableData' => $this->formatTableData($letters),
             'pagination' => $letters,
@@ -48,6 +52,8 @@ class LettersTable extends Component
 
     protected function findLetters(): LengthAwarePaginator
     {
+        $tenantPrefix = tenancy()->tenant->table_prefix;
+
         $query = Letter::with([
             'identities' => function ($subquery) {
                 $subquery->select('name', 'related_names')
@@ -62,13 +68,16 @@ class LettersTable extends Component
                 $subquery->select('name');
             },
             'media' => function ($subquery) {
-                $subquery->select('model_id', 'model_type');
+                $tenantPrefix = tenancy()->tenant->table_prefix;
+                $subquery->select('model_id', 'model_type')
+                         ->from($tenantPrefix . '__media as media') // Assign an alias here
+                         ->where('model_type', Letter::class);      // Keep referencing the alias 'media'
             },
             'users' => function ($subquery) {
                 $subquery->select('users.id', 'name');
             },
         ])
-            ->select('id', 'uuid', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status');
+        ->select('id', 'uuid', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status');
 
         $query->filter($this->filters);
 
@@ -106,16 +115,16 @@ class LettersTable extends Component
                         'label' => collect($letter->copies)->pluck('signature')->toArray(),
                     ],
                     [
-                        'label' => collect($identities['author'] ?? [])->pluck('name')->ToArray(),
+                        'label' => collect($identities['author'] ?? [])->pluck('name')->toArray(),
                     ],
                     [
-                        'label' => collect($identities['recipient'] ?? [])->pluck('name')->ToArray(),
+                        'label' => collect($identities['recipient'] ?? [])->pluck('name')->toArray(),
                     ],
                     [
-                        'label' => collect($places['origin'] ?? [])->pluck('name')->ToArray(),
+                        'label' => collect($places['origin'] ?? [])->pluck('name')->toArray(),
                     ],
                     [
-                        'label' => collect($places['destination'] ?? [])->pluck('name')->ToArray(),
+                        'label' => collect($places['destination'] ?? [])->pluck('name')->toArray(),
                     ],
                     [
                         'label' => collect($letter->keywords)->map(function ($kw) {
@@ -126,7 +135,7 @@ class LettersTable extends Component
                         'label' => $letter->media->count(),
                     ],
                     [
-                        'label' => __("hiko.{$letter->status}"),  // public_url
+                        'label' => __("hiko.{$letter->status}"),
                         'link' => $showPublicUrl ? config('hiko.public_url') . '?letter=' . $letter->uuid : '',
                         'external' => $showPublicUrl,
                     ],

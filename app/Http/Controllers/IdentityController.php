@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Identity;
-use App\Models\GlobalProfession;
-use App\Models\GlobalProfessionCategory;
+use App\Models\Profession;
 use App\Exports\IdentitiesExport;
+use App\Models\ProfessionCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
@@ -41,12 +41,16 @@ class IdentityController extends Controller
 
     public function store(IdentityRequest $request): RedirectResponse
     {
+        $redirectRoute = $request->action === 'create' ? 'identities.create' : 'identities.edit';
+
         $validated = $request->validated();
+
         $identity = Identity::create($validated);
+
         $this->attachProfessionsAndCategories($identity, $validated);
 
         return redirect()
-            ->route('identities.edit', $identity->id)
+            ->route($redirectRoute, $identity->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -72,12 +76,16 @@ class IdentityController extends Controller
 
     public function update(IdentityRequest $request, Identity $identity): RedirectResponse
     {
+        $redirectRoute = $request->action === 'create' ? 'identities.create' : 'identities.edit';
+
         $validated = $request->validated();
+
         $identity->update($validated);
+
         $this->attachProfessionsAndCategories($identity, $validated);
 
         return redirect()
-            ->route('identities.edit', $identity->id)
+            ->route($redirectRoute, $identity->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -109,7 +117,7 @@ class IdentityController extends Controller
     protected function attachProfessionsAndCategories(Identity $identity, $validated)
     {
         $identity->professions()->detach();
-        $identity->professionCategories()->detach();
+        $identity->profession_categories()->detach();
 
         if (isset($validated['profession']) && !empty($validated['profession'])) {
             collect($validated['profession'])
@@ -121,7 +129,7 @@ class IdentityController extends Controller
         if (isset($validated['category']) && !empty($validated['category'])) {
             collect($validated['category'])
                 ->each(function ($category, $index) use ($identity) {
-                    $identity->professionCategories()->attach($category, ['position' => $index]);
+                    $identity->profession_categories()->attach($category, ['position' => $index]);
                 });
         }
     }
@@ -138,43 +146,49 @@ class IdentityController extends Controller
         }
 
         $professions = request()->old('profession')
-            ? GlobalProfession::whereIn('id', request()->old('profession'))
-                ->orderByRaw('FIELD(id, ' . implode(',', request()->old('profession')) . ')')->get()
-            : $identity->professions->sortBy('pivot.position');
+            ? Profession::whereIn('id', request()->old('profession'))
+            ->orderByRaw('FIELD(id, ' . implode(',', request()->old('profession')) . ')')->get()
+        : $identity->professions->sortBy('pivot.position');
 
-        return $professions
-            ->map(function ($profession) {
-                return [
-                    'value' => $profession->id,
-                    'label' => $profession->name,
-                ];
-            })
-            ->toArray();
+    return $professions
+        ->map(function ($profession) {
+            return [
+                'value' => $profession->id,
+                'label' => $profession->getTranslation('name', config('hiko.metadata_default_locale')),
+            ];
+        })
+        ->toArray();
+}
+
+protected function getSelectedCategories(Identity $identity): array
+{
+    if (!request()->old('category') && !$identity->profession_categories) {
+        return [];
     }
 
-    protected function getSelectedCategories(Identity $identity): array
-    {
-        if (!request()->old('category') && !$identity->professionCategories) {
-            return [];
-        }
+    $categories = request()->old('category')
+        ? ProfessionCategory::whereIn('id', request()->old('category'))
+            ->orderByRaw('FIELD(id, ' . implode(',', request()->old('category')) . ')')->get()
+        : $identity->profession_categories->sortBy('pivot.position');
 
-        $categories = request()->old('category')
-            ? GlobalProfessionCategory::whereIn('id', request()->old('category'))
-                ->orderByRaw('FIELD(id, ' . implode(',', request()->old('category')) . ')')->get()
-            : $identity->professionCategories->sortBy('pivot.position');
+    return $categories
+        ->map(function ($category) {
+            return [
+                'value' => $category->id,
+                'label' => $category->getTranslation('name', config('hiko.metadata_default_locale')),
+            ];
+        })
+        ->toArray();
+}
 
-        return $categories
-            ->map(function ($category) {
-                return [
-                    'value' => $category->id,
-                    'label' => $category->name,
-                ];
-            })
-            ->toArray();
+protected function getSelectedType(Identity $identity): string
+{
+    if (!request()->old('type') && !$identity->type) {
+        return 'person';
     }
 
-    protected function getSelectedType(Identity $identity): string
-    {
-        return request()->old('type') ? request()->old('type') : $identity->type ?? 'person';
-    }
+    return request()->old('type')
+        ? request()->old('type')
+        : $identity->type;
+}
 }

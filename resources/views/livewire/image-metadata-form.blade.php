@@ -10,7 +10,7 @@
     });">
         <div class="max-w-3xl space-y-3 border border-primary-light" x-ref="list">
             @foreach ($attachedImages as $image)
-                <div data-id="{{ $image->id }}" wire:key="{{ $image->id }}"
+                <div data-id="{{ $image['id'] }}" wire:key="{{ $image['id'] }}"
                     class="relative flex flex-wrap w-full p-3 space-x-6 border-b border-primary-light">
                     <div wire:loading>
                         <div
@@ -18,8 +18,7 @@
                             <svg class="h-24 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none"
                                 viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4">
-                                </circle>
+                                    stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor"
                                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                 </path>
@@ -29,17 +28,17 @@
                     <button type="button" class="outline-none handle">
                         <x-icons.hand class="h-8 text-primary " />
                     </button>
-                    <a href="{{ $image->getUrl() }}" target="_blank" class="block border" aria-label="{{ __('hiko.show_attachment') }}">
-                        <img src="{{ $image->getUrl('thumb') }}" alt="{{ __('hiko.attachment') }}" loading="lazy"
-                            class="w-48">
+                    <a href="{{ $image['original_url'] }}" target="_blank" class="block border" aria-label="{{ __('hiko.show_attachment') }}">
+                        <img src="{{ $image['thumb_url'] }}" alt="{{ __('hiko.attachment') }}" loading="lazy" class="w-48">
                     </a>
                     <div class="w-full max-w-sm">
                         <form class="w-full max-w-sm space-y-1"
-                            wire:submit.prevent="edit({{ $image->id }}, Object.fromEntries(new FormData($event.target)))">
+                            wire:submit.prevent="edit({{ $image['id'] }}, Object.fromEntries(new FormData($event.target)))">
                             <div>
                                 <x-label for="description" :value="__('hiko.description')" />
                                 <x-textarea name="description" id="description" class="block w-full mt-1">
-                                    {{ $image->getCustomProperty('description') }}</x-textarea>
+                                    {{ $image['custom_properties']['description'] ?? '' }}
+                                </x-textarea>
                             </div>
                             <legend class="font-semibold">
                                 {{ __('hiko.visibility') }}
@@ -47,21 +46,20 @@
                             <div>
                                 <div>
                                     <x-radio name="status" label="{{ __('hiko.draft') }}" value="private"
-                                        :checked="$image->getCustomProperty('status') === 'private'" name="status" required />
+                                        :checked="$image['custom_properties']['status'] === 'private'" name="status" required />
                                 </div>
                                 <div>
                                     <x-radio name="status" label="{{ __('hiko.publish') }}" value="publish"
-                                        :checked="$image->getCustomProperty('status') === 'publish'" name="status" required />
+                                        :checked="$image['custom_properties']['status'] === 'publish'" name="status" required />
                                 </div>
                             </div>
                             <x-button-simple class="w-full">
                                 {{ __('hiko.save') }}
                             </x-button-simple>
                         </form>
-                        <button wire:click="remove({{ $image->id }})" type="button"
+                        <button wire:click="remove({{ $image['id'] }})" type="button"
                             class="inline-flex items-center mt-6 space-x-3 text-red-600">
-                            <x-icons.remove class="h-4" /> <span
-                                class="text-sm">{{ __('hiko.remove') }}</span>
+                            <x-icons.remove class="h-4" /> <span class="text-sm">{{ __('hiko.remove') }}</span>
                         </button>
                     </div>
                 </div>

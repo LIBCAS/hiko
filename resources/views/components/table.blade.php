@@ -22,23 +22,23 @@
                                             <x-dynamic-component :component="$item['component']['name']" :args="$item['component']['args']" />
                                         @elseif (isset($item['link']) && !empty($item['link']) && isset($item['external']) && $item['external'])
                                             <a href="{{ $item['link'] }}" target="_blank" class="hover:underline">
-                                                {{ $item['label'] }} &#10697
+                                                {!! $item['label'] !!} &#10697
                                             </a>
                                         @elseif (isset($item['link']) && !empty($item['link']))
                                             <a href="{{ $item['link'] }}"
                                                 class="font-semibold text-primary-dark hover:underline">
-                                                {{ $item['label'] }}
+                                                {!! $item['label'] !!}
                                             </a>
                                         @elseif (is_array($item['label']))
                                             <ul>
                                                 @foreach ($item['label'] as $label)
                                                     <li>
-                                                        {{ $label }}
+                                                        {!! $label !!}
                                                     </li>
                                                 @endforeach
                                             </ul>
                                         @else
-                                            {{ $item['label'] }}
+                                            {!! $item['label'] !!}
                                         @endif
                                     </td>
                                 @endforeach

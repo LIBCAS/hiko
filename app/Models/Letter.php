@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Scout\Searchable;
 use App\Builders\LetterBuilder;
 use League\Flysystem\FileNotFoundException;
@@ -16,25 +17,40 @@ use TeamTNT\TNTSearch\Indexer\TNTIndexer;
 use Spatie\MediaLibrary\HasMedia\HasMedia;
 use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Stancl\Tenancy\Facades\Tenancy;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class Letter extends Model implements HasMedia
 {
-    use HasTranslations;
-    use HasMediaTrait;
-    use HasFactory;
-    use Searchable;
+    use HasTranslations, HasMediaTrait, HasFactory, Searchable;
 
-    protected $connection = 'tenant';
+    protected $connection = 'tenant';  // Ensure the tenant connection is used
 
     public $translatable = ['abstract'];
 
     protected $guarded = ['id', 'uuid'];
+
+    protected $table;  // Table will be set dynamically
 
     protected $casts = [
         'copies' => 'array',
         'related_resources' => 'array',
     ];
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+    
+        // Dynamically set the tenant-specific table name
+        if (tenancy()->tenant) {
+            $tenantPrefix = tenancy()->tenant->table_prefix;
+            $this->table = $tenantPrefix . '__letters';  // Tenant-specific table name
+        } else {
+            // Fallback to a global table if tenancy is not initialized
+            //$this->table = 'global_letters';  // Fallback table (if needed)
+        }
+    }    
     /**
      * @throws FileNotFoundException
      * @throws InvalidManipulation
@@ -67,16 +83,22 @@ class Letter extends Model implements HasMedia
 
     public function identities(): BelongsToMany
     {
-        return $this->belongsToMany(Identity::class)
-            ->withPivot('position', 'role', 'marked', 'salutation')
-            ->orderBy('pivot_position', 'asc');
+        return $this->belongsToMany(
+            Identity::class, 
+            tenancy()->tenant->table_prefix . '__identity_letter' // Tenant-specific pivot table
+        )
+        ->withPivot('position', 'role', 'marked', 'salutation')
+        ->orderBy('pivot_position', 'asc');
     }
 
     public function places(): BelongsToMany
     {
-        return $this->belongsToMany(Place::class)
-            ->withPivot('position', 'role', 'marked')
-            ->orderBy('pivot_position', 'asc');
+        return $this->belongsToMany(
+            Place::class, 
+            tenancy()->tenant->table_prefix . '__letter_place' // Tenant-specific pivot table
+        )
+        ->withPivot('position', 'role', 'marked')
+        ->orderBy('pivot_position', 'asc');
     }
 
     public function origins(): BelongsToMany
@@ -91,9 +113,29 @@ class Letter extends Model implements HasMedia
 
     public function keywords(): BelongsToMany
     {
-        return $this->belongsToMany(Keyword::class);
+        return $this->belongsToMany(
+            Keyword::class, tenancy()->tenant->table_prefix . '__keyword_letter'
+        )
+        ->withPivot('keyword_id', 'letter_id')
+        ->orderBy('pivot_keyword_id', 'asc');
     }
-
+    
+    public function media(): HasMany
+    {
+        if (tenancy()->tenant) {
+            $tenantPrefix = tenancy()->tenant->table_prefix;
+    
+            // Dynamically set the tenant-specific media table
+            return $this->hasMany(Media::class, 'model_id', 'id')
+                        ->where('model_type', Letter::class)
+                        ->from($tenantPrefix . '__media'); // Use tenant-specific media table
+        }
+    
+        // Fallback for non-tenant case
+        return $this->hasMany(Media::class, 'model_id', 'id')
+                    ->where('model_type', Letter::class);
+    }        
+    
     public function authors(): BelongsToMany
     {
         return $this->identities()->where('role', '=', 'author');
@@ -111,8 +153,12 @@ class Letter extends Model implements HasMedia
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class);
-    }
+        return $this->belongsToMany(
+            User::class, 
+            tenancy()->tenant->table_prefix . '__letter_user'
+        )
+        ->withPivot('letter_id', 'user_id');
+    }    
 
     public function getPrettyDateAttribute(): string
     {

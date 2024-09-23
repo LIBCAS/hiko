@@ -86,16 +86,27 @@ class LetterResource extends JsonResource
 
     protected function getPublishedMedia(): array
     {
-        return collect($this->getMedia())->filter(function ($media) {
-            return $media->getCustomProperty('status') === 'publish';
-        })->map(function ($media) {
-            return [
-                'thumb' => route('image', [$this, $media, 'size' => 'thumb']),
-                'full' => route('image', [$this, $media, 'size' => 'full']),
-                'description' => $media->getCustomProperty('description'),
-            ];
-        })->toArray();
-    }
+        if (tenancy()->tenant) {
+            $tenantPrefix = tenancy()->tenant->table_prefix;
+    
+            // Use tenant-specific media table
+            $mediaCollection = $this->getMedia()
+                ->from($tenantPrefix . '__media')
+                ->filter(function ($media) {
+                    return $media->getCustomProperty('status') === 'publish';
+                });
+    
+            return $mediaCollection->map(function ($media) {
+                return [
+                    'thumb' => route('image', [$this, $media, 'size' => 'thumb']),
+                    'full' => route('image', [$this, $media, 'size' => 'full']),
+                    'description' => $media->getCustomProperty('description'),
+                ];
+            })->toArray();
+        }
+    
+        return [];
+    }    
 
     protected function getSignatures(): array
     {

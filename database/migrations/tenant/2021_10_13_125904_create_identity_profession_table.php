@@ -15,25 +15,16 @@ class CreateIdentityProfessionTable extends Migration
     {
         Schema::create('identity_profession', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('identity_id');
-            $table->unsignedBigInteger('global_profession_id'); // Reference global professions
-            $table->integer('position')->nullable();
-    
-            // Foreign key constraints
-            $table->foreign('identity_id')
-                ->references('id')
-                ->on('identities')
+            $table->unique(['identity_id', 'profession_id']);
+            $table->foreignId('identity_id')
+                ->constrained()
                 ->onDelete('cascade');
-            
-            $table->foreign('global_profession_id')
-                ->references('id')
-                ->on('global_professions') // Reference the global professions table
-                ->onDelete('set null');
-    
-            // Unique constraint to avoid duplicate profession assignments
-            $table->unique(['identity_id', 'global_profession_id']);
+            $table->foreignId('profession_id')
+                ->constrained()
+                ->onDelete('cascade');
+            $table->integer('position')->nullable();
         });
-    }    
+    }
 
     /**
      * Reverse the migrations.

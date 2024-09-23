@@ -17,6 +17,17 @@ class Keyword extends Model
     protected $connection = 'tenant';
     protected $guarded = ['id'];
     public array $translatable = ['name'];
+    protected $table;
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        if (tenancy()->tenant) {
+            $tenantPrefix = tenancy()->tenant->table_prefix;
+            $this->table = $tenantPrefix . '__keywords';
+        }
+    }
 
     public function searchableAs(): string
     {

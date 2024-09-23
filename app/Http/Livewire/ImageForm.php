@@ -28,10 +28,13 @@ class ImageForm extends Component
             'images.*' => __('hiko.attachment'),
         ]);
 
-        collect($this->images)->each(function ($image) {
+        $tenantPrefix = tenancy()->tenant->table_prefix;
+
+        collect($this->images)->each(function ($image) use ($tenantPrefix) {
             $this->letter->addMedia($image->getRealPath())
                 ->usingFileName(Str::uuid() . '.' . pathinfo($image->getFilename())['extension'])
                 ->withCustomProperties(['status' => 'private'])
+                ->withCustomProperties(['table' => $tenantPrefix . '__media'])
                 ->toMediaCollection();
         });
 

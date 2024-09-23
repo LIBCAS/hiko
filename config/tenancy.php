@@ -7,55 +7,32 @@ use App\Models\Tenant;
 
 return [
     'tenant_model' => Tenant::class,
-    'id_generator' => null, // We want auto-incremented tenant ids instead of uuids
+    'id_generator' => null,
 
     'domain_model' => Domain::class,
 
-    /**
-     * The list of domains hosting your central app.
-     *
-     * Only relevant if you're using the domain or subdomain identification middleware.
-     */
     'central_domains' => [
         '127.0.0.1',
         'localhost',
     ],
 
-    /**
-     * Tenancy bootstrappers are executed when tenancy is initialized.
-     * Their responsibility is making Laravel features tenant-aware.
-     *
-     * To configure their behavior, see the config keys below.
-     */
     'bootstrappers' => [
-        // Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class, // Disable this because we use only 1 DB
         Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
-        // Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper::class, // Note: phpredis is needed
+        //Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class, 
         App\Tenancy\ConfigFilesystemTenancyBootstrapper::class,
         App\Tenancy\ConfigTenancyBootstrapper::class,
     ],
 
-    /**
-     * Database tenancy config. Used by DatabaseTenancyBootstrapper.
-     */
     'database' => [
-        'central_connection' => env('DB_CONNECTION', 'tenant'),
+        'central_connection' => env('DB_CONNECTION', 'central'),
 
-        /**
-         * Connection used as a "template" for the dynamically created tenant database connection.
-         * Note: don't name your template connection tenant. That name is reserved by package.
-         */
         'template_tenant_connection' => null,
 
-        /**
-         * Tenant database names are created like this:
-         * prefix + tenant_id + suffix.
-         */
-        'prefix' => '',
+        'prefix' => '', // This prefix can be used globally instead of separate tenant DBs
         'suffix' => '',
-
+        
         /**
          * TenantDatabaseManagers are classes that handle the creation & deletion of tenant databases.
          */

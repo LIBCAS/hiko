@@ -22,12 +22,12 @@ class DuplicateDetectionService
         foreach ($this->prefixes as $prefix) {
             $tableName = $prefix . '__letters';
     
-            if (!Schema::connection('hikomulti')->hasTable($tableName)) {
+            if (!Schema::connection('mysql')->hasTable($tableName)) {
                 continue;
             }
     
             try {
-                $lettersFromTable = DB::connection('hikomulti')
+                $lettersFromTable = DB::connection('mysql')
                     ->table($tableName)
                     ->select('explicit', 'content', 'date_computed', 'id') //TODO: add more fields
                     ->get();

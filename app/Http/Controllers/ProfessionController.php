@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Profession;
-use App\Models\GlobalProfession;
-use App\Models\GlobalProfessionCategory;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Exports\ProfessionsExport;
 use App\Models\ProfessionCategory;
 use Illuminate\View\View;
@@ -21,22 +20,20 @@ class ProfessionController extends Controller
         'category' => ['nullable', 'exists:profession_categories,id'],
     ];
 
-    public function getProfessions()
-    {
-        return GlobalProfession::all();
-    }
-
     public function index(): View
     {
-        $globalProfessions = GlobalProfession::all();
+        // Retrieve tenant-specific professions
+        $tenantProfessions = Profession::all(); 
     
-        $tenantProfessions = tenant() ? Profession::all() : collect();
+        // Retrieve global professions
+        $globalProfessions = DB::table('global_professions')->get();
     
-        $professions = $globalProfessions->merge($tenantProfessions);
+        // Combine both tenant-specific and global professions
+        $professions = $tenantProfessions->concat($globalProfessions);
     
         return view('pages.professions.index', [
             'title' => __('hiko.professions'),
-            'professions' => $professions,
+            'professions' => $professions, // Pass the merged professions to the view
         ]);
     }    
 
@@ -56,6 +53,7 @@ class ProfessionController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'professions.create' : 'professions.edit';
+
         $validated = $request->validate($this->rules);
 
         $profession = Profession::create([
@@ -91,6 +89,7 @@ class ProfessionController extends Controller
     public function update(Request $request, Profession $profession): RedirectResponse
     {
         $redirectRoute = $request->action === 'create' ? 'professions.create' : 'professions.edit';
+
         $validated = $request->validate($this->rules);
 
         $profession->update([
@@ -124,7 +123,7 @@ class ProfessionController extends Controller
 
     public function export(): BinaryFileResponse
     {
-        return Excel::download(new ProfessionsExport(), 'professions.xlsx');
+        return Excel::download(new ProfesionsExport, 'professions.xlsx');
     }
 
     protected function getCategory(Profession $profession): ?array
@@ -134,8 +133,9 @@ class ProfessionController extends Controller
         }
 
         $id = request()->old('category') ? request()->old('category') : $profession->profession_category->id;
+
         $category = request()->old('category')
-            ? ProfessionCategory::where('id', '=', request()->old('category'))->first()
+            ? ProfessionCategory::where('id', '=', request()->old('category'))->get()[0]
             : $profession->profession_category;
 
         return [
@@ -143,5 +143,4 @@ class ProfessionController extends Controller
             'label' => $category->getTranslation('name', config('hiko.metadata_default_locale')),
         ];
     }
-    
 }

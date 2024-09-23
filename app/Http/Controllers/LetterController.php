@@ -15,25 +15,31 @@ use App\Exports\PalladioCharacterExport;
 use App\Http\Requests\LetterRequest;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Stancl\Tenancy\Facades\Tenancy;
+
 
 class LetterController extends Controller
 {
     public function index(): View
     {
+        // Retrieve tenant-specific letters (tenant-specific table is handled dynamically by tenancy)
+        $letters = Letter::all(); 
+
+        // Fetch the main character based on config
         $mainCharacter = config('hiko.main_character')
             ? Identity::where('id', '=', config('hiko.main_character'))->select('surname')->first()
             : null;
-
-        if (tenancy()->initialized) {
-            $tenant = tenant();
-        } else {
-        }
-            return view('pages.letters.index', [
-                'title' => __('hiko.letters'),
-                'mainCharacter' => $mainCharacter ? $mainCharacter->surname : null,
-            ]);
-        }
-
+        
+        // Return the letters page view with the necessary data
+        return view('pages.letters.index', [
+            'title' => __('hiko.letters'),
+            'mainCharacter' => $mainCharacter ? $mainCharacter->surname : null,
+            'letters' => $letters, // Tenant-specific letters
+        ]);
+    }
+    
     public function create(): View
     {
         return view('pages.letters.form', array_merge([

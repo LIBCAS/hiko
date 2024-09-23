@@ -13,8 +13,18 @@ class Location extends Model
     use Searchable;
 
     protected $connection = 'tenant';
-
+    protected $table;
     protected $guarded = ['id'];
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        if (tenancy()->tenant) {
+            $tenantPrefix = tenancy()->tenant->table_prefix;
+            $this->table = $tenantPrefix . '__locations';
+        }
+    } 
 
     public function searchableAs(): string
     {

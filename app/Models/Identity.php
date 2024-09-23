@@ -3,18 +3,13 @@
 namespace App\Models;
 
 use App\Builders\IdentityBuilder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Laravel\Scout\Searchable;
+use Stancl\Tenancy\Facades\Tenancy;
 
 class Identity extends Model
 {
-    use HasFactory;
-    use Searchable;
-
     protected $connection = 'tenant';
-
     protected $guarded = ['id'];
 
     protected $casts = [
@@ -23,73 +18,41 @@ class Identity extends Model
         'related_names' => 'array',
     ];
 
-    public function searchableAs(): string
+    public function __construct(array $attributes = [])
     {
-        return 'identity_index';
-    }
+        parent::__construct($attributes);
 
-    public function toSearchableArray(): array
-    {
-        $names = $this->alternative_names;
-        $names[] = $this->name;
-
-        $names = collect($names)
-            ->reject(function ($name) {
-                return empty($name);
-            })
-            ->unique()
-            ->implode(', ');
-
-        return [
-            'id' => $this->id,
-            'names' => $names,
-        ];
-    }
-
-    public function professions()
-    {
-        return $this->belongsToMany(GlobalProfession::class, 'identity_profession', 'identity_id', 'global_profession_id')
-            ->withPivot('position');
-    }
-
-    public function professionCategories()
-    {
-        return $this->belongsToMany(GlobalProfessionCategory::class, 'identity_profession_category', 'identity_id', 'global_profession_category_id')
-            ->withPivot('position');
-    }
-
-    public function letters(): BelongsToMany
-    {
-        return $this->belongsToMany(Letter::class)
-            ->withPivot('marked');
-    }
-
-    public function getDatesAttribute()
-    {
-        if (empty($this->birth_year) && empty($this->death_year)) {
-            return '';
-        }
-
-        if ($this->birth_year && $this->death_year) {
-            return "({$this->birth_year}–{$this->death_year})";
-        }
-
-        if ($this->birth_year) {
-            return "({$this->birth_year}–)";
-        }
-
-        if ($this->death_year) {
-            return "(–{$this->death_year})";
+        // Dynamically set the tenant-specific table name
+        if (tenancy()->initialized) {
+            $tenantPrefix = tenancy()->tenant->table_prefix;
+            $this->table = $tenantPrefix . '__identities';  // Set tenant-specific table name
+        } else {
+            throw new \Exception('Tenancy not initialized.');
         }
     }
 
     public function newEloquentBuilder($query): IdentityBuilder
     {
-        return new IdentityBuilder($query);
+        return new IdentityBuilder($query);  // Use custom IdentityBuilder, if needed
     }
 
-    protected function asJson($value)
+    // Define relationships
+    public function professions(): BelongsToMany
     {
-        return json_encode($value, JSON_UNESCAPED_UNICODE);
+        return $this->belongsToMany(Profession::class)->withPivot('position');
+    }
+
+    public function profession_categories(): BelongsToMany
+    {
+        return $this->belongsToMany(ProfessionCategory::class)->withPivot('position');
+    }
+
+    // Define the relationship with the tenant-specific pivot table
+    public function letters(): BelongsToMany
+    {
+        // Use the tenant-specific pivot table (e.g., blekastad__identity_letter)
+        return $this->belongsToMany(Letter::class, tenancy()->tenant->table_prefix . '__identity_letter')
+            ->withPivot('position', 'role', 'marked', 'salutation')  // Include necessary pivot fields
+            ->orderBy('pivot_position', 'asc');  // Add ordering if necessary
     }
 }

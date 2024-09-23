@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Tenant;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -13,42 +14,61 @@ class BackfillGlobalProfessionIdsForTenants extends Command
 
     public function handle()
     {
-        $tenants = DB::table('tenants')->pluck('table_prefix');
+        // Fetch all tenants
+        $tenants = Tenant::all();
 
         foreach ($tenants as $tenant) {
-            $this->info("Backfilling for tenant: $tenant");
+            $this->info("Backfilling for tenant: {$tenant->name}");
 
-            if (!Schema::hasTable("{$tenant}__identity_profession") || !Schema::hasTable("{$tenant}__professions")) {
-                $this->warn("Skipping tenant $tenant as required tables do not exist.");
-                continue;
-            }
-
-            $professions = DB::table("{$tenant}__identity_profession")
-                ->join("{$tenant}__professions", "{$tenant}__identity_profession.profession_id", '=', "{$tenant}__professions.id")
-                ->get(["{$tenant}__identity_profession.id", "{$tenant}__professions.name"]);
-
-            foreach ($professions as $profession) {
-                $globalProfession = DB::table('global_professions')->where('name', $profession->name)->first();
-
-                if ($globalProfession) {
-                    DB::table("{$tenant}__identity_profession")
-                        ->where('id', $profession->id)
-                        ->update(['global_profession_id' => $globalProfession->id]);
+            try {
+                // No need for tenancy()->initialize(), as the DatabaseTenancyBootstrapper will handle prefixing
+                
+                // Check if the required tables exist for the tenant
+                if (!Schema::hasTable('identity_profession') || !Schema::hasTable('professions')) {
+                    $this->warn("Skipping tenant {$tenant->name} as required tables do not exist.");
+                    continue;
                 }
-            }
 
-            $categories = DB::table("{$tenant}__identity_profession_category")
-                ->join("{$tenant}__profession_categories", "{$tenant}__identity_profession_category.profession_category_id", '=', "{$tenant}__profession_categories.id")
-                ->get(["{$tenant}__identity_profession_category.id", "{$tenant}__profession_categories.name"]);
+                // Fetch tenant-specific professions and map them by name
+                $tenantProfessions = DB::table('professions')->pluck('id', 'name');
 
-            foreach ($categories as $category) {
-                $globalCategory = DB::table('global_profession_categories')->where('name', $category->name)->first();
+                // Fetch global professions and map them by name using the central connection
+                $globalProfessions = DB::table('mysql')->pluck('id', 'name');
 
-                if ($globalCategory) {
-                    DB::table("{$tenant}__identity_profession_category")
-                        ->where('id', $category->id)
-                        ->update(['global_profession_category_id' => $globalCategory->id]);
+                // Update tenant identity_profession table with matching global professions
+                foreach ($tenantProfessions as $name => $professionId) {
+                    if (isset($globalProfessions[$name])) {
+                        DB::table('identity_profession')
+                            ->where('profession_id', $professionId)
+                            ->update(['global_profession_id' => $globalProfessions[$name]]);
+                        $this->info("Updated profession '{$name}' with global ID for tenant: {$tenant->name}");
+                    } else {
+                        $this->warn("No global profession match found for '{$name}' in tenant {$tenant->name}.");
+                    }
                 }
+
+                // Check if the required tables for profession categories exist
+                if (Schema::hasTable('identity_profession_category') && Schema::hasTable('profession_categories')) {
+                    // Fetch tenant-specific categories and global categories
+                    $tenantCategories = DB::table('profession_categories')->pluck('id', 'name');
+                    $globalCategories = DB::connection('mysql')->table('global_profession_categories')->pluck('id', 'name');
+
+                    // Update tenant identity_profession_category table with matching global categories
+                    foreach ($tenantCategories as $name => $categoryId) {
+                        if (isset($globalCategories[$name])) {
+                            DB::table('identity_profession_category')
+                                ->where('profession_category_id', $categoryId)
+                                ->update(['global_profession_category_id' => $globalCategories[$name]]);
+                            $this->info("Updated profession category '{$name}' with global ID for tenant: {$tenant->name}");
+                        } else {
+                            $this->warn("No global profession category match found for '{$name}' in tenant {$tenant->name}.");
+                        }
+                    }
+                } else {
+                    $this->warn("Skipping profession categories for tenant {$tenant->name} as required tables do not exist.");
+                }
+            } catch (\Exception $e) {
+                $this->error("An error occurred for tenant {$tenant->name}: " . $e->getMessage());
             }
         }
 

@@ -46,30 +46,13 @@ return [
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'prefix_indexes' => true,
+            'prefix' => '', // No prefix here, it will be applied automatically by the Tenancy package
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-
-
-    'hikomulti' => [
-        'driver' => 'mysql',
-        'host' => env('HIKOMULTI_DB_HOST', 'localhost'),
-        'port' => env('HIKOMULTI_DB_PORT', '3306'),
-        'database' => env('HIKOMULTI_DB_DATABASE', 'hikomulti'),
-        'username' => env('HIKOMULTI_DB_USERNAME', 'root'),
-        'password' => env('HIKOMULTI_DB_PASSWORD', 'root'),
-        'unix_socket' => env('HIKOMULTI_DB_SOCKET', ''),
-        'charset' => 'utf8mb4',
-        'collation' => 'utf8mb4_unicode_ci',
-        'prefix' => '',
-        'strict' => true,
-        'engine' => null,
-    ],
 
         'sqlite' => [
             'driver' => 'sqlite',

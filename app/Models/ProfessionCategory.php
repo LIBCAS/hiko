@@ -9,6 +9,7 @@ use App\Builders\ProfessionBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Stancl\Tenancy\Facades\Tenancy;
 
 class ProfessionCategory extends Model
 {
@@ -16,12 +17,26 @@ class ProfessionCategory extends Model
     use HasTranslations;
     use Searchable;
 
-    protected $table = 'global_profession_categories';
     protected $connection = 'tenant';
+    protected $table; // We will dynamically set this
 
     public array $translatable = ['name'];
 
     protected $guarded = ['id'];
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        // Dynamically set the table name based on the tenant's prefix
+        if (tenancy()->initialized) {
+            $tenantPrefix = tenancy()->tenant->table_prefix;
+            $this->table = $tenantPrefix . '__profession_categories';
+        } else {
+            // If no tenant is initialized, fall back to the global categories table (if applicable)
+            $this->table = 'global_profession_categories'; // or just 'profession_categories' if using global
+        }
+    }
 
     public function searchableAs(): string
     {
@@ -37,7 +52,7 @@ class ProfessionCategory extends Model
         ];
     }
 
-    public function professions()
+    public function professions(): HasMany
     {
         return $this->hasMany('App\Models\Profession', 'profession_category_id');
     }

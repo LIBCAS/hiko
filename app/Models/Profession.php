@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Stancl\Tenancy\Facades\Tenancy;
 use App\Builders\ProfessionBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,8 +17,27 @@ class Profession extends Model
     use HasFactory;
     use Searchable;
 
+    protected $connection = 'tenant';
+
     public array $translatable = ['name'];
+
     protected $guarded = ['id'];
+
+    protected $table;
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        // Correctly check if tenancy is initialized in v3.x
+        if (tenancy()->initialized) {
+            $tenantPrefix = tenancy()->tenant->table_prefix; // Get the current tenant's table prefix
+            $this->table = $tenantPrefix . '__professions'; // Set the tenant-specific table
+        } else {
+            // Fallback to the global professions table (if no tenant is initialized)
+            $this->table = 'global_professions'; // You can adjust this to suit your needs
+        }
+    }
 
     public function searchableAs(): string
     {
@@ -52,20 +72,4 @@ class Profession extends Model
     {
         return json_encode($value, JSON_UNESCAPED_UNICODE);
     }
-
-    public function getTable()
-    {
-        if ($this->getConnectionName() === 'tenant') {
-            $tenantPrefix = tenant('table_prefix'); // Fetch the tenant's table prefix
-            return $tenantPrefix . '__professions';  // Formulate the tenant-specific table name
-        }
-        
-        return 'global_professions';  // Default global table
-    }    
-
-    public function getConnectionName()
-    {
-        return tenant() ? 'tenant' : 'mysql';  // Determine connection based on tenant context
-    }
 }
-

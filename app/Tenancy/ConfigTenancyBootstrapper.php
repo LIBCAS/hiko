@@ -7,17 +7,15 @@ use Stancl\Tenancy\Contracts\Tenant;
 
 class ConfigTenancyBootstrapper implements TenancyBootstrapper
 {
-    private $subdomain;
-
     public function bootstrap(Tenant $tenant)
     {
         config([
             'app.name' => $tenant->name,
             'database.default' => 'tenant',
-            'database.connections.tenant.prefix' => $tenant->table_prefix . '__',
-            'logging.default' => 'tenant',
-            'logging.channels.tenant.path' => storage_path() . '/logs/laravel.log',
-            'scout.prefix' => $tenant->table_prefix . '__',
+            'database.connections.tenant.prefix' => $tenant->table_prefix . '__',  // Dynamic table prefix for tenant
+            'logging.default' => 'tenant',  // Tenant-specific logging channel
+            'logging.channels.tenant.path' => storage_path() . '/logs/tenant-' . $tenant->table_prefix . '.log',  // Log file per tenant
+            'scout.prefix' => $tenant->table_prefix . '__',  // Prefix for scout search
             'hiko.geonames_username' => $tenant->geonames_username,
             'hiko.main_character' => $tenant->main_character,
             'hiko.metadata_default_locale' => $tenant->metadata_default_locale,
