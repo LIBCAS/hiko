@@ -11,7 +11,7 @@ class Identity extends Model
 {
     protected $connection = 'tenant';
     protected $guarded = ['id'];
-
+    protected $table;
     protected $casts = [
         'alternative_names' => 'array',
         'related_identity_resources' => 'array',
@@ -36,15 +36,25 @@ class Identity extends Model
         return new IdentityBuilder($query);  // Use custom IdentityBuilder, if needed
     }
 
-    // Define relationships
     public function professions(): BelongsToMany
     {
-        return $this->belongsToMany(Profession::class)->withPivot('position');
+        // Get the tenant-specific table prefix
+        $tenantPrefix = tenancy()->tenant->table_prefix;
+
+        // Use the tenant-specific pivot table (e.g., blekastad__identity_profession)
+        return $this->belongsToMany(Profession::class, $tenantPrefix . '__identity_profession')
+                    ->withPivot('position')
+                    ->orderBy('pivot_position', 'asc');
     }
 
     public function profession_categories(): BelongsToMany
     {
-        return $this->belongsToMany(ProfessionCategory::class)->withPivot('position');
+        $tenantPrefix = tenancy()->tenant->table_prefix;
+
+        // Use the tenant-specific pivot table for profession categories
+        return $this->belongsToMany(ProfessionCategory::class, $tenantPrefix . '__identity_profession_category')
+                    ->withPivot('position')
+                    ->orderBy('pivot_position', 'asc');
     }
 
     // Define the relationship with the tenant-specific pivot table

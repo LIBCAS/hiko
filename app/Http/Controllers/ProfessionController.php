@@ -22,12 +22,10 @@ class ProfessionController extends Controller
 
     public function index(): View
     {
-        // Retrieve tenant-specific professions
-        $tenantProfessions = Profession::all(); 
+        $tenantProfessions = Profession::where("name->{$locale}", 'like', '%' . $search . '%');
     
-        // Retrieve global professions
-        $globalProfessions = DB::table('global_professions')->get();
-    
+        $globalProfessions = GlobalProfession::where("name->{$locale}", 'like', '%' . $search . '%');
+
         // Combine both tenant-specific and global professions
         $professions = $tenantProfessions->concat($globalProfessions);
     

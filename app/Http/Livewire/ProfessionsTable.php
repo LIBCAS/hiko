@@ -6,7 +6,6 @@ use App\Models\Profession;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class ProfessionsTable extends Component
 {
@@ -24,9 +23,6 @@ class ProfessionsTable extends Component
     public function render()
     {
         $professions = $this->findProfessions();
-
-        // Log the table data to ensure it includes both tenant and global professions
-        Log::info('Table Data:', $this->formatTableData($professions));
 
         return view('livewire.professions-table', [
             'tableData' => $this->formatTableData($professions),
@@ -64,20 +60,11 @@ class ProfessionsTable extends Component
         $combinedProfessions = $tenantProfessions->union($globalProfessions)
             ->orderBy($this->filters['order'])
             ->paginate(10, ['*'], 'professionsPage');
-
-        // Log the query results to ensure global and tenant professions are fetched
-        Log::info('Tenant professions: ' . $tenantProfessions->toSql());
-        Log::info('Global professions: ' . $globalProfessions->toSql());
-        Log::info('Combined professions: ', $combinedProfessions->toArray());
-
         return $combinedProfessions;
     }
 
     protected function formatTableData($data)
     {
-        // Log the entire dataset for debugging purposes
-        Log::info('Profession Data:', $data->toArray());
-
         $header = auth()->user()->cannot('manage-metadata')
             ? ['CS', 'EN', __('hiko.category')]
             : ['', 'CS', 'EN', __('hiko.category')];
@@ -86,8 +73,6 @@ class ProfessionsTable extends Component
         return [
             'header' => $header,
             'rows' => $data->map(function ($pf) {
-                // Log the current profession for debugging
-                Log::info('Processing Profession:', ['id' => $pf->id, 'name' => $pf->name]);
 
                 // Access 'cs' and 'en' directly from the fields
                 $csName = !empty($pf->cs) ? $pf->cs : 'No CS name';

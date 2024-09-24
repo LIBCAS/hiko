@@ -20,7 +20,7 @@ class DuplicateDetectionService
         $letters = collect();
         $columns = $compareMethod === 'meta_data' ? [
             'id', 'date_computed', 'explicit', 'incipit', 'copies', 'languages', 'date_note', 'recipient_note', 'author_note', 
-            'destination_note', 'origin_note', 'abstract', 'notes_public' // Added new fields
+            'destination_note', 'origin_note', 'abstract', 'notes_public' 
         ] : [
             'id', 'content',
         ];
@@ -84,10 +84,10 @@ class DuplicateDetectionService
                     $letter->recipient_note ?? '',
                     $letter->author_note ?? '',
                     $letter->date_note ?? '',
-                    $letter->destination_note ?? '', // Added new fields
-                    $letter->origin_note ?? '', // Added new fields
-                    $letter->abstract ?? '', // Added new fields
-                    $letter->notes_public ?? '' // Added new fields
+                    $letter->destination_note ?? '', 
+                    $letter->origin_note ?? '', 
+                    $letter->abstract ?? '', 
+                    $letter->notes_public ?? '' 
                 );
                 $letter->content_normalized = $normalizedContent;
             }

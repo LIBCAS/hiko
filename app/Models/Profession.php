@@ -19,11 +19,17 @@ class Profession extends Model
 
     protected $connection = 'tenant';
 
+    protected $fillable = ['name', 'global_profession_id'];
+    
     public array $translatable = ['name'];
 
     protected $guarded = ['id'];
 
     protected $table;
+    
+    //protected $casts = [
+    //    'name' => 'array', // Cast the 'name' field to an array
+    //];
 
     public function __construct(array $attributes = [])
     {

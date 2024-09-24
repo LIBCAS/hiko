@@ -33,5 +33,4 @@ class GlobalProfessionController extends Controller
         return redirect()->route('admin.global-professions.index')->with('success', 'Global Profession created successfully.');
     }
 
-    // Similarly implement show, edit, update, destroy...
 }
