@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use App\Builders\KeywordBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
+use App\Builders\KeywordBuilder;
 
 class Keyword extends Model
 {
@@ -25,7 +25,7 @@ class Keyword extends Model
 
         if (tenancy()->tenant) {
             $tenantPrefix = tenancy()->tenant->table_prefix;
-            $this->table = $tenantPrefix . '__keywords';
+            $this->table = "{$tenantPrefix}__keywords";
         }
     }
 
@@ -45,20 +45,28 @@ class Keyword extends Model
 
     public function keyword_category(): BelongsTo
     {
-        return $this->belongsTo(KeywordCategory::class);
-    }
-
-    public function letters(): BelongsToMany
-    {
-        return $this->belongsToMany(Letter::class);
+        return $this->belongsTo(KeywordCategory::class, 'keyword_category_id', 'id');
     }
     
+    public function letters(): BelongsToMany
+    {
+        $tenantPrefix = tenancy()->tenant->table_prefix ?? '';
+        $pivotTable = "{$tenantPrefix}__keyword_letter";
+
+        return $this->belongsToMany(
+            Letter::class,
+            $pivotTable,
+            'keyword_id',
+            'letter_id'
+        );
+    }
+
     public function newEloquentBuilder($query): KeywordBuilder
     {
         return new KeywordBuilder($query);
     }
 
-    protected function asJson($value)
+    protected function asJson($value): string
     {
         return json_encode($value, JSON_UNESCAPED_UNICODE);
     }

@@ -31,7 +31,7 @@ class Letter extends Model implements HasMedia
 
     protected $guarded = ['id', 'uuid'];
 
-    protected $table;  // Table will be set dynamically
+    protected $table;
 
     protected $casts = [
         'copies' => 'array',
@@ -113,11 +113,15 @@ class Letter extends Model implements HasMedia
 
     public function keywords(): BelongsToMany
     {
+        $tenantPrefix = tenancy()->tenant->table_prefix ?? '';
+        $pivotTable = "{$tenantPrefix}__keyword_letter";
+
         return $this->belongsToMany(
-            Keyword::class, tenancy()->tenant->table_prefix . '__keyword_letter'
-        )
-        ->withPivot('keyword_id', 'letter_id')
-        ->orderBy('pivot_keyword_id', 'asc');
+            Keyword::class,
+            $pivotTable,
+            'letter_id',
+            'keyword_id'
+        );
     }
     
     public function media(): HasMany
