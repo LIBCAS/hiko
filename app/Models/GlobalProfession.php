@@ -3,25 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
 
 class GlobalProfession extends Model
 {
+    use HasTranslations;
+
+    public $translatable = ['name'];
     protected $connection = 'mysql';
     protected $table = 'global_professions';
     protected $guarded = ['id'];
 
-    protected $casts = [
-        'name' => 'array',
-    ];
-    
-    public function getTranslation($key, $locale)
+    public function profession_category()
     {
-        $value = $this->$key;
-        if (is_array($value)) {
-            return $value[$locale] ?? null;
-        } else {
-            $array = json_decode($value, true);
-            return $array[$locale] ?? null;
-        }
-    }
+        return $this->belongsTo(GlobalProfessionCategory::class, 'profession_category_id');
+    }    
 }

@@ -45,11 +45,30 @@ class NamesTable extends Component
 
     protected function findItems()
     {
-        return app('App\Models\\' . $this->model)::select('id', 'name', DB::raw("LOWER(JSON_EXTRACT(name, '$.cs')) AS cs"), DB::raw("LOWER(JSON_EXTRACT(name, '$.en')) AS en"))
-            ->search($this->filters)
-            ->orderBy($this->filters['order'])
-            ->paginate(10, ['*'], "{$this->model}Page");
-    }
+        $query = app('App\Models\\' . $this->model)::select(
+            'id',
+            'name',
+            DB::raw("LOWER(JSON_EXTRACT(name, '$.cs')) AS cs"),
+            DB::raw("LOWER(JSON_EXTRACT(name, '$.en')) AS en")
+        );
+    
+        // Implement search filters
+        if (!empty($this->filters['cs'])) {
+            $csFilter = strtolower($this->filters['cs']);
+            $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) LIKE ?", ["%{$csFilter}%"]);
+        }
+    
+        if (!empty($this->filters['en'])) {
+            $enFilter = strtolower($this->filters['en']);
+            $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$enFilter}%"]);
+        }
+    
+        // Order by specified field
+        $query->orderBy($this->filters['order']);
+    
+        // Paginate the results
+        return $query->paginate(10, ['*'], "{$this->model}Page");
+    }    
 
     protected function formatTableData($data): array
     {

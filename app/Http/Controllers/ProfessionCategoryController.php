@@ -9,7 +9,6 @@ use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProfessionCategoriesExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Illuminate\Support\Facades\Log;
 
 class ProfessionCategoryController extends Controller
 {
@@ -20,8 +19,6 @@ class ProfessionCategoryController extends Controller
 
     public function create(): View
     {
-        Log::info('Creating new Profession Category');
-        
         return view('pages.professions-categories.form', [
             'title' => __('hiko.new_professions_category'),
             'professionCategory' => new ProfessionCategory,
