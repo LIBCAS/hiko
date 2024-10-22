@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Models\ProfessionCategory;
-use App\Models\GlobalProfessionCategory;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProfessionCategoriesExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Models\Profession;
+use App\Models\GlobalProfession;
 
 class ProfessionCategoryController extends Controller
 {
@@ -20,7 +21,6 @@ class ProfessionCategoryController extends Controller
 
     public function create(): View
     {
-        // Display form for creating a tenant-specific profession category
         return view('pages.professions-categories.form', [
             'title' => __('hiko.new_professions_category'),
             'professionCategory' => new ProfessionCategory,
@@ -31,7 +31,6 @@ class ProfessionCategoryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        // Validate and store tenant-specific category
         $validated = $request->validate($this->rules);
         $professionCategory = ProfessionCategory::create([
             'name' => [
@@ -48,11 +47,12 @@ class ProfessionCategoryController extends Controller
     public function edit(ProfessionCategory $professionCategory): View
     {
         $professionCategory->load('professions');
-
-        // Pass $canAttachProfessions for user-specific permissions
-        $canAttachProfessions = auth()->user()->can('attach-professions', $professionCategory);
-
-        // Check if local or global connection
+    
+        // Check if we're using a tenant-specific or global context
+        $availableProfessions = tenancy()->initialized
+            ? Profession::all()  // Use tenant-specific professions table
+            : GlobalProfession::all();  // Use global professions table
+    
         return view('pages.professions-categories.form', [
             'title' => __('hiko.professions_category') . ': ' . $professionCategory->id,
             'professionCategory' => $professionCategory,
@@ -60,12 +60,9 @@ class ProfessionCategoryController extends Controller
             'action' => route('professions.category.update', $professionCategory),
             'label' => __('hiko.edit'),
             'professions' => $professionCategory->professions,
-            'availableProfessions' => $professionCategory->getConnectionName() === 'mysql'
-                ? GlobalProfessionCategory::all() // Global categories
-                : ProfessionCategory::all(), // Tenant-specific categories
-            'canAttachProfessions' => $canAttachProfessions,
+            'availableProfessions' => $availableProfessions,
         ]);
-    }
+    }    
 
     public function update(Request $request, ProfessionCategory $professionCategory): RedirectResponse
     {
@@ -95,4 +92,23 @@ class ProfessionCategoryController extends Controller
     {
         return Excel::download(new ProfessionCategoriesExport, 'profession-categories.xlsx');
     }
+
+    public function storeAttachedProfession(Request $request, ProfessionCategory $category): RedirectResponse
+    {
+        // Validate profession IDs
+        $validated = $request->validate([
+            'profession_ids' => 'required|array',
+            'profession_ids.*' => tenancy()->initialized
+                ? 'exists:' . tenancy()->tenant->table_prefix . '__professions,id'
+                : 'exists:global_professions,id',
+        ]);
+    
+        // Sync without detaching existing professions
+        $category->professions()->syncWithoutDetaching($validated['profession_ids']);
+    
+        // Redirect back to the edit page with a success message
+        return redirect()
+            ->route('professions.category.edit', $category->id)
+            ->with('success', __('hiko.professions_attached_successfully'));
+    }       
 }

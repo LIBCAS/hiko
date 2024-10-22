@@ -2,43 +2,24 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\Log;
-
 trait UsesTenantConnection
 {
-    /**
-     * Initialize the tenant-specific table name if tenancy is initialized.
-     *
-     * @return void
-     */
+    // Initialize the tenant-specific table if tenancy is initialized
     public function initializeUsesTenantTable()
     {
         if (tenancy()->initialized) {
-            $tenantPrefix = $this->getTenantPrefix();
-
-            // Set the table with tenant prefix
-            $tableName = $tenantPrefix . '__' . $this->getTable();
-
-            Log::info('Using tenant-specific table: ' . $tableName);
-
+            $tableName = $this->getTenantPrefix() . '__' . $this->getTable();
+            \Log::info('Using tenant-specific table: ' . $tableName);
             $this->setTable($tableName);
-        } else {
-            Log::warning('Tenancy is not initialized, using default table.');
         }
-    }
+    }    
 
-    /**
-     * Get the tenant-specific table prefix.
-     *
-     * @return string
-     */
+    // Get tenant-specific prefix from tenancy instance
     public function getTenantPrefix()
     {
         $prefix = tenancy()->tenant->table_prefix ?? '';
-
-        Log::info('Tenant prefix fetched: ' . $prefix);
-
-        // Ensure no trailing underscore
+        
+        // Ensure there's no accidental trailing underscore in the table prefix
         return rtrim($prefix, '_');
-    }
+    }    
 }

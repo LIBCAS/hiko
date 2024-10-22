@@ -165,8 +165,9 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
         Route::get('professions/category/{id}/attach', [ProfessionCategoryController::class, 'attachProfession'])
             ->name('professions.attach');
 
-        Route::post('professions/category/{id}/attach', [ProfessionCategoryController::class, 'storeAttachedProfession'])
-            ->name('professions.attach.store');
+        Route::post('professions/category/{category}/attach', [ProfessionCategoryController::class, 'storeAttachedProfession'])
+        ->name('professions.category.attach');        
+
     });
 
     Route::prefix('keywords')->group(function () {

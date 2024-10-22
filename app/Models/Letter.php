@@ -42,12 +42,15 @@ class Letter extends Model implements HasMedia
     {
         parent::__construct($attributes);
     
-        // Set tenant-specific or global table for letters
+        // Dynamically set the tenant-specific table name
         if (tenancy()->tenant) {
-            $this->table = tenancy()->tenant->table_prefix . '__letters';
+            $tenantPrefix = tenancy()->tenant->table_prefix;
+            $this->table = $tenantPrefix . '__letters';  // Tenant-specific table name
+        } else {
+            // Fallback to a global table if tenancy is not initialized
+            //$this->table = 'global_letters';  // Fallback table (if needed)
         }
-    }
-      
+    }    
     /**
      * @throws FileNotFoundException
      * @throws InvalidManipulation
@@ -80,17 +83,18 @@ class Letter extends Model implements HasMedia
 
     public function identities(): BelongsToMany
     {
+        // Dynamically determine the correct pivot table
         $pivotTable = tenancy()->initialized
-            ? $this->getTenantPrefix() . '__identity_letter'  // Correct pivot table name for tenant setup
+            ? $this->getTenantPrefix() . '__identity_letter'
             : 'global_identity_letter';
     
         return $this->belongsToMany(
             Identity::class,
-            $pivotTable,
-            'letter_id',
-            'identity_id'
-        );
-    }    
+            $pivotTable, // Tenant-aware or global pivot table
+            'letter_id', // Foreign key on the pivot table for letters
+            'identity_id' // Foreign key on the pivot table for identities
+        )->withPivot('role'); // Assuming you have a 'role' column in the pivot table
+    }      
 
     public function places(): BelongsToMany
     {

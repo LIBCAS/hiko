@@ -1,7 +1,7 @@
 <x-app-layout :title="__('Attach Profession')">
     <div class="max-w-lg mx-auto bg-white p-6 shadow rounded-md">
         <h2 class="text-xl font-semibold mb-4">{{ __('Attach Profession to Category') }}</h2>
-        <form action="{{ route('professions.attach.store', $professionCategory->id) }}" method="POST">
+        <form action="{{ route('professions.category.attach', ['category' => $professionCategory->id]) }}" method="POST">
             @csrf
             <div class="mb-4">
                 <x-label for="profession_id" :value="__('Select Profession')" />

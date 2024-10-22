@@ -10,7 +10,7 @@ class IdentityProfessionCategory extends Model
     use UsesTenantConnection;
 
     protected $guarded = ['id'];
-    protected $connection = 'tenant'; // Use tenant-specific connection
+    protected $connection = 'tenant';
     public $incrementing = false;
     public $timestamps = false;
     protected $primaryKey = null;
@@ -21,7 +21,6 @@ class IdentityProfessionCategory extends Model
     {
         parent::__construct($attributes);
 
-        // Handles tenant-specific table name dynamically
-        $this->initializeUsesTenantTable(); 
+        $this->initializeUsesTenantTable(); // Handles tenant-specific table name dynamically
     }
 }

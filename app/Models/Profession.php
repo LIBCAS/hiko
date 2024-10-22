@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Builder;
 use Spatie\Translatable\HasTranslations;
 use App\Traits\UsesTenantConnection;
 
@@ -13,15 +12,19 @@ class Profession extends Model
     use UsesTenantConnection, HasTranslations;
 
     protected $guarded = ['id'];
+
+    // Define which attributes are translatable
     public $translatable = ['name'];
 
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-
-        // Set table name for tenant-specific professions
-        $this->setTable($this->getTenantPrefix() . '__professions');
-    }
+    
+       // Dynamically set table name only when tenant is initialized
+        $this->setTable(
+            tenancy()->initialized ? $this->getTenantPrefix() . '__professions' : 'global_professions'
+        );
+    }     
 
     /**
      * Get the profession category associated with this profession.
@@ -46,31 +49,5 @@ class Profession extends Model
             'profession_id',
             'identity_id'
         );
-    }
-
-    /**
-     * Apply filters to the query based on the provided filters array.
-     *
-     * @param Builder $query
-     * @param array $filters
-     * @return Builder
-     */
-    public function scopeApplyFilters(Builder $query, array $filters): Builder
-    {
-        if (!empty($filters['cs'])) {
-            $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) LIKE ?", ["%".strtolower($filters['cs'])."%"]);
-        }
-
-        if (!empty($filters['en'])) {
-            $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%".strtolower($filters['en'])."%"]);
-        }
-
-        if (!empty($filters['category'])) {
-            $query->whereHas('profession_category', function ($categoryQuery) use ($filters) {
-                $categoryQuery->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) LIKE ?", ["%".strtolower($filters['category'])."%"]);
-            });
-        }
-
-        return $query;
     }
 }
