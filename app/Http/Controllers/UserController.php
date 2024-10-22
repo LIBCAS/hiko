@@ -19,7 +19,7 @@ class UserController extends Controller
     {
         return view('pages.users.index', [
             'title' => __('hiko.users'),
-            'roles' => $this->getRoles(),
+            'roles' => ['admin', 'editor', 'guest', 'developer', 'contributor'],
         ]);
     }
 
@@ -30,7 +30,7 @@ class UserController extends Controller
             'user' => new User,
             'action' => route('users.store'),
             'label' => __('hiko.create'),
-            'roles' => $this->getRoles(),
+            'roles' => ['admin', 'editor', 'guest', 'developer', 'contributor'],
             'editEmail' => true,
             'editStatus' => false,
         ]);
@@ -38,9 +38,11 @@ class UserController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $user = User::create($request->validate(array_merge($this->rules, [
+        $validated = $request->validate(array_merge($this->rules, [
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-        ])));
+        ]));
+
+        $user = User::create($validated);
 
         return redirect()
             ->route('users.edit', $user->id)
@@ -55,7 +57,7 @@ class UserController extends Controller
             'action' => route('users.update', $user),
             'method' => 'PUT',
             'label' => __('hiko.edit'),
-            'roles' => $this->getRoles(),
+            'roles' => ['admin', 'editor', 'guest', 'developer', 'contributor'],
             'editEmail' => false,
             'editStatus' => true,
             'active' => empty($user->deactivated_at),
@@ -83,10 +85,5 @@ class UserController extends Controller
         return redirect()
             ->route('users')
             ->with('success', __('hiko.removed'));
-    }
-
-    protected function getRoles(): array
-    {
-        return ['admin', 'editor', 'guest', 'developer', 'contributor'];
     }
 }

@@ -22,40 +22,28 @@ class ProfessionController extends Controller
 
     public function index(): View
     {
-        // Retrieve tenant-specific professions
-        $tenantProfessions = Profession::all(); 
-    
-        // Retrieve global professions
-        $globalProfessions = DB::table('global_professions')->get();
-    
-        // Combine both tenant-specific and global professions
-        $professions = $tenantProfessions->concat($globalProfessions);
-    
+        $professions = Profession::all()->concat(DB::table('global_professions')->get());
+
         return view('pages.professions.index', [
             'title' => __('hiko.professions'),
-            'professions' => $professions, // Pass the merged professions to the view
+            'professions' => $professions,
         ]);
-    }    
+    }
 
     public function create(): View
     {
-        $profession = new Profession;
-
         return view('pages.professions.form', [
             'title' => __('hiko.new_profession'),
-            'profession' => $profession,
+            'profession' => new Profession,
             'action' => route('professions.store'),
             'label' => __('hiko.create'),
-            'category' => $this->getCategory($profession),
+            'category' => null,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $redirectRoute = $request->action === 'create' ? 'professions.create' : 'professions.edit';
-
         $validated = $request->validate($this->rules);
-
         $profession = Profession::create([
             'name' => [
                 'cs' => $validated['cs'],
@@ -67,31 +55,28 @@ class ProfessionController extends Controller
             $profession->profession_category()->associate($validated['category']);
         }
 
-        $profession->save();
-
         return redirect()
-            ->route($redirectRoute, $profession->id)
+            ->route('professions.edit', $profession->id)
             ->with('success', __('hiko.saved'));
     }
 
     public function edit(Profession $profession): View
     {
+        $profession->load('identities');
+
         return view('pages.professions.form', [
-            'title' => __('hiko.profession') . ': ' . $profession->id,
+            'title' => __('hiko.edit_profession'),
             'profession' => $profession,
+            'action' => route('professions.update', $profession->id),
             'method' => 'PUT',
-            'action' => route('professions.update', $profession),
-            'label' => __('hiko.edit'),
-            'category' => $this->getCategory($profession),
+            'label' => __('hiko.save'),
+            'category' => null,
         ]);
     }
 
     public function update(Request $request, Profession $profession): RedirectResponse
     {
-        $redirectRoute = $request->action === 'create' ? 'professions.create' : 'professions.edit';
-
         $validated = $request->validate($this->rules);
-
         $profession->update([
             'name' => [
                 'cs' => $validated['cs'],
@@ -100,15 +85,12 @@ class ProfessionController extends Controller
         ]);
 
         $profession->profession_category()->dissociate();
-
         if (isset($validated['category'])) {
             $profession->profession_category()->associate($validated['category']);
         }
 
-        $profession->save();
-
         return redirect()
-            ->route($redirectRoute, $profession->id)
+            ->route('professions.edit', $profession->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -123,24 +105,6 @@ class ProfessionController extends Controller
 
     public function export(): BinaryFileResponse
     {
-        return Excel::download(new ProfesionsExport, 'professions.xlsx');
-    }
-
-    protected function getCategory(Profession $profession): ?array
-    {
-        if (!$profession->profession_category && !request()->old('category')) {
-            return null;
-        }
-
-        $id = request()->old('category') ? request()->old('category') : $profession->profession_category->id;
-
-        $category = request()->old('category')
-            ? ProfessionCategory::where('id', '=', request()->old('category'))->get()[0]
-            : $profession->profession_category;
-
-        return [
-            'id' => $id,
-            'label' => $category->getTranslation('name', config('hiko.metadata_default_locale')),
-        ];
+        return Excel::download(new ProfessionsExport, 'professions.xlsx');
     }
 }

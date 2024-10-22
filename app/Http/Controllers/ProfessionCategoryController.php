@@ -9,6 +9,8 @@ use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProfessionCategoriesExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Models\Profession;
+use App\Models\GlobalProfession;
 
 class ProfessionCategoryController extends Controller
 {
@@ -29,10 +31,7 @@ class ProfessionCategoryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $redirectRoute = $request->action === 'create' ? 'professions.category.create' : 'professions.category.edit';
-
         $validated = $request->validate($this->rules);
-
         $professionCategory = ProfessionCategory::create([
             'name' => [
                 'cs' => $validated['cs'],
@@ -41,30 +40,30 @@ class ProfessionCategoryController extends Controller
         ]);
 
         return redirect()
-            ->route($redirectRoute, $professionCategory->id)
+            ->route('professions.category.edit', $professionCategory->id)
             ->with('success', __('hiko.saved'));
     }
 
     public function edit(ProfessionCategory $professionCategory): View
     {
-        $professions = $professionCategory->professions;
-        
+        $professionCategory->load('professions');
+
         return view('pages.professions-categories.form', [
             'title' => __('hiko.professions_category') . ': ' . $professionCategory->id,
             'professionCategory' => $professionCategory,
             'method' => 'PUT',
             'action' => route('professions.category.update', $professionCategory),
             'label' => __('hiko.edit'),
-            'professions' => $professions,
+            'professions' => $professionCategory->professions,
+            'availableProfessions' => $professionCategory->getConnectionName() === 'mysql'
+                ? GlobalProfession::all()
+                : Profession::all(),
         ]);
     }
 
     public function update(Request $request, ProfessionCategory $professionCategory): RedirectResponse
     {
-        $redirectRoute = $request->action === 'create' ? 'professions.category.create' : 'professions.category.edit';
-
         $validated = $request->validate($this->rules);
-
         $professionCategory->update([
             'name' => [
                 'cs' => $validated['cs'],
@@ -73,7 +72,7 @@ class ProfessionCategoryController extends Controller
         ]);
 
         return redirect()
-            ->route($redirectRoute, $professionCategory->id)
+            ->route('professions.category.edit', $professionCategory->id)
             ->with('success', __('hiko.saved'));
     }
 

@@ -2,73 +2,50 @@
 
 namespace App\Models;
 
-use Stancl\Tenancy\Facades\Tenancy;
-use App\Builders\ProfessionBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\Translatable\HasTranslations;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Laravel\Scout\Searchable;
+use App\Traits\UsesTenantConnection;
 
 class Profession extends Model
 {
-    use HasTranslations, HasFactory, Searchable;
-
-    protected $connection = 'tenant';
-
-    protected $fillable = ['name', 'global_profession_id'];
-    
-    public array $translatable = ['name'];
+    use UsesTenantConnection, HasTranslations;
 
     protected $guarded = ['id'];
 
-    protected $table;
+    // Define which attributes are translatable
+    public $translatable = ['name'];
 
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
 
-        if (tenancy()->initialized) {
-            $tenantPrefix = tenancy()->tenant->table_prefix;
-            $this->table = $tenantPrefix . '__professions';
-        } else {
-            // Handle the case where tenancy is not initialized
-            $this->table = 'professions'; // Or throw an exception
-        }
+        // Ensure the tenant-specific table name is set
+        $this->setTable($this->getTenantPrefix() . '__professions');
     }
 
-    public function searchableAs(): string
-    {
-        return 'profession_index';
-    }
-
-    public function toSearchableArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'cs' => $this->getTranslation('name', 'cs'),
-            'en' => $this->getTranslation('name', 'en'),
-        ];
-    }
-
-    public function profession_category()
+    /**
+     * Get the profession category associated with this profession.
+     */
+    public function profession_category(): BelongsTo
     {
         return $this->belongsTo(ProfessionCategory::class, 'profession_category_id');
-    }    
-
-    public function identities(): BelongsToMany
-    {
-        return $this->belongsToMany(Identity::class);
     }
 
-    public function newEloquentBuilder($query): ProfessionBuilder
+    /**
+     * Get identities associated with this profession.
+     */
+    public function identities()
     {
-        return new ProfessionBuilder($query);
-    }
+        $pivotTable = tenancy()->initialized
+            ? $this->getTenantPrefix() . '__identity_profession'
+            : 'global_identity_profession';
 
-    protected function asJson($value)
-    {
-        return json_encode($value, JSON_UNESCAPED_UNICODE);
+        return $this->belongsToMany(
+            Identity::class,
+            $pivotTable,
+            'profession_id',
+            'identity_id'
+        );
     }
 }

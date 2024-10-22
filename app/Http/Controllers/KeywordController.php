@@ -28,23 +28,18 @@ class KeywordController extends Controller
 
     public function create(): View
     {
-        $keyword = new Keyword;
-
         return view('pages.keywords.form', [
             'title' => __('hiko.new_keyword'),
-            'keyword' => $keyword,
+            'keyword' => new Keyword,
             'action' => route('keywords.store'),
             'label' => __('hiko.create'),
-            'category' => $this->getCategory($keyword),
+            'category' => null,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $redirectRoute = $request->action === 'create' ? 'keywords.create' : 'keywords.edit';
-
         $validated = $request->validate($this->rules);
-
         $keyword = Keyword::create([
             'name' => [
                 'cs' => $validated['cs'],
@@ -56,33 +51,28 @@ class KeywordController extends Controller
             $keyword->keyword_category()->associate($validated['category']);
         }
 
-        $keyword->save();
-
         return redirect()
-            ->route($redirectRoute, $keyword->id)
+            ->route('keywords.edit', $keyword->id)
             ->with('success', __('hiko.saved'));
     }
 
     public function edit(Keyword $keyword): View
-    {   
+    {
         $keyword->load(['letters.identities', 'letters.places']);
-    
+
         return view('pages.keywords.form', [
             'title' => __('hiko.keyword') . ': ' . $keyword->id,
             'keyword' => $keyword,
             'method' => 'PUT',
             'action' => route('keywords.update', $keyword),
             'label' => __('hiko.edit'),
-            'category' => $this->getCategory($keyword),
+            'category' => null,
         ]);
-    }   
+    }
 
     public function update(Request $request, Keyword $keyword): RedirectResponse
     {
-        $redirectRoute = $request->action === 'create' ? 'keywords.create' : 'keywords.edit';
-
         $validated = $request->validate($this->rules);
-
         $keyword->update([
             'name' => [
                 'cs' => $validated['cs'],
@@ -91,15 +81,12 @@ class KeywordController extends Controller
         ]);
 
         $keyword->keyword_category()->dissociate();
-
         if (isset($validated['category'])) {
             $keyword->keyword_category()->associate($validated['category']);
         }
 
-        $keyword->save();
-
         return redirect()
-            ->route($redirectRoute, $keyword->id)
+            ->route('keywords.edit', $keyword->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -115,38 +102,5 @@ class KeywordController extends Controller
     public function export(): BinaryFileResponse
     {
         return Excel::download(new KeywordsExport, 'keywords.xlsx');
-    }
-
-    protected function getCategory(Keyword $keyword): ?array
-    {
-        if (!$keyword->keyword_category && !request()->old('category')) {
-            return null;
-        }
-        
-        $id = request()->old('category') ? request()->old('category') : $keyword->keyword_category->id;
-
-        $category = request()->old('category')
-            ? KeywordCategory::where('id', '=', request()->old('category'))->get()[0]
-            : $keyword->keyword_category;
-
-        return [
-            'id' => $id,
-            'label' => $category->getTranslation('name', config('hiko.metadata_default_locale')),
-        ];
-    }
-
-    protected function getLetters(Keyword $keyword): ?array
-    {
-        if ($keyword->letters->isEmpty() && !request()->old('letters')) {
-            return null;
-        }
-    
-        $letters = request()->old('letters') ? request()->old('letters') : $keyword->letters;
-    
-        return $letters->map(function ($letter) {
-            return [
-                'id' => $letter->id,
-            ];
-        })->toArray();
     }
 }

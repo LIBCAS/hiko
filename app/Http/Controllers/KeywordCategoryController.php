@@ -29,10 +29,7 @@ class KeywordCategoryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $redirectRoute = $request->action === 'create' ? 'keywords.category.create' : 'keywords.category.edit';
-
         $validated = $request->validate($this->rules);
-
         $keywordCategory = KeywordCategory::create([
             'name' => [
                 'cs' => $validated['cs'],
@@ -41,7 +38,7 @@ class KeywordCategoryController extends Controller
         ]);
 
         return redirect()
-            ->route($redirectRoute, $keywordCategory->id)
+            ->route('keywords.category.edit', $keywordCategory->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -58,10 +55,7 @@ class KeywordCategoryController extends Controller
 
     public function update(Request $request, KeywordCategory $keywordCategory): RedirectResponse
     {
-        $redirectRoute = $request->action === 'create' ? 'keywords.category.create' : 'keywords.category.edit';
-
         $validated = $request->validate($this->rules);
-
         $keywordCategory->update([
             'name' => [
                 'cs' => $validated['cs'],
@@ -70,7 +64,7 @@ class KeywordCategoryController extends Controller
         ]);
 
         return redirect()
-            ->route($redirectRoute, $keywordCategory->id)
+            ->route('keywords.category.edit', $keywordCategory->id)
             ->with('success', __('hiko.saved'));
     }
 

@@ -83,13 +83,17 @@ class Letter extends Model implements HasMedia
 
     public function identities(): BelongsToMany
     {
+        $pivotTable = tenancy()->initialized
+            ? $this->getTenantPrefix() . '__identity_profession_category'
+            : 'global_identity_profession_category';
+    
         return $this->belongsToMany(
-            Identity::class, 
-            tenancy()->tenant->table_prefix . '__identity_letter' // Tenant-specific pivot table
-        )
-        ->withPivot('position', 'role', 'marked', 'salutation')
-        ->orderBy('pivot_position', 'asc');
-    }
+            Identity::class,
+            $pivotTable,
+            'profession_category_id',
+            'identity_id'
+        );
+    }    
 
     public function places(): BelongsToMany
     {

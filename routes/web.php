@@ -161,6 +161,12 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
         Route::get('export', [ProfessionCategoryController::class, 'export'])
             ->name('professions.category.export')
             ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('professions/category/{id}/attach', [ProfessionCategoryController::class, 'attachProfession'])
+            ->name('professions.attach');
+
+        Route::post('professions/category/{id}/attach', [ProfessionCategoryController::class, 'storeAttachedProfession'])
+            ->name('professions.attach.store');
     });
 
     Route::prefix('keywords')->group(function () {

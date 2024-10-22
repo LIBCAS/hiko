@@ -2,67 +2,43 @@
 
 namespace App\Models;
 
-use App\Builders\IdentityBuilder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Stancl\Tenancy\Facades\Tenancy;
+use App\Traits\UsesTenantConnection;
 
 class Identity extends Model
 {
-    protected $connection = 'tenant';
-    protected $guarded = ['id'];
-    protected $table;
-    protected $casts = [
-        'alternative_names' => 'array',
-        'related_identity_resources' => 'array',
-        'related_names' => 'array',
-    ];
+    use UsesTenantConnection;
 
+    protected $guarded = ['id'];
+
+    /**
+     * Constructor to set the correct tenant table
+     */
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
 
-        // Dynamically set the tenant-specific table name
+        // Use tenant-specific table if tenancy is initialized, otherwise fallback to the global table
         if (tenancy()->initialized) {
-            $tenantPrefix = tenancy()->tenant->table_prefix;
-            $this->table = $tenantPrefix . '__identities';  // Set tenant-specific table name
+            $this->setTable($this->getTenantPrefix() . '__identities');
         } else {
-            throw new \Exception('Tenancy not initialized.');
+            $this->setTable('global_identities');
         }
     }
 
-    public function newEloquentBuilder($query): IdentityBuilder
+    /**
+     * Get professions associated with this identity.
+     */
+    public function professions()
     {
-        return new IdentityBuilder($query);  // Use custom IdentityBuilder, if needed
-    }
+        // Use tenant-specific profession model if tenancy is initialized, otherwise global
+        $relatedModel = tenancy()->initialized ? Profession::class : GlobalProfession::class;
 
-    public function professions(): BelongsToMany
-    {
-        // Get the tenant-specific table prefix
-        $tenantPrefix = tenancy()->tenant->table_prefix;
-
-        // Use the tenant-specific pivot table (e.g., blekastad__identity_profession)
-        return $this->belongsToMany(Profession::class, $tenantPrefix . '__identity_profession')
-                    ->withPivot('position')
-                    ->orderBy('pivot_position', 'asc');
-    }
-
-    public function profession_categories(): BelongsToMany
-    {
-        $tenantPrefix = tenancy()->tenant->table_prefix;
-
-        // Use the tenant-specific pivot table for profession categories
-        return $this->belongsToMany(ProfessionCategory::class, $tenantPrefix . '__identity_profession_category')
-                    ->withPivot('position')
-                    ->orderBy('pivot_position', 'asc');
-    }
-
-    // Define the relationship with the tenant-specific pivot table
-    public function letters(): BelongsToMany
-    {
-        // Use the tenant-specific pivot table (e.g., blekastad__identity_letter)
-        return $this->belongsToMany(Letter::class, tenancy()->tenant->table_prefix . '__identity_letter')
-            ->withPivot('position', 'role', 'marked', 'salutation')  // Include necessary pivot fields
-            ->orderBy('pivot_position', 'asc');  // Add ordering if necessary
+        return $this->belongsToMany(
+            $relatedModel,
+            tenancy()->initialized ? $this->getTenantPrefix() . '__identity_profession' : 'global_identity_profession',
+            'identity_id',
+            'profession_id'
+        );
     }
 }

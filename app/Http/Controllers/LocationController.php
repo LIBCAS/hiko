@@ -21,7 +21,7 @@ class LocationController extends Controller
     {
         return view('pages.locations.index', [
             'title' => __('hiko.locations'),
-            'labels' => $this->getTypes(),
+            'labels' => ['repository', 'collection', 'archive'],
         ]);
     }
 
@@ -32,18 +32,17 @@ class LocationController extends Controller
             'location' => new Location,
             'action' => route('locations.store'),
             'label' => __('hiko.create'),
-            'types' => $this->getTypes(),
+            'types' => ['repository', 'collection', 'archive'],
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $redirectRoute = $request->action === 'create' ? 'locations.create' : 'locations.edit';
-
-        $location = Location::create($request->validate($this->rules));
+        $validated = $request->validate($this->rules);
+        $location = Location::create($validated);
 
         return redirect()
-            ->route($redirectRoute, $location->id)
+            ->route('locations.edit', $location->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -55,18 +54,17 @@ class LocationController extends Controller
             'action' => route('locations.update', $location),
             'method' => 'PUT',
             'label' => __('hiko.edit'),
-            'types' => $this->getTypes(),
+            'types' => ['repository', 'collection', 'archive'],
         ]);
     }
 
     public function update(Request $request, Location $location): RedirectResponse
     {
-        $redirectRoute = $request->action === 'create' ? 'locations.create' : 'locations.edit';
-
-        $location->update($request->validate($this->rules));
+        $validated = $request->validate($this->rules);
+        $location->update($validated);
 
         return redirect()
-            ->route($redirectRoute, $location->id)
+            ->route('locations.edit', $location->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -82,10 +80,5 @@ class LocationController extends Controller
     public function export(): BinaryFileResponse
     {
         return Excel::download(new LocationsExport, 'locations.xlsx');
-    }
-
-    protected function getTypes(): array
-    {
-        return ['repository', 'collection', 'archive'];
     }
 }

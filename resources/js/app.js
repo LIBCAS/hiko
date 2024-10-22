@@ -1,10 +1,12 @@
-import Alpine from 'alpinejs'
+// Import 'n init Alpine.js
+import Alpine from 'alpinejs';
 
-window.Alpine = Alpine
+window.Alpine = Alpine;
 
-Alpine.start()
+Alpine.start();
 
-import './src/select'
-import './src/exportUrl'
-import './src/identityForm'
-import './src/similarItems'
+// Custom JS
+import './src/select';
+import './src/exportUrl';
+import './src/identityForm';
+import './src/similarItems';

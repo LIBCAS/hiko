@@ -39,9 +39,19 @@
                 {{ date('Y') }} HIKO – {{ __('hiko.correspondence') }} {{ config('app.name') }}, v.{{ config('hiko.version') }}
             </p>
         </div>
-    </footer>
-    @livewireScripts
-    @stack('scripts')
-</body>
+        </footer>
+    
+        @livewireScripts
+        @stack('scripts')
 
-</html>
+        <script>
+            function openModal(categoryId, source) {
+                const modal = document.querySelector('[x-data]');
+                modal.__x.$data.open = true;
+                modal.__x.$data.categoryId = categoryId;
+                modal.__x.$data.source = source;
+            }
+        </script>
+        </body>
+
+        </html>

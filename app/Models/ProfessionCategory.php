@@ -6,57 +6,58 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Traits\UsesTenantConnection;
+use App\Traits\TenantAware;
 
 class ProfessionCategory extends Model
 {
-    use HasFactory, HasTranslations;
+    use HasFactory, HasTranslations, UsesTenantConnection, TenantAware {
+        UsesTenantConnection::getTenantPrefix insteadof TenantAware; // Resolve conflict
+        TenantAware::getTenantPrefix as getTenantPrefixFromAware; // Alias TenantAware method if needed later
+    }
 
     protected $guarded = ['id'];
     public $translatable = ['name'];
-
-    // Define the connection and table name
-    protected $connection;
-    protected $table;
 
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
 
-        // Determine the connection and table based on tenancy
-        if (tenancy()->initialized) {
-            // Tenant-specific connection and table
-            $this->connection = 'tenant';
-
-            $tenantPrefix = tenancy()->tenant->table_prefix;
-            $this->table = $tenantPrefix . '__profession_categories';
-        } else {
-            // Global connection and table
-            $this->connection = 'mysql'; // or your central connection name
-            $this->table = 'global_profession_categories';
-        }
+        // Ensure the tenant-specific table name is set with the correct separator
+        $this->setTable($this->getTenantPrefix() . '__profession_categories');
     }
 
-    /**
-     * Define the professions relationship.
-     * This will work for both local and global categories.
-     */
     public function professions()
     {
-        if ($this->getConnectionName() === 'tenant') {
-            return $this->hasMany(Profession::class, 'profession_category_id');
-        } else {
-            return $this->hasMany(GlobalProfession::class, 'profession_category_id');
-        }
+        return $this->hasMany(
+            tenancy()->initialized ? Profession::class : GlobalProfession::class,
+            'profession_category_id'
+        );
     }
 
-    /**
-     * Scope a query to only include categories matching a search term.
-     */
     public function scopeSearchByName(Builder $query, $term)
     {
         $locale = app()->getLocale();
         $term = strtolower($term);
 
-        return $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"$locale\"'))) LIKE ?", ["%{$term}%"]);
+        return $query->whereRaw(
+            "LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"$locale\"'))) LIKE ?",
+            ["%{$term}%"]
+        );
+    }
+
+    public function identities(): BelongsToMany
+    {
+        $pivotTable = tenancy()->initialized
+            ? $this->getTenantPrefix() . '__identity_profession_category'
+            : 'global_identity_profession_category';
+
+        return $this->belongsToMany(
+            Identity::class,
+            $pivotTable,
+            'profession_category_id',
+            'identity_id'
+        );
     }
 }

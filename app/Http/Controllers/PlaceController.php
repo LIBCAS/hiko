@@ -20,20 +20,6 @@ class PlaceController extends Controller
         'geoname_id' => ['nullable', 'integer', 'numeric'],
     ];
 
-    protected $attributes = [];
-
-    public function __construct()
-    {
-        $this->attributes = [
-            'name' => __('hiko.name'),
-            'country' => __('hiko.country'),
-            'division' => __('hiko.division'),
-            'latitude' => __('hiko.latitude'),
-            'longitude' => __('hiko.longitude'),
-            'geoname_id' => 'Geoname ID',
-        ];
-    }
-
     public function index()
     {
         return view('pages.places.index', [
@@ -54,14 +40,11 @@ class PlaceController extends Controller
 
     public function store(Request $request)
     {
-        $redirectRoute = $request->action === 'create' ? 'places.create' : 'places.edit';
-
         $validated = $request->validate($this->rules);
-
         $place = Place::create($validated);
 
         return redirect()
-            ->route($redirectRoute, $place->id)
+            ->route('places.edit', $place->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -79,18 +62,11 @@ class PlaceController extends Controller
 
     public function update(Request $request, Place $place)
     {
-        $redirectRoute = $request->action === 'create' ? 'places.create' : 'places.edit';
-
-        $validated = $request->validate(
-            $this->rules,
-            [],
-            $this->attributes
-        );
-
+        $validated = $request->validate($this->rules);
         $place->update($validated);
 
         return redirect()
-            ->route($redirectRoute, $place->id)
+            ->route('places.edit', $place->id)
             ->with('success', __('hiko.saved'));
     }
 
