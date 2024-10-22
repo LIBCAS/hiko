@@ -5,12 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Models\ProfessionCategory;
+use App\Models\GlobalProfessionCategory;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProfessionCategoriesExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use App\Models\Profession;
-use App\Models\GlobalProfession;
 
 class ProfessionCategoryController extends Controller
 {
@@ -21,6 +20,7 @@ class ProfessionCategoryController extends Controller
 
     public function create(): View
     {
+        // Display form for creating a tenant-specific profession category
         return view('pages.professions-categories.form', [
             'title' => __('hiko.new_professions_category'),
             'professionCategory' => new ProfessionCategory,
@@ -31,6 +31,7 @@ class ProfessionCategoryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        // Validate and store tenant-specific category
         $validated = $request->validate($this->rules);
         $professionCategory = ProfessionCategory::create([
             'name' => [
@@ -48,6 +49,10 @@ class ProfessionCategoryController extends Controller
     {
         $professionCategory->load('professions');
 
+        // Pass $canAttachProfessions for user-specific permissions
+        $canAttachProfessions = auth()->user()->can('attach-professions', $professionCategory);
+
+        // Check if local or global connection
         return view('pages.professions-categories.form', [
             'title' => __('hiko.professions_category') . ': ' . $professionCategory->id,
             'professionCategory' => $professionCategory,
@@ -56,8 +61,9 @@ class ProfessionCategoryController extends Controller
             'label' => __('hiko.edit'),
             'professions' => $professionCategory->professions,
             'availableProfessions' => $professionCategory->getConnectionName() === 'mysql'
-                ? GlobalProfession::all()
-                : Profession::all(),
+                ? GlobalProfessionCategory::all() // Global categories
+                : ProfessionCategory::all(), // Tenant-specific categories
+            'canAttachProfessions' => $canAttachProfessions,
         ]);
     }
 

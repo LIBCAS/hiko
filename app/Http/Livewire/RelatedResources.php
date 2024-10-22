@@ -6,7 +6,7 @@ use Livewire\Component;
 
 class RelatedResources extends Component
 {
-    public $resources;
+    public $resources = [];
 
     public function addItem()
     {
@@ -24,13 +24,7 @@ class RelatedResources extends Component
 
     public function mount()
     {
-        if (request()->old('related_resources')) {
-            $this->resources = request()->old('related_resources');
-        }
-
-        if (empty($this->resources)) {
-            $this->resources = [];
-        }
+        $this->resources = request()->old('related_resources', $this->resources ?? []);
     }
 
     public function render()

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\ProfessionsExport;
 use App\Models\ProfessionCategory;
+use App\Models\GlobalProfession;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -22,6 +23,7 @@ class ProfessionController extends Controller
 
     public function index(): View
     {
+        // Fetch all tenant-specific and global professions
         $professions = Profession::all()->concat(DB::table('global_professions')->get());
 
         return view('pages.professions.index', [
@@ -32,6 +34,7 @@ class ProfessionController extends Controller
 
     public function create(): View
     {
+        // Display form for creating a tenant-specific profession
         return view('pages.professions.form', [
             'title' => __('hiko.new_profession'),
             'profession' => new Profession,
@@ -50,15 +53,16 @@ class ProfessionController extends Controller
                 'en' => $validated['en'],
             ],
         ]);
-
+    
+        // Update to handle tenant-specific or global category association
         if (isset($validated['category'])) {
             $profession->profession_category()->associate($validated['category']);
         }
-
+    
         return redirect()
             ->route('professions.edit', $profession->id)
             ->with('success', __('hiko.saved'));
-    }
+    }    
 
     public function edit(Profession $profession): View
     {
@@ -84,6 +88,7 @@ class ProfessionController extends Controller
             ],
         ]);
 
+        // Update the association of the profession with tenant-specific or global categories
         $profession->profession_category()->dissociate();
         if (isset($validated['category'])) {
             $profession->profession_category()->associate($validated['category']);

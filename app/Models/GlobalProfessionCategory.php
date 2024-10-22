@@ -6,14 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class GlobalProfessionCategory extends Model
 {
-    protected $table = 'global_profession_categories'; // Table name is explicitly set
+    protected $table = 'global_profession_categories'; // Global table name
     protected $guarded = ['id'];
 
+    /**
+     * Get the professions associated with this global category.
+     */
     public function professions()
     {
-        // Use tenant-specific profession model if tenancy is initialized, otherwise global
-        $relatedModel = tenancy()->initialized ? Profession::class : GlobalProfession::class;
-
-        return $this->hasMany($relatedModel, 'profession_category_id');
+        // Use global professions for global categories
+        return $this->hasMany(GlobalProfession::class, 'profession_category_id');
     }
 }

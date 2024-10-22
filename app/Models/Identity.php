@@ -17,14 +17,14 @@ class Identity extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-
-        // Use tenant-specific table if tenancy is initialized, otherwise fallback to the global table
+    
+        // Set tenant-specific or global table
         if (tenancy()->initialized) {
             $this->setTable($this->getTenantPrefix() . '__identities');
         } else {
             $this->setTable('global_identities');
         }
-    }
+    }    
 
     /**
      * Get professions associated with this identity.
@@ -41,4 +41,23 @@ class Identity extends Model
             'profession_id'
         );
     }
+
+    public function scopeFilter($query, $filters)
+    {
+        if (!empty($filters['cs'])) {
+            $query->where('name', 'LIKE', "%{$filters['cs']}%");
+        }
+    
+        if (!empty($filters['en'])) {
+            $query->where('name', 'LIKE', "%{$filters['en']}%");
+        }
+    
+        if (!empty($filters['category'])) {
+            $query->whereHas('professions.profession_category', function ($q) use ($filters) {
+                $q->where('name', 'LIKE', "%{$filters['category']}%");
+            });
+        }
+    
+        return $query;
+    }    
 }
