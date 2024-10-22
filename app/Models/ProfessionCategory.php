@@ -30,20 +30,17 @@ class ProfessionCategory extends Model
         );
     }
     
-    // Many professions belong to this category (Tenant or Global)
     public function professions(): BelongsToMany
     {
-        $pivotTable = tenancy()->initialized
-            ? $this->getTenantPrefix() . '__profession_category_profession'
-            : 'global_profession_category_profession';
-
         return $this->belongsToMany(
             tenancy()->initialized ? Profession::class : GlobalProfession::class,
-            $pivotTable,
-            'profession_category_id',
-            'profession_id'
+            tenancy()->initialized
+                ? $this->getTenantPrefix() . '__profession_category_profession' // Tenant-specific pivot table
+                : 'global_profession_category_profession', // Global pivot table
+            'profession_category_id', // Foreign key on the pivot table for profession categories
+            'profession_id'           // Foreign key on the pivot table for professions
         );
-    }
+    }    
 
     // Search by name scope
     public function scopeSearchByName(Builder $query, $term)
