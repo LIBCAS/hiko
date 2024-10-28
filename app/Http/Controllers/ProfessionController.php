@@ -53,20 +53,17 @@ class ProfessionController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        // Add the dynamic category validation rule based on tenancy status
+        // Determine the category validation rule based on tenancy status
         $categoryRule = tenancy()->initialized
             ? 'exists:' . tenancy()->tenant->table_prefix . '__profession_categories,id'
             : 'exists:global_profession_categories,id';
-
-        // Merge base rules with the dynamic category rule
-        $rules = array_merge($this->baseRules, [
+    
+        // Validate the input fields
+        $validated = $request->validate(array_merge($this->baseRules, [
             'category' => ['nullable', $categoryRule],
-        ]);
-
-        // Validate the request
-        $validated = $request->validate($rules);
-
-        // Create a new profession with the tenant-specific or global model
+        ]));
+    
+        // Create a new profession entry
         $profession = tenancy()->initialized
             ? Profession::create([
                 'name' => [
@@ -80,19 +77,19 @@ class ProfessionController extends Controller
                     'en' => $validated['en'],
                 ],
             ]);
-
-        // Attach category if provided
+    
+        // Attach the selected category, if provided
         if (isset($validated['category'])) {
             $categoryModel = tenancy()->initialized ? ProfessionCategory::class : GlobalProfessionCategory::class;
             $category = $categoryModel::find($validated['category']);
-            $profession->profession_category()->associate($category);
+            $profession->profession_category()->associate($category)->save();
         }
-
+    
         return redirect()
             ->route('professions.edit', $profession->id)
             ->with('success', __('hiko.saved'));
     }
-
+    
     public function edit(Profession $profession): View
     {
         // Load related identities
@@ -115,41 +112,33 @@ class ProfessionController extends Controller
 
     public function update(Request $request, Profession $profession): RedirectResponse
     {
-        // Add the dynamic category validation rule based on tenancy status
         $categoryRule = tenancy()->initialized
             ? 'exists:' . tenancy()->tenant->table_prefix . '__profession_categories,id'
             : 'exists:global_profession_categories,id';
-
-        // Merge base rules with the dynamic category rule
-        $rules = array_merge($this->baseRules, [
+    
+        $validated = $request->validate(array_merge($this->baseRules, [
             'category' => ['nullable', $categoryRule],
-        ]);
-
-        // Validate the request
-        $validated = $request->validate($rules);
-
-        // Update profession's name
+        ]));
+    
         $profession->update([
             'name' => [
                 'cs' => $validated['cs'],
                 'en' => $validated['en'],
             ],
         ]);
-
-        // Dissociate the current category
+    
         $profession->profession_category()->dissociate();
-
-        // Associate new category if provided
+    
         if (isset($validated['category'])) {
             $categoryModel = tenancy()->initialized ? ProfessionCategory::class : GlobalProfessionCategory::class;
             $category = $categoryModel::find($validated['category']);
-            $profession->profession_category()->associate($category);
+            $profession->profession_category()->associate($category)->save();
         }
-
+    
         return redirect()
             ->route('professions.edit', $profession->id)
             ->with('success', __('hiko.saved'));
-    }
+    }    
 
     public function destroy(Profession $profession): RedirectResponse
     {
