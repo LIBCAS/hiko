@@ -32,50 +32,38 @@ class ProfessionCategoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate($this->rules);
-        $professionCategory = ProfessionCategory::create([
-            'name' => [
-                'cs' => $validated['cs'],
-                'en' => $validated['en'],
-            ],
-        ]);
+        ProfessionCategory::create($validated);
 
         return redirect()
-            ->route('professions.category.edit', $professionCategory->id)
+            ->route('professions.category.index')
             ->with('success', __('hiko.saved'));
     }
 
     public function edit(ProfessionCategory $professionCategory): View
     {
-        $professionCategory->load('professions');
+        $professionCategory->load('identities', 'professions'); // Load the relationships
     
-        // Check if we're using a tenant-specific or global context
-        $availableProfessions = tenancy()->initialized
-            ? Profession::all()  // Use tenant-specific professions table
-            : GlobalProfession::all();  // Use global professions table
+        $availableProfessions = tenancy()->initialized ? Profession::all() : GlobalProfession::all();
+        $professions = $professionCategory->professions; // Add this line to retrieve professions for the view
     
         return view('pages.professions-categories.form', [
-            'title' => __('hiko.professions_category') . ': ' . $professionCategory->id,
+            'title' => __('hiko.edit_professions_category'),
             'professionCategory' => $professionCategory,
+            'action' => route('professions.category.update', $professionCategory->id),
             'method' => 'PUT',
-            'action' => route('professions.category.update', $professionCategory),
-            'label' => __('hiko.edit'),
-            'professions' => $professionCategory->professions,
             'availableProfessions' => $availableProfessions,
+            'label' => __('hiko.create'),
+            'professions' => $professions,
         ]);
     }    
 
     public function update(Request $request, ProfessionCategory $professionCategory): RedirectResponse
     {
         $validated = $request->validate($this->rules);
-        $professionCategory->update([
-            'name' => [
-                'cs' => $validated['cs'],
-                'en' => $validated['en'],
-            ],
-        ]);
+        $professionCategory->update($validated);
 
         return redirect()
-            ->route('professions.category.edit', $professionCategory->id)
+            ->route('professions.category.index')
             ->with('success', __('hiko.saved'));
     }
 
@@ -84,31 +72,7 @@ class ProfessionCategoryController extends Controller
         $professionCategory->delete();
 
         return redirect()
-            ->route('professions')
+            ->route('professions.category.index')
             ->with('success', __('hiko.removed'));
     }
-
-    public function export(): BinaryFileResponse
-    {
-        return Excel::download(new ProfessionCategoriesExport, 'profession-categories.xlsx');
-    }
-
-    public function storeAttachedProfession(Request $request, ProfessionCategory $category): RedirectResponse
-    {
-        // Validate profession IDs
-        $validated = $request->validate([
-            'profession_ids' => 'required|array',
-            'profession_ids.*' => tenancy()->initialized
-                ? 'exists:' . tenancy()->tenant->table_prefix . '__professions,id'
-                : 'exists:global_professions,id',
-        ]);
-    
-        // Sync without detaching existing professions
-        $category->professions()->syncWithoutDetaching($validated['profession_ids']);
-    
-        // Redirect back to the edit page with a success message
-        return redirect()
-            ->route('professions.category.edit', $category->id)
-            ->with('success', __('hiko.professions_attached_successfully'));
-    }       
 }

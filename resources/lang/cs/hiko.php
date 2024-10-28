@@ -262,7 +262,7 @@ return [
     'merge' => 'Sloučit',
     'confirm_merge' => 'Opravdu chcete sloučit vybrané záznamy?',
     'merged' => 'Záznamy byly sloučeny, můžete pokračovat smazáním této položky',
-    'and_create_new' => '& vytvořit další',
+    'and_create_new' => 'a vytvořit další',
     'clear_filters' => 'Vymazat filtry',
     'correspondence' => 'Korespondence',
 ];

@@ -3,22 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\GlobalProfessionCategory;
-use App\Models\GlobalProfession;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
 class GlobalProfessionCategoryController extends Controller
 {
-    protected $table = 'global_profession_categories'; // Explicit table name
-    protected $guarded = ['id'];
-
-    public function professions()
-    {
-        // Belongs to many professions with a pivot table for global context
-        return $this->belongsToMany(GlobalProfession::class, 'global_profession_category_profession', 'profession_category_id', 'profession_id');
-    }
-
     protected array $rules = [
         'name.cs' => ['required', 'string', 'max:255'],
         'name.en' => ['nullable', 'string', 'max:255'],
@@ -26,7 +16,7 @@ class GlobalProfessionCategoryController extends Controller
 
     public function index(): View
     {
-        $categories = GlobalProfessionCategory::all();
+        $categories = GlobalProfessionCategory::with('professions')->get();
 
         return view('admin.global_profession_categories.index', [
             'title' => __('Global Profession Categories'),
