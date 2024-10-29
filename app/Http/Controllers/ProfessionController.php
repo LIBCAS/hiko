@@ -4,19 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Profession;
 use App\Models\GlobalProfession;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Exports\ProfessionsExport;
 use App\Models\ProfessionCategory;
 use App\Models\GlobalProfessionCategory;
+use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProfessionController extends Controller
 {
-    // Move the common rules that do not depend on tenancy outside
     protected array $baseRules = [
         'cs' => ['max:255', 'required_without:en'],
         'en' => ['max:255', 'required_without:cs'],
@@ -24,10 +19,9 @@ class ProfessionController extends Controller
 
     public function index(): View
     {
-        // Fetch both tenant-specific and global professions
         $professions = tenancy()->initialized
-            ? Profession::all()
-            : GlobalProfession::all();
+            ? Profession::with('profession_category')->get()
+            : GlobalProfession::with('profession_category')->get();
 
         return view('pages.professions.index', [
             'title' => __('hiko.professions'),
@@ -37,7 +31,6 @@ class ProfessionController extends Controller
 
     public function create(): View
     {
-        // Get available categories based on whether tenancy is initialized
         $availableCategories = tenancy()->initialized
             ? ProfessionCategory::all()
             : GlobalProfessionCategory::all();
@@ -53,97 +46,49 @@ class ProfessionController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        // Determine the category validation rule based on tenancy status
         $categoryRule = tenancy()->initialized
-            ? 'exists:' . tenancy()->tenant->table_prefix . '__profession_categories,id'
-            : 'exists:global_profession_categories,id';
-        
-        // Validate the input fields
+            ? 'nullable|exists:' . tenancy()->tenant->table_prefix . '__profession_categories,id'
+            : 'nullable|exists:global_profession_categories,id';
+
         $validated = $request->validate(array_merge($this->baseRules, [
-            'category' => ['nullable', $categoryRule],
+            'category' => [$categoryRule],
         ]));
-        
-        // Create a new profession entry based on tenancy
-        $profession = tenancy()->initialized
-            ? Profession::create([
+
+        if (tenancy()->initialized) {
+            $profession = Profession::create([
                 'name' => [
-                    'cs' => $validated['cs'],
-                    'en' => $validated['en'],
-                ],
-            ])
-            : GlobalProfession::create([
-                'name' => [
-                    'cs' => $validated['cs'],
-                    'en' => $validated['en'],
+                    'cs' => $validated['cs'] ?? null,
+                    'en' => $validated['en'] ?? null,
                 ],
             ]);
-        
-        // Attach the selected category, only if it matches the profession type
-        if (isset($validated['category'])) {
-            $categoryModel = tenancy()->initialized ? ProfessionCategory::class : GlobalProfessionCategory::class;
-            $category = $categoryModel::find($validated['category']);
-            
-            // Check if category matches the profession type
-            if ((tenancy()->initialized && $category instanceof ProfessionCategory) ||
-                (!tenancy()->initialized && $category instanceof GlobalProfessionCategory)) {
-                $profession->profession_category()->associate($category)->save();
-            } else {
-                return redirect()->back()->withErrors(['category' => __('Invalid category selection for this profession type.')]);
+
+            if (isset($validated['category'])) {
+                $category = ProfessionCategory::find($validated['category']);
+                if ($category) {
+                    $profession->profession_category()->associate($category);
+                    $profession->save();
+                }
             }
+        } else {
+            abort(403, 'Unauthorized action.');
         }
-        
+
         return redirect()
             ->route('professions.edit', $profession->id)
             ->with('success', __('hiko.saved'));
     }
-    
-    public function update(Request $request, Profession $profession): RedirectResponse
-    {
-        $categoryRule = tenancy()->initialized
-            ? 'exists:' . tenancy()->tenant->table_prefix . '__profession_categories,id'
-            : 'exists:global_profession_categories,id';
-        
-        $validated = $request->validate(array_merge($this->baseRules, [
-            'category' => ['nullable', $categoryRule],
-        ]));
-        
-        $profession->update([
-            'name' => [
-                'cs' => $validated['cs'],
-                'en' => $validated['en'],
-            ],
-        ]);
-        
-        // Disassociate any existing category first
-        $profession->profession_category()->dissociate();
-        
-        // Re-attach the selected category if it matches the profession type
-        if (isset($validated['category'])) {
-            $categoryModel = tenancy()->initialized ? ProfessionCategory::class : GlobalProfessionCategory::class;
-            $category = $categoryModel::find($validated['category']);
-            
-            if ((tenancy()->initialized && $category instanceof ProfessionCategory) ||
-                (!tenancy()->initialized && $category instanceof GlobalProfessionCategory)) {
-                $profession->profession_category()->associate($category)->save();
-            } else {
-                return redirect()->back()->withErrors(['category' => __('Invalid category selection for this profession type.')]);
-            }
-        }
-        
-        return redirect()
-            ->route('professions.edit', $profession->id)
-            ->with('success', __('hiko.saved'));
-    }    
-    
-    public function edit(Profession $profession): View
-    {
-        // Load related identities
-        $profession->load('identities');
 
-        // Fetch categories based on tenancy status
-        $availableCategories = tenancy()->initialized
-            ? ProfessionCategory::all()
-            : GlobalProfessionCategory::all();
+    public function edit($profession): View
+    {
+        if (tenancy()->initialized) {
+            $profession = Profession::findOrFail($profession);
+            $availableCategories = ProfessionCategory::all();
+        } else {
+            $profession = GlobalProfession::findOrFail($profession);
+            $availableCategories = GlobalProfessionCategory::all();
+        }
+
+        $profession->load('identities');
 
         return view('pages.professions.form', [
             'title' => __('hiko.edit_profession'),
@@ -155,19 +100,55 @@ class ProfessionController extends Controller
         ]);
     }
 
-    public function destroy(Profession $profession): RedirectResponse
+    public function update(Request $request, $profession): RedirectResponse
     {
-        // Delete the profession
-        $profession->delete();
+        $categoryRule = tenancy()->initialized
+            ? 'nullable|exists:' . tenancy()->tenant->table_prefix . '__profession_categories,id'
+            : 'nullable|exists:global_profession_categories,id';
+
+        $validated = $request->validate(array_merge($this->baseRules, [
+            'category' => [$categoryRule],
+        ]));
+
+        if (tenancy()->initialized) {
+            $profession = Profession::findOrFail($profession);
+
+            $profession->update([
+                'name' => [
+                    'cs' => $validated['cs'] ?? null,
+                    'en' => $validated['en'] ?? null,
+                ],
+            ]);
+
+            $profession->profession_category()->dissociate();
+
+            if (isset($validated['category'])) {
+                $category = ProfessionCategory::find($validated['category']);
+                if ($category) {
+                    $profession->profession_category()->associate($category);
+                    $profession->save();
+                }
+            }
+        } else {
+            abort(403, 'Unauthorized action.');
+        }
 
         return redirect()
-            ->route('professions')
-            ->with('success', __('hiko.removed'));
+            ->route('professions.edit', $profession->id)
+            ->with('success', __('hiko.saved'));
     }
 
-    public function export(): BinaryFileResponse
+    public function destroy($profession): RedirectResponse
     {
-        // Export the professions to an Excel file
-        return Excel::download(new ProfessionsExport, 'professions.xlsx');
+        if (tenancy()->initialized) {
+            $profession = Profession::findOrFail($profession);
+            $profession->delete();
+
+            return redirect()
+                ->route('professions')
+                ->with('success', __('hiko.removed'));
+        } else {
+            abort(403, 'Unauthorized action.');
+        }
     }
 }

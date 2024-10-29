@@ -2,19 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProfessionCategory;
+use App\Models\GlobalProfessionCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use App\Models\ProfessionCategory;
 use Illuminate\View\View;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ProfessionCategoriesExport;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use App\Models\Profession;
-use App\Models\GlobalProfession;
 
 class ProfessionCategoryController extends Controller
 {
-    protected array $rules = [
+    protected array $baseRules = [
         'cs' => ['max:255', 'required_without:en'],
         'en' => ['max:255', 'required_without:cs'],
     ];
@@ -31,51 +27,76 @@ class ProfessionCategoryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate($this->rules);
-    
-        // Use the 'name' attribute for translations, providing CS and EN as an array
-        $professionCategory = ProfessionCategory::create([
-            'name' => [
-                'cs' => $validated['cs'],
-                'en' => $validated['en'],
-            ]
-        ]);
-    
+        $validated = $request->validate($this->baseRules);
+
+        if (tenancy()->initialized) {
+            $professionCategory = ProfessionCategory::create([
+                'name' => [
+                    'cs' => $validated['cs'],
+                    'en' => $validated['en'],
+                ],
+            ]);
+        } else {
+            $professionCategory = GlobalProfessionCategory::create([
+                'name' => [
+                    'cs' => $validated['cs'],
+                    'en' => $validated['en'],
+                ],
+            ]);
+        }
+
         return redirect()
             ->route('professions.category.edit', $professionCategory->id)
             ->with('success', __('hiko.saved'));
-    }    
+    }
 
-    public function edit(ProfessionCategory $professionCategory): View
+    public function edit($professionCategory): View
     {
-        $professionCategory->load('identities', 'professions');
-        $availableProfessions = tenancy()->initialized ? Profession::all() : GlobalProfession::all();
-        $professions = $professionCategory->professions;
+        if (tenancy()->initialized) {
+            $professionCategory = ProfessionCategory::findOrFail($professionCategory);
+        } else {
+            $professionCategory = GlobalProfessionCategory::findOrFail($professionCategory);
+        }
 
         return view('pages.professions-categories.form', [
             'title' => __('hiko.edit_professions_category'),
             'professionCategory' => $professionCategory,
             'action' => route('professions.category.update', $professionCategory->id),
             'method' => 'PUT',
-            'label' => __('hiko.save'),  // Button label set to "Save" for edit action
-            'availableProfessions' => $availableProfessions,
-            'professions' => $professions,
+            'label' => __('hiko.save'),
         ]);
     }
 
-    public function update(Request $request, ProfessionCategory $professionCategory): RedirectResponse
+    public function update(Request $request, $professionCategory): RedirectResponse
     {
-        $validated = $request->validate($this->rules);
-        $professionCategory->update($validated);
+        $validated = $request->validate($this->baseRules);
+
+        if (tenancy()->initialized) {
+            $professionCategory = ProfessionCategory::findOrFail($professionCategory);
+        } else {
+            $professionCategory = GlobalProfessionCategory::findOrFail($professionCategory);
+        }
+
+        $professionCategory->update([
+            'name' => [
+                'cs' => $validated['cs'],
+                'en' => $validated['en'],
+            ],
+        ]);
 
         return redirect()
             ->route('professions.category.edit', $professionCategory->id)
             ->with('success', __('hiko.saved'));
     }
 
-    public function destroy(ProfessionCategory $professionCategory): RedirectResponse
+    public function destroy($professionCategory): RedirectResponse
     {
-        $professionCategory->delete();
+        if (tenancy()->initialized) {
+            $professionCategory = ProfessionCategory::findOrFail($professionCategory);
+            $professionCategory->delete();
+        } else {
+            abort(403);
+        }
 
         return redirect()
             ->route('professions')

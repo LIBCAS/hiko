@@ -16,25 +16,19 @@ class Profession extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->setTable(tenancy()->initialized ? $this->getTenantPrefix() . '__professions' : 'global_professions');
+        $this->setTable(tenancy()->initialized ? tenancy()->tenant->table_prefix . '__professions' : 'global_professions');
     }
 
-    /**
-     * Get the profession category associated with this profession.
-     */
     public function profession_category()
     {
         return $this->belongsTo(tenancy()->initialized ? ProfessionCategory::class : GlobalProfessionCategory::class, 'profession_category_id');
     }
 
-    /**
-     * Get identities associated with this profession.
-     */
     public function identities()
     {
-        $relatedModel = tenancy()->initialized ? 'App\\Models\\Identity' : 'App\\Models\\GlobalIdentity';
+        $relatedModel = Identity::class;
         $pivotTable = tenancy()->initialized
-            ? $this->getTenantPrefix() . '__identity_profession'
+            ? tenancy()->tenant->table_prefix . '__identity_profession'
             : 'global_identity_profession';
 
         return $this->belongsToMany(
