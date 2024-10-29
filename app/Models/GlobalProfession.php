@@ -9,12 +9,23 @@ class GlobalProfession extends Model
 {
     use HasTranslations;
 
-    public $translatable = ['name'];
     protected $table = 'global_professions';
     protected $guarded = ['id'];
+    public $translatable = ['name'];
 
+    /**
+     * Get the profession category associated with this global profession.
+     */
     public function profession_category()
     {
         return $this->belongsTo(GlobalProfessionCategory::class, 'profession_category_id');
+    }
+
+    /**
+     * Get identities associated with this global profession.
+     */
+    public function identities()
+    {
+        return $this->belongsToMany(Identity::class, 'global_identity_profession', 'profession_id', 'identity_id');
     }
 }

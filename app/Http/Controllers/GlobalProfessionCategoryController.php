@@ -14,31 +14,29 @@ class GlobalProfessionCategoryController extends Controller
         'name.en' => ['nullable', 'string', 'max:255'],
     ];
 
-    public function index(): View
-    {
-        $categories = GlobalProfessionCategory::with('professions')->get();
-
-        return view('admin.global_profession_categories.index', [
-            'title' => __('Global Profession Categories'),
-            'categories' => $categories,
-        ]);
-    }
-
     public function create(): View
     {
         return view('admin.global_profession_categories.form', [
             'title' => __('Create Global Profession Category'),
             'action' => route('global-profession-categories.store'),
+            'label' => __('hiko.create'),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate($this->rules);
-        GlobalProfessionCategory::create($validated);
+
+        // Use the 'name' attribute for translations, providing CS and EN as an array
+        $globalProfessionCategory = GlobalProfessionCategory::create([
+            'name' => [
+                'cs' => $validated['name']['cs'],
+                'en' => $validated['name']['en'] ?? null,
+            ]
+        ]);
 
         return redirect()
-            ->route('global-profession-categories.index')
+            ->route('global-profession-categories.edit', $globalProfessionCategory->id)
             ->with('success', __('Global Profession Category created successfully.'));
     }
 
@@ -49,16 +47,25 @@ class GlobalProfessionCategoryController extends Controller
             'professionCategory' => $globalProfessionCategory,
             'action' => route('global-profession-categories.update', $globalProfessionCategory->id),
             'method' => 'PUT',
+            'label' => __('hiko.save'),
+            'delete' => route('global-profession-categories.destroy', $globalProfessionCategory->id),
         ]);
     }
 
     public function update(Request $request, GlobalProfessionCategory $globalProfessionCategory): RedirectResponse
     {
         $validated = $request->validate($this->rules);
-        $globalProfessionCategory->update($validated);
+
+        // Update the translations in the 'name' attribute
+        $globalProfessionCategory->update([
+            'name' => [
+                'cs' => $validated['name']['cs'],
+                'en' => $validated['name']['en'] ?? null,
+            ]
+        ]);
 
         return redirect()
-            ->route('global-profession-categories.index')
+            ->route('global-profession-categories.edit', $globalProfessionCategory->id)
             ->with('success', __('Global Profession Category updated successfully.'));
     }
 
@@ -67,7 +74,7 @@ class GlobalProfessionCategoryController extends Controller
         $globalProfessionCategory->delete();
 
         return redirect()
-            ->route('global-profession-categories.index')
+            ->route('global-profession-categories.create')
             ->with('success', __('Global Profession Category deleted successfully.'));
     }
 }

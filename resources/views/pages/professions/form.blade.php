@@ -1,162 +1,52 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <div class="grid-cols-3 grid gap-4 mb-4 space-y-3">
-        <div class="max-w-sm">
-            <form 
-                x-data="similarItems({ similarNamesUrl: '{{ route('ajax.items.similar', ['model' => 'Profession']) }}', id: '{{ $profession ? $profession->id : null }}' })" 
-                x-init="$watch('search', () => findSimilarNames($data))" 
-                action="{{ $action }}" 
-                method="post" 
-                class="space-y-3" 
-                autocomplete="off"
-            >
-                @csrf
-                @isset($method)
-                    @method($method)
-                @endisset
-                <div>
-                    <x-label for="cs" value="CS" />
-                    <x-input id="cs" class="block w-full mt-1" type="text" name="cs" :value="old('cs', $profession->translations['name']['cs'] ?? null)"
-                        x-on:change="search = $el.value" />
-                    @error('cs')
-                        <div class="text-red-600">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div>
-                    <x-label for="en" value="EN" />
-                    <x-input id="en" class="block w-full mt-1" type="text" name="en" :value="old('en', $profession->translations['name']['en'] ?? null)"
-                        x-on:change="search = $el.value" />
-                    @error('en')
-                        <div class="text-red-600">{{ $message }}</div>
-                    @enderror
-                </div>
-                <x-alert-similar-names />
 
-                <!-- Category Dropdown -->
-                <div class="required">
-                    <x-label for="category" :value="__('hiko.category')" />
-                    <x-select name="category" id="category" class="block w-full mt-1" 
-                        x-data="ajaxChoices({ url: '{{ route('ajax.professions.category') }}', element: $el })"
-                        x-init="initSelect()"
-                    >
-                        @if ($profession->profession_category)
-                            <option value="{{ $profession->profession_category->id }}" selected>
-                                {{ $profession->profession_category->name }}
-                            </option>
-                        @else
-                            <option value="">{{ __('Select Category') }}</option>
-                        @endif
-                        
-                        @foreach ($availableCategories as $availableCategory)
-                            <option value="{{ $availableCategory->id }}" 
-                                {{ old('category', $profession->profession_category_id ?? null) == $availableCategory->id ? 'selected' : '' }}>
-                                {{ $availableCategory->name }}
-                            </option>
-                        @endforeach
-                    </x-select>
-                    @error('category')
-                        <div class="text-red-600">{{ $message }}</div>
-                    @enderror
-                </div>
+    <form action="{{ $action }}" method="post">
+        @csrf
+        @isset($method)
+            @method($method)
+        @endisset
 
-                <livewire:create-new-item-modal :route="route('professions.category.create')" :text="__('hiko.modal_new_profession_category')" />
-                <x-button-simple class="w-full" name="action" value="edit">
-                    {{ $label }}
-                </x-button-simple>
-                <x-button-inverted class="w-full text-black bg-white" name="action" value="create">
-                    {{ $label }} {{ __('hiko.and_create_new') }}
-                </x-button-inverted>
-            </form>
-
-            @if ($profession->id)
-                @can('delete-metadata')
-                    <form x-data="{ form: $el }" action="{{ route('professions.destroy', $profession->id) }}" method="post"
-                        class="max-w-sm mt-8">
-                        @csrf
-                        @method('DELETE')
-                        <x-button-danger class="w-full"
-                            x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
-                            {{ __('hiko.remove') }}
-                        </x-button-danger>
-                    </form>
-                @endcan
-            @endif
+        <!-- Name in CS -->
+        <div class="form-group">
+            <label for="name_cs">{{ __('Name (CS)') }}</label>
+            <input type="text" name="name[cs]" id="name_cs" class="form-control" 
+                   value="{{ old('name.cs', $profession->getTranslation('name', 'cs') ?? '') }}">
+            @error('name.cs')
+                <div class="text-red-600">{{ $message }}</div>
+            @enderror
         </div>
 
-        <!-- Right Side Panels -->
-        @if ($profession->id)
-            <!-- Identities Section -->
-            <div class="max-w-sm bg-white p-6 shadow rounded-md">
-                @if ($profession->identities->count() > 0)
-                    <h2 class="text-l font-semibold">{{ __('hiko.attached_persons_count') }}: {{ $profession->identities->count() }}</h2>
-                    <ul class="list-disc px-3 py-3">
-                        @foreach ($profession->identities as $identity)
-                            <li>
-                                <a href="{{ route('identities.edit', $identity->id) }}" class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">{{ $identity->name }}</a>
-                            </li>
-                        @endforeach
-                    </ul>
-                @else
-                    <h2 class="text-l font-semibold">{{ __('hiko.no_attached_persons') }}</h2>
-                @endif
-            </div>
+        <!-- Name in EN -->
+        <div class="form-group">
+            <label for="name_en">{{ __('Name (EN)') }}</label>
+            <input type="text" name="name[en]" id="name_en" class="form-control" 
+                   value="{{ old('name.en', $profession->getTranslation('name', 'en') ?? '') }}">
+            @error('name.en')
+                <div class="text-red-600">{{ $message }}</div>
+            @enderror
+        </div>
 
-            <!-- Category Section -->
-            <div class="max-w-sm bg-white p-6 shadow rounded-md">
-                @if ($profession->profession_category)
-                    <h2 class="text-l font-semibold">{{ __('hiko.attached_category') }}: 
-                        <a href="{{ route('professions.category.edit', $profession->profession_category->id) }}" class="border-b-2 text-primary-dark border-primary-light hover:border-primary-dark">
-                            {{ $profession->profession_category->name }}
-                        </a>
-                    </h2>
-                @else
-                    <h2 class="text-l font-semibold">{{ __('hiko.no_attached_category') }}</h2>
-                @endif
-            </div>
-        @endif
-    </div>
+        <!-- Category Dropdown -->
+        <div class="form-group">
+            <label for="category">{{ __('Category') }}</label>
+            <select name="category_id" id="category" class="form-control">
+                <option value="">{{ __('Select a category') }}</option>
+                @foreach ($availableCategories as $category)
+                    <option value="{{ $category->id }}" 
+                        {{ old('category_id', $profession->profession_category_id ?? '') == $category->id ? 'selected' : '' }}>
+                        {{ $category->getTranslation('name', 'cs') ?? $category->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('category_id')
+                <div class="text-red-600">{{ $message }}</div>
+            @enderror
+        </div>
 
-    @push('scripts')
-        <script>
-            var preventLeaving = true;
-            window.onbeforeunload = function(e) {
-                if (preventLeaving) {
-                    return '{{ __('hiko.confirm_leave') }}';
-                }
-            }
-
-            function debounce(func, wait, immediate) {
-                var timeout;
-                return function() {
-                    var context = this, args = arguments;
-                    var later = function() {
-                        timeout = null;
-                        if (!immediate) func.apply(context, args);
-                    };
-                    var callNow = immediate && !timeout;
-                    clearTimeout(timeout);
-                    timeout = setTimeout(later, wait);
-                    if (callNow) func.apply(context, args);
-                };
-            }
-
-            var searchInput = document.getElementById('mentioned');
-            searchInput.addEventListener('input', debounce(function(e) {
-                // Make AJAX request here
-            }, 500));
-
-            document.addEventListener('DOMContentLoaded', function() {
-                var iframes = document.querySelectorAll('iframe');
-                iframes.forEach(function(iframe) {
-                    iframe.addEventListener('load', function() {
-                        var iframeContent = iframe.contentDocument || iframe.contentWindow.document;
-                        var header = iframeContent.querySelector('header');
-                        var footer = iframeContent.querySelector('footer');
-                        if (header) header.style.display = 'none';
-                        if (footer) footer.style.display = 'none';
-                    });
-                });
-            });
-        </script>
-    @endpush
+        <!-- Submit Button -->
+        <div class="mt-4">
+            <x-button>{{ $label }}</x-button>
+        </div>
+    </form>
 </x-app-layout>

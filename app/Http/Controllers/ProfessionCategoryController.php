@@ -32,30 +32,36 @@ class ProfessionCategoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate($this->rules);
-        ProfessionCategory::create($validated);
-
+    
+        // Use the 'name' attribute for translations, providing CS and EN as an array
+        $professionCategory = ProfessionCategory::create([
+            'name' => [
+                'cs' => $validated['cs'],
+                'en' => $validated['en'],
+            ]
+        ]);
+    
         return redirect()
-            ->route('professions.category.index')
+            ->route('professions.category.edit', $professionCategory->id)
             ->with('success', __('hiko.saved'));
-    }
+    }    
 
     public function edit(ProfessionCategory $professionCategory): View
     {
-        $professionCategory->load('identities', 'professions'); // Load the relationships
-    
+        $professionCategory->load('identities', 'professions');
         $availableProfessions = tenancy()->initialized ? Profession::all() : GlobalProfession::all();
-        $professions = $professionCategory->professions; // Add this line to retrieve professions for the view
-    
+        $professions = $professionCategory->professions;
+
         return view('pages.professions-categories.form', [
             'title' => __('hiko.edit_professions_category'),
             'professionCategory' => $professionCategory,
             'action' => route('professions.category.update', $professionCategory->id),
             'method' => 'PUT',
+            'label' => __('hiko.save'),  // Button label set to "Save" for edit action
             'availableProfessions' => $availableProfessions,
-            'label' => __('hiko.create'),
             'professions' => $professions,
         ]);
-    }    
+    }
 
     public function update(Request $request, ProfessionCategory $professionCategory): RedirectResponse
     {
@@ -63,7 +69,7 @@ class ProfessionCategoryController extends Controller
         $professionCategory->update($validated);
 
         return redirect()
-            ->route('professions.category.index')
+            ->route('professions.category.edit', $professionCategory->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -72,7 +78,7 @@ class ProfessionCategoryController extends Controller
         $professionCategory->delete();
 
         return redirect()
-            ->route('professions.category.index')
+            ->route('professions')
             ->with('success', __('hiko.removed'));
     }
 }

@@ -14,12 +14,6 @@
         </label>
         <label>
             <span class="block text-sm">
-                {{ __('hiko.category') }}
-            </span>
-            <x-input wire:model.defer="filters.category" class="block w-full px-2 text-sm lg:w-64" type="text" />
-        </label>
-        <label>
-            <span class="block text-sm">
                 {{__('hiko.source')}}
             </span>
             <x-select wire:model.defer="filters.source" class="block w-full px-2 text-sm lg:w-36">

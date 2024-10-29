@@ -90,7 +90,7 @@ class ProfessionsTable extends Component
     protected function getTenantProfessions()
     {
         $filters = $this->filters;
-    
+
         $tenantProfessions = Profession::with('profession_category')
             ->select(
                 'id',
@@ -98,18 +98,18 @@ class ProfessionsTable extends Component
                 'name',
                 DB::raw("'local' AS source")
             );
-    
+
         // Apply search filters
         if (!empty($filters['cs'])) {
             $csFilter = strtolower($filters['cs']);
             $tenantProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) LIKE ?", ["%{$csFilter}%"]);
         }
-    
+
         if (!empty($filters['en'])) {
             $enFilter = strtolower($filters['en']);
             $tenantProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$enFilter}%"]);
         }
-    
+
         // Apply category filter
         if (!empty($filters['category'])) {
             $categoryFilter = strtolower($filters['category']);
@@ -117,14 +117,14 @@ class ProfessionsTable extends Component
                 $query->searchByName($categoryFilter);
             });
         }
-    
+
         return $tenantProfessions->get();
-    }    
+    }
 
     protected function getGlobalProfessions()
     {
         $filters = $this->filters;
-    
+
         $globalProfessions = \App\Models\GlobalProfession::with('profession_category')
             ->select(
                 'id',
@@ -132,18 +132,18 @@ class ProfessionsTable extends Component
                 'profession_category_id',
                 DB::raw("'global' AS source")
             );
-    
+
         // Apply search filters
         if (!empty($filters['cs'])) {
             $csFilter = strtolower($filters['cs']);
             $globalProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"cs\"'))) LIKE ?", ["%{$csFilter}%"]);
         }
-    
+
         if (!empty($filters['en'])) {
             $enFilter = strtolower($filters['en']);
             $globalProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"en\"'))) LIKE ?", ["%{$enFilter}%"]);
         }
-    
+
         // Apply category filter
         if (!empty($filters['category'])) {
             $categoryFilter = strtolower($filters['category']);
@@ -151,35 +151,40 @@ class ProfessionsTable extends Component
                 $query->searchByName($categoryFilter);
             });
         }
-    
+
         return $globalProfessions->get();
-    }     
+    }
 
     protected function formatTableData($data)
     {
         $header = auth()->user()->cannot('manage-metadata')
             ? [__('hiko.source'), 'CS', 'EN', __('hiko.category')]
             : ['', __('hiko.source'), 'CS', 'EN', __('hiko.category')];
-    
+
         return [
             'header' => $header,
             'rows' => $data->map(function ($pf) {
                 // Access translations
                 $csName = $pf->getTranslation('name', 'cs') ?? 'No CS name';
                 $enName = $pf->getTranslation('name', 'en') ?? 'No EN name';
-    
+
                 // Source label
                 $sourceLabel = $pf->source === 'local'
                     ? "<span class='inline-block text-blue-600 border border-blue-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.local')."</span>"
                     : "<span class='inline-block bg-red-100 text-red-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.global')."</span>";
-    
-                // Profession category name
+
+                // Profession category name and source
                 if ($pf->profession_category) {
                     $categoryName = $pf->profession_category->getTranslation('name', 'cs') ?? '';
+                    $categorySource = $pf->profession_category->source ?? 'global';
+                    $categorySourceLabel = $categorySource === 'local'
+                        ? "<span class='inline-block text-blue-600 border border-blue-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.local')."</span>"
+                        : "<span class='inline-block bg-red-100 text-red-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.global')."</span>";
+                    $categoryDisplay = "$categoryName $categorySourceLabel";
                 } else {
-                    $categoryName = __('hiko.no_category');
+                    $categoryDisplay = __('hiko.no_category');
                 }
-    
+
                 // Build the edit link
                 if ($pf->source === 'local') {
                     $editLink = [
@@ -193,14 +198,14 @@ class ProfessionsTable extends Component
                         'disabled' => true,
                     ];
                 }
-    
+
                 // Construct the row
                 $row = auth()->user()->cannot('manage-metadata') ? [] : [$editLink];
-    
+
                 $row[] = [
                     'label' => $sourceLabel,
                 ];
-    
+
                 $row = array_merge($row, [
                     [
                         'label' => $csName,
@@ -209,12 +214,12 @@ class ProfessionsTable extends Component
                         'label' => $enName,
                     ],
                     [
-                        'label' => $categoryName,
+                        'label' => $categoryDisplay,
                     ],
                 ]);
-    
+
                 return $row;
             })->toArray(),
         ];
-    }    
+    }
 }
