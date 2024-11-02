@@ -16,7 +16,12 @@ class Profession extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->setTable(tenancy()->initialized ? tenancy()->tenant->table_prefix . '__professions' : 'global_professions');
+
+        if (tenancy()->initialized) {
+            $this->setTable($this->getTenantPrefix() . '__professions');
+        } else {
+            $this->setTable('global_professions');
+        }
     }
 
     public function profession_category()
@@ -26,9 +31,9 @@ class Profession extends Model
 
     public function identities()
     {
-        $relatedModel = Identity::class;
+        $relatedModel = tenancy()->initialized ? Identity::class : GlobalIdentity::class;
         $pivotTable = tenancy()->initialized
-            ? tenancy()->tenant->table_prefix . '__identity_profession'
+            ? $this->getTenantPrefix() . '__identity_profession'
             : 'global_identity_profession';
 
         return $this->belongsToMany(

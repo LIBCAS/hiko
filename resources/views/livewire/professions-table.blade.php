@@ -39,7 +39,7 @@
         </label>
     </x-filter-form>
 
-    <!-- Table for Displaying Data -->
+    <!-- Table Component for Displaying Data -->
     <x-table :tableData="$tableData" />
 
     <!-- Pagination Links -->

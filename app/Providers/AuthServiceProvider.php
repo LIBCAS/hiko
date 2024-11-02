@@ -3,29 +3,33 @@
 namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use App\Models\Profession;
-use App\Models\ProfessionCategory;
-use App\Policies\ProfessionPolicy;
-use App\Policies\ProfessionCategoryPolicy;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
     /**
      * The policy mappings for the application.
+     *
+     * @var array
      */
     protected $policies = [
-        Profession::class => ProfessionPolicy::class,
-        ProfessionCategory::class => ProfessionCategoryPolicy::class,
-        // Add other model-policy mappings here
+        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
     ];
 
     /**
      * Register any authentication / authorization services.
+     *
+     * @return void
      */
     public function boot()
     {
         $this->registerPolicies();
 
-        // Additional boot logic if necessary
+        Gate::before(function ($user, $ability) {
+            if ($user->hasAbility($ability)) {
+                return true;
+            }
+        });
+
     }
 }

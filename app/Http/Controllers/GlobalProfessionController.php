@@ -30,7 +30,7 @@ class GlobalProfessionController extends Controller
 
         GlobalProfession::create($request->all());
 
-        return redirect()->route('admin.global-professions.index')->with('success', 'Global Profession created successfully.');
+        return redirect()->route('global.professions.index') // Adjusted route name
+            ->with('success', 'Global Profession created successfully.');
     }
-
 }

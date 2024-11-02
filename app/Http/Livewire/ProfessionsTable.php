@@ -160,36 +160,34 @@ class ProfessionsTable extends Component
         $header = auth()->user()->cannot('manage-metadata')
             ? [__('hiko.source'), 'CS', 'EN', __('hiko.category')]
             : ['', __('hiko.source'), 'CS', 'EN', __('hiko.category')];
-
+    
         return [
             'header' => $header,
             'rows' => $data->map(function ($pf) {
                 // Access translations
                 $csName = $pf->getTranslation('name', 'cs') ?? 'No CS name';
                 $enName = $pf->getTranslation('name', 'en') ?? 'No EN name';
-
+    
                 // Source label
                 $sourceLabel = $pf->source === 'local'
                     ? "<span class='inline-block text-blue-600 border border-blue-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.local')."</span>"
                     : "<span class='inline-block bg-red-100 text-red-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.global')."</span>";
-
-                // Profession category name and source
-                if ($pf->profession_category) {
-                    $categoryName = $pf->profession_category->getTranslation('name', 'cs') ?? '';
-                    $categorySource = $pf->profession_category->source ?? 'global';
-                    $categorySourceLabel = $categorySource === 'local'
-                        ? "<span class='inline-block text-blue-600 border border-blue-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.local')."</span>"
-                        : "<span class='inline-block bg-red-100 text-red-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.global')."</span>";
-                    $categoryDisplay = "$categoryName $categorySourceLabel";
-                } else {
-                    $categoryDisplay = __('hiko.no_category');
-                }
-
-                // Build the edit link
+    
+                // Profession category name
+                $categoryDisplay = $pf->profession_category
+                    ? $pf->profession_category->getTranslation('name', 'cs') ?? ''
+                    : __('hiko.no_category');
+    
+                // Build the edit link with the appropriate route
                 if ($pf->source === 'local') {
                     $editLink = [
                         'label' => __('hiko.edit'),
                         'link' => route('professions.edit', $pf->id),
+                    ];
+                } elseif ($pf->source === 'global' && auth()->user()->can('manage-users')) {
+                    $editLink = [
+                        'label' => __('hiko.edit'),
+                        'link' => route('global.profession.edit', $pf->id),
                     ];
                 } else {
                     $editLink = [
@@ -198,14 +196,14 @@ class ProfessionsTable extends Component
                         'disabled' => true,
                     ];
                 }
-
+    
                 // Construct the row
                 $row = auth()->user()->cannot('manage-metadata') ? [] : [$editLink];
-
+    
                 $row[] = [
                     'label' => $sourceLabel,
                 ];
-
+    
                 $row = array_merge($row, [
                     [
                         'label' => $csName,
@@ -217,9 +215,9 @@ class ProfessionsTable extends Component
                         'label' => $categoryDisplay,
                     ],
                 ]);
-
+    
                 return $row;
             })->toArray(),
         ];
-    }
+    }    
 }

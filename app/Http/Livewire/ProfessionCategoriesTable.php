@@ -156,7 +156,12 @@ class ProfessionCategoriesTable extends Component
                 if ($category->source === 'local') {
                     $editLink = [
                         'label' => __('hiko.edit'),
-                        'link' => route('professions.category.edit', $category->id),  // Updated route name
+                        'link' => route('professions.category.edit', $category->id),
+                    ];
+                } elseif ($category->source === 'global' && auth()->user()->can('manage-users')) {
+                    $editLink = [
+                        'label' => __('hiko.edit'),
+                        'link' => route('global.profession.category.edit', $category->id),
                     ];
                 } else {
                     $editLink = [
