@@ -175,49 +175,54 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
         Route::get('/', [GlobalProfessionController::class, 'index'])
             ->name('global.professions')
             ->middleware('can:view-users');
-    
+
         Route::get('create', [GlobalProfessionController::class, 'create'])
             ->name('global.professions.create')
             ->middleware('can:manage-users');
-    
-        Route::get('{globalProfession}/edit', [GlobalProfessionController::class, 'edit'])
+
+        Route::get('{id}/edit', [GlobalProfessionController::class, 'edit'])
             ->name('global.profession.edit')
             ->middleware('can:manage-users');
-    
+
         Route::post('/', [GlobalProfessionController::class, 'store'])
             ->name('global.professions.store')
             ->middleware('can:manage-users');
-    
-        Route::put('{globalProfession}', [GlobalProfessionController::class, 'update'])
+
+        Route::put('{id}', [GlobalProfessionController::class, 'update'])
             ->name('global.profession.update')
             ->middleware('can:manage-users');
-    
-        Route::delete('{globalProfession}', [GlobalProfessionController::class, 'destroy'])
+
+        Route::delete('{id}', [GlobalProfessionController::class, 'destroy'])
             ->name('global.profession.destroy')
             ->middleware('can:delete-users');
-    });    
+    });
 
     Route::prefix('global-profession-categories')->middleware(['auth'])->group(function () {
+        Route::get('/', function () {
+            return redirect()->route('global.professions');
+        });
+
         Route::get('create', [GlobalProfessionCategoryController::class, 'create'])
             ->name('global.profession.category.create')
             ->middleware('can:manage-users');
-    
-        Route::get('{globalProfessionCategory}/edit', [GlobalProfessionCategoryController::class, 'edit'])
+
+        Route::get('{id}/edit', [GlobalProfessionCategoryController::class, 'edit'])
             ->name('global.profession.category.edit')
             ->middleware('can:manage-users');
-    
+
         Route::post('/', [GlobalProfessionCategoryController::class, 'store'])
             ->name('global.profession.category.store')
             ->middleware('can:manage-users');
-    
-        Route::put('{globalProfessionCategory}', [GlobalProfessionCategoryController::class, 'update'])
+
+        Route::put('{id}', [GlobalProfessionCategoryController::class, 'update'])
             ->name('global.profession.category.update')
             ->middleware('can:manage-users');
-    
-        Route::delete('{globalProfessionCategory}', [GlobalProfessionCategoryController::class, 'destroy'])
+
+        Route::delete('{id}', [GlobalProfessionCategoryController::class, 'destroy'])
             ->name('global.profession.category.destroy')
             ->middleware('can:delete-users');
     });
+
     
     Route::prefix('keywords')->group(function () {
         Route::get('/', [KeywordController::class, 'index'])
