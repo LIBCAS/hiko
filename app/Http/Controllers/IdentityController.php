@@ -262,9 +262,9 @@ class IdentityController extends Controller
                 Log::warning("Invalid profession ID: {$professionId}");
                 continue;
             }
-
+    
             $professionId = (int) $professionId;
-
+    
             if ($this->isTenancyInitialized()) {
                 // Attach tenant-specific profession
                 $profession = Profession::find($professionId);
@@ -275,18 +275,15 @@ class IdentityController extends Controller
                 }
             } else {
                 // Attach global profession
-                Tenancy::central(function () use (&$globalProfession, $professionId) {
-                    $globalProfession = GlobalProfession::find($professionId);
-                });
-
-                if (isset($globalProfession)) {
+                $globalProfession = GlobalProfession::find($professionId);
+                if ($globalProfession) {
                     $identity->professions()->attach($globalProfession->id, ['position' => $index]);
                 } else {
                     Log::warning("Global Profession with ID {$professionId} not found.");
                 }
             }
         }
-    }
+    }    
 
     /**
      * Attach profession categories to the identity.

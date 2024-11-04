@@ -33,12 +33,9 @@ class Identity extends Model
         parent::__construct($attributes);
 
         // Dynamically set the tenant-specific table name
-        if ($this->isTenancyInitialized()) {
-            $tenantPrefix = $this->getTenantPrefix();
-            $this->table = "{$tenantPrefix}__identities"; // Tenant-specific table
-        } else {
-            $this->table = 'global_identities'; // Global table
-        }
+        $this->table = $this->isTenancyInitialized()
+            ? "{$this->getTenantPrefix()}__identities" // Tenant-specific table
+            : 'global_identities'; // Global table
     }
 
     /**
@@ -104,8 +101,13 @@ class Identity extends Model
                 ? "{$this->getTenantPrefix()}__identity_profession_category"
                 : 'global_identity_profession_category';
 
+            // Determine related model based on tenancy
+            $relatedModel = $this->isTenancyInitialized()
+                ? ProfessionCategory::class
+                : GlobalProfessionCategory::class;
+
             return $this->belongsToMany(
-                ProfessionCategory::class,
+                $relatedModel,
                 $pivotTable,
                 'identity_id',
                 'profession_category_id'

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Stancl\Tenancy\Facades\Tenancy;
 
 class IdentityRequest extends FormRequest
 {
@@ -13,6 +14,9 @@ class IdentityRequest extends FormRequest
 
     public function rules()
     {
+        // Check if the tenancy is initialized
+        $isTenancyInitialized = tenancy()->initialized;
+
         if ($this->type === 'institution') {
             return [
                 'name' => ['required', 'string', 'max:255'],
@@ -36,7 +40,12 @@ class IdentityRequest extends FormRequest
             'related_names' => ['nullable'],
             'type' => ['required', 'string', 'max:255'],
             'category' => ['nullable', 'exists:profession_categories,id'],
-            'profession' => ['nullable', 'exists:professions,id'],
+            'profession' => [
+                'nullable',
+                $isTenancyInitialized
+                    ? 'exists:' . $this->getTenantPrefix() . '__professions,id'
+                    : 'exists:global_professions,id',
+            ],
         ];
     }
 
@@ -52,5 +61,15 @@ class IdentityRequest extends FormRequest
                 'name' => $name,
             ]);
         }
+    }
+
+    /**
+     * Get the tenant prefix for table naming.
+     *
+     * @return string
+     */
+    protected function getTenantPrefix(): string
+    {
+        return tenancy()->tenant->table_prefix ?? '';
     }
 }
