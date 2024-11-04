@@ -46,19 +46,25 @@
                 <!-- Category Dropdown -->
                 <div class="required">
                     <x-label for="category_id" :value="__('hiko.category')" />
-                    <select name="category_id" id="category_id" class="block w-full mt-1">
+                    <x-select name="category_id" id="category_id" class="block w-full mt-1"
+                        x-data="ajaxChoices({ url: '{{ route('ajax.global.professions.category') }}', element: $el })"
+                        x-init="initSelect()"
+                    >
                         <option value="">{{ __('Select Category') }}</option>
                         @foreach ($availableCategories as $availableCategory)
-                            <option value="{{ $availableCategory->id }}" 
-                                {{ old('category_id', $profession->profession_category_id ?? null) == $availableCategory->id ? 'selected' : '' }}>
-                                {{ $availableCategory->getTranslation('name', app()->getLocale()) }}
-                            </option>
+                            @if ($availableCategory instanceof \App\Models\GlobalProfessionCategory)
+                                <option value="{{ $availableCategory->id }}" 
+                                    {{ old('category_id', $profession->profession_category_id ?? null) == $availableCategory->id ? 'selected' : '' }}>
+                                    {{ $availableCategory->getTranslation('name', app()->getLocale()) }}
+                                </option>
+                            @endif
                         @endforeach
-                    </select>
+                    </x-select>
                     @error('category_id')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>
+
 
                 <x-button-simple class="w-full" name="action" value="edit">
                     {{ $label }}

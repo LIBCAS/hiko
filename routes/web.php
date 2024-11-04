@@ -398,46 +398,51 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
     });    
 
     Route::prefix('ajax')->group(function () {
-        Route::get('keyword-category', AjaxKeywordCategoryController::class)
+        Route::get('keyword-category', [AjaxKeywordCategoryController::class, '__invoke'])
             ->name('ajax.keywords.category')
             ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::get('professions', AjaxProfessionController::class)
+    
+        Route::get('professions', [AjaxProfessionController::class, '__invoke'])
             ->name('ajax.professions')
             ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::get('profession-category', AjaxProfessionCategoryController::class)
+    
+        Route::get('profession-category', [AjaxProfessionCategoryController::class, '__invoke'])
             ->name('ajax.professions.category')
             ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::get('identity', AjaxIdentityController::class)
+    
+        // New route for global profession categories
+        Route::get('global-profession-category', [AjaxGlobalProfessionCategoryController::class, '__invoke'])
+            ->name('ajax.global.professions.category')
+            ->middleware(['auth', 'can:manage-metadata']);
+    
+        Route::get('identity', [AjaxIdentityController::class, '__invoke'])
             ->name('ajax.identities')
             ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::get('identity/similar', SimilarNamesController::class)
+    
+        Route::get('identity/similar', [SimilarNamesController::class, '__invoke'])
             ->name('ajax.identities.similar')
             ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::get('place', AjaxPlaceController::class)
+    
+        Route::get('place', [AjaxPlaceController::class, '__invoke'])
             ->name('ajax.places')
             ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::get('places/similar', SimilarPlacesController::class)
+    
+        Route::get('places/similar', [SimilarPlacesController::class, '__invoke'])
             ->name('ajax.places.similar')
             ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::get('keyword', AjaxKeywordController::class)
+    
+        Route::get('keyword', [AjaxKeywordController::class, '__invoke'])
             ->name('ajax.keywords')
             ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::get('locations/similar', SimilarLocationsController::class)
+    
+        Route::get('locations/similar', [SimilarLocationsController::class, '__invoke'])
             ->name('ajax.locations.similar')
             ->middleware(['auth', 'can:manage-metadata']);
-
-        Route::get('items/similar', SimilarItemsController::class)
+    
+        Route::get('items/similar', [SimilarItemsController::class, '__invoke'])
             ->name('ajax.items.similar')
             ->middleware(['auth', 'can:manage-metadata']);
-    });
+    });    
 
     Route::prefix('dev')->group(function () {
         Route::get('optimize', [DevToolsController::class, 'cache'])
