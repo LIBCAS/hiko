@@ -19,23 +19,21 @@ class GlobalProfessionController extends Controller
     public function index(): View
     {
         $professions = GlobalProfession::with('profession_category')->paginate(20);
-        return view('pages.professions.index', [
-            'title' => __('hiko.global_professions'),
-            'professions' => $professions,
-        ]);
+        return view('pages.global-professions.index', compact('professions'))
+            ->with('title', __('hiko.global_professions'));
     }
 
     public function create(): View
     {
         $categories = GlobalProfessionCategory::all();
-        return view('pages.professions.form', [
+        return view('pages.global-professions.form', [
             'title' => __('hiko.new_global_profession'),
             'profession' => new GlobalProfession(),
             'action' => route('global.professions.store'),
             'label' => __('hiko.create'),
             'availableCategories' => $categories,
         ]);
-    }
+    }    
 
     public function store(Request $request): RedirectResponse
     {
@@ -46,12 +44,8 @@ class GlobalProfessionController extends Controller
                 'cs' => $validated['cs'],
                 'en' => $validated['en'] ?? null,
             ],
+            'profession_category_id' => $validated['category_id'] ?? null, // Attach category ID
         ];
-
-        // Include category ID only if it is set
-        if (isset($validated['category_id'])) {
-            $professionData['profession_category_id'] = $validated['category_id'];
-        }
 
         $profession = GlobalProfession::create($professionData);
 
@@ -64,39 +58,35 @@ class GlobalProfessionController extends Controller
     {
         $categories = GlobalProfessionCategory::all();
         $globalProfession->load('identities');
-
-        return view('pages.professions.form', [
+    
+        return view('pages.global-professions.form', [
             'title' => __('hiko.edit_global_profession'),
             'profession' => $globalProfession,
-            'action' => route('global.profession.update', $globalProfession->id),
+            'action' => route('global.professions.update', $globalProfession->id), // Matches the route name in routes file
             'method' => 'PUT',
             'label' => __('hiko.save'),
             'availableCategories' => $categories,
         ]);
     }
-
+    
     public function update(Request $request, GlobalProfession $globalProfession): RedirectResponse
     {
         $validated = $request->validate($this->rules);
-
+    
         $updateData = [
             'name' => [
                 'cs' => $validated['cs'],
                 'en' => $validated['en'] ?? null,
             ],
+            'profession_category_id' => $validated['category_id'] ?? null,
         ];
-
-        // Include category ID only if it is set
-        if (isset($validated['category_id'])) {
-            $updateData['profession_category_id'] = $validated['category_id'];
-        }
-
+    
         $globalProfession->update($updateData);
-
+    
         return redirect()
-            ->route('global.profession.edit', $globalProfession->id)
+            ->route('global.professions.edit', $globalProfession->id) // Ensure this matches your route group definition
             ->with('success', __('hiko.saved'));
-    }
+    }    
 
     public function destroy(GlobalProfession $globalProfession): RedirectResponse
     {

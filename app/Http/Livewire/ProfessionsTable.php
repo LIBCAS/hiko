@@ -154,31 +154,23 @@ class ProfessionsTable extends Component
 
         return $globalProfessions->get();
     }
-
+        
     protected function formatTableData($data)
     {
-        $header = auth()->user()->cannot('manage-metadata')
-            ? [__('hiko.source'), 'CS', 'EN', __('hiko.category')]
-            : ['', __('hiko.source'), 'CS', 'EN', __('hiko.category')];
-    
         return [
-            'header' => $header,
+            'header' => auth()->user()->cannot('manage-metadata')
+                ? [__('hiko.source'), 'CS', 'EN', __('hiko.category')]
+                : ['', __('hiko.source'), 'CS', 'EN', __('hiko.category')],
             'rows' => $data->map(function ($pf) {
-                // Access translations
                 $csName = $pf->getTranslation('name', 'cs') ?? 'No CS name';
                 $enName = $pf->getTranslation('name', 'en') ?? 'No EN name';
-    
-                // Source label
                 $sourceLabel = $pf->source === 'local'
                     ? "<span class='inline-block text-blue-600 border border-blue-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.local')."</span>"
                     : "<span class='inline-block bg-red-100 text-red-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.global')."</span>";
-    
-                // Profession category name
                 $categoryDisplay = $pf->profession_category
                     ? $pf->profession_category->getTranslation('name', 'cs') ?? ''
                     : __('hiko.no_category');
-    
-                // Build the edit link with the appropriate route
+
                 if ($pf->source === 'local') {
                     $editLink = [
                         'label' => __('hiko.edit'),
@@ -187,7 +179,7 @@ class ProfessionsTable extends Component
                 } elseif ($pf->source === 'global' && auth()->user()->can('manage-users')) {
                     $editLink = [
                         'label' => __('hiko.edit'),
-                        'link' => route('global.profession.edit', $pf->id),
+                        'link' => route('global.professions.edit', $pf->id),
                     ];
                 } else {
                     $editLink = [
@@ -196,28 +188,17 @@ class ProfessionsTable extends Component
                         'disabled' => true,
                     ];
                 }
-    
-                // Construct the row
+
                 $row = auth()->user()->cannot('manage-metadata') ? [] : [$editLink];
-    
-                $row[] = [
-                    'label' => $sourceLabel,
-                ];
-    
+                $row[] = ['label' => $sourceLabel];
                 $row = array_merge($row, [
-                    [
-                        'label' => $csName,
-                    ],
-                    [
-                        'label' => $enName,
-                    ],
-                    [
-                        'label' => $categoryDisplay,
-                    ],
+                    ['label' => $csName],
+                    ['label' => $enName],
+                    ['label' => $categoryDisplay],
                 ]);
-    
+
                 return $row;
             })->toArray(),
         ];
-    }    
+    }
 }

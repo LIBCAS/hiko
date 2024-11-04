@@ -6,21 +6,27 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Models\GlobalProfessionCategory;
-use App\Models\Identity;
 use App\Models\GlobalProfession;
 
 class GlobalProfessionCategoryController extends Controller
 {
     protected array $rules = [
-        'cs' => ['max:255', 'required_without:en'],
-        'en' => ['max:255', 'required_without:cs'],
+        'cs' => ['required_without:en', 'max:255'],
+        'en' => ['required_without:cs', 'max:255'],
     ];
+
+    public function index(): View
+    {
+        $categories = GlobalProfessionCategory::with('professions')->paginate(20);
+        return view('pages.global-professions-categories.index', compact('categories'))
+            ->with('title', __('hiko.global_profession_categories'));
+    }
 
     public function create(): View
     {
-        return view('pages.professions-categories.form', [
+        return view('pages.global-professions-categories.form', [
             'title' => __('hiko.new_global_professions_category'),
-            'professionCategory' => new GlobalProfessionCategory,
+            'professionCategory' => new GlobalProfessionCategory(),
             'action' => route('global.profession.category.store'),
             'label' => __('hiko.create'),
         ]);
@@ -34,7 +40,7 @@ class GlobalProfessionCategoryController extends Controller
             'name' => [
                 'cs' => $validated['cs'],
                 'en' => $validated['en'] ?? null,
-            ]
+            ],
         ]);
 
         return redirect()
@@ -44,29 +50,26 @@ class GlobalProfessionCategoryController extends Controller
 
     public function edit(GlobalProfessionCategory $globalProfessionCategory): View
     {
-        $globalProfessionCategory->load('identities', 'professions');
-        $availableProfessions = GlobalProfession::all();
-        $professions = $globalProfessionCategory->professions;
+        $globalProfessionCategory->load('professions');
 
-        return view('pages.professions-categories.form', [
+        return view('pages.global-professions-categories.form', [
             'title' => __('hiko.edit_global_professions_category'),
             'professionCategory' => $globalProfessionCategory,
             'action' => route('global.profession.category.update', $globalProfessionCategory->id),
             'method' => 'PUT',
             'label' => __('hiko.save'),
-            'availableProfessions' => $availableProfessions,
-            'professions' => $professions,
         ]);
     }
 
     public function update(Request $request, GlobalProfessionCategory $globalProfessionCategory): RedirectResponse
     {
         $validated = $request->validate($this->rules);
+
         $globalProfessionCategory->update([
             'name' => [
                 'cs' => $validated['cs'],
                 'en' => $validated['en'] ?? null,
-            ]
+            ],
         ]);
 
         return redirect()
@@ -79,8 +82,7 @@ class GlobalProfessionCategoryController extends Controller
         $globalProfessionCategory->delete();
 
         return redirect()
-            ->route('global.profession.category.create')
+            ->route('global.profession.category.index')
             ->with('success', __('hiko.removed'));
     }
 }
-
