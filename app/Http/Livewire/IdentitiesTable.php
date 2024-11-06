@@ -62,6 +62,14 @@ class IdentitiesTable extends Component
             ->paginate(10);
     }
 
+    protected function formatDates($identity): string
+    {
+        $birthYear = $identity->birth_year ?? '';
+        $deathYear = $identity->death_year ?? '';
+
+        return trim("{$birthYear} - {$deathYear}");
+    }
+    
     protected function formatRelatedNames($relatedNames): string
     {
         if (is_array($relatedNames)) {
@@ -105,7 +113,7 @@ class IdentitiesTable extends Component
                         'label' => __("hiko.{$identity->type}"),
                     ],
                     [
-                        'label' => $identity->dates,
+                        'label' => $this->formatDates($identity),
                     ],
                     [
                         'label' => $this->formatRelatedNames($identity->related_names),

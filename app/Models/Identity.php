@@ -4,152 +4,68 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Stancl\Tenancy\Facades\Tenancy;
 
 class Identity extends Model
 {
-    /**
-     * The attributes that aren't mass assignable.
-     *
-     * @var array
-     */
     protected $guarded = ['id'];
-
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table;
 
-    /**
-     * Constructor to dynamically set the table name based on tenancy.
-     *
-     * @param array $attributes
-     */
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-
-        // Dynamically set the tenant-specific table name
         $this->table = $this->isTenancyInitialized()
-            ? "{$this->getTenantPrefix()}__identities" // Tenant-specific table
-            : 'global_identities'; // Global table
+            ? "{$this->getTenantPrefix()}__identities"
+            : 'global_identities';
     }
 
-    /**
-     * Check if tenancy is initialized.
-     *
-     * @return bool
-     */
     protected function isTenancyInitialized(): bool
     {
         return tenancy()->initialized;
     }
 
-    /**
-     * Get the tenant's table prefix.
-     *
-     * @return string
-     */
-    protected function getTenantPrefix(): string
+    protected function getTenantPrefix(): ?string
     {
-        return tenancy()->tenant->table_prefix;
+        return tenancy()->tenant ? tenancy()->tenant->table_prefix : '';
     }
 
-    /**
-     * Define the professions relationship.
-     *
-     * @return BelongsToMany
-     */
     public function professions(): BelongsToMany
     {
-        try {
-            // Determine pivot table name based on tenancy
-            $pivotTable = $this->isTenancyInitialized()
-                ? "{$this->getTenantPrefix()}__identity_profession"
-                : 'global_identity_profession';
+        $pivotTable = $this->isTenancyInitialized()
+            ? "{$this->getTenantPrefix()}__identity_profession"
+            : 'global_identity_profession';
 
-            // Determine related model based on tenancy
-            $relatedModel = $this->isTenancyInitialized()
-                ? Profession::class
-                : GlobalProfession::class;
-
-            return $this->belongsToMany(
-                $relatedModel,
-                $pivotTable,
-                'identity_id',
-                'profession_id'
-            )->withPivot('position');
-        } catch (\Exception $e) {
-            Log::error("Error in Identity::professions relationship: {$e->getMessage()}");
-            throw $e;
-        }
+        return $this->belongsToMany(Profession::class, $pivotTable, 'identity_id', 'profession_id')
+                    ->withPivot('position', 'global_profession_id');
     }
 
-    /**
-     * Define the profession categories relationship.
-     *
-     * @return BelongsToMany
-     */
+    public function globalProfessions(): BelongsToMany
+    {
+        return $this->belongsToMany(GlobalProfession::class, 'global_identity_profession', 'identity_id', 'profession_id');
+    }
+
     public function profession_categories(): BelongsToMany
     {
-        try {
-            // Determine pivot table name based on tenancy
-            $pivotTable = $this->isTenancyInitialized()
-                ? "{$this->getTenantPrefix()}__identity_profession_category"
-                : 'global_identity_profession_category';
+        $pivotTable = $this->isTenancyInitialized()
+            ? "{$this->getTenantPrefix()}__identity_profession_category"
+            : 'global_identity_profession_category';
 
-            // Determine related model based on tenancy
-            $relatedModel = $this->isTenancyInitialized()
-                ? ProfessionCategory::class
-                : GlobalProfessionCategory::class;
-
-            return $this->belongsToMany(
-                $relatedModel,
-                $pivotTable,
-                'identity_id',
-                'profession_category_id'
-            )->withPivot('position');
-        } catch (\Exception $e) {
-            Log::error("Error in Identity::profession_categories relationship: {$e->getMessage()}");
-            throw $e;
-        }
+        return $this->belongsToMany(ProfessionCategory::class, $pivotTable, 'identity_id', 'profession_category_id')
+                    ->withPivot('position');
     }
 
-    /**
-     * Define the letters relationship.
-     *
-     * @return BelongsToMany
-     */
     public function letters(): BelongsToMany
     {
-        try {
-            // Determine pivot table name based on tenancy
-            $pivotTable = $this->isTenancyInitialized()
-                ? "{$this->getTenantPrefix()}__identity_letter"
-                : 'global_identity_letter';
+        $pivotTable = $this->isTenancyInitialized()
+            ? "{$this->getTenantPrefix()}__identity_letter"
+            : 'global_identity_letter';
 
-            return $this->belongsToMany(
-                Letter::class,
-                $pivotTable,
-                'identity_id',
-                'letter_id'
-            )->withPivot('role');
-        } catch (\Exception $e) {
-            Log::error("Error in Identity::letters relationship: {$e->getMessage()}");
-            throw $e;
-        }
+        return $this->belongsToMany(Letter::class, $pivotTable, 'identity_id', 'letter_id')
+                    ->withPivot('role');
     }
 
-    /**
-     * Scope a query to search identities based on filters.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param array $filters
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
     public function scopeSearch($query, $filters)
     {
         if (!empty($filters['search_term'])) {
@@ -162,4 +78,26 @@ class Identity extends Model
 
         return $query;
     }
+
+    public function scopeWithLocalAndGlobalProfessions($query)
+    {
+        $query->with(['professions' => function ($localQuery) {
+            $localQuery->select('id', 'name')
+                       ->addSelect(DB::raw("'Local' as scope"));
+        }]);
+
+        // Load global professions based on tenant's identity_profession table
+        if ($this->isTenancyInitialized()) {
+            $tenantTablePrefix = $this->getTenantPrefix() . '__identity_profession';
+            $query->with(['globalProfessions' => function ($globalQuery) use ($tenantTablePrefix) {
+                $globalQuery->selectRaw("global_professions.id as global_profession_id, 
+                                         JSON_UNQUOTE(JSON_EXTRACT(global_professions.name, '$.en')) as name, 
+                                         'Global' as scope")
+                             ->join($tenantTablePrefix, "{$tenantTablePrefix}.global_profession_id", '=', 'global_professions.id')
+                             ->whereNotNull("{$tenantTablePrefix}.global_profession_id");
+            }]);
+        }
+
+        return $query;
+    }    
 }
