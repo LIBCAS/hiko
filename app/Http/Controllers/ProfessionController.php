@@ -16,7 +16,6 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProfessionController extends Controller
 {
-    // Move the common rules that do not depend on tenancy outside
     protected array $baseRules = [
         'cs' => ['max:255', 'required_without:en'],
         'en' => ['max:255', 'required_without:cs'],

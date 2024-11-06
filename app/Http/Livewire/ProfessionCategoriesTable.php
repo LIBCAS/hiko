@@ -190,5 +190,5 @@ class ProfessionCategoriesTable extends Component
                 return $row;
             })->toArray(),
         ];
-    }    
+    }
 }

@@ -9,7 +9,6 @@ trait UsesTenantConnection
     {
         if (tenancy()->initialized) {
             $tableName = $this->getTenantPrefix() . '__' . $this->getTable();
-            \Log::info('Using tenant-specific table: ' . $tableName);
             $this->setTable($tableName);
         }
     }    

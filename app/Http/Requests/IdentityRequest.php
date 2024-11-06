@@ -3,28 +3,20 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Profession;
+use App\Models\GlobalProfession;
 use Stancl\Tenancy\Facades\Tenancy;
 
 class IdentityRequest extends FormRequest
 {
     public function authorize()
     {
-        return auth()->user()->hasAbility('manage-metadata');
+        return auth()->user()->can('manage-metadata');
     }
 
     public function rules()
     {
-        // Check if the tenancy is initialized
         $isTenancyInitialized = tenancy()->initialized;
-
-        if ($this->type === 'institution') {
-            return [
-                'name' => ['required', 'string', 'max:255'],
-                'note' => ['nullable'],
-                'viaf_id' => ['nullable', 'integer', 'numeric'],
-                'type' => ['required', 'string', 'max:255'],
-            ];
-        }
 
         return [
             'name' => ['required', 'string', 'max:255'],
@@ -35,41 +27,48 @@ class IdentityRequest extends FormRequest
             'death_year' => ['nullable', 'string', 'max:255'],
             'nationality' => ['nullable', 'string', 'max:255'],
             'gender' => ['nullable', 'string', 'max:255'],
-            'note' => ['nullable'],
-            'related_identity_resources' => ['nullable'],
-            'related_names' => ['nullable'],
+            'note' => ['nullable', 'string'],
+            'related_identity_resources' => ['nullable', 'array'],
+            'related_names' => ['nullable', 'array'],
             'type' => ['required', 'string', 'max:255'],
             'category' => ['nullable', 'exists:profession_categories,id'],
             'profession' => [
-                'nullable',
-                $isTenancyInitialized
-                    ? 'exists:' . $this->getTenantPrefix() . '__professions,id'
-                    : 'exists:global_professions,id',
+                'nullable', 'array',
+                function ($attribute, $value, $fail) use ($isTenancyInitialized) {
+                    foreach ($value as $professionId) {
+                        $isGlobal = str_starts_with($professionId, 'global-');
+                        $cleanProfessionId = str_replace(['global-', 'local-'], '', $professionId);
+
+                        if ($isGlobal) {
+                            // Validate against the global table
+                            Tenancy::central(function () use ($cleanProfessionId, $fail) {
+                                if (!GlobalProfession::find($cleanProfessionId)) {
+                                    $fail(__('The selected profession is not valid (Global).'));
+                                }
+                            });
+                        } else {
+                            // Validate against the tenant-specific table if tenancy is initialized
+                            if ($isTenancyInitialized && !Profession::find($cleanProfessionId)) {
+                                $fail(__('The selected profession is not valid (Local).'));
+                            }
+                        }
+                    }
+                },
             ],
         ];
     }
 
     protected function prepareForValidation()
     {
-        if ($this->type === 'person') {
-            $name = $this->surname;
-            $name .= $this->forename ? ", {$this->forename}" : '';
+        if ($this->input('type') === 'person') {
+            $name = $this->input('surname');
+            $name .= $this->input('forename') ? ", {$this->input('forename')}" : '';
 
             $this->merge([
-                'category' => empty($this->category) ? null : array_filter($this->category),
-                'profession' => empty($this->profession) ? null : array_filter($this->profession),
+                'category' => empty($this->input('category')) ? null : array_filter($this->input('category')),
+                'profession' => empty($this->input('profession')) ? null : array_filter($this->input('profession')),
                 'name' => $name,
             ]);
         }
-    }
-
-    /**
-     * Get the tenant prefix for table naming.
-     *
-     * @return string
-     */
-    protected function getTenantPrefix(): string
-    {
-        return tenancy()->tenant->table_prefix ?? '';
     }
 }

@@ -30,6 +30,7 @@ use App\Http\Controllers\Ajax\AjaxProfessionController;
 use App\Http\Controllers\Ajax\SimilarLocationsController;
 use App\Http\Controllers\Ajax\AjaxKeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
+use App\Http\Controllers\Ajax\AjaxGlobalProfessionCategoryController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 
 /*
@@ -409,8 +410,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
         Route::get('profession-category', [AjaxProfessionCategoryController::class, '__invoke'])
             ->name('ajax.professions.category')
             ->middleware(['auth', 'can:manage-metadata']);
-    
-        // New route for global profession categories
+        
         Route::get('global-profession-category', [AjaxGlobalProfessionCategoryController::class, '__invoke'])
             ->name('ajax.global.professions.category')
             ->middleware(['auth', 'can:manage-metadata']);

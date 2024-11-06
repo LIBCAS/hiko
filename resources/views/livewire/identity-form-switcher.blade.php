@@ -72,10 +72,18 @@
                     @enderror
                 </div>
                 <div class="space-y-6">
-                    <livewire:repeated-select :items="$selectedProfessions" fieldLabel="{{ __('hiko.profession') }}"
-                        fieldKey="profession" route="ajax.professions" />
+                    <livewire:repeated-select 
+                        :items="$selectedProfessions"
+                        fieldLabel="{{ __('hiko.profession') }}"
+                        fieldKey="profession"
+                        route="ajax.professions"
+                    />
+
                     @can('manage-metadata')
-                        <livewire:create-new-item-modal :route="route('professions.create')" :text="__('hiko.modal_new_profession')" />
+                        <livewire:create-new-item-modal 
+                            :route="route('professions.create')" 
+                            :text="__('hiko.modal_new_profession')" 
+                        />
                     @endcan
                 </div>
             </div>

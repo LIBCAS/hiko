@@ -6,192 +6,81 @@ use App\Models\Identity;
 use App\Models\Profession;
 use App\Models\GlobalProfession;
 use App\Models\ProfessionCategory;
-use App\Models\GlobalProfessionCategory;
-use App\Exports\IdentitiesExport;
 use App\Http\Requests\IdentityRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use Maatwebsite\Excel\Facades\Excel;
-use Stancl\Tenancy\Facades\Tenancy;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Stancl\Tenancy\Facades\Tenancy;
 
 class IdentityController extends Controller
 {
-    /**
-     * Display a listing of the identities.
-     *
-     * @return View
-     */
     public function index(): View
     {
         try {
-            // Retrieve all identities with their relationships
             $identities = Identity::with(['professions', 'profession_categories', 'letters'])->get();
+            $labels = [
+                'name' => __('hiko.name'),
+                'surname' => __('hiko.surname'),
+                'type' => __('hiko.type'),
+            ];
 
             return view('pages.identities.index', [
                 'title' => __('hiko.identities'),
-                'labels' => $this->getTypes(),
-                'identities' => $identities, // Pass identities to the view
+                'labels' => $labels,
+                'identities' => $identities,
             ]);
         } catch (\Exception $e) {
             Log::error("Error in IdentityController@index: {$e->getMessage()}");
-            return redirect()->back()->with('error', __('hiko.unexpected_error'));
+            return view('pages.identities.index', [
+                'title' => __('hiko.identities'),
+                'labels' => [],
+                'identities' => [],
+            ])->with('error', __('hiko.unexpected_error'));
         }
     }
 
-    /**
-     * Show the form for creating a new identity.
-     *
-     * @return View
-     */
-    public function create(): View
-    {
-        try {
-            // Fetch available categories based on tenancy
-            $availableCategories = $this->isTenancyInitialized()
-                ? ProfessionCategory::all()
-                : GlobalProfessionCategory::all();
-
-            // Fetch available professions
-            $professionsList = $this->getProfessionsList();
-
-            return view('pages.identities.form', [
-                'title' => __('hiko.new_identity'),
-                'action' => route('identities.store'),
-                'label' => __('hiko.create'),
-                'canRemove' => false,
-                'canMerge' => false,
-                'identity' => new Identity(),
-                'types' => $this->getTypes(),
-                'selectedType' => 'person',
-                'selectedProfessions' => [],
-                'selectedCategories' => [],
-                'professionsList' => $professionsList,
-                'categoriesList' => $this->getCategoriesList(),
-            ]);
-        } catch (\Exception $e) {
-            Log::error("Error in IdentityController@create: {$e->getMessage()}");
-            return redirect()->back()->with('error', __('hiko.unexpected_error'));
-        }
-    }
-
-    /**
-     * Store a newly created identity in storage.
-     *
-     * @param  \App\Http\Requests\IdentityRequest  $request
-     * @return RedirectResponse
-     */
-    public function store(IdentityRequest $request): RedirectResponse
-    {
-        $redirectRoute = $request->action === 'create' ? 'identities.create' : 'identities.edit';
-
-        $validated = $request->validated();
-
-        try {
-            // Create the identity
-            $identity = Identity::create($validated);
-
-            // Attach professions (tenant-specific or global)
-            if (isset($validated['profession']) && !empty($validated['profession'])) {
-                $this->attachProfessions($identity, $validated['profession']);
-            }
-
-            // Attach profession categories
-            if (isset($validated['profession_category']) && !empty($validated['profession_category'])) {
-                $this->attachProfessionCategories($identity, $validated['profession_category']);
-            }
-
-            return redirect()
-                ->route($redirectRoute, $identity->id)
-                ->with('success', __('hiko.saved'));
-        } catch (\Exception $e) {
-            Log::error("Error in IdentityController@store: {$e->getMessage()}");
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', __('hiko.error_saving'));
-        }
-    }
-
-    /**
-     * Show the form for editing the specified identity.
-     *
-     * @param  \App\Models\Identity  $identity
-     * @return View
-     */
     public function edit(Identity $identity): View
     {
-        try {
-            $hasLetters = $identity->letters()->exists();
+        $identity->related_names = is_array($identity->related_names)
+            ? $identity->related_names
+            : json_decode($identity->related_names, true) ?? [];
+    
+        $hasLetters = $identity->letters()->exists();
+    
+        return view('pages.identities.form', [
+            'title' => __('hiko.identity') . ': ' . $identity->id,
+            'method' => 'PUT',
+            'action' => route('identities.update', $identity),
+            'label' => __('hiko.edit'),
+            'canRemove' => !$hasLetters,
+            'canMerge' => $hasLetters,
+            'identity' => $identity,
+            'types' => $this->getTypes(),
+            'selectedType' => $identity->type ?? 'person',
+            'selectedProfessions' => $this->getSelectedProfessions($identity),
+            'selectedCategories' => $this->getSelectedCategories($identity),
+            'professionsList' => $this->getProfessionsList(),
+            'categoriesList' => $this->getCategoriesList(),
+        ]);
+    }    
 
-            // Fetch available categories based on tenancy
-            $availableCategories = $this->isTenancyInitialized()
-                ? ProfessionCategory::all()
-                : GlobalProfessionCategory::all();
-
-            // Fetch available professions
-            $professionsList = $this->getProfessionsList();
-
-            // Prepare selected professions and categories
-            $selectedProfessions = $this->getSelectedProfessions($identity);
-            $selectedCategories = $this->getSelectedCategories($identity);
-
-            return view('pages.identities.form', [
-                'title' => __('hiko.identity') . ': ' . $identity->id,
-                'method' => 'PUT',
-                'action' => route('identities.update', $identity),
-                'label' => __('hiko.edit'),
-                'canRemove' => !$hasLetters,
-                'canMerge' => $hasLetters,
-                'identity' => $identity,
-                'types' => $this->getTypes(),
-                'selectedType' => $identity->type ?? 'person',
-                'selectedProfessions' => $selectedProfessions,
-                'selectedCategories' => $selectedCategories,
-                'professionsList' => $professionsList,
-                'categoriesList' => $this->getCategoriesList(),
-            ]);
-        } catch (\Exception $e) {
-            Log::error("Error in IdentityController@edit: {$e->getMessage()}");
-            return redirect()->back()->with('error', __('hiko.unexpected_error'));
-        }
-    }
-
-    /**
-     * Update the specified identity in storage.
-     *
-     * @param  \App\Http\Requests\IdentityRequest  $request
-     * @param  \App\Models\Identity  $identity
-     * @return RedirectResponse
-     */
     public function update(IdentityRequest $request, Identity $identity): RedirectResponse
     {
-        $redirectRoute = $request->action === 'create' ? 'identities.create' : 'identities.edit';
-
         $validated = $request->validated();
 
         try {
-            // Update the identity
             $identity->update($validated);
 
-            // Sync professions (detach all and re-attach)
-            $identity->professions()->detach();
-
-            if (isset($validated['profession']) && !empty($validated['profession'])) {
-                $this->attachProfessions($identity, $validated['profession']);
+            if (isset($validated['profession']) && is_array($validated['profession'])) {
+                $this->syncProfessions($identity, $validated['profession']);
             }
 
-            // Sync profession categories
-            $identity->profession_categories()->detach();
-
-            if (isset($validated['profession_category']) && !empty($validated['profession_category'])) {
-                $this->attachProfessionCategories($identity, $validated['profession_category']);
+            if (isset($validated['category']) && is_array($validated['category'])) {
+                $identity->profession_categories()->sync($validated['category']);
             }
 
             return redirect()
-                ->route($redirectRoute, $identity->id)
+                ->route('identities.edit', $identity->id)
                 ->with('success', __('hiko.saved'));
         } catch (\Exception $e) {
             Log::error("Error in IdentityController@update: {$e->getMessage()}");
@@ -202,206 +91,110 @@ class IdentityController extends Controller
         }
     }
 
-    /**
-     * Remove the specified identity from storage.
-     *
-     * @param  \App\Models\Identity  $identity
-     * @return RedirectResponse
-     */
-    public function destroy(Identity $identity): RedirectResponse
+    protected function syncProfessions(Identity $identity, array $professions): void
     {
-        try {
-            // Check if identity is associated with any letters
-            if ($identity->letters()->exists()) {
-                return redirect()
-                    ->route('identities.index')
-                    ->with('error', __('hiko.cannot_delete_associated'));
-            }
-
-            // Delete the identity
-            $identity->delete();
-
-            return redirect()
-                ->route('identities.index')
-                ->with('success', __('hiko.removed'));
-        } catch (\Exception $e) {
-            Log::error("Error in IdentityController@destroy: {$e->getMessage()}");
-            return redirect()
-                ->back()
-                ->with('error', __('hiko.error_deleting'));
-        }
-    }
-
-    /**
-     * Export identities to an Excel file.
-     *
-     * @return BinaryFileResponse
-     */
-    public function export(): BinaryFileResponse
-    {
-        try {
-            return Excel::download(new IdentitiesExport, 'identities.xlsx');
-        } catch (\Exception $e) {
-            Log::error("Error in IdentityController@export: {$e->getMessage()}");
-            return redirect()->back()->with('error', __('hiko.error_exporting'));
-        }
-    }
-
-    /**
-     * Attach professions to the identity.
-     *
-     * @param  \App\Models\Identity  $identity
-     * @param  array  $professions
-     * @return void
-     */
-    protected function attachProfessions(Identity $identity, array $professions): void
-    {
-        foreach ($professions as $index => $professionId) {
-            // Ensure the profession ID is an integer
-            if (!is_numeric($professionId)) {
-                Log::warning("Invalid profession ID: {$professionId}");
-                continue;
-            }
+        $localIds = [];
+        $globalIds = [];
     
-            $professionId = (int) $professionId;
+        foreach ($professions as $professionId) {
+            $isGlobal = str_starts_with($professionId, 'global-');
+            $cleanProfessionId = (int) str_replace(['global-', 'local-'], '', $professionId);
     
-            if ($this->isTenancyInitialized()) {
-                // Attach tenant-specific profession
-                $profession = Profession::find($professionId);
-                if ($profession) {
-                    $identity->professions()->attach($profession->id, ['position' => $index]);
-                } else {
-                    Log::warning("Tenant-specific Profession with ID {$professionId} not found.");
-                }
+            if ($isGlobal) {
+                Tenancy::central(function () use (&$globalIds, $cleanProfessionId) {
+                    if (GlobalProfession::find($cleanProfessionId)) {
+                        Log::info("Confirmed global profession ID {$cleanProfessionId} exists.");
+                        $globalIds[] = $cleanProfessionId;
+                    }
+                });
             } else {
-                // Attach global profession
-                $globalProfession = GlobalProfession::find($professionId);
-                if ($globalProfession) {
-                    $identity->professions()->attach($globalProfession->id, ['position' => $index]);
-                } else {
-                    Log::warning("Global Profession with ID {$professionId} not found.");
+                if (Profession::find($cleanProfessionId)) {
+                    Log::info("Adding local profession ID {$cleanProfessionId}");
+                    $localIds[] = $cleanProfessionId;
                 }
             }
         }
-    }    
-
-    /**
-     * Attach profession categories to the identity.
-     *
-     * @param  \App\Models\Identity  $identity
-     * @param  array  $categories
-     * @return void
-     */
-    protected function attachProfessionCategories(Identity $identity, array $categories): void
-    {
-        foreach ($categories as $index => $categoryId) {
-            // Ensure the category ID is an integer
-            if (!is_numeric($categoryId)) {
-                Log::warning("Invalid profession category ID: {$categoryId}");
-                continue;
-            }
-
-            $categoryId = (int) $categoryId;
-
-            $identity->profession_categories()->attach($categoryId, ['position' => $index]);
+    
+        Log::info("Local IDs to attach: ", $localIds);
+        Log::info("Global IDs to attach: ", $globalIds);
+    
+        // Define tenant-specific pivot table name with prefix
+        $tenantPivotTable = tenancy()->tenant->table_prefix . '__identity_profession';
+    
+        // Detach relevant entries for clean sync
+        $identity->professions()->detach($localIds);
+        $identity->professions()->wherePivot('global_profession_id', '!=', null)->detach();
+    
+        // Attach local professions
+        foreach ($localIds as $localId) {
+            Log::info("Attaching local profession ID {$localId}");
+            $identity->professions()->attach($localId, ['global_profession_id' => null]);
         }
-    }
-
-    /**
-     * Prepare data for the identity form view.
-     *
-     * @param  \App\Models\Identity  $identity
-     * @return array
-     */
-    protected function viewData(Identity $identity): array
-    {
-        return [
-            'identity' => $identity,
-            'types' => $this->getTypes(),
-            'selectedType' => $this->getSelectedType($identity),
-            'selectedProfessions' => $this->getSelectedProfessions($identity),
-            'selectedCategories' => $this->getSelectedCategories($identity),
-            'professionsList' => $this->getProfessionsList(),
-            'categoriesList' => $this->getCategoriesList(),
-        ];
-    }
-
-    /**
-     * Get the list of types.
-     *
-     * @return array
-     */
+    
+        // Insert global professions with profession_id set to NULL
+        foreach ($globalIds as $globalId) {
+            Log::info("Attempting to insert global profession ID {$globalId} for identity {$identity->id} in tenant table: {$tenantPivotTable}");
+            try {
+                \DB::table($tenantPivotTable)->insert([
+                    'identity_id' => $identity->id,
+                    'profession_id' => null,  // Set explicitly to NULL
+                    'global_profession_id' => $globalId,
+                    'position' => null,       // Adjust as necessary
+                ]);
+                Log::info("Successfully inserted global profession ID {$globalId} for identity {$identity->id}.");
+            } catch (\Exception $e) {
+                Log::error("Failed to insert global profession ID {$globalId} for identity {$identity->id}: {$e->getMessage()}");
+            }
+        }
+    
+        Log::info("Profession sync completed for Identity ID {$identity->id}");
+    }    
+     
     protected function getTypes(): array
     {
         return ['person', 'institution'];
     }
 
-    /**
-     * Get the selected type for the form.
-     *
-     * @param  \App\Models\Identity  $identity
-     * @return string
-     */
-    protected function getSelectedType(Identity $identity): string
-    {
-        return old('type', $identity->type ?? 'person');
-    }
-
-    /**
-     * Get the selected professions for the form.
-     *
-     * @param  \App\Models\Identity  $identity
-     * @return array
-     */
     protected function getSelectedProfessions(Identity $identity): array
     {
-        $selectedIds = old('profession', $identity->professions->pluck('id')->toArray());
-
         $selectedProfessions = [];
-
-        foreach ($selectedIds as $professionId) {
-            if ($this->isTenancyInitialized()) {
-                // Fetch tenant-specific profession
-                $profession = Profession::find($professionId);
-                if ($profession) {
-                    $label = "{$profession->name} (Local)";
-                } else {
-                    $label = "Unknown (Local)";
-                }
-            } else {
-                // Fetch global profession
-                Tenancy::central(function () use (&$globalProfession, $professionId) {
-                    $globalProfession = GlobalProfession::find($professionId);
-                });
-
-                if (isset($globalProfession)) {
-                    $label = "{$globalProfession->name} (Global)";
-                } else {
-                    $label = "Unknown (Global)";
-                }
-            }
-
-            if (isset($label)) {
-                $selectedProfessions[] = [
-                    'value' => $professionId,
-                    'label' => $label,
-                ];
-            }
+    
+        // Fetch local professions
+        foreach ($identity->professions as $localProfession) {
+            $selectedProfessions[] = [
+                'value' => 'local-' . $localProfession->id,
+                'label' => $localProfession->name . ' (Local)',
+            ];
         }
-
+    
+        // Check if tenancy is initialized and fetch global professions accordingly
+        if (tenancy()->initialized && tenancy()->tenant) {
+            $tenantTablePrefix = tenancy()->tenant->table_prefix . '__identity_profession';
+    
+            // Fetch global professions in the central context
+            Tenancy::central(function () use ($identity, &$selectedProfessions, $tenantTablePrefix) {
+                $globalProfessionIds = \DB::table($tenantTablePrefix)
+                    ->where('identity_id', $identity->id)
+                    ->whereNotNull('global_profession_id')
+                    ->pluck('global_profession_id');
+    
+                $globalProfessions = GlobalProfession::whereIn('id', $globalProfessionIds)->get();
+    
+                foreach ($globalProfessions as $globalProfession) {
+                    $selectedProfessions[] = [
+                        'value' => 'global-' . $globalProfession->id,
+                        'label' => $globalProfession->name . ' (Global)',
+                    ];
+                }
+            });
+        }
+    
         return $selectedProfessions;
-    }
+    }         
 
-    /**
-     * Get the selected categories for the form.
-     *
-     * @param  \App\Models\Identity  $identity
-     * @return array
-     */
     protected function getSelectedCategories(Identity $identity): array
     {
         $selectedIds = old('profession_category', $identity->profession_categories->pluck('id')->toArray());
-
         $categories = ProfessionCategory::whereIn('id', $selectedIds)->get();
 
         return $categories->map(function ($category) {
@@ -412,68 +205,58 @@ class IdentityController extends Controller
         })->toArray();
     }
 
-    /**
-     * Get the list of professions for the form.
-     *
-     * @return array
-     */
+    protected function getProfessionLabel($profession, $type): ?string
+    {
+        return $profession ? "{$profession->name} ({$type})" : "No Name ({$type})";
+    }
+
+    protected function getGlobalProfessionLabel($professionId): ?string
+    {
+        $label = null;
+        Tenancy::central(function () use (&$label, $professionId) {
+            $globalProfession = GlobalProfession::find($professionId);
+            $label = $globalProfession ? "{$globalProfession->name} (Global)" : "No Name (Global)";
+        });
+
+        return $label;
+    }
+
     protected function getProfessionsList(): array
     {
         $professions = [];
-
-        // Fetch tenant-specific professions
-        if ($this->isTenancyInitialized()) {
-            $tenantProfessions = Profession::all()->map(function ($profession) {
+    
+        // Fetch local professions if tenant context is initialized
+        if (tenancy()->initialized) {
+            $localProfessions = Profession::all()->map(function ($profession) {
                 return [
-                    'value' => $profession->id,
-                    'label' => "{$profession->name} (Local)",
+                    'value' => 'local-' . $profession->id,
+                    'label' => $profession->name ? "{$profession->name} (Local)" : "No Name (Local)",
                 ];
             });
-
-            $professions = array_merge($professions, $tenantProfessions->toArray());
+            $professions = array_merge($professions, $localProfessions->toArray());
         }
-
-        // Fetch global professions within central tenancy
-        Tenancy::central(function () use (&$globalProfessions) {
+    
+        // Fetch global professions in the central database context
+        Tenancy::central(function () use (&$professions) {
             $globalProfessions = GlobalProfession::all()->map(function ($profession) {
                 return [
-                    'value' => $profession->id,
-                    'label' => "{$profession->name} (Global)",
+                    'value' => 'global-' . $profession->id,
+                    'label' => $profession->name ? "{$profession->name} (Global)" : "No Name (Global)",
                 ];
             });
-        });
-
-        if (isset($globalProfessions)) {
             $professions = array_merge($professions, $globalProfessions->toArray());
-        }
-
+        });
+    
         return $professions;
     }
 
-    /**
-     * Get the list of profession categories for the form.
-     *
-     * @return array
-     */
     protected function getCategoriesList(): array
     {
-        $categories = ProfessionCategory::all()->map(function ($category) {
+        return ProfessionCategory::all()->map(function ($category) {
             return [
                 'value' => $category->id,
                 'label' => $category->getTranslation('name', config('app.locale')),
             ];
-        });
-
-        return $categories->toArray();
-    }
-
-    /**
-     * Check if tenancy is initialized.
-     *
-     * @return bool
-     */
-    protected function isTenancyInitialized(): bool
-    {
-        return tenancy()->initialized;
+        })->toArray();
     }
 }

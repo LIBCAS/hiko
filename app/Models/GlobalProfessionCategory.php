@@ -13,17 +13,11 @@ class GlobalProfessionCategory extends Model
     protected $guarded = ['id'];
     public $translatable = ['name'];
 
-    /**
-     * Get the professions associated with this global profession category.
-     */
     public function professions()
     {
         return $this->hasMany(GlobalProfession::class, 'profession_category_id');
     }
 
-    /**
-     * Get the identities associated with this global profession category.
-     */
     public function identities()
     {
         return $this->belongsToMany(Identity::class, 'global_identity_profession_category', 'profession_category_id', 'identity_id');
