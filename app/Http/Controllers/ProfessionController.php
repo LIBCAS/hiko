@@ -89,7 +89,7 @@ class ProfessionController extends Controller
             } else {
                 return redirect()->back()->withErrors(['category' => __('Invalid category selection for this profession type.')]);
             }
-        }
+        };
         
         return redirect()
             ->route('professions.edit', $profession->id)

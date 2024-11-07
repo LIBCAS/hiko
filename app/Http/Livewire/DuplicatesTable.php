@@ -44,13 +44,11 @@ class DuplicatesTable extends Component
 
     public function updatedFilters($value, $name)
     {
-        \Log::info('Filters updated:', $this->filters); // Debugging log
         $this->search();
     }
 
     public function search()
     {
-        \Log::info('Searching duplicates for filters:', $this->filters); // Debugging log
         $this->gotoPage(1);
         $this->duplicates = $this->findDuplicates();
         $this->showFiltersMessage = $this->duplicates->isEmpty();
@@ -91,7 +89,6 @@ class DuplicatesTable extends Component
             $prefixes[] = $this->filters['database'];
         }
 
-        \Log::info('Finding duplicates for prefixes:', $prefixes); // Debugging log
         $duplicateDetectionService = new DuplicateDetectionService($prefixes);
         $duplicates = $duplicateDetectionService->processDuplicates($this->filters['compare']);
         $duplicates = collect($duplicates);
