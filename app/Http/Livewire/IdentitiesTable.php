@@ -5,7 +5,6 @@ namespace App\Http\Livewire;
 use App\Models\Identity;
 use App\Models\GlobalProfession;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Stancl\Tenancy\Facades\Tenancy;

@@ -16,11 +16,12 @@ class IdentityRequest extends FormRequest
 
     public function rules()
     {
+        $isPerson = $this->input('type') === 'person';
         $isTenancyInitialized = tenancy()->initialized;
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'surname' => ['required', 'string', 'max:255'],
+            'surname' => $isPerson ? ['required', 'string', 'max:255'] : ['nullable', 'string', 'max:255'],
             'forename' => ['nullable', 'string', 'max:255'],
             'general_name_modifier' => ['nullable', 'string', 'max:255'],
             'birth_year' => ['nullable', 'string', 'max:255'],
