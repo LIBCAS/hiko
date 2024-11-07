@@ -39,7 +39,6 @@ class IdentitiesTable extends Component
 
     public function render()
     {
-        Log::info("Rendering IdentitiesTable with filters:", $this->filters);
         $identities = $this->findIdentities();
 
         return view('livewire.identities-table', [
@@ -50,57 +49,56 @@ class IdentitiesTable extends Component
 
     protected function findIdentities()
     {
-        Log::info("Fetching identities with local professions and categories");
-
-        // Fetch identities with local professions and categories, ensuring aliases for 'id' fields
+        $tenantPrefix = tenancy()->tenant ? tenancy()->tenant->table_prefix : null;
+    
+        // Fetch identities with local professions and profession categories
         $identities = Identity::with([
-            'professions' => function ($subquery) {
-                $subquery->select('name')
-                        ->orderBy('position');
+            'professions' => function ($subquery) use ($tenantPrefix) {
+                $subquery->from("{$tenantPrefix}__professions")
+                         ->select("{$tenantPrefix}__professions.id as profession_id", "{$tenantPrefix}__professions.name")
+                         ->orderBy("{$tenantPrefix}__identity_profession.position");
             },
-
-            'profession_categories' => function ($subquery) {
-                $subquery->select('name')
-                        ->orderBy('position');
+            'profession_categories' => function ($subquery) use ($tenantPrefix) {
+                $subquery->from("{$tenantPrefix}__profession_categories")
+                         ->select("{$tenantPrefix}__profession_categories.name")
+                         ->orderBy("{$tenantPrefix}__identity_profession_category.position");
             },
         ])
-            ->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names')
-            ->search($this->filters)
-            ->orderBy($this->filters['order'])
-            ->paginate(10);
-
-        Log::info("Local identities fetched:", $identities->toArray());
-
-        // Get tenant prefix if tenant is initialized
-        $tenantPrefix = tenancy()->tenant ? tenancy()->tenant->table_prefix : null;
-
-        // Fetch global professions from the central database if tenant is initialized
+        ->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names')
+        ->search($this->filters)
+        ->orderBy($this->filters['order'])
+        ->paginate(10);
+    
+        // Prepare a mapping of global professions for each identity
         if ($tenantPrefix) {
             Tenancy::central(function () use ($identities, $tenantPrefix) {
-                $tenantPivotTable = "{$tenantPrefix}__identity_profession";
-
+                $identityIds = $identities->pluck('id');
+    
+                // Retrieve all global profession IDs for the fetched identities
+                $globalProfessionsMapping = DB::table("{$tenantPrefix}__identity_profession")
+                    ->whereIn('identity_id', $identityIds)
+                    ->whereNotNull('global_profession_id')
+                    ->pluck('global_profession_id', 'identity_id')
+                    ->toArray();
+    
+                // Fetch global professions and map them to identities
+                $globalProfessionIds = array_values($globalProfessionsMapping);
+                $globalProfessions = GlobalProfession::whereIn('id', $globalProfessionIds)
+                    ->select('id', 'name')
+                    ->get()
+                    ->keyBy('id');
+    
+                // Attach global professions to identities
                 foreach ($identities as $identity) {
-                    $globalProfessionIds = DB::table($tenantPivotTable)
-                        ->where('identity_id', $identity->identity_id)
-                        ->whereNotNull('global_profession_id')
-                        ->pluck('global_profession_id');
-
-                    if ($globalProfessionIds->isNotEmpty()) {
-                        $globalProfessions = GlobalProfession::whereIn('id', $globalProfessionIds)
-                            ->select(DB::raw('global_professions.id as global_profession_id, name'))
-                            ->get();
-
-                        $identity->setRelation('globalProfessions', $globalProfessions);
-                        Log::info("Global professions attached to identity {$identity->identity_id}:", $globalProfessions->toArray());
-                    } else {
-                        Log::info("No global professions found for identity {$identity->identity_id}");
-                    }
+                    $globalProfessionId = $globalProfessionsMapping[$identity->id] ?? null;
+                    $globalProfession = $globalProfessionId ? $globalProfessions->get($globalProfessionId) : null;
+                    $identity->setRelation('globalProfessions', collect($globalProfession ? [$globalProfession] : []));
                 }
             });
         }
-
+    
         return $identities;
-    }    
+    }        
 
     protected function formatDates($identity): string
     {
@@ -132,20 +130,28 @@ class IdentitiesTable extends Component
 
     protected function formatTableData($data): array
     {
-        Log::info("Formatting table data for identities");
-
         return [
             'header' => [__('hiko.name'), __('hiko.type'), __('hiko.dates'), __('hiko.related_names'), __('hiko.professions'), __('hiko.category'), __('hiko.merge')],
             'rows' => $data->map(function ($identity) {
-                // Combine local and global professions
-                $allProfessions = collect($identity->professions)
-                    ->map(fn($profession) => $profession->name . ' (Local)')
+                $allProfessions = collect($identity->professions ?? [])
+                    ->map(fn($profession) => [
+                        'name' => ($profession->name ?? 'Unknown') . ' (Local)',
+                        'link' => route('professions.edit', ['profession' => $profession->profession_id])
+                    ])
                     ->merge(
-                        $identity->globalProfessions->map(fn($globalProfession) => $globalProfession->name . ' (Global)')
+                        collect($identity->globalProfessions ?? [])
+                            ->map(fn($globalProfession) => [
+                                'name' => ($globalProfession->name ?? 'Unknown') . ' (Global)',
+                                'link' => route('global.professions.edit', ['globalProfession' => $globalProfession->id])
+                            ])
                     );
-
-                Log::info("Combined professions for identity {$identity->identity_id}:", $allProfessions->toArray());
-
+    
+                $professionsHtml = '<ul class="list-disc list-inside text-gray-600 space-y-1">';
+                foreach ($allProfessions as $profession) {
+                    $professionsHtml .= "<li><a href=\"{$profession['link']}\" class=\"text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark\">{$profession['name']}</a></li>";
+                }
+                $professionsHtml .= '</ul>';
+    
                 return [
                     [
                         'component' => [
@@ -159,9 +165,9 @@ class IdentitiesTable extends Component
                     ['label' => __("hiko.{$identity->type}")],
                     ['label' => $this->formatDates($identity)],
                     ['label' => $this->formatRelatedNames($identity->related_names)],
-                    ['label' => $allProfessions->implode(', ')],
+                    ['label' => $professionsHtml, 'isHtml' => true],
                     [
-                        'label' => collect($identity->profession_categories)
+                        'label' => collect($identity->profession_categories ?? [])
                             ->map(fn($category) => $category->name)
                             ->implode(', '),
                     ],
