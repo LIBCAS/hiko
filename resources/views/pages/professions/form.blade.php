@@ -39,7 +39,7 @@
                         x-data="ajaxChoices({ url: '{{ route('ajax.professions.category') }}', element: $el })"
                         x-init="initSelect()"
                     >
-                        <option value="">{{ __('Select Category') }}</option>
+                        <option value="">{{ __('hiko.select_category') }}</option>
                         @foreach ($availableCategories as $availableCategory)
                             @if ((tenancy()->initialized && $availableCategory instanceof \App\Models\ProfessionCategory) ||
                                  (!tenancy()->initialized && $availableCategory instanceof \App\Models\GlobalProfessionCategory))

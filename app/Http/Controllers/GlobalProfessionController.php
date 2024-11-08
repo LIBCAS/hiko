@@ -60,7 +60,7 @@ class GlobalProfessionController extends Controller
         $globalProfession->load('identities');
     
         return view('pages.global-professions.form', [
-            'title' => __('hiko.edit_global_profession'),
+            'title' => __('hiko.global_profession'),
             'profession' => $globalProfession,
             'action' => route('global.professions.update', $globalProfession->id), // Matches the route name in routes file
             'method' => 'PUT',

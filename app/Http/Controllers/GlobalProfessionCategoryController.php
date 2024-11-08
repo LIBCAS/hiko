@@ -53,7 +53,7 @@ class GlobalProfessionCategoryController extends Controller
         $globalProfessionCategory->load('professions');
 
         return view('pages.global-professions-categories.form', [
-            'title' => __('hiko.edit_global_professions_category'),
+            'title' => __('hiko.global_professions_category'),
             'professionCategory' => $globalProfessionCategory,
             'action' => route('global.profession.category.update', $globalProfessionCategory->id),
             'method' => 'PUT',
