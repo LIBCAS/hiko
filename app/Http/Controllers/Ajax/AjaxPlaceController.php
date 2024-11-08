@@ -3,27 +3,40 @@
 namespace App\Http\Controllers\Ajax;
 
 use Illuminate\Http\Request;
-use App\Services\SearchPlace;
+use App\Services\Geonames;
 use App\Http\Controllers\Controller;
 
 class AjaxPlaceController extends Controller
 {
+    protected $geonames;
+
+    public function __construct(Geonames $geonames)
+    {
+        $this->geonames = $geonames;
+    }
+
     public function __invoke(Request $request): array
     {
-        if (empty($request->query('search'))) {
+        $query = $request->query('search');
+
+        if (empty($query)) {
             return [];
         }
 
-        $search = new SearchPlace;
+        try {
+            $results = $this->geonames->search($query);
+        } catch (\Exception $e) {
+            return [
+                'error' => $e->getMessage()
+            ];
+        }
 
-        return $search($request->input('search'))
-            ->map(function ($place) {
-                return [
-                    'id' => $place['id'],
-                    'value' => $place['id'],
-                    'label' => $place['label'],
-                ];
-            })
-            ->toArray();
+        return $results->map(function ($place) {
+            return [
+                'id' => $place['id'],
+                'value' => $place['id'],
+                'label' => "{$place['name']}, {$place['adminName']}, {$place['country']}",
+            ];
+        })->toArray();
     }
 }

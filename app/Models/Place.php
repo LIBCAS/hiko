@@ -15,6 +15,9 @@ class Place extends Model
 
     protected $connection = 'tenant';
     protected $guarded = ['id'];
+    protected $casts = [
+        'alternative_names' => 'json',
+    ];
 
     public function __construct(array $attributes = [])
     {
@@ -31,13 +34,14 @@ class Place extends Model
         return 'place_index';
     }
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'alternative_names' => is_array($this->alternative_names) ? implode(', ', $this->alternative_names) : $this->alternative_names,
         ];
-    }
+    }    
 
     public function letters()
     {
@@ -47,10 +51,5 @@ class Place extends Model
     public function newEloquentBuilder($query)
     {
         return new PlaceBuilder($query);
-    }
-
-    protected function asJson($value)
-    {
-        return json_encode($value, JSON_UNESCAPED_UNICODE);
     }
 }

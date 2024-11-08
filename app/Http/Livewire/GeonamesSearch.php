@@ -22,18 +22,21 @@ class GeonamesSearch extends Component
         ]);
     }
 
-    public function render()
+    public function updatedSearch()
     {
         if (strlen($this->search) >= 2) {
             try {
-                $this->searchResults = (new Geonames)->search($this->search);
+                $this->searchResults = app(Geonames::class)->search($this->search)->toArray();
                 $this->error = '';
-            } catch (\Throwable $th) {
+            } catch (\Exception $e) {
                 $this->searchResults = [];
-                $this->error = $th->getMessage();
+                $this->error = $e->getMessage();
             }
         }
+    }
 
+    public function render()
+    {
         return view('livewire.geonames-search');
     }
 }
