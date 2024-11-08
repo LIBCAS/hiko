@@ -53,7 +53,7 @@ class ProfessionCategoryController extends Controller
         $professions = $professionCategory->professions;
 
         return view('pages.professions-categories.form', [
-            'title' => __('hiko.edit_professions_category'),
+            'title' => __('hiko.professions_category'),
             'professionCategory' => $professionCategory,
             'action' => route('professions.category.update', $professionCategory->id),
             'method' => 'PUT',

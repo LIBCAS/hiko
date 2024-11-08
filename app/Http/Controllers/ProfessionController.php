@@ -145,7 +145,7 @@ class ProfessionController extends Controller
             : GlobalProfessionCategory::all();
 
         return view('pages.professions.form', [
-            'title' => __('hiko.edit_profession'),
+            'title' => __('hiko.profession'),
             'profession' => $profession,
             'action' => route('professions.update', $profession->id),
             'method' => 'PUT',
