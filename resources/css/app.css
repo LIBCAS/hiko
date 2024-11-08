@@ -121,14 +121,6 @@ html {
     text-indent: 9em;
 }
 
-[x-cloak] {
+.modal-hidden {
     display: none !important;
-}
-
-.modal-overlay {
-    display: none !important; /* Ensures it's hidden by default */
-}
-
-.modal-overlay.active {
-    display: flex !important; /* Shows the modal when active */
 }

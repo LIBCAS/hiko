@@ -45,8 +45,14 @@ class PlacesTable extends Component
 
     protected function findPlaces()
     {
-        return Place::select('id', 'name', 'division', 'latitude', 'longitude', 'country')
-            ->search($this->filters)
+        $query = Place::select('id', 'name', 'division', 'latitude', 'longitude', 'country');
+
+        if (tenancy()->initialized) {
+            $tenantPrefix = tenancy()->tenant->table_prefix;
+            $query->from("{$tenantPrefix}__places");
+        }
+
+        return $query->search($this->filters)
             ->orderBy($this->filters['order'])
             ->paginate(10);
     }
