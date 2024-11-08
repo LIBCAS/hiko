@@ -4,6 +4,7 @@ window.choices = (data) => {
     return {
         initSelect: () => {
             return new Choices(data.element, {
+                allowHTML: true,
                 removeItemButton: true,
                 searchResultLimit: 10,
             })
@@ -15,6 +16,7 @@ window.ajaxChoices = function (data) {
     return {
         initSelect: () => {
             const select = new Choices(data.element, {
+                allowHTML: true,
                 removeItemButton: true,
                 searchResultLimit: 10,
                 duplicateItemsAllowed: false,
