@@ -6,6 +6,7 @@ use App\Builders\PlaceBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
+use Stancl\Tenancy\Facades\Tenancy;
 
 class Place extends Model
 {
@@ -13,8 +14,17 @@ class Place extends Model
     use Searchable;
 
     protected $connection = 'tenant';
-
     protected $guarded = ['id'];
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        if (tenancy()->initialized) {
+            $tenantPrefix = tenancy()->tenant->table_prefix;
+            $this->table = $tenantPrefix . '__places';
+        }
+    }
 
     public function searchableAs()
     {

@@ -13,11 +13,11 @@ class PlaceController extends Controller
     protected $rules = [
         'name' => ['required', 'string', 'max:255'],
         'country' => ['required', 'string', 'max:255'],
-        'division' => ['nullable'],
-        'note' => ['nullable'],
+        'division' => ['nullable', 'string'],
+        'note' => ['nullable', 'string'],
         'latitude' => ['nullable', 'numeric'],
         'longitude' => ['nullable', 'numeric'],
-        'geoname_id' => ['nullable', 'integer', 'numeric'],
+        'geoname_id' => ['nullable', 'integer'],
     ];
 
     public function index()
