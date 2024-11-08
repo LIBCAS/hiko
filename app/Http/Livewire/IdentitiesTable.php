@@ -14,8 +14,16 @@ class IdentitiesTable extends Component
     use WithPagination;
 
     public array $filters = [
+        'name' => '',
+        'related_names' => '',
+        'type' => '',
+        'profession' => '',
+        'category' => '',
+        'note' => '',
         'order' => 'name',
     ];
+
+    protected $queryString = ['filters'];
 
     public function search()
     {
@@ -25,14 +33,22 @@ class IdentitiesTable extends Component
 
     public function resetFilters()
     {
-        $this->reset('filters');
+        $this->filters = [
+            'name' => '',
+            'related_names' => '',
+            'type' => '',
+            'profession' => '',
+            'category' => '',
+            'note' => '',
+            'order' => 'name',
+        ];
         $this->search();
     }
 
     public function mount()
     {
         if (session()->has('identitiesTableFilters')) {
-            $this->filters = session()->get('identitiesTableFilters');
+            $this->filters = array_merge($this->filters, session()->get('identitiesTableFilters'));
         }
     }
 
@@ -49,45 +65,48 @@ class IdentitiesTable extends Component
     protected function findIdentities()
     {
         $tenantPrefix = tenancy()->tenant ? tenancy()->tenant->table_prefix : null;
-    
-        // Fetch identities with local professions and profession categories
-        $identities = Identity::with([
+
+        $query = Identity::with([
             'professions' => function ($subquery) use ($tenantPrefix) {
-                $subquery->from("{$tenantPrefix}__professions")
-                         ->select("{$tenantPrefix}__professions.id as profession_id", "{$tenantPrefix}__professions.name")
-                         ->orderBy("{$tenantPrefix}__identity_profession.position");
+                $subquery->select("{$tenantPrefix}__professions.id as profession_id", "{$tenantPrefix}__professions.name")
+                    ->orderBy("{$tenantPrefix}__identity_profession.position");
             },
             'profession_categories' => function ($subquery) use ($tenantPrefix) {
-                $subquery->from("{$tenantPrefix}__profession_categories")
-                         ->select("{$tenantPrefix}__profession_categories.name")
-                         ->orderBy("{$tenantPrefix}__identity_profession_category.position");
+                $subquery->select("{$tenantPrefix}__profession_categories.name")
+                    ->orderBy("{$tenantPrefix}__identity_profession_category.position");
             },
         ])
-        ->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names')
-        ->search($this->filters)
-        ->orderBy($this->filters['order'])
-        ->paginate(10);
-    
-        // Prepare a mapping of global professions for each identity
+        ->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names');
+
+        // Apply each filter conditionally
+        $query->when($this->filters['name'], fn($q) => $q->where('name', 'like', '%' . $this->filters['name'] . '%'));
+        $query->when($this->filters['related_names'], fn($q) => $q->where('related_names', 'like', '%' . $this->filters['related_names'] . '%'));
+        $query->when($this->filters['type'], fn($q) => $q->where('type', $this->filters['type']));
+        $query->when($this->filters['profession'], function ($q) use ($tenantPrefix) {
+            $q->whereHas('professions', fn($subquery) => $subquery->where("{$tenantPrefix}__professions.name", 'like', '%' . $this->filters['profession'] . '%'));
+        });
+        $query->when($this->filters['category'], function ($q) use ($tenantPrefix) {
+            $q->whereHas('profession_categories', fn($subquery) => $subquery->where("{$tenantPrefix}__profession_categories.name", 'like', '%' . $this->filters['category'] . '%'));
+        });
+        $query->when($this->filters['note'], fn($q) => $q->where('note', 'like', '%' . $this->filters['note'] . '%'));
+
+        $identities = $query->orderBy($this->filters['order'])->paginate(10);
+
         if ($tenantPrefix) {
             Tenancy::central(function () use ($identities, $tenantPrefix) {
                 $identityIds = $identities->pluck('id');
-    
-                // Retrieve all global profession IDs for the fetched identities
                 $globalProfessionsMapping = DB::table("{$tenantPrefix}__identity_profession")
                     ->whereIn('identity_id', $identityIds)
                     ->whereNotNull('global_profession_id')
                     ->pluck('global_profession_id', 'identity_id')
                     ->toArray();
-    
-                // Fetch global professions and map them to identities
+
                 $globalProfessionIds = array_values($globalProfessionsMapping);
                 $globalProfessions = GlobalProfession::whereIn('id', $globalProfessionIds)
                     ->select('id', 'name')
                     ->get()
                     ->keyBy('id');
-    
-                // Attach global professions to identities
+
                 foreach ($identities as $identity) {
                     $globalProfessionId = $globalProfessionsMapping[$identity->id] ?? null;
                     $globalProfession = $globalProfessionId ? $globalProfessions->get($globalProfessionId) : null;
@@ -95,36 +114,22 @@ class IdentitiesTable extends Component
                 }
             });
         }
-    
+
         return $identities;
-    }        
+    }
 
     protected function formatDates($identity): string
     {
-        $birthYear = $identity->birth_year ?? '';
-        $deathYear = $identity->death_year ?? '';
-
-        return trim("{$birthYear} - {$deathYear}");
+        return trim("{$identity->birth_year} - {$identity->death_year}");
     }
 
     protected function formatRelatedNames($relatedNames): string
     {
-        if (is_array($relatedNames)) {
-            $formattedNames = array_map(function ($name) {
-                return $name['surname'] . ' ' . $name['forename'] . ' ' . $name['general_name_modifier'];
-            }, $relatedNames);
-        } else {
-            $relatedNamesArray = json_decode($relatedNames, true);
-            if (is_array($relatedNamesArray)) {
-                $formattedNames = array_map(function ($name) {
-                    return $name['surname'] . ' ' . $name['forename'] . ' ' . $name['general_name_modifier'];
-                }, $relatedNamesArray);
-            } else {
-                return '';
-            }
-        }
+        $relatedNamesArray = is_array($relatedNames) ? $relatedNames : json_decode($relatedNames, true);
 
-        return implode(', ', $formattedNames);
+        return is_array($relatedNamesArray)
+            ? implode(', ', array_map(fn($name) => "{$name['surname']} {$name['forename']} {$name['general_name_modifier']}", $relatedNamesArray))
+            : '';
     }
 
     protected function formatTableData($data): array
@@ -135,27 +140,27 @@ class IdentitiesTable extends Component
                 $allProfessions = collect($identity->professions ?? [])
                     ->map(fn($profession) => [
                         'name' => ($profession->name ?? 'Unknown') . ' (Local)',
-                        'link' => route('professions.edit', ['profession' => $profession->profession_id])
+                        'link' => route('professions.edit', ['profession' => $profession->profession_id]),
                     ])
                     ->merge(
                         collect($identity->globalProfessions ?? [])
                             ->map(fn($globalProfession) => [
                                 'name' => ($globalProfession->name ?? 'Unknown') . ' (Global)',
-                                'link' => route('global.professions.edit', ['globalProfession' => $globalProfession->id])
+                                'link' => route('global.professions.edit', ['globalProfession' => $globalProfession->id]),
                             ])
                     );
-    
+
                 $professionsHtml = '<ul class="list-disc list-inside text-gray-600 space-y-1">';
                 foreach ($allProfessions as $profession) {
                     $professionsHtml .= "<li><a href=\"{$profession['link']}\" class=\"text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark\">{$profession['name']}</a></li>";
                 }
                 $professionsHtml .= '</ul>';
-    
+
                 return [
                     [
                         'component' => [
                             'args' => [
-                                'link' => route('identities.edit', ['identity' => $identity->identity_id ?? $identity->id]),
+                                'link' => route('identities.edit', ['identity' => $identity->id]),
                                 'label' => $identity->name,
                             ],
                             'name' => 'tables.edit-link',
@@ -165,14 +170,10 @@ class IdentitiesTable extends Component
                     ['label' => $this->formatDates($identity)],
                     ['label' => $this->formatRelatedNames($identity->related_names)],
                     ['label' => $professionsHtml, 'isHtml' => true],
-                    [
-                        'label' => collect($identity->profession_categories ?? [])
-                            ->map(fn($category) => $category->name)
-                            ->implode(', '),
-                    ],
+                    ['label' => $identity->profession_categories->pluck('name')->implode(', ')],
                     ['label' => $identity->alternative_names ?? ''],
                 ];
             })->toArray(),
         ];
-    }      
+    }
 }

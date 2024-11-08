@@ -29,7 +29,6 @@ class IdentityController extends Controller
             'identities' => $identities,
         ]);
     }
-
     public function create()
     {
         $identity = new Identity();
@@ -50,19 +49,19 @@ class IdentityController extends Controller
             'professionsList' => $this->getProfessionsList(),
             'categoriesList' => $this->getCategoriesList(),
         ]);
-    }    
-
+    }
+    
     public function edit(Identity $identity)
     {
         // Log raw values before processing
         Log::info('Raw related_names:', ['related_names' => $identity->related_names]);
         Log::info('Raw related_identity_resources:', ['related_identity_resources' => $identity->related_identity_resources]);
     
-        // Decode and process related names
-        $identity->related_names = $this->decodeJson($identity->related_names, 'related_names');
+        // Ensure related_names is an array
+        $identity->related_names = $this->ensureArray($identity->related_names, 'related_names');
     
-        // Decode and process related identity resources
-        $identity->related_identity_resources = $this->decodeJson($identity->related_identity_resources, 'related_identity_resources');
+        // Ensure related_identity_resources is an array
+        $identity->related_identity_resources = $this->ensureArray($identity->related_identity_resources, 'related_identity_resources');
     
         // Log processed values
         Log::info('Processed related_names:', ['related_names' => $identity->related_names]);
@@ -90,9 +89,9 @@ class IdentityController extends Controller
     }
     
     /**
-     * Helper method to decode JSON and handle errors gracefully
+     * Helper method to ensure data is always returned as an array.
      */
-    protected function decodeJson($data, $key)
+    protected function ensureArray($data, $key)
     {
         if (is_string($data)) {
             $decodedData = json_decode($data, true);
@@ -105,21 +104,21 @@ class IdentityController extends Controller
         }
     
         return is_array($data) ? $data : [];
-    }    
+    }
     
     public function update(IdentityRequest $request, Identity $identity): RedirectResponse
     {
         $validated = $request->validated();
         $validated['related_names'] = json_encode($validated['related_names'] ?? []);
-
+    
         $identity->update($validated);
         $this->syncRelations($identity, $validated);
-
+    
         return redirect()
             ->route('identities.edit', $identity->id)
             ->with('success', __('hiko.saved'));
     }
-
+    
     public function store(IdentityRequest $request): RedirectResponse
     {
         $validated = $request->validated();

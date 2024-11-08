@@ -32,8 +32,8 @@ class RelatedNames extends Component
         if (request()->old('related_names')) {
             $this->related_names = request()->old('related_names');
         }
-
-        if (empty($this->related_names)) {
+    
+        if (!is_array($this->related_names)) {
             $this->related_names = [];
         }
     }

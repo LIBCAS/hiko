@@ -6,25 +6,38 @@ use App\Models\Identity;
 
 class SearchIdentity
 {
-    public function __invoke(string $query, int $limit = 10)
+    public function __invoke(array $filters = [], int $limit = 10)
     {
-        $query = trim($query);
-
-        if (empty($query)) {
-            return [];
-        }
-
         return Identity::query()
             ->select('id', 'name', 'birth_year', 'death_year')
-            ->where('name', 'like', '%' . $query . '%')
-            ->orWhere('surname', 'like', '%' . $query . '%')
-            ->orWhere('forename', 'like', '%' . $query . '%')
+            ->when(isset($filters['name']), function ($query) use ($filters) {
+                $query->where('name', 'like', '%' . $filters['name'] . '%');
+            })
+            ->when(isset($filters['related_names']), function ($query) use ($filters) {
+                $query->where('related_names', 'like', '%' . $filters['related_names'] . '%');
+            })
+            ->when(isset($filters['type']), function ($query) use ($filters) {
+                $query->where('type', $filters['type']);
+            })
+            ->when(isset($filters['profession']), function ($query) use ($filters) {
+                $query->whereHas('professions', function ($professionQuery) use ($filters) {
+                    $professionQuery->where('name', 'like', '%' . $filters['profession'] . '%');
+                });
+            })
+            ->when(isset($filters['category']), function ($query) use ($filters) {
+                $query->whereHas('profession_categories', function ($categoryQuery) use ($filters) {
+                    $categoryQuery->where('name', 'like', '%' . $filters['category'] . '%');
+                });
+            })
+            ->when(isset($filters['note']), function ($query) use ($filters) {
+                $query->where('note', 'like', '%' . $filters['note'] . '%');
+            })
             ->take($limit)
             ->get()
             ->map(function ($identity) {
                 return [
                     'id' => $identity->id,
-                    'label' => "{$identity->name} {$identity->dates}",
+                    'label' => "{$identity->name} ({$identity->birth_year} - {$identity->death_year})",
                 ];
             });
     }
