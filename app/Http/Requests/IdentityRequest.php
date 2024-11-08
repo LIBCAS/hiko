@@ -61,15 +61,27 @@ class IdentityRequest extends FormRequest
 
     protected function prepareForValidation()
     {
+        // If the type is person, adjust the name field
         if ($this->input('type') === 'person') {
             $name = $this->input('surname');
             $name .= $this->input('forename') ? ", {$this->input('forename')}" : '';
-
-            $this->merge([
-                'category' => empty($this->input('category')) ? null : array_filter($this->input('category')),
-                'profession' => empty($this->input('profession')) ? null : array_filter($this->input('profession')),
-                'name' => $name,
-            ]);
+    
+            $this->merge(['name' => $name]);
         }
-    }
+    
+        // Handle category and profession fields to remove empty values or set to null if empty
+        $this->merge([
+            'category' => empty($this->input('category')) ? null : array_filter($this->input('category')),
+            'profession' => empty($this->input('profession')) ? null : array_filter($this->input('profession')),
+        ]);
+    
+        // Ensure related_names and related_identity_resources are arrays
+        $relatedNames = $this->input('related_names');
+        $relatedResources = $this->input('related_identity_resources');
+    
+        $this->merge([
+            'related_names' => is_array($relatedNames) ? $relatedNames : json_decode($relatedNames, true) ?? [],
+            'related_identity_resources' => is_array($relatedResources) ? $relatedResources : json_decode($relatedResources, true) ?? [],
+        ]);
+    }    
 }

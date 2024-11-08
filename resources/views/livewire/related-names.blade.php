@@ -3,7 +3,7 @@
         <p class="text-lg font-semibold">
             {{ __('hiko.related_names') }}
         </p>
-        @foreach ($related_names as $related_name)
+        @foreach (($relatedNames ?? []) as $related_name)
             <div wire:key="{{ $loop->index }}" class="p-3 space-y-6 bg-gray-200 shadow">
                 <div>
                     <x-label for="related_name_surname-{{ $loop->index }}" :value="__('hiko.surname')" />

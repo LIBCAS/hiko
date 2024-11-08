@@ -10,6 +10,11 @@ class RelatedNames extends Component
 
     public function addItem()
     {
+        // Ensure $related_names is an array before attempting to add an item
+        if (!is_array($this->related_names)) {
+            $this->related_names = [];
+        }
+
         $this->related_names[] = [
             'surname' => '',
             'forename' => '',
@@ -25,11 +30,11 @@ class RelatedNames extends Component
 
     public function mount()
     {
-        if (request()->old('related_names')) {
-            $this->related_names = request()->old('related_names');
-        }
+        // Initialize $related_names with old input or set it to an empty array
+        $this->related_names = request()->old('related_names', []);
 
-        if (empty($this->related_names)) {
+        // Ensure $related_names is an array even if it's empty
+        if (!is_array($this->related_names)) {
             $this->related_names = [];
         }
     }

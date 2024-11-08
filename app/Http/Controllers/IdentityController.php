@@ -10,6 +10,7 @@ use App\Http\Requests\IdentityRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Stancl\Tenancy\Facades\Tenancy;
+use Illuminate\Support\Facades\Log;
 
 class IdentityController extends Controller
 {
@@ -53,12 +54,22 @@ class IdentityController extends Controller
 
     public function edit(Identity $identity)
     {
-        $identity->related_names = is_array($identity->related_names)
-            ? $identity->related_names
-            : json_decode($identity->related_names, true) ?? [];
-
+        // Log raw values before processing
+        Log::info('Raw related_names:', ['related_names' => $identity->related_names]);
+        Log::info('Raw related_identity_resources:', ['related_identity_resources' => $identity->related_identity_resources]);
+    
+        // Decode and process related names
+        $identity->related_names = $this->decodeJson($identity->related_names, 'related_names');
+    
+        // Decode and process related identity resources
+        $identity->related_identity_resources = $this->decodeJson($identity->related_identity_resources, 'related_identity_resources');
+    
+        // Log processed values
+        Log::info('Processed related_names:', ['related_names' => $identity->related_names]);
+        Log::info('Processed related_identity_resources:', ['related_identity_resources' => $identity->related_identity_resources]);
+    
         $hasLetters = $identity->letters()->exists();
-
+    
         return view('pages.identities.form', [
             'title' => __('hiko.identity') . ': ' . $identity->id,
             'method' => 'PUT',
@@ -73,9 +84,29 @@ class IdentityController extends Controller
             'selectedCategories' => $this->getSelectedCategories($identity),
             'professionsList' => $this->getProfessionsList(),
             'categoriesList' => $this->getCategoriesList(),
+            'resources' => $identity->related_identity_resources,
+            'relatedNames' => $identity->related_names,
         ]);
     }
-
+    
+    /**
+     * Helper method to decode JSON and handle errors gracefully
+     */
+    protected function decodeJson($data, $key)
+    {
+        if (is_string($data)) {
+            $decodedData = json_decode($data, true);
+    
+            if (isset($decodedData[$key]) && is_string($decodedData[$key])) {
+                return json_decode($decodedData[$key], true) ?? [];
+            }
+    
+            return is_array($decodedData) ? $decodedData : [];
+        }
+    
+        return is_array($data) ? $data : [];
+    }    
+    
     public function update(IdentityRequest $request, Identity $identity): RedirectResponse
     {
         $validated = $request->validated();
