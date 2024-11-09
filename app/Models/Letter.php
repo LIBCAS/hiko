@@ -341,45 +341,23 @@ class Letter extends Model implements HasMedia
      */
     public function getNameAttribute(): string
     {
-        $identities = $this->identities->groupBy('pivot.role')->toArray();
-        $places = $this->places->groupBy('pivot.role')->toArray();
-
-        $author = $identities['author'][0] ?? null;
-        $recipient = $identities['recipient'][0] ?? null;
-        $origin = $places['origin'][0] ?? null;
-        $destination = $places['destination'][0] ?? null;
-
-        $titleParts = [];
-
-        // Add pretty date
-        $titleParts[] = $this->pretty_date;
-
-        // Add author name if available
-        if ($author) {
-            $titleParts[] = $author['name'];
-        }
-
-        // Add origin place if available
-        if ($origin) {
-            $titleParts[] = "({$origin['name']})";
-        }
-
-        // Add arrow if recipient or destination exists
-        if ($recipient || $destination) {
-            $titleParts[] = '→';
-        }
-
-        // Add recipient name if available
-        if ($recipient) {
-            $titleParts[] = $recipient['name'];
-        }
-
-        // Add destination place if available
-        if ($destination) {
-            $titleParts[] = "({$destination['name']})";
-        }
-
-        // Concatenate all parts with spaces
+        $identities = $this->identities()->select(['id', 'name'])->get()->groupBy('pivot.role')->toArray();
+        $places = $this->places()->select(['id', 'name'])->get()->groupBy('pivot.role')->toArray();
+    
+        // Build title with basic data
+        $titleParts = [$this->pretty_date];
+    
+        $author = $identities['author'][0]['name'] ?? null;
+        $recipient = $identities['recipient'][0]['name'] ?? null;
+        $origin = $places['origin'][0]['name'] ?? null;
+        $destination = $places['destination'][0]['name'] ?? null;
+    
+        if ($author) $titleParts[] = $author;
+        if ($origin) $titleParts[] = "({$origin})";
+        if ($recipient || $destination) $titleParts[] = '→';
+        if ($recipient) $titleParts[] = $recipient;
+        if ($destination) $titleParts[] = "({$destination})";
+    
         return implode(' ', $titleParts);
     }
 

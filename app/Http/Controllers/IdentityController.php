@@ -16,19 +16,24 @@ class IdentityController extends Controller
 {
     public function index()
     {
-        $identities = Identity::with(['professions', 'profession_categories', 'letters'])->get();
+        // Eager load only necessary relationships and paginate
+        $identities = Identity::with(['professions', 'profession_categories'])
+            ->withCount('letters') // Gets only the count of letters instead of full data
+            ->paginate(50); // Adjust per-page limit based on performance needs
+    
         $labels = [
             'name' => __('hiko.name'),
             'surname' => __('hiko.surname'),
             'type' => __('hiko.type'),
         ];
-
+    
         return view('pages.identities.index', [
             'title' => __('hiko.identities'),
             'labels' => $labels,
             'identities' => $identities,
         ]);
     }
+    
     public function create()
     {
         $identity = new Identity();
