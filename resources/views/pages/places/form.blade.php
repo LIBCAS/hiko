@@ -2,8 +2,8 @@
     <x-success-alert />
     <x-form-errors />
 
-    <div class="grid grid-cols-3 gap-4 mb-4 space-y-3">
-        <div class="max-w-sm">
+    <div class="grid-cols-3 grid gap-4 mb-4 space-y-3">
+        <div class="max-w-sm col-span-1">
             <form 
                 x-data="similarItems({ similarNamesUrl: '{{ route('ajax.places.similar') }}', id: '{{ $place->id }}' })" 
                 x-init="$watch('search', () => findSimilarNames($data))" 
@@ -128,9 +128,8 @@
             @endif
         </div>
 
-        <!-- Alternative Names Section -->
         @if ($place->alternative_names)
-            <div class="max-w-sm bg-white p-6 shadow rounded-md">
+            <div class="bg-white p-6 shadow rounded-md col-span-2">
                 <h2 class="text-l font-semibold">{{ __('Alternative Names') }}</h2>
                 <ul class="list-disc px-3 py-3">
                     @foreach ($place->alternative_names as $altName)
