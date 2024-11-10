@@ -23,7 +23,7 @@ class AjaxProfessionController extends Controller
         // Fetch local professions
         $localProfessions = Profession::whereRaw('LOWER(name) like ?', ['%' . $search . '%'])
             ->select('id', 'name')
-            ->take(10)
+            ->take(25)
             ->get()
             ->map(function ($profession) {
                 return [
@@ -39,7 +39,7 @@ class AjaxProfessionController extends Controller
         Tenancy::central(function () use ($search, &$results) {
             $globalProfessions = GlobalProfession::whereRaw("LOWER(JSON_UNQUOTE(name->'$.en')) like ?", ['%' . $search . '%'])
                 ->select('id', 'name')
-                ->take(10)
+                ->take(25)
                 ->get()
                 ->map(function ($profession) {
                     return [

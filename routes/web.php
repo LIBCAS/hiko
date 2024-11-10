@@ -136,9 +136,9 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
     });
 
     Route::prefix('professions/category')->group(function () {
-        Route::get('/', function () {
-            return redirect()->route('professions');
-        });
+        Route::get('/', [ProfessionCategoryController::class, 'index'])
+            ->name('professions.category')
+            ->middleware(['auth', 'can:manage-metadata']);
 
         Route::get('create', [ProfessionCategoryController::class, 'create'])
             ->name('professions.category.create')
@@ -158,18 +158,19 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
         Route::delete('{professionCategory}', [ProfessionCategoryController::class, 'destroy'])
             ->name('professions.category.destroy')
-            ->middleware(['auth', 'can:delete-metadata']);
+            ->middleware(['auth', 'can:manage-metadata']);
 
         Route::get('export', [ProfessionCategoryController::class, 'export'])
             ->name('professions.category.export')
             ->middleware(['auth', 'can:manage-metadata']);
 
         Route::get('professions/category/{id}/attach', [ProfessionCategoryController::class, 'attachProfession'])
-            ->name('professions.attach');
+            ->name('professions.attach')
+            ->middleware(['auth', 'can:manage-metadata']);
 
         Route::post('professions/category/{category}/attach', [ProfessionCategoryController::class, 'storeAttachedProfession'])
-        ->name('professions.category.attach');        
-
+            ->name('professions.category.attach')
+            ->middleware(['auth', 'can:manage-metadata']);
     });
 
     Route::prefix('global-professions')->middleware(['auth'])->name('global.professions.')->group(function () {

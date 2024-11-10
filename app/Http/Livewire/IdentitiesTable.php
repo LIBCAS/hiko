@@ -114,7 +114,7 @@ class IdentitiesTable extends Component
 
         $query->when($this->filters['note'], fn($q) => $q->where('note', 'like', '%' . $this->filters['note'] . '%'));
 
-        $identities = $query->orderBy($this->filters['order'])->paginate(10);
+        $identities = $query->orderBy($this->filters['order'])->paginate(25);
 
         if ($tenantPrefix) {
             Tenancy::central(function () use ($identities, $tenantPrefix) {

@@ -52,7 +52,7 @@ class KeywordsTable extends Component
             )
             ->search($this->filters)
             ->orderBy($this->filters['order'])
-            ->paginate(10, ['*'], 'keywordsPage');
+            ->paginate(25, ['*'], 'keywordsPage');
     }
 
     protected function formatTableData($data)

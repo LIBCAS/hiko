@@ -67,7 +67,7 @@ class NamesTable extends Component
         $query->orderBy($this->filters['order']);
     
         // Paginate the results
-        return $query->paginate(10, ['*'], "{$this->model}Page");
+        return $query->paginate(25, ['*'], "{$this->model}Page");
     }    
 
     protected function formatTableData($data): array

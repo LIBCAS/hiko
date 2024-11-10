@@ -7,6 +7,7 @@ use App\Models\Profession;
 use App\Models\GlobalProfession;
 use App\Models\ProfessionCategory;
 use App\Http\Requests\IdentityRequest;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Stancl\Tenancy\Facades\Tenancy;
@@ -14,33 +15,38 @@ use Illuminate\Support\Facades\Log;
 
 class IdentityController extends Controller
 {
-    public function index()
+    public function index(): View
     {
-        // Eager load only necessary relationships and paginate
-        $identities = Identity::with(['professions', 'profession_categories'])
-            ->withCount('letters') // Gets only the count of letters instead of full data
-            ->paginate(50); // Adjust per-page limit based on performance needs
-    
         $labels = [
             'name' => __('hiko.name'),
             'surname' => __('hiko.surname'),
             'type' => __('hiko.type'),
         ];
-    
+
+        $identities = $this->findIdentities();
+
         return view('pages.identities.index', [
             'title' => __('hiko.identities'),
             'labels' => $labels,
             'identities' => $identities,
         ]);
     }
-    
+
+    protected function findIdentities()
+    {
+        return Identity::select('id', 'name', 'type')
+            ->with(['professions:id,name', 'profession_categories:id,name'])
+            ->orderBy('name')
+            ->paginate(25);
+    }
+
     public function create()
     {
         $identity = new Identity();
         $identity->related_names = [];
     
         return view('pages.identities.form', [
-            'title' => __('hiko.create_identity'),
+            'title' => __('hiko.new_identity'),
             'method' => 'POST',
             'action' => route('identities.store'),
             'label' => __('hiko.create'),
@@ -48,9 +54,9 @@ class IdentityController extends Controller
             'canMerge' => false,
             'identity' => $identity,
             'types' => $this->getTypes(),
-            'selectedType' => 'person',  // Default type for new identity
-            'selectedProfessions' => [], // Initialize as empty array
-            'selectedCategories' => [],  // Initialize as empty array
+            'selectedType' => 'person',
+            'selectedProfessions' => [],
+            'selectedCategories' => [],
             'professionsList' => $this->getProfessionsList(),
             'categoriesList' => $this->getCategoriesList(),
         ]);
@@ -123,29 +129,35 @@ class IdentityController extends Controller
             ->route('identities.edit', $identity->id)
             ->with('success', __('hiko.saved'));
     }
-    
+
     public function store(IdentityRequest $request): RedirectResponse
     {
         $validated = $request->validated();
+
+        // Convert array fields to JSON strings if necessary
         $validated['related_names'] = json_encode($validated['related_names'] ?? []);
-    
+        $validated['related_identity_resources'] = json_encode($validated['related_identity_resources'] ?? []);
+
         // Remove non-existent columns in the identities table
         unset($validated['category'], $validated['profession']);
-    
+
         if ($validated['type'] !== 'person') {
             unset($validated['surname'], $validated['forename'], $validated['general_name_modifier']);
         }
-    
+
+        // Log the validated data for debugging
+        Log::info('Validated data before create:', $validated);
+
         // Create the new Identity record
         $identity = Identity::create($validated);
-    
+
         // Sync professions and categories if provided
         $this->syncRelations($identity, $request->validated());
-    
+
         return redirect()
             ->route('identities.edit', $identity->id)
             ->with('success', __('hiko.saved'));
-    }    
+    }
 
     protected function syncRelations(Identity $identity, array $validated)
     {
@@ -233,18 +245,24 @@ class IdentityController extends Controller
         $professions = [];
 
         if (tenancy()->initialized) {
-            $localProfessions = Profession::all()->map(fn($profession) => [
-                'value' => 'local-' . $profession->id,
-                'label' => $profession->name ? "{$profession->name} (Local)" : "No Name (Local)",
-            ])->toArray();
+            $localProfessions = Profession::select('id', 'name')
+                ->orderBy('name')
+                ->paginate(25)
+                ->map(fn($profession) => [
+                    'value' => 'local-' . $profession->id,
+                    'label' => $profession->name ? "{$profession->name} (Local)" : "No Name (Local)",
+                ])->toArray();
             $professions = array_merge($professions, $localProfessions);
         }
 
         Tenancy::central(function () use (&$professions) {
-            $globalProfessions = GlobalProfession::all()->map(fn($profession) => [
-                'value' => 'global-' . $profession->id,
-                'label' => $profession->name ? "{$profession->name} (Global)" : "No Name (Global)",
-            ])->toArray();
+            $globalProfessions = GlobalProfession::select('id', 'name')
+                ->orderBy('name')
+                ->paginate(25)
+                ->map(fn($profession) => [
+                    'value' => 'global-' . $profession->id,
+                    'label' => $profession->name ? "{$profession->name} (Global)" : "No Name (Global)",
+                ])->toArray();
             $professions = array_merge($professions, $globalProfessions);
         });
 
@@ -255,21 +273,25 @@ class IdentityController extends Controller
     {
         $categories = [];
     
-        // Check if tenancy is initialized to use tenant-specific table
         if (tenancy()->initialized && tenancy()->tenant) {
             $tenantTable = tenancy()->tenant->table_prefix . '__profession_categories';
-            $categories = DB::table($tenantTable)->get()->map(fn($category) => [
-                'value' => $category->id,
-                'label' => json_decode($category->name)->{config('app.locale')},
-            ])->toArray();
+            $categories = DB::table($tenantTable)->select('id', 'name')
+                ->orderBy('name')
+                ->paginate(25)
+                ->map(fn($category) => [
+                    'value' => $category->id,
+                    'label' => json_decode($category->name)->{config('app.locale')},
+                ])->toArray();
         } else {
-            // Fallback to global table if no tenant-specific table is initialized
-            $categories = ProfessionCategory::all()->map(fn($category) => [
-                'value' => $category->id,
-                'label' => $category->getTranslation('name', config('app.locale')),
-            ])->toArray();
+            $categories = ProfessionCategory::select('id', 'name')
+                ->orderBy('name')
+                ->paginate(25)
+                ->map(fn($category) => [
+                    'value' => $category->id,
+                    'label' => $category->getTranslation('name', config('app.locale')),
+                ])->toArray();
         }
-    
+
         return $categories;
     }
     

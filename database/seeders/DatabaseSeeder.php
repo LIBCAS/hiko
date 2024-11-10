@@ -82,7 +82,7 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        $identities = Identity::factory()->count(10)->create();
+        $identities = Identity::factory()->count(2)->create();
 
         $professions = Profession::all();
 

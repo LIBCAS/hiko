@@ -83,7 +83,7 @@ class LettersTable extends Component
 
         return $query
             ->orderBy($this->filters['order'], $this->filters['direction'])
-            ->paginate(10);
+            ->paginate(25);
     }
 
     protected function formatTableData($data): array

@@ -16,25 +16,29 @@ class AjaxIdentityController extends Controller
             return [];
         }
 
+        // Initialize SearchIdentity with provided filters
+        $searchFilters = ['name' => $request->input('search')];
         $search = new SearchIdentity;
 
-        $results = $search($request->input('search'))
+        // Retrieve and format local results
+        $results = $search($searchFilters)
             ->map(function ($identity) {
                 return [
-                    'id' => $identity['id'],
+                    'id' => 'local-' . $identity['id'],
                     'value' => 'local-' . $identity['id'],
-                    'label' => $identity['name'] ?? 'No Name (Local)',
+                    'label' => $identity['label'] ?? 'No Name (Local)',
                 ];
             })
             ->toArray();
 
-        Tenancy::central(function () use (&$results, $request, $search) {
+        // Retrieve and format global results within central context
+        Tenancy::central(function () use (&$results, $request) {
             $globalResults = GlobalProfession::query()
                 ->where('name', 'like', '%' . $request->input('search') . '%')
                 ->get()
                 ->map(function ($globalProfession) {
                     return [
-                        'id' => $globalProfession->id,
+                        'id' => 'global-' . $globalProfession->id,
                         'value' => 'global-' . $globalProfession->id,
                         'label' => $globalProfession->name ? "{$globalProfession->name} (Global)" : 'No Name (Global)',
                     ];

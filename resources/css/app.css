@@ -124,3 +124,7 @@ html {
 .modal-hidden {
     display: none !important;
 }
+
+[x-cloak] {
+    display: none !important;
+}

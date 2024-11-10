@@ -17,7 +17,8 @@
                         element: $el, 
                         change: (data) => { $wire.changeItemValue({{ $index }}, data) } 
                     })"
-                    x-init="initSelect()">
+                    x-init="initSelect()"
+                    wire:ignore>
                     
                     @if (!empty($item['value']))
                         <option value="{{ $item['value'] }}" selected>{{ $item['label'] }}</option>
@@ -50,6 +51,10 @@
             return {
                 initSelect() {
                     const select = this.$el;
+                    
+                    // To avoid reinitialization
+                    if (select.dataset.choicesInitialized) return;
+                    select.dataset.choicesInitialized = true;
 
                     // Load options initially or on search
                     const loadOptions = (query = '') => {
@@ -71,6 +76,21 @@
                     // Initialize options on load
                     loadOptions();
 
+                    // Debounce function for search filtering
+                    const debounce = (func, delay) => {
+                        let timeout;
+                        return function(...args) {
+                            clearTimeout(timeout);
+                            timeout = setTimeout(() => func.apply(this, args), delay);
+                        };
+                    };
+
+                    // Event listener for input to filter dynamically
+                    select.addEventListener('input', debounce((event) => {
+                        const query = event.target.value;
+                        loadOptions(query);
+                    }, 300));
+
                     // Add change listener
                     select.addEventListener('change', (event) => {
                         const selectedOption = event.target.options[event.target.selectedIndex];
@@ -78,12 +98,6 @@
                             value: selectedOption.value,
                             label: selectedOption.text
                         });
-                    });
-
-                    // Optional: Search filter for dynamic loading
-                    select.addEventListener('input', (event) => {
-                        const query = event.target.value;
-                        loadOptions(query);
                     });
                 }
             }

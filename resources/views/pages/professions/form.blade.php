@@ -136,11 +136,6 @@
                 };
             }
 
-            var searchInput = document.getElementById('mentioned');
-            searchInput.addEventListener('input', debounce(function(e) {
-                // Make AJAX request here
-            }, 500));
-
             document.addEventListener('DOMContentLoaded', function() {
                 var iframes = document.querySelectorAll('iframe');
                 iframes.forEach(function(iframe) {

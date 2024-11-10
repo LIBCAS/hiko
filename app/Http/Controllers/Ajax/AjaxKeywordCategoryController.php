@@ -16,7 +16,7 @@ class AjaxKeywordCategoryController extends Controller
             : KeywordCategory::whereRaw("LOWER(JSON_EXTRACT(name, '$.en')) like ?", ['%' . Str::lower($request->query('search')) . '%'])
             ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) like ?", ['%' . Str::lower($request->query('search')) . '%'])
             ->select('id', 'name')
-            ->take(10)
+            ->take(25)
             ->get()
             ->map(function ($category) {
                 return [

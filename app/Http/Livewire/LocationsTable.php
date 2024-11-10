@@ -50,7 +50,7 @@ class LocationsTable extends Component
         return Location::select('id', 'name', 'type')
             ->search($this->filters)
             ->orderBy($this->filters['order'])
-            ->paginate(10);
+            ->paginate(25);
     }
 
     protected function formatTableData($data): array

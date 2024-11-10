@@ -54,7 +54,7 @@ class PlacesTable extends Component
 
         return $query->search($this->filters)
             ->orderBy($this->filters['order'])
-            ->paginate(10);
+            ->paginate(25);
     }
 
     protected function formatTableData($data): array
