@@ -52,10 +52,10 @@ trait MenuTrait
                 'ability' => 'manage-users',
             ],
             [
-                'route' => 'duplicates.index',
-                'name' => __('hiko.duplicates'),
-                'icon' => 'icons.duplicate',
-                'ability' => 'manage-users', //view-metadata
+                'route' => 'compare-letters.index',
+                'name' => __('hiko.letters_comparision'),
+                'icon' => 'icons.git-compare',
+                'ability' => 'view-metadata',
             ],
         ];
 

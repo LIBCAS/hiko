@@ -15,6 +15,7 @@ return [
     'search' => 'Search',
     'items_not_found' => 'No matching records found.',
     'users' => 'Users',
+    'letters_comparision' => 'Letter comparison',
     'account' => 'Account',
     'new_account' => 'New account',
     'create' => 'Create',

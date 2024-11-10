@@ -15,12 +15,12 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\ProfessionCategoryController;
-use App\Http\Controllers\DuplicateDetectionController;
 use App\Http\Controllers\GlobalProfessionController;
 use App\Http\Controllers\GlobalProfessionCategoryController;
 use App\Http\Controllers\LetterPreviewController;
 use App\Http\Controllers\Ajax\AjaxPlaceController;
 use App\Http\Controllers\KeywordCategoryController;
+use App\Http\Controllers\LetterComparisonController;
 use App\Http\Controllers\Ajax\AjaxKeywordController;
 use App\Http\Controllers\Ajax\AjaxIdentityController;
 use App\Http\Controllers\Ajax\SimilarItemsController;
@@ -31,8 +31,8 @@ use App\Http\Controllers\Ajax\SimilarLocationsController;
 use App\Http\Controllers\Ajax\AjaxKeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxGlobalProfessionCategoryController;
+use App\Http\Controllers\Ajax\AjaxLetterComparisonController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -349,11 +349,11 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
         Route::get('/', [LetterController::class, 'index'])
             ->name('letters')
             ->middleware(['auth', 'can:view-metadata']);
-
+    
         Route::get('create', [LetterController::class, 'create'])
             ->name('letters.create')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+        
         Route::get('{letter}/edit', [LetterController::class, 'edit'])
             ->name('letters.edit')
             ->middleware(['auth', 'can:manage-metadata']);
@@ -397,8 +397,26 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
         Route::get('{letter}/duplicate', [LetterController::class, 'duplicate'])
             ->name('letters.duplicate')
             ->middleware(['auth', 'can:manage-metadata']);
+    });
+    
+    Route::prefix('compare-letters')->group(function () {
+        Route::get('/', [LetterComparisonController::class, 'index'])
+            ->name('compare-letters.index')
+            ->middleware(['auth', 'can:view-metadata']);
+    
+        Route::post('search', [LetterComparisonController::class, 'search'])
+            ->name('compare-letters.search')
+            ->middleware(['auth', 'can:view-metadata']);
+            
+        Route::get('{comparison}/show', [LetterComparisonController::class, 'show'])
+            ->name('compare-letters.show')
+            ->middleware(['auth', 'can:view-metadata']);
+    
+        Route::post('ajax/compare', [AjaxLetterComparisonController::class, 'search'])
+            ->name('compare-letters.ajax')
+            ->middleware(['auth', 'can:view-metadata']);
     });    
-
+    
     Route::prefix('ajax')->group(function () {
         Route::get('keyword-category', [AjaxKeywordCategoryController::class, '__invoke'])
             ->name('ajax.keywords.category')
@@ -411,7 +429,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
         Route::get('profession-category', [AjaxProfessionCategoryController::class, '__invoke'])
             ->name('ajax.professions.category')
             ->middleware(['auth', 'can:manage-metadata']);
-        
+    
         Route::get('global-profession-category', [AjaxGlobalProfessionCategoryController::class, '__invoke'])
             ->name('ajax.global.professions.category')
             ->middleware(['auth', 'can:manage-metadata']);
@@ -460,15 +478,6 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
         Route::get('symlink', [DevToolsController::class, 'symlink'])
             ->middleware(['auth', 'can:debug']);
-    });
-
-    Route::prefix('duplicates')->group(function () {
-        Route::get('/', [DuplicateDetectionController::class, 'index'])
-            ->name('duplicates.index')
-            ->middleware(['auth', 'can:view-metadata']);
-        Route::get('/detect-duplicates', [DuplicateDetectionController::class, 'detectDuplicates'])
-            ->name('duplicates.detect')
-            ->middleware(['auth', 'can:view-metadata']);
     });
 
     Route::get('edit/{letter:uuid}', EditLinkController::class)

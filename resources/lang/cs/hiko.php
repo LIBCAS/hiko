@@ -15,6 +15,7 @@ return [
     'search' => 'Hledat',
     'items_not_found' => 'Nebyly nalezeny žádné položky.',
     'users' => 'Uživatelé',
+    'letters_comparision' => 'Porovnání dopisů',
     'account' => 'Účet',
     'new_account' => 'Nový účet',
     'create' => 'Vytvořit',
