@@ -19,7 +19,7 @@ class LetterComparisonController extends Controller
     public function index()
     {
         return view('pages.compare-letters.index', [
-            'title' => 'Compare Letters',
+            'title' => __('hiko.compare_letters_comparision'),
         ]);
     }
 

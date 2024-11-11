@@ -53,7 +53,7 @@ trait MenuTrait
             ],
             [
                 'route' => 'compare-letters.index',
-                'name' => __('hiko.letters_comparision'),
+                'name' => __('hiko.compare_letters_comparision'),
                 'icon' => 'icons.git-compare',
                 'ability' => 'view-metadata',
             ],

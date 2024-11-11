@@ -1,18 +1,17 @@
 <div>
-    <!-- Filters for comparison type and tenant selection with Enter key search -->
     <x-filter-form wire:keydown.enter="search">
         <label>
-            <span class="block text-sm">Comparison Type:</span>
+            <span class="block text-sm">{{__('hiko.compare_comparison_type')}}</span>
             <x-select wire:model="filters.compare_type" class="block w-full px-2 text-sm lg:w-64">
-                <option value="full_text">Full Text</option>
-                <option value="other_columns">Other Columns</option>
+                <option value="full_text">{{__('hiko.compare_full_text')}}</option>
+                <option value="other_columns">{{__('hiko.compare_other_columns')}}</option>
             </x-select>
         </label>
 
         <label>
-            <span class="block text-sm">Select Tenant:</span>
+            <span class="block text-sm">{{__('hiko.compare_select_tenant')}}</span>
             <x-select wire:model="filters.tenant_to_compare" class="block w-full px-2 text-sm lg:w-64">
-                <option value="">Select a Tenant</option>
+                <option value="">{{__('hiko.compare_select_a_tenant')}}</option>
                 @foreach($tenants as $tenantName)
                     <option value="{{ $tenantName }}">{{ $tenantName }}</option>
                 @endforeach
@@ -20,17 +19,17 @@
         </label>
 
         <label>
-            <span class="block text-sm">Order By:</span>
+            <span class="block text-sm">{{__('hiko.compare_order_by')}}</span>
             <x-select wire:model.defer="filters.order" class="w-full px-2 text-sm lg:w-64">
-                <option value="letter_id">Letter ID</option>
-                <option value="similarity">Similarity</option>
+                <option value="letter_id">{{__('hiko.compare_letter_id')}}</option>
+                <option value="similarity">{{__('hiko.compare_similarity')}}</option>
             </x-select>
         </label>
     </x-filter-form>
 
     <!-- Loading indicator -->
     <div wire:loading wire:target="search" class="mt-4">
-        <p class="text-blue-500">Loading comparison results, please wait...</p>
+        <p class="text-blue-500">...</p>
     </div>
 
     <!-- Display the results table -->
@@ -38,7 +37,7 @@
         <x-table :tableData="$tableData" class="table-auto w-full mt-3" />
     @else
         <div class="mt-4">
-            <p class="text-gray-700">No results found. Please adjust your filters and try again.</p>
+            <p class="text-gray-700">{{__('hiko.compare_no_results')}}</p>
         </div>
     @endif
 

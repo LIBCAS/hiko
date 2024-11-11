@@ -130,7 +130,7 @@
 
         @if ($place->alternative_names)
             <div class="bg-white p-6 shadow rounded-md col-span-2">
-                <h2 class="text-l font-semibold">{{ __('Alternative Names') }}</h2>
+                <h2 class="text-l font-semibold">{{ __('hiko.alternative_place_names') }}</h2>
                 <ul class="list-disc px-3 py-3">
                     @foreach ($place->alternative_names as $altName)
                         <li>{{ $altName }}</li>
