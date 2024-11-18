@@ -4,9 +4,6 @@
 /storage/*.key
 /vendor
 .env
-.env.backup
-.env.dev
-.env.prod
 .phpunit.result.cache
 docker-compose.override.yml
 Homestead.json
@@ -20,7 +17,7 @@ webpack.config.js
 storage/medialibrary/temp/*
 storage/app/imports/letter.json
 storage/app/imports/LETTERS_NAVOD.json
+storage/app/google-cloud/
 /certs
 /database/export
 /database/import
-.env.prod.example

@@ -30,4 +30,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'google_cloud' => [
+        'project_id' => env('GOOGLE_CLOUD_PROJECT'),
+        'key_file' => env('GOOGLE_APPLICATION_CREDENTIALS'),
+    ],
+
 ];

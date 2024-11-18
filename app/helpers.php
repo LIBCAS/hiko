@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Tenant;
+
 if (!function_exists('computeDate')) {
     function computeDate($letter)
     {
@@ -30,5 +32,17 @@ if (!function_exists('similar')) {
             trim(strtolower(str_replace(',', '', removeAccents($string1)))),
             trim(strtolower(str_replace(',', '', removeAccents($string2))))
         ) <= 3;
+    }
+}
+
+/**
+ * Get the current tenant.
+ *
+ * @return Tenant|null
+ */
+if (!function_exists('tenant')) {
+    function tenant(): ?Tenant
+    {
+        return tenancy()->tenant;
     }
 }
