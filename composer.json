@@ -8,39 +8,40 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.4|^8.0",
+        "php": "^8.0|^8.4",
         "ext-intl": "*",
         "ext-json": "*",
         "ext-openssl": "*",
         "ext-pdo": "*",
         "barryvdh/laravel-debugbar": "^3.7",
         "calebporzio/sushi": "^2.3",
-        "fruitcake/laravel-cors": "^2.0",
+        "fruitcake/laravel-cors": "^3.0",
         "google/cloud-vision": "^1.9",
         "guzzlehttp/guzzle": "^7.0.1",
         "intervention/image": "^2.7",
-        "laravel/framework": "^8.54",
+        "laravel/framework": "^8.0",
         "laravel/sanctum": "^2.11",
         "laravel/scout": "^9.4",
         "laravel/tinker": "^2.5",
         "livewire/livewire": "^2.5",
         "maatwebsite/excel": "^3.1",
         "predis/predis": "*",
-        "spatie/laravel-medialibrary": "^7.20",
+        "spatie/laravel-medialibrary": "^9.0",
         "spatie/laravel-translatable": "^4.6",
         "stancl/tenancy": "^3.6",
-        "teamtnt/laravel-scout-tntsearch-driver": "^11.6"
+        "symfony/mailer": "^5.4",
+        "teamtnt/laravel-scout-tntsearch-driver": "^14.0"
     },
     "require-dev": {
         "brianium/paratest": "^6.6",
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",
         "fossbarrow/laravel-phpcs": "dev-main",
+        "larastan/larastan": "^1.0",
         "laravel/breeze": "^1.4",
         "laravel/sail": "^1.0.1",
         "mockery/mockery": "^1.4.2",
         "nunomaduro/collision": "^5.0",
-        "nunomaduro/larastan": "^0.7.13",
         "phpunit/phpunit": "^9.3.3"
     },
     "autoload": {
@@ -84,7 +85,7 @@
         "sort-packages": true,
         "platform-check": false,
         "platform": {
-            "php": "7.4"
+            "php": "8.2.25"
         }
     },
     "minimum-stability": "dev",
