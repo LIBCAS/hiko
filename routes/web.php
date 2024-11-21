@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
@@ -503,6 +504,17 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
     Route::get('lang/{lang}', LanguageController::class)
         ->name('lang');
+
+
+        Route::get('/storage/local/{path}', function ($path) {
+            $file = Storage::disk('local')->path($path);
+        
+            if (!file_exists($file)) {
+                abort(404);
+            }
+        
+            return response()->file($file);
+        })->where('path', '.*')->name('serve-local-file');
 
 });
 

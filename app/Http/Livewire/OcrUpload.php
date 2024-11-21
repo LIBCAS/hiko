@@ -40,7 +40,6 @@ class OcrUpload extends Component
         try {
             $this->saveUploadedFile();
             $this->processOCR();
-
             $this->dispatchBrowserEvent('ocr-completed');
         } catch (\Exception $e) {
             Log::error('OCR Processing Error: ' . $e->getMessage());
@@ -51,7 +50,7 @@ class OcrUpload extends Component
     }
 
     /**
-     * Save the uploaded file to a tenant-specific storage location.
+     * Save the uploaded file to the `local` storage location.
      *
      * @throws \Exception
      */
@@ -61,7 +60,7 @@ class OcrUpload extends Component
             $this->tempImageName = Str::uuid() . '.' . $this->photo->getClientOriginalExtension();
             $this->tempImagePath = "livewire-tmp/{$this->tempImageName}";
 
-            // Save the uploaded image in the specified directory
+            // Save the uploaded image in the `local` storage
             Storage::disk('local')->put($this->tempImagePath, file_get_contents($this->photo->getRealPath()));
 
             Log::info('File stored at: ' . Storage::disk('local')->path($this->tempImagePath));
@@ -121,25 +120,6 @@ class OcrUpload extends Component
             Storage::disk('local')->delete($this->tempImagePath);
             Log::info("Temporary file deleted: {$this->tempImagePath}");
             $this->tempImagePath = null; // Clear the path after deletion
-        }
-    }
-
-    /**
-     * Automatically clean up temporary files on destruction.
-     */
-    public function __destruct()
-    {
-        $this->cleanupTemporaryFile();
-    }
-
-    /**
-     * Clean up the temporary file.
-     */
-    protected function cleanupTemporaryFile()
-    {
-        if ($this->tempImagePath && Storage::disk('local')->exists($this->tempImagePath)) {
-            Storage::disk('local')->delete($this->tempImagePath);
-            Log::info("Temporary file deleted: {$this->tempImagePath}");
         }
     }
 

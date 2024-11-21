@@ -57,12 +57,6 @@ trait MenuTrait
                 'icon' => 'icons.git-compare',
                 'ability' => 'view-metadata',
             ],
-            [
-                'route' => 'images.upload',
-                'name' => __('hiko.upload_image'),
-                'icon' => 'icons.git-compare',
-                'ability' => 'view-metadata',
-            ],
         ];
 
         return collect($items)->map(function ($item) {
