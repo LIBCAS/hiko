@@ -16,6 +16,7 @@ class OcrUpload extends Component
     public $photo;
     public $ocrText = '';
     public $selectedText = '';
+    public $selectedLanguage = 'cs'; // Default language
     public $isProcessing = false;
     public $tempImageName;
     public $tempImagePath;
@@ -34,7 +35,6 @@ class OcrUpload extends Component
     public function uploadAndProcess()
     {
         $this->validate();
-
         $this->isProcessing = true;
 
         try {
@@ -50,56 +50,41 @@ class OcrUpload extends Component
     }
 
     /**
-     * Save the uploaded file to the `local` storage location.
-     *
-     * @throws \Exception
+     * Save the uploaded file to the `local` storage disk.
      */
     private function saveUploadedFile()
     {
-        try {
-            $this->tempImageName = Str::uuid() . '.' . $this->photo->getClientOriginalExtension();
-            $this->tempImagePath = "livewire-tmp/{$this->tempImageName}";
+        $this->tempImageName = Str::uuid() . '.' . $this->photo->getClientOriginalExtension();
+        $this->tempImagePath = "livewire-tmp/{$this->tempImageName}";
 
-            // Save the uploaded image in the `local` storage
-            Storage::disk('local')->put($this->tempImagePath, file_get_contents($this->photo->getRealPath()));
+        Storage::disk('local')->put($this->tempImagePath, file_get_contents($this->photo->getRealPath()));
 
-            Log::info('File stored at: ' . Storage::disk('local')->path($this->tempImagePath));
-        } catch (\Exception $e) {
-            throw new \Exception('Failed to store the uploaded file.');
-        }
+        Log::info('File stored at: ' . Storage::disk('local')->path($this->tempImagePath));
     }
 
     /**
      * Process the uploaded file using Google Vision OCR.
-     *
-     * @throws \Exception
      */
     private function processOCR()
     {
-        $ocrService = new GoogleVisionOCR();
+        $ocrService = new GoogleVisionOCR([$this->selectedLanguage]);
         $rawText = $ocrService->extractTextFromImage(Storage::disk('local')->path($this->tempImagePath));
 
         if (!$rawText) {
             throw new \Exception('No text detected in the uploaded image.');
         }
 
-        // Format the extracted text
         $this->ocrText = $this->formatText($rawText);
     }
 
     /**
-     * Format the extracted text for improved readability.
-     *
-     * @param string $text
-     * @return string
+     * Format the extracted text for better readability.
      */
     private function formatText(string $text): string
     {
-        // Remove unnecessary line breaks and spaces
-        $formattedText = preg_replace('/\s*\n\s*/', ' ', $text); // Remove unnecessary newlines
-        $formattedText = preg_replace('/\s+/', ' ', $formattedText); // Remove redundant spaces
-        $formattedText = wordwrap($formattedText, 70, "\n"); // Reintroduce logical line breaks
-
+        $formattedText = preg_replace('/\s*\n\s*/', ' ', $text);
+        $formattedText = preg_replace('/\s+/', ' ', $formattedText);
+        $formattedText = wordwrap($formattedText, 70, "\n");
         return trim($formattedText);
     }
 
@@ -119,7 +104,7 @@ class OcrUpload extends Component
         if ($this->tempImagePath && Storage::disk('local')->exists($this->tempImagePath)) {
             Storage::disk('local')->delete($this->tempImagePath);
             Log::info("Temporary file deleted: {$this->tempImagePath}");
-            $this->tempImagePath = null; // Clear the path after deletion
+            $this->tempImagePath = null; 
         }
     }
 

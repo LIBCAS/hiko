@@ -3,18 +3,20 @@
 namespace App\Services;
 
 use Google\Cloud\Vision\V1\ImageAnnotatorClient;
-use Google\Cloud\Vision\V1\Feature\Type;
+use Google\Cloud\Vision\V1\ImageContext;
 use Illuminate\Support\Facades\Log;
 
 class GoogleVisionOCR
 {
     protected $imageAnnotator;
+    protected $languageHints;
 
-    public function __construct()
+    public function __construct(array $languageHints = [])
     {
         $this->imageAnnotator = new ImageAnnotatorClient([
             'credentials' => env('GOOGLE_APPLICATION_CREDENTIALS'),
         ]);
+        $this->languageHints = $languageHints;
     }
 
     /**
@@ -28,7 +30,14 @@ class GoogleVisionOCR
         try {
             $image = file_get_contents($imagePath);
 
-            $response = $this->imageAnnotator->documentTextDetection($image);
+            // Set language hints in ImageContext
+            $imageContext = new ImageContext([
+                'language_hints' => $this->languageHints,
+            ]);
+
+            $response = $this->imageAnnotator->documentTextDetection($image, [
+                'imageContext' => $imageContext,
+            ]);
 
             $fullTextAnnotation = $response->getFullTextAnnotation();
 
