@@ -461,6 +461,7 @@
                 @endcan
             @endif
         </div>
+        <div class="md:w-1/2"> <livewire:ocr-upload /></div>
     </div>
     @push('scripts')
         @production
