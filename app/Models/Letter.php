@@ -2,22 +2,18 @@
 
 namespace App\Models;
 
+use App\Builders\LetterBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
-use App\Builders\LetterBuilder;
-use League\Flysystem\FileNotFoundException;
+use Spatie\MediaLibrary\HasMedia\HasMedia;
+use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
+use Spatie\Translatable\HasTranslations;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Image\Exceptions\InvalidManipulation;
 use Spatie\Image\Manipulations;
 use Spatie\MediaLibrary\Models\Media;
-use Spatie\MediaLibrary\HasMedia\HasMedia;
-use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
-use Illuminate\Support\Facades\Storage;
-use Spatie\Translatable\HasTranslations;
-use TeamTNT\TNTSearch\Indexer\TNTIndexer;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Stancl\Tenancy\Facades\Tenancy;
 use Illuminate\Support\Facades\Log;
 
 class Letter extends Model implements HasMedia
@@ -74,7 +70,7 @@ class Letter extends Model implements HasMedia
         // Dynamically set the tenant-specific table name
         if (tenancy()->initialized) { // Correctly check if tenancy is initialized
             $tenantPrefix = $this->getTenantPrefix();
-            $this->table = $tenantPrefix . '__letters';  // Tenant-specific table name
+            $this->table = "{$tenantPrefix}__letters";  // Tenant-specific table name
         } else {
             // Fallback to a global table if tenancy is not initialized
             $this->table = 'global_letters';  // Ensure this table exists
@@ -88,50 +84,29 @@ class Letter extends Model implements HasMedia
      */
     protected function getTenantPrefix(): string
     {
-        return tenancy()->tenant->table_prefix;
+        return tenancy()->tenant->table_prefix; // Adjust based on actual tenant data structure
     }
 
     /**
      * Register media conversions for the Spatie Media Library.
      *
      * @param Media|null $media
-     * @throws FileNotFoundException
      * @throws InvalidManipulation
      */
-    public function registerMediaConversions(Media $media = null)
+    public function registerMediaConversions(Media $media = null): void
     {
         $this->addMediaConversion('thumb')
-            ->width(180);
+            ->width(180)
+            ->sharpen(10)
+            ->nonQueued(); // Ensure conversions are performed synchronously
 
-        if (Storage::disk('local')->exists('public/watermark/logo.png')) {
+        if (Storage::disk('public')->exists('watermark/logo.png')) {
             $this->addMediaConversion('watermark')
                 ->watermark(storage_path('app/public/watermark/logo.png'))
-                ->watermarkPosition(Manipulations::POSITION_CENTER);
+                ->watermarkPosition(Manipulations::POSITION_CENTER)
+                ->watermarkOpacity(50)
+                ->nonQueued();
         }
-    }
-
-    /**
-     * Define the name of the indexable data for Laravel Scout.
-     *
-     * @return string
-     */
-    public function searchableAs(): string
-    {
-        return 'letter_index';
-    }
-
-    /**
-     * Get the indexable data array for Laravel Scout.
-     *
-     * @return array
-     */
-    public function toSearchableArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'nameNgrams' => (new TNTIndexer)->buildTrigrams($this->content_stripped),
-            'content_stripped' => $this->content_stripped,
-        ];
     }
 
     /**
@@ -142,25 +117,20 @@ class Letter extends Model implements HasMedia
     public function identities(): BelongsToMany
     {
         try {
-            // Dynamically select the related model based on tenancy
-            $relatedModel = tenancy()->initialized
-                ? 'App\\Models\\Identity'
-                : 'App\\Models\\GlobalIdentity';
-
-            // Dynamically determine the correct pivot table
+            // Determine the pivot table name based on tenancy
             $pivotTable = tenancy()->initialized
-                ? $this->getTenantPrefix() . '__identity_letter'
+                ? "{$this->getTenantPrefix()}__identity_letter"
                 : 'global_identity_letter';
 
             return $this->belongsToMany(
-                $relatedModel,
+                Identity::class,
                 $pivotTable,
                 'letter_id',
                 'identity_id'
-            )->withPivot('role');
+            )->withPivot(['role', 'position', 'marked', 'salutation']);
         } catch (\Exception $e) {
             Log::error('Error in Letter::identities relationship: ' . $e->getMessage());
-            throw $e; // Re-throw the exception after logging
+            throw $e;
         }
     }
 
@@ -173,15 +143,15 @@ class Letter extends Model implements HasMedia
     {
         try {
             $pivotTable = tenancy()->initialized
-                ? $this->getTenantPrefix() . '__letter_place'
-                : 'global_letter_place'; // Ensure fallback table exists
+                ? "{$this->getTenantPrefix()}__letter_place"
+                : 'global_letter_place';
 
             return $this->belongsToMany(
                 Place::class,
-                $pivotTable
-            )
-            ->withPivot('position', 'role', 'marked')
-            ->orderBy('pivot_position', 'asc');
+                $pivotTable,
+                'letter_id',
+                'place_id'
+            )->withPivot(['role', 'position', 'marked']);
         } catch (\Exception $e) {
             Log::error('Error in Letter::places relationship: ' . $e->getMessage());
             throw $e;
@@ -195,7 +165,7 @@ class Letter extends Model implements HasMedia
      */
     public function origins(): BelongsToMany
     {
-        return $this->places()->wherePivot('role', '=', 'origin');
+        return $this->places()->wherePivot('role', 'origin');
     }
 
     /**
@@ -205,7 +175,7 @@ class Letter extends Model implements HasMedia
      */
     public function destinations(): BelongsToMany
     {
-        return $this->places()->wherePivot('role', '=', 'destination');
+        return $this->places()->wherePivot('role', 'destination');
     }
 
     /**
@@ -217,7 +187,7 @@ class Letter extends Model implements HasMedia
     {
         try {
             $pivotTable = tenancy()->initialized
-                ? $this->getTenantPrefix() . '__keyword_letter'
+                ? "{$this->getTenantPrefix()}__keyword_letter"
                 : 'global_keyword_letter';
 
             return $this->belongsToMany(
@@ -233,28 +203,28 @@ class Letter extends Model implements HasMedia
     }
 
     /**
-     * Override the media relationship to use tenant-specific media table.
+     * Define the media relationship using Spatie Media Library.
      *
-     * @return HasMany
+     * @return \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection
      */
-    public function media(): HasMany
+    public function media()
     {
         try {
-            $modelType = self::class; // Use the fully qualified class name
+            $modelType = self::class; // Fully qualified class name
 
             if (tenancy()->initialized) {
                 $tenantPrefix = $this->getTenantPrefix();
-                $mediaTable = $tenantPrefix . '__media';
+                $mediaTable = "{$tenantPrefix}__media"; // Tenant-specific table name
 
-                return $this->hasMany(Media::class, 'model_id', 'id')
+                return $this->morphMany(Media::class, 'model', 'model_type', 'model_id')
                             ->where('model_type', $modelType)
-                            ->from($mediaTable);
+                            ->from($mediaTable); // Specify the table explicitly
             }
 
             // Fallback for non-tenant case
-            return $this->hasMany(Media::class, 'model_id', 'id')
+            return $this->morphMany(Media::class, 'model', 'model_type', 'model_id')
                         ->where('model_type', $modelType)
-                        ->from('global_media'); // Ensure this table exists
+                        ->from('global_media'); // Default global table
         } catch (\Exception $e) {
             Log::error('Error in Letter::media relationship: ' . $e->getMessage());
             throw $e;
@@ -268,7 +238,7 @@ class Letter extends Model implements HasMedia
      */
     public function authors(): BelongsToMany
     {
-        return $this->identities()->wherePivot('role', '=', 'author');
+        return $this->identities()->wherePivot('role', 'author');
     }
 
     /**
@@ -278,7 +248,7 @@ class Letter extends Model implements HasMedia
      */
     public function recipients(): BelongsToMany
     {
-        return $this->identities()->wherePivot('role', '=', 'recipient');
+        return $this->identities()->wherePivot('role', 'recipient');
     }
 
     /**
@@ -288,7 +258,7 @@ class Letter extends Model implements HasMedia
      */
     public function mentioned(): BelongsToMany
     {
-        return $this->identities()->wherePivot('role', '=', 'mentioned');
+        return $this->identities()->wherePivot('role', 'mentioned');
     }
 
     /**
@@ -300,14 +270,15 @@ class Letter extends Model implements HasMedia
     {
         try {
             $pivotTable = tenancy()->initialized
-                ? $this->getTenantPrefix() . '__letter_user'
+                ? "{$this->getTenantPrefix()}__letter_user"
                 : 'global_letter_user';
 
             return $this->belongsToMany(
                 User::class,
-                $pivotTable
-            )
-            ->withPivot('letter_id', 'user_id');
+                $pivotTable,
+                'letter_id',
+                'user_id'
+            )->withPivot(['letter_id', 'user_id']);
         } catch (\Exception $e) {
             Log::error('Error in Letter::users relationship: ' . $e->getMessage());
             throw $e;
@@ -341,30 +312,47 @@ class Letter extends Model implements HasMedia
      */
     public function getNameAttribute(): string
     {
-        $identities = $this->identities()->select(['id', 'name'])->get()->groupBy('pivot.role')->toArray();
-        $places = $this->places()->select(['id', 'name'])->get()->groupBy('pivot.role')->toArray();
-    
+        $identities = $this->identities()
+            ->select([
+                'identities.id as identity_id', // Explicit alias
+                'identities.name as identity_name',
+                'identity_letter.role as pivot_role',
+            ])
+            ->get()
+            ->groupBy('pivot_role') // Group by role
+            ->toArray();
+
+        $places = $this->places()
+            ->select([
+                'places.id as place_id', // Explicit alias
+                'places.name as place_name',
+                'letter_place.role as pivot_role',
+            ])
+            ->get()
+            ->groupBy('pivot_role') // Group by role
+            ->toArray();
+
         // Build title with basic data
         $titleParts = [$this->pretty_date];
-    
-        $author = $identities['author'][0]['name'] ?? null;
-        $recipient = $identities['recipient'][0]['name'] ?? null;
-        $origin = $places['origin'][0]['name'] ?? null;
-        $destination = $places['destination'][0]['name'] ?? null;
-    
+
+        $author = $identities['author'][0]['identity_name'] ?? null;
+        $recipient = $identities['recipient'][0]['identity_name'] ?? null;
+        $origin = $places['origin'][0]['place_name'] ?? null;
+        $destination = $places['destination'][0]['place_name'] ?? null;
+
         if ($author) $titleParts[] = $author;
         if ($origin) $titleParts[] = "({$origin})";
         if ($recipient || $destination) $titleParts[] = '→';
         if ($recipient) $titleParts[] = $recipient;
         if ($destination) $titleParts[] = "({$destination})";
-    
+
         return implode(' ', $titleParts);
     }
 
     /**
      * Override the Eloquent builder for custom query logic.
      *
-     * @param \Illuminate\Database\Query\Builder $query
+     * @param \Illuminate\Database\Eloquent\Builder $query
      * @return LetterBuilder
      */
     public function newEloquentBuilder($query): LetterBuilder
@@ -402,5 +390,32 @@ class Letter extends Model implements HasMedia
     protected function asJson($value)
     {
         return json_encode($value, JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * Get the indexable data array for Laravel Scout.
+     *
+     * @return array
+     */
+    public function toSearchableArray(): array
+    {
+        // Define the array of data to be indexed by Scout
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'content_stripped' => $this->content_stripped,
+            'abstract' => $this->abstract,
+            // Add other fields as needed
+        ];
+    }
+
+    /**
+     * Specify the Scout index name.
+     *
+     * @return string
+     */
+    public function searchableAs(): string
+    {
+        return 'letters_index';
     }
 }

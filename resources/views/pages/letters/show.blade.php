@@ -322,7 +322,7 @@
                 <tbody>
                     @if ($c['l_number'])
                         <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">Letter number</td>
+                            <td class="w-1/5 py-2">{{ __('hiko.l_number')}}</td>
                             <td class="py-2">
                                 {{ $c['l_number'] }}
                             </td>
@@ -330,7 +330,7 @@
                     @endif
                     @if ($c['repository'])
                         <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">{{ __('hiko.repositor') }}</td>
+                            <td class="w-1/5 py-2">{{ __('hiko.repository') }}</td>
                             <td class="py-2">
                                 {{ $c['repository'] }}
                             </td>
@@ -392,13 +392,10 @@
                             </td>
                         </tr>
                     @endif
-                    @if ($c['manifestation_notes'])
+                    @if (!empty($c['manifestation_notes']))
                         <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">
-                            {{ __('hiko.manifestation_notes') }}</td>
-                            <td class="py-2">
-                                {{ $c['manifestation_notes'] }}
-                            </td>
+                            <td class="w-1/5 py-2">{{ __('hiko.manifestation_notes') }}</td>
+                            <td class="py-2">{{ $c['manifestation_notes'] }}</td>
                         </tr>
                     @endif
                 </tbody>
@@ -451,10 +448,9 @@
         </div>
     @endif
     <div class="flex flex-wrap mb-6 -m-x-1 gallery space-x-1">
-        @foreach ($letter->getMedia() as $image)
+        @foreach ($letter->media as $image)
             <a href="{{ $image->getUrl() }}" target="_blank">
-                <img src="{{ $image->getUrl('thumb') }}" alt="{{ $image->description }}" loading="lazy"
-                    class="w-full">
+                <img src="{{ $image->getUrl('thumb') }}" alt="{{ $image->description }}" loading="lazy" class="w-full">
             </a>
         @endforeach
     </div>

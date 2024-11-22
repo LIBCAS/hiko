@@ -6,11 +6,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class LetterRequest extends FormRequest
 {
-    public function authorize()
-    {
-        return auth()->user()->hasAbility('manage-metadata');
-    }
-
     public function rules()
     {
         return [
