@@ -56,27 +56,12 @@ class LetterCopies extends Component
     protected function getCopyValues()
     {
         return [
-            'ms_manifestation' => ['E', 'S',  'D', 'ALS', 'O', 'P'],
-            'type' => [
-                'calling card',
-                'greeting card',
-                'invitation card',
-                'letter',
-                'picture postcard',
-                'postcard',
-                'telegram',
-                'visiting card',
-            ],
-            'preservation' => [
-                'carbon copy',
-                'copy',
-                'draft',
-                'original',
-                'photocopy',
-            ],
-            'copy' => ['handwritten', 'typewritten'],
+            'ms_manifestation' => config('letter_metadata.ms_manifestation'),
+            'type' => config('letter_metadata.type'),
+            'preservation' => config('letter_metadata.preservation'),
+            'copy' => config('letter_metadata.copy'),
         ];
-    }
+    }      
 
     protected function getLocations()
     {
