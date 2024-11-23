@@ -3,179 +3,251 @@
 namespace App\Exports;
 
 use App\Models\Letter;
-use App\Models\Identity;
-use Illuminate\Support\Str;
-use Maatwebsite\Excel\Concerns\Exportable;
+use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Illuminate\Contracts\Support\Responsable;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PalladioCharacterExport implements FromCollection, WithMapping, WithHeadings, Responsable
+class LettersExport implements FromQuery, WithMapping, WithHeadings, WithStyles, WithChunkReading, ShouldAutoSize
 {
-    use Exportable;
-
-    public $role;
-    public $mainCharacter;
-
-    private string $fileName;
-    private array $headers = [
-        'Content-Type' => 'text/csv',
-    ];
-
-    public function __construct($role)
+    /**
+     * Query for fetching letters with necessary relations.
+     */
+    public function query()
     {
-        $this->role = $role;
-        $this->mainCharacter = Identity::where('id', '=', config('hiko.main_character'))
-            ->select('id', 'surname', 'birth_year')
-            ->first();
-        $this->fileName = 'palladio-' . Str::slug($this->mainCharacter->surname) . "-{$this->role}.csv";
+        return Letter::query()->with([
+            'authors',
+            'recipients',
+            'origins',
+            'destinations',
+            'keywords'
+        ]);
     }
 
+    /**
+     * Define the headings for the export.
+     */
     public function headings(): array
     {
         return [
-            "Age ({$this->mainCharacter->surname[0]})", // věk osobnosti u přijaté i odeslané korespondence
-            'Name (O)', // jméno korespondenčního partnera
-            'Gender (O)', // pohlaví korespondenčního partnera
-            'Nationality (O)', // národnost korespondenčního partnera
-            'Age (O)', // věk korespondenčního partnera
-            'Profession (O)', // profese korespondenčního partnera
-            'Profession category (O)', // kategorie profesí korespondenčního partnera
-            'Date of dispatch', // datum odeslání dopisu
-            'Year of dispatch', // rok odeslání dopisu
-            'Month of dispatch', // měsíc odeslání dopisu
-            "Place of {$this->mainCharacter->surname[0]}", // místo pobytu osobnosti
-            "Place of {$this->mainCharacter->surname[0]} (coordinates)", // to samé jako výše
-            'Place of O', // místo korespondenčního partnera
-            'Place of O (coordinates)', // to samé jako výše
-            'Languages',
-            'Keywords',
-            'Keywords categories',
-            'People mentioned',
-            'Document type',
-            'Preservation',
-            'Repository',
-            'Archive',
-            'Collection',
-            'Signature',
-            'Type of copy',
-            'Received/Sent',
+            [
+                'General Information', '', '', '',
+                'Date Details', '', '', '', '', '', '', '',
+                'Authors', '', '',
+                'Recipients', '', '',
+                'Origins', '', '',
+                'Destinations', '', '',
+                'Keywords', '',
+                'Related Resources', '',
+                'Copies Metadata', '', '', '', '', '', '', '', '', '',
+                'Content Summary', '', '', '', '', '', '', '', '', ''
+            ],
+            [
+                'ID', 'UUID', 'Created At', 'Updated At',
+                'Year', 'Month', 'Day', 'Marked Date',
+                'Uncertain Date', 'Approximate Date', 'Inferred Date',
+                'Date Range', 'Date Notes',
+                'Author Names', 'Author Notes', 'Author Salutations',
+                'Recipient Names', 'Recipient Notes', 'Recipient Salutations',
+                'Origin Places', 'Origin Notes',
+                'Destination Places', 'Destination Notes',
+                'Keywords List',
+                'Resource Title', 'Resource Link',
+                'Manuscript Manifestation', 'Document Type', 'Preservation State', 'Copy Type',
+                'Manifestation Notes', 'Letter Number', 'Repository', 'Archive',
+                'Collection', 'Shelfmark', 'Location Notes',
+                'Explicit Text', 'Incipit Text', 'Content Preview', 'Abstract (CS)', 'Abstract (EN)',
+                'Languages Used', 'Private Notes', 'Public Notes', 'Letter Status', 'History/Changes'
+            ]
         ];
     }
 
+    /**
+     * Map letter data to rows in the export.
+     */
     public function map($letter): array
     {
-        $sideCharacter = $this->role === 'author'
-            ? $letter->identities->where('role', '=', 'recipient')->first()
-            : $letter->identities->where('role', '=', 'author')->first();
+        return array_merge(
+            $this->mapGeneralInfo($letter),
+            $this->mapDateInfo($letter),
+            $this->mapIdentities($letter->authors),
+            $this->mapIdentities($letter->recipients),
+            $this->mapPlaces($letter->origins),
+            $this->mapPlaces($letter->destinations),
+            [$this->processKeywords($letter->keywords)],
+            $this->processRelatedResources($letter->related_resources),
+            $this->processCopies($letter->copies),
+            $this->mapContentSummary($letter)
+        );
+    }
 
-        $mainCharacterPlace = $this->role === 'author'
-            ? $letter->places->where('role', '=', 'origin')->first()
-            : $letter->places->where('role', '=', 'destination')->first();
-
-        $sideCharacterPlace = $this->role === 'author'
-            ? $letter->places->where('role', '=', 'destination')->first()
-            : $letter->places->where('role', '=', 'origin')->first();
-
+    protected function mapGeneralInfo($letter): array
+    {
         return [
-            $this->getAge($this->mainCharacter, $letter->date_year),
-            !empty($sideCharacter) ? $sideCharacter->name : '',
-            !empty($sideCharacter) ? $sideCharacter->gender : '',
-            !empty($sideCharacter) ? $sideCharacter->nationality : '',
-            $this->getAge($sideCharacter, $letter->date_year),
-            !empty($sideCharacter)
-                ? $sideCharacter->professions->map(function ($profession) {
-                    return $profession->getTranslation('name', config('hiko.metadata_default_locale'));
-                })->implode('|')
-                : '',
-            !empty($sideCharacter)
-                ? $sideCharacter->profession_categories->map(function ($profession) {
-                    return $profession->getTranslation('name', config('hiko.metadata_default_locale'));
-                })->implode('|')
-                : '',
-            $this->getDate($letter),
-            $letter->date_year,
-            $letter->date_month,
-            $mainCharacterPlace->name ?? '',
-            $this->getLatLong($mainCharacterPlace),
-            $sideCharacterPlace->name ?? '',
-            $this->getLatLong($sideCharacterPlace),
-            strtolower(str_replace(';', '|', $letter->languages)),
-            $letter->keywords->map(function ($kw) {
-                return $kw->getTranslation('name', config('hiko.metadata_default_locale'));
-            })->implode('|'),
-            $letter->keywords->reject(function ($kw) {
-                return $kw->keyword_category === null;
-            })->map(function ($kw) {
-                return $kw->keyword_category->getTranslation('name', config('hiko.metadata_default_locale'));
-            })
-                ->unique()
-                ->implode('|'),
-            collect($letter->identities->where('role', '=', 'mentioned')->pluck('name')->implode('|'))->toArray()[0],
-            !empty($letter->copies) ? $letter->copies[0]['type'] : '',
-            !empty($letter->copies) ? $letter->copies[0]['preservation'] : '',
-            !empty($letter->copies) ? $letter->copies[0]['repository'] : '',
-            !empty($letter->copies) ? $letter->copies[0]['archive'] : '',
-            !empty($letter->copies) ? $letter->copies[0]['collection'] : '',
-            !empty($letter->copies) ? $letter->copies[0]['signature'] : '',
-            !empty($letter->copies) ? $letter->copies[0]['copy'] : '',
-            $this->role === 'author' ? 'Sent' : 'Received',
+            $letter->id,
+            $letter->uuid,
+            $letter->created_at?->format('Y-m-d H:i:s') ?? 'N/A',
+            $letter->updated_at?->format('Y-m-d H:i:s') ?? 'N/A',
         ];
     }
 
-    public function collection()
+    protected function mapDateInfo($letter): array
     {
-        return Letter::with([
-            'identities' => function ($subquery) {
-                $subquery->with('professions', 'profession_categories')
-                    ->select('identities.id', 'name', 'role', 'birth_year', 'gender', 'nationality')
-                    ->whereIn('role', ['author', 'recipient', 'mentioned'])
-                    ->orderBy('position');
-            },
-            'places' => function ($subquery) {
-                $subquery->select('places.id', 'name', 'role', 'latitude', 'longitude')
-                    ->whereIn('role', ['origin', 'destination'])
-                    ->orderBy('position');
-            },
-            'keywords' => function ($subquery) {
-                $subquery->with('keyword_category')
-                    ->select('keywords.id', 'keyword_category_id', 'name');
-            },
-        ])
-            ->whereHas('identities', function ($query) {
-                $query
-                    ->where('identities.id', '=', $this->mainCharacter->id)
-                    ->where('role', '=', $this->role);
-            })
-            ->select('id', 'date_year', 'date_month', 'date_day', 'copies', 'languages')
-            ->get();
+        return [
+            $letter->date_year ?? 'N/A',
+            $letter->date_month ?? 'N/A',
+            $letter->date_day ?? 'N/A',
+            $this->boolToString($letter->date_marked),
+            $this->boolToString($letter->date_uncertain),
+            $this->boolToString($letter->date_approximate),
+            $this->boolToString($letter->date_inferred),
+            $this->boolToString($letter->date_is_range),
+            $letter->date_note ?? 'N/A',
+        ];
     }
 
-    protected function getAge($person, $year)
+    protected function mapIdentities($identities): array
     {
-        return empty($person) || empty($year)
-            ? ''
-            : (int) $year - (int) $person->birth_year;
+        $names = $identities->pluck('name')->implode('; ') ?? 'N/A';
+        $notes = $identities->pluck('pivot.marked')->implode('; ') ?? 'N/A';
+        $salutations = $identities->pluck('pivot.salutation')->implode('; ') ?? 'N/A';
+
+        return [$names, $notes, $salutations];
     }
 
-    protected function getDate($letter): string
+    protected function mapPlaces($places): array
     {
-        $date = !empty($letter->date_year)
-            ? $letter->date_year
-            : '';
+        $names = $places->pluck('name')->implode('; ') ?? 'N/A';
+        $notes = $places->pluck('pivot.marked')->implode('; ') ?? 'N/A';
 
-        if (!empty($letter->date_month) && !empty($letter->date_day)) {
-            $date .= '-' . $letter->date_month . '-' . $letter->date_day;
+        return [$names, $notes];
+    }
+
+    protected function processKeywords($keywords): string
+    {
+        return $keywords->pluck('keyword_name')->implode('; ') ?? 'N/A';
+    }
+
+    protected function processCopies($copies): array
+    {
+        if (!$this->isValidJson($copies)) {
+            return array_fill(0, 7, 'N/A');
         }
 
-        return $date;
+        $copiesData = json_decode($copies, true);
+
+        if (empty($copiesData) || !is_array($copiesData)) {
+            return array_fill(0, 7, 'N/A');
+        }
+
+        $copy = $copiesData[0] ?? [];
+        return [
+            $copy['ms_manifestation'] ?? 'N/A',
+            $copy['type'] ?? 'N/A',
+            $copy['preservation'] ?? 'N/A',
+            $copy['repository'] ?? 'N/A',
+            $copy['archive'] ?? 'N/A',
+            $copy['collection'] ?? 'N/A',
+            $copy['signature'] ?? 'N/A',
+        ];
     }
 
-    protected function getLatLong($place): string
+    protected function processRelatedResources($resources): array
     {
-        return empty($place->latitude) && empty($place->longitude)
-            ? ''
-            : "{$place->latitude}, {$place->longitude}";
+        if (!$this->isValidJson($resources)) {
+            return ['N/A', 'N/A'];
+        }
+
+        $resourcesData = json_decode($resources, true);
+
+        if (empty($resourcesData) || !is_array($resourcesData)) {
+            return ['N/A', 'N/A'];
+        }
+
+        $resource = $resourcesData[0] ?? [];
+        return [
+            $resource['title'] ?? 'N/A',
+            $resource['link'] ?? 'N/A',
+        ];
+    }
+
+    protected function mapContentSummary($letter): array
+    {
+        return [
+            $letter->explicit ?? 'N/A',
+            $letter->incipit ?? 'N/A',
+            $this->summarize($letter->content, 50),
+            $this->getAbstract($letter, 'cs'),
+            $this->getAbstract($letter, 'en'),
+            $this->formatLanguages($letter->languages),
+            $letter->notes_private ?? 'N/A',
+            $letter->notes_public ?? 'N/A',
+            $letter->status ?? 'N/A',
+            $this->wrapText($letter->history ?? 'N/A'),
+        ];
+    }
+
+    protected function getAbstract($letter, string $language): string
+    {
+        return $letter->abstract[$language] ?? 'N/A';
+    }
+
+    protected function summarize(?string $text, int $limit): string
+    {
+        return $text ? (strlen($text) > $limit ? substr($text, 0, $limit) . '...' : $text) : 'N/A';
+    }
+
+    protected function formatLanguages(?string $languages): string
+    {
+        return $languages ? implode(', ', explode(';', $languages)) : 'N/A';
+    }
+
+    protected function boolToString($value): string
+    {
+        return $value ? 'Yes' : 'No';
+    }
+
+    protected function wrapText(string $text): string
+    {
+        return '"' . str_replace('"', '""', $text) . '"';
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        $sheet->mergeCells('A1:D1'); // General Information
+        $sheet->mergeCells('E1:P1'); // Date Details
+        $sheet->mergeCells('Q1:S1'); // Authors
+        $sheet->mergeCells('T1:V1'); // Recipients
+        $sheet->mergeCells('W1:X1'); // Origins
+        $sheet->mergeCells('Y1:Z1'); // Destinations
+        $sheet->mergeCells('AA1:AA1'); // Keywords
+        $sheet->mergeCells('AB1:AC1'); // Related Resources
+        $sheet->mergeCells('AD1:AN1'); // Copies Metadata
+        $sheet->mergeCells('AO1:AY1'); // Content Summary
+
+        $sheet->getStyle('A1:AY1')->getFont()->setBold(true);
+        $sheet->getStyle('A2:AY2')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AY1')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A1:AY1')->getAlignment()->setVertical('center');
+
+        return [];
+    }
+
+    public function chunkSize(): int
+    {
+        return 1000;
+    }
+
+    protected function isValidJson($string): bool
+    {
+        if (is_string($string)) {
+            json_decode($string);
+            return json_last_error() === JSON_ERROR_NONE;
+        }
+        return false;
     }
 }

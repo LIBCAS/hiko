@@ -6,13 +6,14 @@ use App\Models\Letter;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class LettersExport implements FromQuery, WithMapping, WithHeadings, WithStyles, WithChunkReading, ShouldAutoSize
+class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, WithChunkReading, ShouldAutoSize
 {
     public function query()
     {
@@ -21,108 +22,154 @@ class LettersExport implements FromQuery, WithMapping, WithHeadings, WithStyles,
             'recipients',
             'origins',
             'destinations',
-            'keywords'
+            'keywords',
         ]);
-    }
-
-    public function headings(): array
-    {
-        return [
-            [
-                'General Information', '', '', '',
-                'Date Information', '', '', '', '', '', '', '',
-                'Authors', '', '',
-                'Recipients', '', '',
-                'Origins', '', '',
-                'Destinations', '', '',
-                'Keywords', '',
-                'Related Resources', '',
-                'Copies', '', '', '', '', '', '', '', '', '',
-                'Content and Notes', '', '', '', '', '', '', '', '', ''
-            ],
-            [
-                'ID', 'UUID', 'Created At', 'Updated At',
-                'Date Year', 'Date Month', 'Date Day', 'Date Marked',
-                'Date Uncertain', 'Date Approximate', 'Date Inferred',
-                'Date Is Range', 'Date Note',
-                'Author Names', 'Author Notes', 'Author Salutations',
-                'Recipient Names', 'Recipient Notes', 'Recipient Salutations',
-                'Origin Places', 'Origin Notes',
-                'Destination Places', 'Destination Notes',
-                'Keyword List',
-                'Related Resource Names', 'Related Resource URLs',
-                'MS Manifestation (EMLO)', 'Document Type', 'Preservation', 'Type',
-                'Manifestation Note', 'Letter Number', 'Repository', 'Archive',
-                'Collection', 'Shelfmark', 'Preservation Location Note',
-                'Explicit', 'Incipit', 'Content (Summary)', 'Abstract CS', 'Abstract EN',
-                'Languages', 'Notes Private', 'Notes Public', 'Status', 'History'
-            ]
-        ];
     }
 
     public function map($letter): array
     {
-        return array_merge(
-            $this->mapGeneralInfo($letter),
-            $this->mapDateInfo($letter),
-            $this->mapIdentities($letter->authors),
-            $this->mapIdentities($letter->recipients),
-            $this->mapPlaces($letter->origins),
-            $this->mapPlaces($letter->destinations),
-            [$this->processKeywords($letter->keywords)],
-            $this->processRelatedResources($letter->related_resources),
-            $this->processCopies($letter->copies),
-            $this->mapContentAndNotes($letter)
-        );
-    }
+        // Related Resources split into titles and links
+        list($relatedResourceTitles, $relatedResourceLinks) = $this->processRelatedResources($letter->related_resources);
 
-    protected function mapGeneralInfo($letter): array
-    {
+        // Copies processed
+        $copies = $this->processCopies($letter->copies);
+
         return [
+            // General Information
             $letter->id,
             $letter->uuid,
-            $letter->created_at->format('Y-m-d H:i:s'),
-            $letter->updated_at->format('Y-m-d H:i:s'),
-        ];
-    }
+            $letter->created_at ? $letter->created_at->format('Y-m-d H:i:s') : '',
+            $letter->updated_at ? $letter->updated_at->format('Y-m-d H:i:s') : '',
 
-    protected function mapDateInfo($letter): array
-    {
-        return [
-            $letter->date_year ?? 'N/A',
-            $letter->date_month ?? 'N/A',
-            $letter->date_day ?? 'N/A',
+            // Date Information
+            $letter->date_year ?? '',
+            $letter->date_month ?? '',
+            $letter->date_day ?? '',
             $this->boolToString($letter->date_marked),
             $this->boolToString($letter->date_uncertain),
             $this->boolToString($letter->date_approximate),
             $this->boolToString($letter->date_inferred),
             $this->boolToString($letter->date_is_range),
-            $letter->date_note ?? 'N/A',
+            $letter->date_note ?? '',
+
+            // Authors
+            $this->formatNames($letter->authors),
+            $this->formatPivotField($letter->authors, 'marked'),
+            $this->formatPivotField($letter->authors, 'salutation'),
+
+            // Recipients
+            $this->formatNames($letter->recipients),
+            $this->formatPivotField($letter->recipients, 'marked'),
+            $this->formatPivotField($letter->recipients, 'salutation'),
+
+            // Origins
+            $this->formatNames($letter->origins),
+            $this->formatPivotField($letter->origins, 'marked'),
+
+            // Destinations
+            $this->formatNames($letter->destinations),
+            $this->formatPivotField($letter->destinations, 'marked'),
+
+            // Keywords
+            $this->processKeywords($letter->keywords),
+
+            // Related Resources
+            $relatedResourceTitles,
+            $relatedResourceLinks,
+
+            // Copies
+            ...$copies,
+
+            // Content and Notes
+            $letter->explicit ?? '',
+            $letter->incipit ?? '',
+            $this->summarize($letter->content, 50),
+            $this->getAbstract($letter, 'cs') ?: '',
+            $this->getAbstract($letter, 'en') ?: '',
+            $this->formatLanguages($letter->languages),
+            $letter->notes_private ?? '',
+            $letter->notes_public ?? '',
+            $letter->status ?? '',
+            $this->wrapText($letter->history ?? ''),
         ];
     }
 
-    protected function mapIdentities($identities): array
+    public function registerEvents(): array
     {
-        $names = $identities->pluck('name')->implode('; ') ?? 'N/A';
-        $notes = $identities->pluck('pivot.marked')->implode('; ') ?? 'N/A';
-        $salutations = $identities->pluck('pivot.salutation')->implode('; ') ?? 'N/A';
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
 
-        return [$names, $notes, $salutations];
+                // Group Headers
+                $headers = [
+                    ['General Information', 'A1:D1'],
+                    ['Date Information', 'E1:M1'],
+                    ['Authors', 'N1:P1'],
+                    ['Recipients', 'Q1:S1'],
+                    ['Origins', 'T1:U1'],
+                    ['Destinations', 'V1:W1'],
+                    ['Keywords', 'X1:X1'],
+                    ['Related Resources', 'Y1:Z1'],
+                    ['Copies', 'AA1:AK1'],
+                    ['Content and Notes', 'AL1:AV1'],
+                ];
+
+                // Correctly apply headers to the sheet
+                foreach ($headers as $header) {
+                    [$title, $range] = $header;
+                    preg_match('/([A-Z]+)1/', $range, $matches);
+                    $cell = $matches[1] . '1';
+                    $sheet->setCellValue($cell, $title);
+                    $sheet->mergeCells($range);
+                }
+
+                // Sub-Headers (Second row)
+                $subHeaders = [
+                    'ID', 'UUID', 'Created At', 'Updated At',
+                    'Date Year', 'Date Month', 'Date Day', 'Date Marked', 'Date Uncertain', 'Date Approximate', 'Date Inferred', 'Date Is Range', 'Date Note',
+                    'Author Names', 'Author Notes', 'Author Salutations',
+                    'Recipient Names', 'Recipient Notes', 'Recipient Salutations',
+                    'Origin Places', 'Origin Notes',
+                    'Destination Places', 'Destination Notes',
+                    'Keyword List',
+                    'Related Resource Titles', 'Related Resource Links',
+                    'MS Manifestation (EMLO)', 'Document Type', 'Preservation', 'Type', 'Manifestation Note', 'Letter Number', 'Repository', 'Archive', 'Collection', 'Shelfmark', 'Preservation Location Note',
+                    'Explicit', 'Incipit', 'Content (Summary)', 'Abstract CS', 'Abstract EN', 'Languages', 'Notes Private', 'Notes Public', 'Status', 'History'
+                ];
+
+                foreach ($subHeaders as $index => $subHeader) {
+                    $column = chr(65 + $index);
+                    if ($index >= 26) {
+                        // For columns beyond 'Z', generate double letters 'AA', 'AB', etc.
+                        $column = 'A' . chr(65 + ($index - 26));
+                    }
+                    $cell = $column . '2';
+                    $sheet->setCellValue($cell, $subHeader);
+                }
+
+                // Apply styles to headers
+                $sheet->getStyle('A1:AV2')->getFont()->setBold(true);
+                $sheet->getStyle('A1:AV2')->getAlignment()->setHorizontal('center')->setVertical('center');
+                $sheet->getStyle('A1:AV2')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
+                // Freeze panes to keep headers visible
+                $sheet->freezePane('A3');
+            },
+        ];
     }
 
-    protected function mapPlaces($places): array
+    public function styles(Worksheet $sheet)
     {
-        $names = $places->pluck('name')->implode('; ') ?? 'N/A';
-        $notes = $places->pluck('pivot.marked')->implode('; ') ?? 'N/A';
-
-        return [$names, $notes];
+        $sheet->getStyle('A1:AV1')->getFont()->setBold(true);
+        return [];
     }
 
-    protected function processKeywords($keywords): string
+    public function chunkSize(): int
     {
-        return $keywords->pluck('keyword_name')->implode('; ') ?? 'N/A';
+        return 1000; // Implementing the missing chunkSize method
     }
 
+    // Helper methods...
     protected function processRelatedResources($resources): array
     {
         if (is_string($resources)) {
@@ -130,14 +177,13 @@ class LettersExport implements FromQuery, WithMapping, WithHeadings, WithStyles,
         }
 
         if (empty($resources)) {
-            return ['N/A', 'N/A'];
+            return ['', ''];
         }
 
-        $resource = $resources[0] ?? [];
-        return [
-            $resource['name'] ?? 'N/A',
-            $resource['url'] ?? 'N/A',
-        ];
+        $titles = collect($resources)->pluck('title')->filter()->implode('; ');
+        $links = collect($resources)->pluck('link')->filter()->implode('; ');
+
+        return [$titles, $links];
     }
 
     protected function processCopies($copies): array
@@ -147,59 +193,44 @@ class LettersExport implements FromQuery, WithMapping, WithHeadings, WithStyles,
         }
 
         if (empty($copies)) {
-            return array_fill(0, 11, 'N/A');
+            return array_fill(0, 11, '');
         }
 
         $copy = $copies[0] ?? [];
+
         return [
-            $copy['ms_manifestation'] ?? 'N/A',
-            $copy['document_type'] ?? 'N/A',
-            $copy['preservation'] ?? 'N/A',
-            $copy['type'] ?? 'N/A',
-            $copy['manifestation_notes'] ?? 'N/A',
-            $copy['l_number'] ?? 'N/A',
-            $copy['repository'] ?? 'N/A',
-            $copy['archive'] ?? 'N/A',
-            $copy['collection'] ?? 'N/A',
-            $copy['signature'] ?? 'N/A',
-            $copy['location_note'] ?? 'N/A',
+            $copy['ms_manifestation'] ?? '',
+            $copy['document_type'] ?? '',
+            $copy['preservation'] ?? '',
+            $copy['type'] ?? '',
+            $copy['manifestation_notes'] ?? '',
+            $copy['l_number'] ?? '',
+            $copy['repository'] ?? '',
+            $copy['archive'] ?? '',
+            $copy['collection'] ?? '',
+            $copy['signature'] ?? '',
+            $copy['location_note'] ?? '',
         ];
-    }
-
-    protected function mapContentAndNotes($letter): array
-    {
-        return [
-            $letter->explicit ?? 'N/A',
-            $letter->incipit ?? 'N/A',
-            $this->summarize($letter->content, 50),
-            $this->getAbstract($letter, 'cs'),
-            $this->getAbstract($letter, 'en'),
-            $this->formatLanguages($letter->languages),
-            $letter->notes_private ?? 'N/A',
-            $letter->notes_public ?? 'N/A',
-            $letter->status ?? 'N/A',
-            $this->wrapText($letter->history ?? 'N/A'),
-        ];
-    }
-
-    protected function getAbstract($letter, string $language): string
-    {
-        return $letter->abstract[$language] ?? 'N/A';
-    }
-
-    protected function summarize(?string $text, int $limit): string
-    {
-        return $text ? (strlen($text) > $limit ? substr($text, 0, $limit) . '...' : $text) : 'N/A';
-    }
-
-    protected function formatLanguages(?string $languages): string
-    {
-        return $languages ? implode(', ', explode(';', $languages)) : 'N/A';
     }
 
     protected function boolToString($value): string
     {
-        return $value ? 'Yes' : 'No';
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Yes' : 'No';
+    }
+
+    protected function summarize(?string $text, int $limit): string
+    {
+        return $text ? (mb_strlen($text) > $limit ? mb_substr($text, 0, $limit) . '...' : $text) : '';
+    }
+
+    protected function getAbstract($letter, string $language): string
+    {
+        return $letter->getTranslation('abstract', $language) ?? '';
+    }
+
+    protected function formatLanguages(?string $languages): string
+    {
+        return $languages ? implode(', ', explode(';', $languages)) : '';
     }
 
     protected function wrapText(string $text): string
@@ -207,29 +238,18 @@ class LettersExport implements FromQuery, WithMapping, WithHeadings, WithStyles,
         return '"' . str_replace('"', '""', $text) . '"';
     }
 
-    public function styles(Worksheet $sheet)
+    protected function formatNames($items): string
     {
-        $sheet->mergeCells('A1:D1');
-        $sheet->mergeCells('E1:P1');
-        $sheet->mergeCells('Q1:S1');
-        $sheet->mergeCells('T1:V1');
-        $sheet->mergeCells('W1:X1');
-        $sheet->mergeCells('Y1:Z1');
-        $sheet->mergeCells('AA1:AA1');
-        $sheet->mergeCells('AB1:AC1');
-        $sheet->mergeCells('AD1:AN1');
-        $sheet->mergeCells('AO1:AY1');
-
-        $sheet->getStyle('A1:AY1')->getFont()->setBold(true);
-        $sheet->getStyle('A2:AY2')->getFont()->setBold(true);
-        $sheet->getStyle('A1:AY1')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A1:AY1')->getAlignment()->setVertical('center');
-
-        return [];
+        return $items->pluck('name')->filter()->implode('; ');
     }
 
-    public function chunkSize(): int
+    protected function formatPivotField($items, string $field): string
     {
-        return 1000;
+        return $items->pluck("pivot.$field")->filter()->implode('; ');
+    }
+
+    protected function processKeywords($keywords): string
+    {
+        return $keywords->pluck('keyword_name')->filter()->implode('; ');
     }
 }

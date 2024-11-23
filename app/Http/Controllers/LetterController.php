@@ -15,6 +15,7 @@ use App\Exports\PalladioCharacterExport;
 use App\Http\Requests\LetterRequest;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Stancl\Tenancy\Facades\Tenancy;
@@ -130,15 +131,41 @@ class LetterController extends Controller
         ]);
     }
 
+
+
     public function export(): BinaryFileResponse
     {
         return Excel::download(new LettersExport, 'letters.xlsx');
     }
-
-    public function exportPalladioCharacter(Request $request): PalladioCharacterExport
+    
+    public function exportPalladioCharacter(Request $request): BinaryFileResponse
     {
-        return new PalladioCharacterExport($request->role);
+        $role = $request->input('role');
+    
+        // Validate the role input if necessary
+        if (!in_array($role, ['author', 'recipient'])) {
+            return redirect()->back()->with('error', 'Invalid role specified for export.');
+        }
+    
+        return Excel::download(new PalladioCharacterExport($role), $this->getPalladioFileName($role));
     }
+    
+    /**
+     * Generate a filename for Palladio Character Export.
+     *
+     * @param string $role
+     * @return string
+     */
+    protected function getPalladioFileName(string $role): string
+    {
+        $mainCharacter = config('hiko.main_character')
+            ? Identity::where('id', config('hiko.main_character'))->select('surname')->first()
+            : null;
+    
+        $surnameSlug = $mainCharacter ? Str::slug($mainCharacter->surname) : 'unknown';
+    
+        return "palladio-{$surnameSlug}-{$role}.csv";
+    }    
 
     protected function viewData(Letter $letter): array
     {
