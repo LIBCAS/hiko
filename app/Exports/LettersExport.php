@@ -3,19 +3,17 @@
 namespace App\Exports;
 
 use App\Models\Letter;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Log;
 
-class LettersExport implements FromQuery, WithMapping, WithEvents, WithHeadings, WithStyles, WithChunkReading, ShouldAutoSize
+class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, WithChunkReading, ShouldAutoSize
 {
     public function query()
     {
@@ -32,10 +30,10 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithHeadings,
     {
         // Related Resources split into titles and links
         list($relatedResourceTitles, $relatedResourceLinks) = $this->processRelatedResources($letter->related_resources);
-    
-        // Copies processed (All Copies, Human Readable)
-        $copies = $this->processHumanReadableCopies($letter->copies);
-    
+
+        // Copies processed
+        $copies = $this->processCopies($letter->copies);
+
         return [
             // General Information
             $letter->id,
@@ -78,10 +76,10 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithHeadings,
             // Related Resources
             $relatedResourceTitles,
             $relatedResourceLinks,
-    
-            // Copies (Human Readable)
+
+            // Copies
             ...$copies,
-    
+
             // Content and Notes
             $letter->explicit ?? '',
             $letter->incipit ?? '',
@@ -93,22 +91,6 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithHeadings,
             $letter->notes_public ?? '',
             $letter->status ?? '',
             $this->wrapText($letter->history ?? ''),
-        ];
-    }    
-
-    public function headings(): array
-    {
-        return [
-            'ID', 'UUID', 'Created At', 'Updated At',
-            'Date Year', 'Date Month', 'Date Day', 'Date Marked', 'Date Uncertain', 'Date Approximate', 'Date Inferred', 'Date Is Range', 'Date Note',
-            'Author Names', 'Author Notes', 'Author Salutations',
-            'Recipient Names', 'Recipient Notes', 'Recipient Salutations',
-            'Origin Places', 'Origin Notes',
-            'Destination Places', 'Destination Notes',
-            'Keyword List',
-            'Related Resource Titles', 'Related Resource Links',
-            'MS Manifestation (EMLO)', 'Document Type', 'Preservation', 'Type', 'Manifestation Note', 'Letter Number', 'Repository', 'Archive', 'Collection', 'Shelfmark', 'Preservation Location Note',
-            'Explicit', 'Incipit', 'Content (Summary)', 'Abstract CS', 'Abstract EN', 'Languages', 'Notes Private', 'Notes Public', 'Status', 'History'
         ];
     }
 
@@ -142,7 +124,19 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithHeadings,
                 }
 
                 // Sub-Headers (Second row)
-                $subHeaders = $this->headings();
+                $subHeaders = [
+                    'ID', 'UUID', 'Created At', 'Updated At',
+                    'Date Year', 'Date Month', 'Date Day', 'Date Marked', 'Date Uncertain', 'Date Approximate', 'Date Inferred', 'Date Is Range', 'Date Note',
+                    'Author Names', 'Author Notes', 'Author Salutations',
+                    'Recipient Names', 'Recipient Notes', 'Recipient Salutations',
+                    'Origin Places', 'Origin Notes',
+                    'Destination Places', 'Destination Notes',
+                    'Keyword List',
+                    'Related Resource Titles', 'Related Resource Links',
+                    'MS Manifestation (EMLO)', 'Document Type', 'Preservation', 'Type', 'Manifestation Note', 'Letter Number', 'Repository', 'Archive', 'Collection', 'Shelfmark', 'Preservation Location Note',
+                    'Explicit', 'Incipit', 'Content (Summary)', 'Abstract CS', 'Abstract EN', 'Languages', 'Notes Private', 'Notes Public', 'Status', 'History'
+                ];
+
                 foreach ($subHeaders as $index => $subHeader) {
                     $column = chr(65 + $index);
                     if ($index >= 26) {
@@ -166,7 +160,6 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithHeadings,
 
     public function styles(Worksheet $sheet)
     {
-        // Apply styles to the first row for better visibility
         $sheet->getStyle('A1:AV1')->getFont()->setBold(true);
         return [];
     }
@@ -198,46 +191,27 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithHeadings,
         if (is_string($copies)) {
             $copies = json_decode($copies, true);
         }
-    
+
         if (empty($copies)) {
-            return [];
-        }
-    
-        return $copies;
-    }    
-
-    protected function processHumanReadableCopies(array $copies): array
-    {
-        // Process all copies and return them as an array of arrays (human-readable values)
-        $humanReadableCopies = [];
-        
-        foreach ($copies as $copy) {
-            $humanReadableCopies[] = [
-                $this->getHumanReadableValue('ms_manifestation', $copy['ms_manifestation'] ?? ''),
-                $this->getHumanReadableValue('type', $copy['type'] ?? ''),
-                $this->getHumanReadableValue('preservation', $copy['preservation'] ?? ''),
-                $this->getHumanReadableValue('copy', $copy['copy'] ?? ''),
-                $copy['manifestation_notes'] ?? '',
-                $copy['l_number'] ?? '',
-                $copy['repository'] ?? '',
-                $copy['archive'] ?? '',
-                $copy['collection'] ?? '',
-                $copy['signature'] ?? '',
-                $copy['location_note'] ?? '',
-            ];
+            return array_fill(0, 11, '');
         }
 
-        // Flatten the array so it can be used in the main export output
-        return array_merge(...$humanReadableCopies);
+        $copy = $copies[0] ?? [];
+
+        return [
+            $copy['ms_manifestation'] ?? '',
+            $copy['document_type'] ?? '',
+            $copy['preservation'] ?? '',
+            $copy['type'] ?? '',
+            $copy['manifestation_notes'] ?? '',
+            $copy['l_number'] ?? '',
+            $copy['repository'] ?? '',
+            $copy['archive'] ?? '',
+            $copy['collection'] ?? '',
+            $copy['signature'] ?? '',
+            $copy['location_note'] ?? '',
+        ];
     }
-
-    protected function getHumanReadableValue(string $category, ?string $value): string
-    {
-        // Fetch the mapping for the specified category from the configuration
-        $mapping = Config::get("letter_metadata.{$category}", []);
-        // Return the full name if available, otherwise return the original value
-        return $mapping[$value] ?? $value;
-    }    
 
     protected function boolToString($value): string
     {
