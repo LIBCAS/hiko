@@ -12,7 +12,7 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class LettersExport implements FromQuery, WithMapping, WithHeadings, WithStyles, WithChunkReading, ShouldAutoSize
+class PalladioCharacterExport implements FromQuery, WithMapping, WithHeadings, WithStyles, WithChunkReading, ShouldAutoSize
 {
     /**
      * Query for fetching letters with necessary relations.

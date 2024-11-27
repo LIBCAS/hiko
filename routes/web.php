@@ -35,6 +35,7 @@ use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxGlobalProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxLetterComparisonController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -505,6 +506,15 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
     Route::get('lang/{lang}', LanguageController::class)
         ->name('lang');
 
+        Route::get('/serve-local-file', function () {
+            $path = request('path');
+        
+            if (!Storage::disk('local')->exists($path)) {
+                abort(404);
+            }
+        
+            return response()->file(Storage::disk('local')->path($path));
+        })->name('serve-local-file');
 
         Route::get('/storage/local/{path}', function ($path) {
             $file = Storage::disk('local')->path($path);

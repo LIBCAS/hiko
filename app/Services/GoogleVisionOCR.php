@@ -8,57 +8,35 @@ use Illuminate\Support\Facades\Log;
 
 class GoogleVisionOCR
 {
-    protected $imageAnnotator;
-    protected $languageHints;
+    protected $languages;
 
-    public function __construct(array $languageHints = [])
+    public function __construct(array $languages = [])
     {
-        $this->imageAnnotator = new ImageAnnotatorClient([
-            'credentials' => env('GOOGLE_APPLICATION_CREDENTIALS'),
-        ]);
-        $this->languageHints = $languageHints;
+        $this->languages = $languages;
     }
 
     /**
      * Extract text from an image using Google Vision OCR.
      *
      * @param string $imagePath
-     * @return string
+     * @return string|null
      */
-    public function extractTextFromImage(string $imagePath): string
+    public function extractTextFromImage(string $imagePath): ?string
     {
-        try {
-            $image = file_get_contents($imagePath);
+        $imageAnnotator = new ImageAnnotatorClient([
+            'keyFilePath' => env('GOOGLE_APPLICATION_CREDENTIALS'),
+        ]);
 
-            // Set language hints in ImageContext
-            $imageContext = new ImageContext([
-                'language_hints' => $this->languageHints,
-            ]);
+        $image = file_get_contents($imagePath);
+        $response = $imageAnnotator->textDetection($image, [
+            'languageHints' => $this->languages,
+        ]);
 
-            $response = $this->imageAnnotator->documentTextDetection($image, [
-                'imageContext' => $imageContext,
-            ]);
-
-            $fullTextAnnotation = $response->getFullTextAnnotation();
-
-            if ($fullTextAnnotation) {
-                return $fullTextAnnotation->getText();
-            }
-
-            return '';
-        } catch (\Exception $e) {
-            Log::error('Google Vision OCR Error: ' . $e->getMessage());
-            return '';
+        $texts = $response->getTextAnnotations();
+        if (count($texts) > 0) {
+            return $texts[0]->getDescription();
         }
-    }
 
-    /**
-     * Close the ImageAnnotatorClient when done.
-     */
-    public function __destruct()
-    {
-        if ($this->imageAnnotator) {
-            $this->imageAnnotator->close();
-        }
+        return null;
     }
 }
