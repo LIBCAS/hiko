@@ -1,5 +1,4 @@
 <?php
-// app/Http/Livewire/OcrUpload.php
 
 namespace App\Http\Livewire;
 
@@ -17,72 +16,32 @@ class OcrUpload extends Component
 
     public $photo;
     public $ocrText = '';
-    public $selectedText = '';
     public $selectedLanguage = 'cs';
     public $isProcessing = false;
     public $tempImageName;
     public $tempImagePath;
 
     public $metadata = [
-        'date_year' => '',
-        'date_month' => '',
-        'date_day' => '',
+        'year' => '',
+        'month' => '',
+        'day' => '',
         'date_marked' => '',
-        'date_uncertain' => false,
-        'date_approximate' => false,
-        'date_inferred' => false,
-        'date_is_range' => false,
-        'range_year' => '',
-        'range_month' => '',
-        'range_day' => '',
-        'date_note' => '',
-
         'author' => '',
-        'author_inferred' => false,
-        'author_uncertain' => false,
-        'author_note' => '',
-
         'recipient' => '',
-        'recipient_inferred' => false,
-        'recipient_uncertain' => false,
-        'recipient_note' => '',
-
         'origin' => '',
-        'origin_inferred' => false,
-        'origin_uncertain' => false,
-        'origin_note' => '',
-
         'destination' => '',
-        'destination_inferred' => false,
-        'destination_uncertain' => false,
-        'destination_note' => '',
-
-        'languages' => [],
         'keywords' => [],
+        'languages' => [],
         'abstract_cs' => '',
         'abstract_en' => '',
         'incipit' => '',
         'explicit' => '',
         'mentioned' => [],
-        'people_mentioned_note' => '',
-        'notes_private' => '',
-        'notes_public' => '',
-
-        'related_resources' => [],
-
-        'copies' => [],
-
-        'copyright' => '',
-
         'status' => '',
     ];
 
     protected $rules = [
-        'photo' => 'required|image|max:10240',
-    ];
-
-    protected $listeners = [
-        'clearSelection' => 'clearSelectedText',
+        'photo' => 'required|image|max:10240', // Max 10 MB
     ];
 
     public function uploadAndProcess()
@@ -93,10 +52,10 @@ class OcrUpload extends Component
         try {
             $this->saveUploadedFile();
             $this->processOCR();
-            $this->performNLPAnalysis();
+            $this->processNLP();
             $this->dispatchBrowserEvent('ocr-completed');
         } catch (\Exception $e) {
-            Log::error('OCR Processing Error: ' . $e->getMessage());
+            Log::error('OCR Processing Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             $this->dispatchBrowserEvent('ocr-failed', ['message' => __('hiko.ocr_processing_error')]);
         } finally {
             $this->isProcessing = false;
@@ -123,72 +82,106 @@ class OcrUpload extends Component
         }
 
         $this->ocrText = $this->formatText($rawText);
+        Log::info('OCR Text Extracted:', ['text' => $this->ocrText]);
     }
 
-    private function performNLPAnalysis()
+    private function processNLP()
     {
         $nlpService = new GoogleNaturalLanguageService();
-        $entities = $nlpService->analyzeEntities($this->ocrText);
-        $syntax = $nlpService->analyzeSyntax($this->ocrText);
 
-        Log::info('NLP Syntax Analysis:', $syntax);
+        try {
+            $entities = $nlpService->analyzeEntities($this->ocrText, $this->selectedLanguage);
+            $syntax = $nlpService->analyzeSyntax($this->ocrText, $this->selectedLanguage);
 
+            Log::info('NLP Entities Analysis:', ['entities' => $entities]);
+            Log::info('NLP Syntax Analysis:', ['syntax' => $syntax]);
+
+            $this->populateMetadata($entities, $syntax);
+        } catch (\Exception $e) {
+            Log::error('Error during NLP Analysis:', ['error' => $e->getMessage()]);
+            throw $e;
+        }
+    }
+
+    private function populateMetadata(array $entities, array $syntax)
+    {
         $this->resetMetadata();
 
         foreach ($entities as $entity) {
             switch ($entity['type']) {
                 case 'PERSON':
-                    if (empty($this->metadata['author'])) {
-                        $this->metadata['author'] = $entity['name'];
-                    } elseif (empty($this->metadata['recipient']) && $entity['name'] !== $this->metadata['author']) {
-                        $this->metadata['recipient'] = $entity['name'];
-                    }
+                    $this->assignPersonEntity($entity['name']);
                     break;
-
-                case 'DATE':
-                    if (empty($this->metadata['date_year'])) {
-                        $this->metadata['date_year'] = $entity['name'];
-                    }
-                    break;
-
                 case 'LOCATION':
-                    if (empty($this->metadata['origin'])) {
-                        $this->metadata['origin'] = $entity['name'];
-                    } elseif (empty($this->metadata['destination']) && $entity['name'] !== $this->metadata['origin']) {
-                        $this->metadata['destination'] = $entity['name'];
-                    }
+                    $this->assignLocationEntity($entity['name']);
                     break;
-
-                case 'ORGANIZATION':
-                    $this->metadata['related_resources'][] = $entity['name'];
+                case 'DATE':
+                    $this->processDateEntity($entity['name']);
                     break;
-
                 case 'EVENT':
                     $this->metadata['status'] = $entity['name'];
                     break;
+                default:
+                    Log::info("Unhandled entity type: {$entity['type']} with value: {$entity['name']}");
             }
         }
 
-        $keywords = $this->extractKeywords($syntax);
-        $this->metadata['keywords'] = $keywords;
-
+        $this->metadata['keywords'] = $this->extractKeywords($syntax, $entities);
         $this->metadata['languages'][] = $this->selectedLanguage;
-
-        $this->metadata['abstract_cs'] = $this->extractAbstract('cs');
-        $this->metadata['abstract_en'] = $this->extractAbstract('en');
+        $this->metadata['abstract_cs'] = $this->generateAbstract('cs', $this->ocrText);
+        $this->metadata['abstract_en'] = $this->generateAbstract('en', $this->ocrText);
         $this->metadata['incipit'] = $this->extractIncipit();
         $this->metadata['explicit'] = $this->extractExplicit();
+        $this->metadata['mentioned'] = $this->extractMentionedEntities($entities);
+    }
 
-        $mentioned = $this->extractMentionedEntities($entities);
-        $this->metadata['mentioned'] = $mentioned;
+    private function assignPersonEntity(string $name)
+    {
+        if (empty($this->metadata['author'])) {
+            $this->metadata['author'] = $name;
+        } elseif (empty($this->metadata['recipient'])) {
+            $this->metadata['recipient'] = $name;
+        }
+    }
+
+    private function assignLocationEntity(string $name)
+    {
+        if (empty($this->metadata['origin'])) {
+            $this->metadata['origin'] = $name;
+        } elseif (empty($this->metadata['destination'])) {
+            $this->metadata['destination'] = $name;
+        }
+    }
+
+    private function processDateEntity(string $dateString)
+    {
+        $this->metadata['date_marked'] = $dateString;
+
+        $formatter = new \IntlDateFormatter(
+            $this->selectedLanguage . '_' . strtoupper($this->selectedLanguage),
+            \IntlDateFormatter::FULL,
+            \IntlDateFormatter::NONE,
+            null,
+            \IntlDateFormatter::GREGORIAN,
+            "dd MMMM yyyy"
+        );
+
+        $timestamp = $formatter->parse($dateString);
+
+        if ($timestamp !== false) {
+            $dateComponents = getdate($timestamp);
+            $this->metadata['year'] = $dateComponents['year'] ?? '';
+            $this->metadata['month'] = $dateComponents['mon'] ?? '';
+            $this->metadata['day'] = $dateComponents['mday'] ?? '';
+        }
     }
 
     private function resetMetadata()
     {
         $this->metadata = [
-            'date_year' => '',
-            'date_month' => '',
-            'date_day' => '',
+            'year' => '',
+            'month' => '',
+            'day' => '',
             'date_marked' => '',
             'date_uncertain' => false,
             'date_approximate' => false,
@@ -198,109 +191,75 @@ class OcrUpload extends Component
             'range_month' => '',
             'range_day' => '',
             'date_note' => '',
-
             'author' => '',
-            'author_inferred' => false,
-            'author_uncertain' => false,
-            'author_note' => '',
-
             'recipient' => '',
-            'recipient_inferred' => false,
-            'recipient_uncertain' => false,
-            'recipient_note' => '',
-
             'origin' => '',
-            'origin_inferred' => false,
-            'origin_uncertain' => false,
-            'origin_note' => '',
-
             'destination' => '',
-            'destination_inferred' => false,
-            'destination_uncertain' => false,
-            'destination_note' => '',
-
-            'languages' => [],
             'keywords' => [],
+            'languages' => [],
             'abstract_cs' => '',
             'abstract_en' => '',
             'incipit' => '',
             'explicit' => '',
             'mentioned' => [],
-            'people_mentioned_note' => '',
-            'notes_private' => '',
-            'notes_public' => '',
-
-            'related_resources' => [],
-
-            'copies' => [],
-
-            'copyright' => '',
-
             'status' => '',
         ];
-    }
+    }    
 
-    private function extractKeywords(array $syntax): array
+    private function extractKeywords(array $syntax, array $entities): array
     {
         $keywords = [];
-        if (isset($syntax['tokens']) && is_array($syntax['tokens'])) {
-            foreach ($syntax['tokens'] as $token) {
-                if (isset($token['partOfSpeech']['tag']) && in_array($token['partOfSpeech']['tag'], ['NOUN', 'PROPN'])) {
-                    $keywords[] = $token['text']['content'];
-                }
+
+        foreach ($syntax['tokens'] ?? [] as $token) {
+            if (in_array($token['partOfSpeech']['tag'], ['NOUN', 'PROPN']) && strlen($token['text']['content']) > 2) {
+                $keywords[] = $token['text']['content'];
             }
         }
+
+        foreach ($entities as $entity) {
+            $keywords[] = $entity['name'];
+        }
+
         return array_unique($keywords);
     }
 
-    private function extractAbstract(string $language): string
+    private function generateAbstract(string $language, string $text): string
     {
-        return '';
+        $sentences = preg_split('/(?<=[.?!])\s+/', $text, -1, PREG_SPLIT_NO_EMPTY);
+
+        if (!$sentences) {
+            return '';
+        }
+
+        $abstract = $sentences[0];
+        if (count($sentences) > 1) {
+            $abstract .= ' ' . $sentences[1];
+        }
+
+        return $abstract;
     }
 
     private function extractIncipit(): string
     {
         $sentences = preg_split('/(?<=[.?!])\s+/', $this->ocrText, -1, PREG_SPLIT_NO_EMPTY);
-        return isset($sentences[0]) ? trim($sentences[0]) . '.' : '';
+        return $sentences[0] ?? '';
     }
 
     private function extractExplicit(): string
     {
         $sentences = preg_split('/(?<=[.?!])\s+/', $this->ocrText, -1, PREG_SPLIT_NO_EMPTY);
-        return count($sentences) > 1 ? trim($sentences[count($sentences) - 2]) . '.' : '';
+        return count($sentences) > 1 ? $sentences[count($sentences) - 1] : '';
     }
 
     private function extractMentionedEntities(array $entities): array
     {
-        $mentioned = [];
-        foreach ($entities as $entity) {
-            if (in_array($entity['type'], ['PERSON', 'ORGANIZATION', 'LOCATION'])) {
-                $mentioned[] = $entity['name'];
-            }
-        }
-        return array_unique($mentioned);
+        return array_unique(array_column($entities, 'name'));
     }
 
     private function formatText(string $text): string
     {
         $formattedText = preg_replace('/\s*\n\s*/', ' ', $text);
-        $formattedText = preg_replace('/\s+/', ' ', $formattedText);
-        $formattedText = wordwrap($formattedText, 70, "\n");
         return trim($formattedText);
-    }
-
-    public function clearSelectedText()
-    {
-        $this->selectedText = '';
-    }
-
-    public function deleteTemporaryFile()
-    {
-        if ($this->tempImagePath && Storage::disk('local')->exists($this->tempImagePath)) {
-            Storage::disk('local')->delete($this->tempImagePath);
-            Log::info("Temporary file deleted: {$this->tempImagePath}");
-            $this->tempImagePath = null; 
-        }
     }
 
     public function render()
