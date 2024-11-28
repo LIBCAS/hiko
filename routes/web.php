@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -22,6 +23,8 @@ use App\Http\Controllers\LetterPreviewController;
 use App\Http\Controllers\KeywordCategoryController;
 use App\Http\Controllers\LetterComparisonController;
 use App\Http\Controllers\TenantStorageController;
+use App\Http\Controllers\FileController;
+use Google\Cloud\DocumentAI\V1\Client\DocumentProcessorServiceClient;
 use App\Http\Controllers\Ajax\AjaxPlaceController;
 use App\Http\Controllers\Ajax\AjaxKeywordController;
 use App\Http\Controllers\Ajax\AjaxIdentityController;
@@ -505,27 +508,23 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
     Route::get('lang/{lang}', LanguageController::class)
         ->name('lang');
-
-        Route::get('/serve-local-file', function () {
-            $path = request('path');
+        Route::get('/serve-local-file/{path}', function ($path) {
+            $path = urldecode($path);
+        
+            // Prevent directory traversal attacks
+            if (strpos($path, '..') !== false || strpos($path, '/') === 0) {
+                abort(403);
+            }
         
             if (!Storage::disk('local')->exists($path)) {
                 abort(404);
             }
         
-            return response()->file(Storage::disk('local')->path($path));
-        })->name('serve-local-file');
-
-        Route::get('/storage/local/{path}', function ($path) {
-            $file = Storage::disk('local')->path($path);
+            $file = Storage::disk('local')->get($path);
+            $type = Storage::disk('local')->mimeType($path);
         
-            if (!file_exists($file)) {
-                abort(404);
-            }
-        
-            return response()->file($file);
-        })->where('path', '.*')->name('serve-local-file');
-
+            return response($file, 200)->header('Content-Type', $type);
+        })->name('serve-local-file')->where('path', '.*');
 });
 
 require __DIR__ . '/auth.php';

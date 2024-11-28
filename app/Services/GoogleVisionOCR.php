@@ -21,6 +21,9 @@ class GoogleVisionOCR
 
     /**
      * Extract text from an image using Google Vision API.
+     *
+     * @param string $imagePath
+     * @return string
      */
     public function extractTextFromImage(string $imagePath): string
     {

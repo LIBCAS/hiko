@@ -31,8 +31,12 @@ return [
     ],
 
     'google_cloud' => [
-        'project_id' => env('GOOGLE_CLOUD_PROJECT'),
-        'key_file' => env('GOOGLE_APPLICATION_CREDENTIALS'),
+        'key_file' => env('GOOGLE_CLOUD_KEY_FILE'),
+        'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
+        'document_ai' => [
+            'processor_location' => env('GOOGLE_CLOUD_PROCESSOR_LOCATION'),
+            'processor_id' => env('GOOGLE_CLOUD_PROCESSOR_ID'),
+        ],
     ],
 
 ];
