@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Google\Cloud\Language\LanguageClient;
+use Illuminate\Support\Facades\Log;
 
 class GoogleNaturalLanguageService
 {
@@ -16,6 +17,9 @@ class GoogleNaturalLanguageService
         ]);
     }
 
+    /**
+     * Analyze entities in the text using Google NLP API.
+     */
     public function analyzeEntities(string $text): array
     {
         $response = $this->client->analyzeEntities($text);
@@ -31,6 +35,9 @@ class GoogleNaturalLanguageService
         return $entities;
     }
 
+    /**
+     * Analyze syntax in the text (optional).
+     */
     public function analyzeSyntax(string $text): array
     {
         $response = $this->client->analyzeSyntax($text);
