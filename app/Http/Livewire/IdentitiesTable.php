@@ -167,7 +167,7 @@ class IdentitiesTable extends Component
                                     'name' => ($globalProfession->name ?? 'Unknown') . ' (Global)',
                                     'link' => route('global.professions.edit', ['globalProfession' => $globalProfession->id]),
                                     'category' => $category ? $category->name : __('hiko.no_attached_category'),
-                                    'category_link' => $category ? route('global.profession.category.edit', $category->id) : null,
+                                    'category_link' => $category ? route('global.professions.category.edit', $category->id) : null,
                                 ];
                             })
                     );

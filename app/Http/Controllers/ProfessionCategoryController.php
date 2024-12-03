@@ -32,8 +32,7 @@ class ProfessionCategoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate($this->rules);
-    
-        // Use the 'name' attribute for translations, providing CS and EN as an array
+
         $professionCategory = ProfessionCategory::create([
             'name' => [
                 'cs' => $validated['cs'],

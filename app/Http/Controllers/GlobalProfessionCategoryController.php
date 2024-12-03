@@ -27,7 +27,7 @@ class GlobalProfessionCategoryController extends Controller
         return view('pages.global-professions-categories.form', [
             'title' => __('hiko.new_global_professions_category'),
             'professionCategory' => new GlobalProfessionCategory(),
-            'action' => route('global.profession.category.store'),
+            'action' => route('global.professions.category.store'),
             'label' => __('hiko.create'),
         ]);
     }
@@ -44,7 +44,7 @@ class GlobalProfessionCategoryController extends Controller
         ]);
 
         return redirect()
-            ->route('global.profession.category.edit', $globalProfessionCategory->id)
+            ->route('global.professions.category.edit', $globalProfessionCategory->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -55,7 +55,7 @@ class GlobalProfessionCategoryController extends Controller
         return view('pages.global-professions-categories.form', [
             'title' => __('hiko.global_professions_category'),
             'professionCategory' => $globalProfessionCategory,
-            'action' => route('global.profession.category.update', $globalProfessionCategory->id),
+            'action' => route('global.professions.category.update', $globalProfessionCategory->id),
             'method' => 'PUT',
             'label' => __('hiko.save'),
         ]);
@@ -73,7 +73,7 @@ class GlobalProfessionCategoryController extends Controller
         ]);
 
         return redirect()
-            ->route('global.profession.category.edit', $globalProfessionCategory->id)
+            ->route('global.professions.category.edit', $globalProfessionCategory->id)
             ->with('success', __('hiko.saved'));
     }
 
@@ -82,7 +82,7 @@ class GlobalProfessionCategoryController extends Controller
         $globalProfessionCategory->delete();
 
         return redirect()
-            ->route('global.profession.category.index')
+            ->route('global.professions.category.index')
             ->with('success', __('hiko.removed'));
     }
 }

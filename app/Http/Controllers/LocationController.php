@@ -39,6 +39,7 @@ class LocationController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate($this->rules);
+
         $location = Location::create($validated);
 
         return redirect()

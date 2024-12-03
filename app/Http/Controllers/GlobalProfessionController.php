@@ -44,15 +44,15 @@ class GlobalProfessionController extends Controller
                 'cs' => $validated['cs'],
                 'en' => $validated['en'] ?? null,
             ],
-            'profession_category_id' => $validated['category_id'] ?? null, // Attach category ID
+            'profession_category_id' => $validated['category_id'] ?? null, // Привязка категории
         ];
-
+    
         $profession = GlobalProfession::create($professionData);
-
+    
         return redirect()
-            ->route('global.profession.edit', $profession->id)
+            ->route('global.professions.edit', $profession->id) // Исправлено здесь
             ->with('success', __('hiko.saved'));
-    }
+    }    
 
     public function edit(GlobalProfession $globalProfession): View
     {
@@ -62,12 +62,12 @@ class GlobalProfessionController extends Controller
         return view('pages.global-professions.form', [
             'title' => __('hiko.global_profession'),
             'profession' => $globalProfession,
-            'action' => route('global.professions.update', $globalProfession->id), // Matches the route name in routes file
+            'action' => route('global.professions.update', $globalProfession->id),
             'method' => 'PUT',
             'label' => __('hiko.save'),
             'availableCategories' => $categories,
         ]);
-    }
+    }    
     
     public function update(Request $request, GlobalProfession $globalProfession): RedirectResponse
     {
@@ -84,16 +84,16 @@ class GlobalProfessionController extends Controller
         $globalProfession->update($updateData);
     
         return redirect()
-            ->route('global.professions.edit', $globalProfession->id) // Ensure this matches your route group definition
+            ->route('global.professions.edit', $globalProfession->id) // Исправлено здесь
             ->with('success', __('hiko.saved'));
     }    
 
     public function destroy(GlobalProfession $globalProfession): RedirectResponse
     {
         $globalProfession->delete();
-
+    
         return redirect()
-            ->route('global.professions')
+            ->route('global.professions.index') // Убедитесь, что маршрут `global.professions.index` существует
             ->with('success', __('hiko.removed'));
-    }
+    }    
 }

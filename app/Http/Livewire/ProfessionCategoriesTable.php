@@ -161,7 +161,7 @@ class ProfessionCategoriesTable extends Component
                 } elseif ($category->source === 'global' && auth()->user()->can('manage-users')) {
                     $editLink = [
                         'label' => __('hiko.edit'),
-                        'link' => route('global.profession.category.edit', $category->id),
+                        'link' => route('global.professions.category.edit', $category->id),
                     ];
                 } else {
                     $editLink = [

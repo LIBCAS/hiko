@@ -30,6 +30,7 @@ class KeywordCategoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate($this->rules);
+
         $keywordCategory = KeywordCategory::create([
             'name' => [
                 'cs' => $validated['cs'],

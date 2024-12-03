@@ -183,7 +183,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
         Route::get('/', [GlobalProfessionController::class, 'index'])
             ->name('index')
             ->middleware('can:view-users');
-
+    
         Route::get('create', [GlobalProfessionController::class, 'create'])
             ->name('create')
             ->middleware('can:manage-users');
@@ -205,7 +205,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
             ->middleware('can:delete-users');
     });
     
-    Route::prefix('global-profession-categories')->middleware(['auth'])->name('global.profession.category.')->group(function () {
+    Route::prefix('global-profession-categories')->middleware(['auth'])->name('global.professions.category.')->group(function () {
         Route::get('/', [GlobalProfessionCategoryController::class, 'index'])
             ->name('index')
             ->middleware('can:view-users');
@@ -213,23 +213,23 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
         Route::get('create', [GlobalProfessionCategoryController::class, 'create'])
             ->name('create')
             ->middleware('can:manage-users');
-    
+
         Route::get('{globalProfessionCategory}/edit', [GlobalProfessionCategoryController::class, 'edit'])
             ->name('edit')
             ->middleware('can:manage-users');
-    
+
         Route::post('/', [GlobalProfessionCategoryController::class, 'store'])
             ->name('store')
             ->middleware('can:manage-users');
-    
+
         Route::put('{globalProfessionCategory}', [GlobalProfessionCategoryController::class, 'update'])
             ->name('update')
             ->middleware('can:manage-users');
-    
+
         Route::delete('{globalProfessionCategory}', [GlobalProfessionCategoryController::class, 'destroy'])
             ->name('destroy')
             ->middleware('can:delete-users');
-    });  
+    });
     
     Route::prefix('keywords')->group(function () {
         Route::get('/', [KeywordController::class, 'index'])
