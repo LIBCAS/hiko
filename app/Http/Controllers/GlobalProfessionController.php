@@ -44,13 +44,13 @@ class GlobalProfessionController extends Controller
                 'cs' => $validated['cs'],
                 'en' => $validated['en'] ?? null,
             ],
-            'profession_category_id' => $validated['category_id'] ?? null, // Привязка категории
+            'profession_category_id' => $validated['category_id'] ?? null,
         ];
     
         $profession = GlobalProfession::create($professionData);
     
         return redirect()
-            ->route('global.professions.edit', $profession->id) // Исправлено здесь
+            ->route('global.professions.edit', $profession->id)
             ->with('success', __('hiko.saved'));
     }    
 
@@ -84,7 +84,7 @@ class GlobalProfessionController extends Controller
         $globalProfession->update($updateData);
     
         return redirect()
-            ->route('global.professions.edit', $globalProfession->id) // Исправлено здесь
+            ->route('global.professions.edit', $globalProfession->id)
             ->with('success', __('hiko.saved'));
     }    
 
@@ -93,7 +93,7 @@ class GlobalProfessionController extends Controller
         $globalProfession->delete();
     
         return redirect()
-            ->route('global.professions.index') // Убедитесь, что маршрут `global.professions.index` существует
+            ->route('professions')
             ->with('success', __('hiko.removed'));
-    }    
+    }      
 }
