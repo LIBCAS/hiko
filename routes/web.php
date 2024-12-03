@@ -200,9 +200,9 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
             ->name('update')
             ->middleware('can:manage-users');
 
-        Route::delete('{globalProfession}', [GlobalProfessionController::class, 'destroy'])
+        Route::delete('{globalProfession}', [ProfessionController::class, 'destroy'])
             ->name('destroy')
-            ->middleware('can:delete-users');
+            ->middleware('can:manage-users');
     });
     
     Route::prefix('global-profession-categories')->middleware(['auth'])->name('global.professions.category.')->group(function () {
@@ -228,7 +228,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
         Route::delete('{globalProfessionCategory}', [GlobalProfessionCategoryController::class, 'destroy'])
             ->name('destroy')
-            ->middleware('can:delete-users');
+            ->middleware('can:manage-users');
     });
     
     Route::prefix('keywords')->group(function () {
