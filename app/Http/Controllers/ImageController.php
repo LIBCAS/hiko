@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Letter;
-use Spatie\MediaLibrary\Models\Media;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ImageController extends Controller
 {

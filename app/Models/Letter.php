@@ -5,20 +5,22 @@ namespace App\Models;
 use App\Builders\LetterBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
-use Spatie\MediaLibrary\HasMedia\HasMedia;
-use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\HasMedia;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Image\Exceptions\InvalidManipulation;
 use Spatie\Image\Manipulations;
-use Spatie\MediaLibrary\Models\Media;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Illuminate\Support\Facades\Log;
+
 
 class Letter extends Model implements HasMedia
 {
-    use HasTranslations, HasMediaTrait, HasFactory, Searchable;
+    use HasTranslations, InteractsWithMedia, HasFactory, Searchable;
 
     /**
      * The database connection that should be used by the model.
@@ -205,26 +207,25 @@ class Letter extends Model implements HasMedia
     /**
      * Define the media relationship using Spatie Media Library.
      *
-     * @return \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
      */
-    public function media()
+    public function media(): MorphMany
     {
         try {
-            $modelType = self::class; // Fully qualified class name
+            $modelType = self::class;
 
             if (tenancy()->initialized) {
                 $tenantPrefix = $this->getTenantPrefix();
-                $mediaTable = "{$tenantPrefix}__media"; // Tenant-specific table name
+                $mediaTable = "{$tenantPrefix}__media";
 
-                return $this->morphMany(Media::class, 'model', 'model_type', 'model_id')
+                return $this->morphMany(Media::class, 'model')
                             ->where('model_type', $modelType)
-                            ->from($mediaTable); // Specify the table explicitly
+                            ->from($mediaTable);
             }
 
-            // Fallback for non-tenant case
-            return $this->morphMany(Media::class, 'model', 'model_type', 'model_id')
+            return $this->morphMany(Media::class, 'model')
                         ->where('model_type', $modelType)
-                        ->from('global_media'); // Default global table
+                        ->from('global_media');
         } catch (\Exception $e) {
             Log::error('Error in Letter::media relationship: ' . $e->getMessage());
             throw $e;

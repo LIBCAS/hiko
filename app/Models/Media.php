@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Spatie\MediaLibrary\Models\Media as BaseMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
 use Stancl\Tenancy\Facades\Tenancy;
 
 class Media extends BaseMedia
