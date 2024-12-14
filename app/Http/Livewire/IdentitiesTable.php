@@ -74,12 +74,21 @@ class IdentitiesTable extends Component
 
     protected function formatRelatedNames($relatedNames): string
     {
+        if (is_null($relatedNames)) {
+            return ''; // Returns an empty string if the relatedNames is equal to null
+        }
+    
         $relatedNamesArray = is_array($relatedNames) ? $relatedNames : json_decode($relatedNames, true);
-
-        return is_array($relatedNamesArray)
-            ? implode(', ', array_map(fn($name) => "{$name['surname']} {$name['forename']} {$name['general_name_modifier']}", $relatedNamesArray))
-            : '';
-    }
+    
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($relatedNamesArray)) {
+            return ''; // Empty string in the case of the incorrect JSON
+        }
+    
+        return implode(', ', array_map(fn($name) => 
+            trim("{$name['surname']} {$name['forename']} {$name['general_name_modifier']}"),
+            $relatedNamesArray
+        ));
+    }    
 
     protected function findIdentities()
     {

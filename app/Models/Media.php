@@ -3,19 +3,18 @@
 namespace App\Models;
 
 use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
-use Stancl\Tenancy\Facades\Tenancy;
 
 class Media extends BaseMedia
 {
     protected $connection = 'tenant';
 
-    public function __construct(array $attributes = [])
+    public function getTable()
     {
-        parent::__construct($attributes);
-
-        if (tenancy()->tenant) {
-            $tenantPrefix = tenancy()->tenant->table_prefix;
-            $this->table = $tenantPrefix . '__media';
+        if (tenancy()->initialized) {
+            return tenancy()->tenant->table_prefix . '__media';
         }
+
+        // Если тенант не инициализирован, можно вернуть глобальную таблицу или бросить исключение
+        return 'global_media';
     }
 }

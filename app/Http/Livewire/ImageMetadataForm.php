@@ -3,15 +3,13 @@
 namespace App\Http\Livewire;
 
 use Livewire\Component;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use App\Models\Media;
 
 class ImageMetadataForm extends Component
 {
     public $letter;
     public $attachedImages = [];
     public $loading = false;
-
-    protected $table;
 
     protected $listeners = [
         'imageAdded' => 'getMedia',
@@ -21,11 +19,9 @@ class ImageMetadataForm extends Component
 
     public function getMedia()
     {
-        $tenantPrefix = tenancy()->tenant->table_prefix;
-
         $this->loading = true;
-        $this->attachedImages = Media::from($tenantPrefix . '__media')
-            ->where('model_id', $this->letter->id)
+
+        $this->attachedImages = Media::where('model_id', $this->letter->id)
             ->where('model_type', \App\Models\Letter::class)
             ->get()
             ->map(function ($media) {
@@ -35,15 +31,14 @@ class ImageMetadataForm extends Component
                 ]);
             })
             ->toArray();
+
         $this->loading = false;
     }
 
     public function edit($id, $formData)
     {
-        $tenantPrefix = tenancy()->tenant->table_prefix;
-        // Fetch the image directly from the tenant-specific table without the "media" alias
-        $image = Media::from($tenantPrefix . '__media')->where('id', $id)->first();
-        
+        $image = Media::where('id', $id)->first();
+
         if ($image) {
             $image->setCustomProperty('description', $formData['description']);
             $image->setCustomProperty('status', $formData['status'] === 'publish' ? 'publish' : 'private');
@@ -53,10 +48,8 @@ class ImageMetadataForm extends Component
 
     public function reorder($orderedIds)
     {
-        $tenantPrefix = tenancy()->tenant->table_prefix;
-
-        collect($orderedIds)->each(function ($id, $index) use ($tenantPrefix) {
-            $image = Media::from($tenantPrefix . '__media')->where('id', $id)->first();
+        collect($orderedIds)->each(function ($id, $index) {
+            $image = Media::where('id', $id)->first();
             if ($image) {
                 $image->order_column = $index;
                 $image->save();
@@ -68,9 +61,7 @@ class ImageMetadataForm extends Component
 
     public function remove($id)
     {
-        $tenantPrefix = tenancy()->tenant->table_prefix;
-
-        Media::from($tenantPrefix . '__media')->where('id', $id)->delete();
+        Media::where('id', $id)->delete();
         $this->emit('imageRemoved');
     }
 

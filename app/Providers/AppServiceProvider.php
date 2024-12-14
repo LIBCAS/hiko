@@ -3,39 +3,42 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Services\DuplicateDetectionService;
+use Illuminate\Support\Facades\Event;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Stancl\Tenancy\Events\TenantInitialized;
+use App\Services\LetterComparisonService;
 use App\Services\GoogleDocumentAIService;
-use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Bootstrap any application services.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        // Load migrations from specific paths
-        $this->loadMigrationsFrom(database_path('migrations/tenant'));
-
-        // Optionally, listen for tenant creation to run migrations
-        \Event::listen(\Stancl\Tenancy\Events\TenantCreated::class, MigrateTenants::class);
-    }
-
-    /**
      * Register any application services.
-     *
-     * @return void
      */
     public function register()
     {
+        // Register Google Document AI service as a singleton
         $this->app->singleton(GoogleDocumentAIService::class, function ($app) {
-            return new GoogleDocumentAIService();
+            return new GoogleDocumentAIService($app->make('config')->get('google-document-ai'));
         });
-        $this->app->bind(DuplicateDetectionService::class, function ($app, $parameters) {
-            $prefixes = [];
-            return new DuplicateDetectionService($prefixes);
+
+        // Register LetterComparisonService as a singleton
+        $this->app->singleton(LetterComparisonService::class, function ($app) {
+            return new LetterComparisonService();
+        });
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot()
+    {
+        // If you have tenant-specific migrations:
+        $this->loadMigrationsFrom(database_path('migrations/tenant'));
+
+        // Dynamically set the table for Media model based on the tenant
+        Event::listen(TenantInitialized::class, function (TenantInitialized $event) {
+            $tenantPrefix = $event->tenant->table_prefix;
+            Media::getModel()->setTable("{$tenantPrefix}__media");
         });
     }
 }

@@ -3,25 +3,26 @@
 namespace App\Http\Controllers\Ajax;
 
 use Illuminate\Http\Request;
-use App\Services\SearchKeyword;
 use App\Http\Controllers\Controller;
+use App\Services\SearchKeyword;
 
 class AjaxKeywordController extends Controller
 {
     public function __invoke(Request $request): array
     {
-        if (empty($request->query('search'))) {
+        $searchTerm = $request->query('search');
+        if (empty($searchTerm)) {
             return [];
         }
 
-        $search = new SearchKeyword;
+        $searchService = new SearchKeyword;
 
-        return $search($request->query('search'))
-            ->map(function ($kw) {
+        return $searchService($searchTerm)
+            ->map(function ($keyword) {
                 return [
-                    'id' => $kw->id,
-                    'value' => $kw->id,
-                    'label' => $kw->getTranslation('name', session('locale', config('hiko.metadata_default_locale'))),
+                    'id' => $keyword->id,
+                    'value' => $keyword->id,
+                    'label' => $keyword->getTranslation('name', session('locale', config('hiko.metadata_default_locale'))),
                 ];
             })
             ->toArray();

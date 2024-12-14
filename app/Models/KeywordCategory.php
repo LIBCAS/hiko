@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Translatable\HasTranslations;
 use Laravel\Scout\Searchable;
-use App\Builders\KeywordBuilder;
+use Illuminate\Support\Facades\Log;
 
 class KeywordCategory extends Model
 {
@@ -21,12 +21,19 @@ class KeywordCategory extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
+        $this->initializeTable();
+    }
 
-        // Set the table name with tenant prefix
-        if (tenancy()->tenant) {
-            $tenantPrefix = tenancy()->tenant->table_prefix;
-            $this->table = $tenantPrefix . '__keyword_categories';
-        }
+    protected function initializeTable(): void
+    {
+        $this->table = tenancy()->initialized
+            ? tenancy()->tenant->table_prefix . '__keyword_categories'
+            : 'keyword_categories';
+
+        Log::info('KeywordCategory table initialized', [
+            'table' => $this->table,
+            'tenant_id' => tenancy()->initialized ? tenancy()->tenant->id : null,
+        ]);
     }
 
     public function searchableAs(): string
@@ -38,23 +45,14 @@ class KeywordCategory extends Model
     {
         return [
             'id' => $this->id,
-            'cs' => $this->getTranslation('name', 'cs'),
-            'en' => $this->getTranslation('name', 'en'),
+            'cs' => $this->getTranslation('name', 'cs', false) ?? '',
+            'en' => $this->getTranslation('name', 'en', false) ?? '',
         ];
     }
 
     public function keywords(): HasMany
     {
-        return $this->hasMany(Keyword::class, 'keyword_category_id', 'id');
-    }
-
-    public function newEloquentBuilder($query): KeywordBuilder
-    {
-        return new KeywordBuilder($query);
-    }
-
-    protected function asJson($value): string
-    {
-        return json_encode($value, JSON_UNESCAPED_UNICODE);
+        return $this->hasMany(Keyword::class, 'keyword_category_id', 'id')
+            ->select(['id', 'keyword_category_id', 'name']);
     }
 }

@@ -28,13 +28,10 @@ class ImageForm extends Component
             'images.*' => __('hiko.attachment'),
         ]);
 
-        $tenantPrefix = tenancy()->tenant->table_prefix;
-
-        collect($this->images)->each(function ($image) use ($tenantPrefix) {
+        collect($this->images)->each(function ($image) {
             $this->letter->addMedia($image->getRealPath())
                 ->usingFileName(Str::uuid() . '.' . pathinfo($image->getFilename())['extension'])
                 ->withCustomProperties(['status' => 'private'])
-                ->withCustomProperties(['table' => $tenantPrefix . '__media'])
                 ->toMediaCollection();
         });
 
@@ -42,7 +39,7 @@ class ImageForm extends Component
 
         $this->dispatchBrowserEvent('remove-images');
 
-        $this->emit('imageAdded');
+        $this->dispatch('imageAdded');
     }
 
     public function render()

@@ -24,7 +24,10 @@ class LettersTable extends Component
     public function search()
     {
         $this->resetPage();
-        $this->emit('filtersChanged', $this->filters);
+        // Было: $this->emit('filtersChanged', $this->filters);
+        // Стало:
+        $this->dispatch('filtersChanged', filters: $this->filters);
+
         session()->put('lettersTableFilters', $this->filters);
     }
 
@@ -52,8 +55,6 @@ class LettersTable extends Component
 
     protected function findLetters(): LengthAwarePaginator
     {
-        $tenantPrefix = tenancy()->tenant->table_prefix;
-
         $query = Letter::with([
             'identities' => function ($subquery) {
                 $subquery->select('name', 'related_names')
@@ -68,10 +69,8 @@ class LettersTable extends Component
                 $subquery->select('name');
             },
             'media' => function ($subquery) {
-                $tenantPrefix = tenancy()->tenant->table_prefix;
-                $subquery->select('model_id', 'model_type')
-                         ->from($tenantPrefix . '__media as media') // Assign an alias here
-                         ->where('model_type', Letter::class);      // Keep referencing the alias 'media'
+                $subquery->select('id', 'model_id', 'model_type')
+                    ->where('model_type', Letter::class);
             },
             'users' => function ($subquery) {
                 $subquery->select('users.id', 'name');

@@ -33,7 +33,7 @@
         "spatie/laravel-medialibrary": "^11.0",
         "spatie/laravel-translatable": "^6.0",
         "spatie/temporary-directory": "^2.0",
-        "stancl/tenancy": "^3.7",
+        "stancl/tenancy": "*",
         "symfony/mailer": "^7.0",
         "teamtnt/laravel-scout-tntsearch-driver": "^14.0"
     },

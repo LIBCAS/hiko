@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8253169b7d89f6c7e1e150fe13eb30ee",
+    "content-hash": "ecff4188a5974336b0f5c2d3ffffe261",
     "packages": [
         {
             "name": "barryvdh/laravel-debugbar",

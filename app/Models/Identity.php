@@ -58,13 +58,12 @@ class Identity extends Model
 
     public function letters(): BelongsToMany
     {
-        $pivotTable = $this->isTenancyInitialized()
-            ? "{$this->getTenantPrefix()}__identity_letter"
-            : 'global_identity_letter';
-
-        return $this->belongsToMany(Letter::class, $pivotTable, 'identity_id', 'letter_id')
-                    ->withPivot('role');
-    }
+        $pivotTable = tenancy()->initialized
+            ? tenancy()->tenant->table_prefix . '__keyword_letter'
+            : 'keyword_letter';
+    
+        return $this->belongsToMany(Letter::class, $pivotTable, 'keyword_id', 'letter_id');
+    }    
 
     public function scopeSearch($query, $filters)
     {
