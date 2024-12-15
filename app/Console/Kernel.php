@@ -5,6 +5,12 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
+use App\Console\Commands\AddTenant;
+use App\Console\Commands\CreateTenant;
+use App\Console\Commands\CreateTenantDirs;
+use App\Console\Commands\MigrateCentral;
+use App\Console\Commands\PrepareOldSqlImports;
+
 class Kernel extends ConsoleKernel
 {
     /**
@@ -13,10 +19,12 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        Commands\CreateTenant::class,
-        Commands\CreateTenantDirs::class,
-        Commands\MigrateCentral::class,
-        Commands\PrepareOldSqlImports::class,
+        AddTenant::class,
+        CreateTenant::class,
+        CreateTenantDirs::class,
+        MigrateCentral::class,
+        PrepareOldSqlImports::class,
+        // Add any new tenant-related commands here
     ];
 
     /**
@@ -27,7 +35,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // Define your scheduled tasks here
     }
 
     /**
@@ -37,8 +45,10 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
+        // Load commands from the Commands directory
         $this->load(__DIR__.'/Commands');
 
+        // Include the console routes
         require base_path('routes/console.php');
     }
 }

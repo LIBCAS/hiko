@@ -6,8 +6,8 @@ use App\Imports\PlacesImport;
 use App\Imports\LettersImport;
 use App\Imports\KeywordsImport;
 use App\Imports\IdentitiesImport;
-use App\Jobs\RegenerateLocations;
 use App\Imports\ProfessionsImport;
+use App\Jobs\RegenerateLocations;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
@@ -22,39 +22,87 @@ use Illuminate\Support\Facades\Artisan;
 |
 */
 
+// Inspire Command
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+// Import Keywords Command
 Artisan::command('hiko:import-keyword', function () {
-    $this->comment((new KeywordsImport)->import());
+    try {
+        (new KeywordsImport)->import();
+        $this->info('Keywords imported successfully.');
+    } catch (Exception $e) {
+        $this->error('Failed to import keywords: ' . $e->getMessage());
+    }
 })->purpose('Import keywords from previous version');
 
+// Import Users Command
 Artisan::command('hiko:import-users', function () {
-    $this->comment((new UsersImport)->import());
+    try {
+        (new UsersImport)->import();
+        $this->info('Users imported successfully.');
+    } catch (Exception $e) {
+        $this->error('Failed to import users: ' . $e->getMessage());
+    }
 })->purpose('Import users from previous version');
 
+// Import Professions Command
 Artisan::command('hiko:import-professions', function () {
-    $this->comment((new ProfessionsImport)->import());
+    try {
+        (new ProfessionsImport)->import();
+        $this->info('Professions imported successfully.');
+    } catch (Exception $e) {
+        $this->error('Failed to import professions: ' . $e->getMessage());
+    }
 })->purpose('Import professions from previous version');
 
+// Import Places Command
 Artisan::command('hiko:import-places', function () {
-    $this->comment((new PlacesImport)->import());
+    try {
+        (new PlacesImport)->import();
+        $this->info('Places imported successfully.');
+    } catch (Exception $e) {
+        $this->error('Failed to import places: ' . $e->getMessage());
+    }
 })->purpose('Import places from previous version');
 
+// Import Identities Command
 Artisan::command('hiko:import-identities', function () {
-    $this->comment((new IdentitiesImport)->import());
+    try {
+        (new IdentitiesImport)->import();
+        $this->info('Identities imported successfully.');
+    } catch (Exception $e) {
+        $this->error('Failed to import identities: ' . $e->getMessage());
+    }
 })->purpose('Import identities from previous version');
 
+// Import Letters Command with Prefix
 Artisan::command('hiko:import-letters {prefix}', function ($prefix) {
-    $this->comment((new LettersImport)->import($prefix));
+    try {
+        (new LettersImport)->import($prefix);
+        $this->info("Letters imported successfully with prefix '{$prefix}'.");
+    } catch (Exception $e) {
+        $this->error("Failed to import letters with prefix '{$prefix}': " . $e->getMessage());
+    }
 })->purpose('Import letters from previous version');
 
+// Import Media Command
 Artisan::command('hiko:import-media', function () {
-    $this->comment((new ImagesImport)->import());
+    try {
+        (new ImagesImport)->import();
+        $this->info('Media imported successfully.');
+    } catch (Exception $e) {
+        $this->error('Failed to import media: ' . $e->getMessage());
+    }
 })->purpose('Import letters media from previous version');
 
+// Regenerate Locations Command
 Artisan::command('hiko:regenerate-locations', function () {
-    RegenerateLocations::dispatch();
-    $this->comment('OK');
+    try {
+        RegenerateLocations::dispatch();
+        $this->info('RegenerateLocations job dispatched successfully.');
+    } catch (Exception $e) {
+        $this->error('Failed to dispatch RegenerateLocations job: ' . $e->getMessage());
+    }
 })->purpose('Regenerate locations');
