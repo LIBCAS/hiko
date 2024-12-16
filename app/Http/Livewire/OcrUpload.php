@@ -4,7 +4,7 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Services\GoogleDocumentAIService;
+use App\Services\DocumentService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -33,6 +33,7 @@ class OcrUpload extends Component
 
         $this->dispatch('ocr-saved');
         Log::info("OCR Text and metadata saved: {$letter->id}");
+        session()->flash('message', __('hiko.text_saved'));
     }
 
     protected $rules = [
@@ -44,7 +45,7 @@ class OcrUpload extends Component
         'clearSelection' => 'clearSelectedText',
     ];
 
-    public function uploadAndProcess(GoogleDocumentAIService $documentAIService)
+    public function uploadAndProcess(DocumentService $documentService)
     {
         $this->validate();
 
@@ -52,11 +53,14 @@ class OcrUpload extends Component
 
         try {
             $this->saveUploadedFile();
-            $this->processDocumentAI($documentAIService);
-            $this->dispatch('ocr-completed'); // Corrected for Livewire's `dispatch`
+            $this->processWithGemini($documentService);
+            $this->dispatch('ocr-completed');
+            session()->flash('message', __('hiko.ocr_completed'));
+
         } catch (\Exception $e) {
             Log::error('Document Processing Error: ' . $e->getMessage());
-            $this->dispatch('ocr-failed', ['message' => __('hiko.ocr_processing_error')]); // Corrected for Livewire's `dispatch`
+            $this->dispatch('ocr-failed', ['message' => __('hiko.ocr_processing_error')]);
+             session()->flash('error', __('hiko.ocr_processing_error'));
         } finally {
             $this->isProcessing = false;
             $this->deleteTemporaryFile();
@@ -73,54 +77,27 @@ class OcrUpload extends Component
         Log::info('File stored at: ' . Storage::path($this->tempImagePath));
     }
 
-    private function processDocumentAI(GoogleDocumentAIService $documentAIService)
+    private function processWithGemini(DocumentService $documentService)
     {
         $absolutePath = Storage::path($this->tempImagePath);
-    
+
         try {
-            $result = $documentAIService->processDocument($absolutePath, $this->selectedLanguage);
-    
-            Log::info('Document AI Result:', $result);
-    
-            $this->ocrText = $result['text'] ?? '';
-            $this->metadata = $this->mapMetadata($result['entities']);
+            $result = $documentService->processHandwrittenLetter($absolutePath, $this->selectedLanguage);
+
+            Log::info('Gemini Result:', $result);
+
+            $this->ocrText = $result['full_text'] ?? '';
+            $this->metadata = $result['metadata'] ?? [];
+
         } catch (\Exception $e) {
-            Log::error('Error processing document AI: ' . $e->getMessage());
+            Log::error('Error processing document with Gemini: ' . $e->getMessage());
             $this->ocrText = '';
             $this->metadata = [];
+              session()->flash('error', $e->getMessage());
         }
     }
-    
-    private function mapMetadata(array $entities): array
-    {
-        $metadata = [];
-    
-        foreach ($entities as $entity) {
-            switch ($entity['type']) {
-                case 'PERSON':
-                    $metadata['author'] = $entity['name'] ?? '';
-                    break;
-                case 'DATE':
-                    $metadata['date_marked'] = $entity['mentionText'] ?? '';
-                    break;
-                case 'LOCATION':
-                    if (empty($metadata['origin'])) {
-                        $metadata['origin'] = $entity['name'] ?? '';
-                    } else {
-                        $metadata['destination'] = $entity['name'] ?? '';
-                    }
-                    break;
-                case 'KEYWORD':
-                    $metadata['keywords'][] = $entity['name'] ?? '';
-                    break;
-                default:
-                    Log::info("Unhandled metadata entity type: {$entity['type']}");
-                    break;
-            }
-        }
-    
-        return $metadata;
-    }    
+
+
 
     public function clearSelectedText()
     {
