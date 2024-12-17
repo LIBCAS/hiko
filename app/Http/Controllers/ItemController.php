@@ -8,9 +8,23 @@ use App\Http\Requests\UpdateItemRequest;
 use Illuminate\Http\Request;
 use App\Services\DocumentService;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Http\FormRequest;
 
 class ItemController extends Controller
 {
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array
+     */
+    public function rules()
+    {
+        return [
+            'title' => 'required|string|max:255',
+            'document' => 'required|file|mimes:jpeg,jpg,png,pdf|max:10240', // Added validation for the file
+        ];
+    }
+
     public function index(Request $request)
     {
         $query = Item::query();

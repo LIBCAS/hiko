@@ -55,7 +55,7 @@ class OcrUpload extends Component
             $this->saveUploadedFile();
             $this->processWithGemini($documentService);
             $this->dispatch('ocr-completed');
-            session()->flash('message', __('hiko.ocr_completed'));
+             session()->flash('message', __('hiko.ocr_completed'));
 
         } catch (\Exception $e) {
             Log::error('Document Processing Error: ' . $e->getMessage());
@@ -71,11 +71,16 @@ class OcrUpload extends Component
     {
         $this->tempImageName = Str::uuid() . '.' . $this->photo->getClientOriginalExtension();
         $this->tempImagePath = "livewire-tmp/{$this->tempImageName}";
-
-        Storage::put($this->tempImagePath, file_get_contents($this->photo->getRealPath()));
-
+    
+        // Save the file and ensure path resolution
+        $filePath = Storage::put($this->tempImagePath, file_get_contents($this->photo->getRealPath()));
+    
+        if (!$filePath) {
+            throw new \Exception("Failed to save uploaded file.");
+        }
+    
         Log::info('File stored at: ' . Storage::path($this->tempImagePath));
-    }
+    }    
 
     private function processWithGemini(DocumentService $documentService)
     {
@@ -93,7 +98,7 @@ class OcrUpload extends Component
             Log::error('Error processing document with Gemini: ' . $e->getMessage());
             $this->ocrText = '';
             $this->metadata = [];
-              session()->flash('error', $e->getMessage());
+               session()->flash('error', $e->getMessage());
         }
     }
 

@@ -19,7 +19,7 @@
         "google/cloud-document-ai": "^2.1",
         "google/cloud-language": "^0.34.1",
         "google/cloud-vision": "^1.10",
-        "guzzlehttp/guzzle": "^7.5",
+        "guzzlehttp/guzzle": "^7.9",
         "intervention/image": "^2.7",
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",

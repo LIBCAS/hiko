@@ -3,68 +3,101 @@
 namespace App\Services;
 
 use Exception;
-use Google\GenerativeAI\GenerativeModel;
-use Google\GenerativeAI\GenerativeClient;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Storage;
 
 class DocumentService
 {
-    private static $client = null;
-    private static $model = null;
-    private static function getClient()
-    {
-        if (!self::$client) {
-            $apiKey = config('services.gemini.api_key');
-            if (!$apiKey) {
-                throw new Exception("Gemini API key not configured");
-            }
-            self::$client = new GenerativeClient($apiKey);
-        }
-        return self::$client;
-    }
-    private static function getModel()
-    {
-        if (!self::$model) {
-            self::$model = self::getClient()->getGenerativeModel('gemini-pro-vision');
-        }
-        return self::$model;
-    }
+    private static string $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-    public static function processHandwrittenLetter(string $imagePath): array
+    /**
+     * Process a handwritten letter image using Google Gemini API.
+     *
+     * @param string $imagePath
+     * @param string $language
+     * @return array
+     * @throws Exception
+     */
+    public static function processHandwrittenLetter(string $imagePath, string $language = 'en'): array
     {
         try {
-
-            $prompt = "You are an expert in analyzing handwritten documents. Analyze the following HANDWRITTEN letter, which has been provided as an image. Your task is to:\n"
-                . "1. Perform OCR on the image to recognize the text, regardless of the language.\n"
-                . "2. Identify the language(s) used in the handwritten letter. If multiple languages are present, include all of them in an array, otherwise, just use a string.\n"
-                . "3. Extract key metadata from the handwritten letter. This may include 'author', 'date', 'addressee', and any other relevant information that you can recognize from the text. If the information is not present, set the value to null. Return the metadata as a JSON object.\n"
-                . "4. Return the full, transcribed text of the handwritten letter, preserving line breaks, formatting, and special characters. \n"
-                . "Provide a JSON object with the keys 'language', 'summary', 'metadata' and 'full_text'. Use the following guidelines:\n"
-                . "- The 'language' key should contain the language or languages detected in the handwritten letter. If multiple languages are present, it must be an array, otherwise, just a string.\n"
-                . "- The 'summary' key should contain a short summary of the handwritten letter.\n"
-                . "- The 'metadata' key should contain the JSON object with the metadata that you extracted from the letter.\n"
-                . "- The 'full_text' key should contain the full, transcribed text of the handwritten letter.\n"
-                . "Here is the image of the handwritten letter:\n";
-
-
-            $model = self::getModel();
-
-            $file_content = Storage::get($imagePath);
-
-            $response = $model->generateContent([$prompt,  genai()->part()->inlineData($file_content, 'image/png')]);
-
-            try {
-                $decoded_response = json_decode($response->text, true);
-                if ($decoded_response) {
-                    return $decoded_response;
-                } else {
-                    throw new Exception("Gemini did not return a JSON");
-                }
-            } catch (Exception $e) {
-                throw new Exception("Error decoding Gemini response to JSON: " . $e->getMessage() . " Raw Gemini Response: " . $response->text);
+            // Load API key
+            $apiKey = config('services.gemini.api_key');
+            if (!$apiKey) {
+                throw new Exception("Gemini API key is not configured.");
             }
+    
+            // Ensure the path is correct
+            if (!str_starts_with($imagePath, storage_path())) {
+                $absolutePath = storage_path("blekastad/app/{$imagePath}");
+            } else {
+                $absolutePath = $imagePath;
+            }
+    
+            // Validate file existence
+            if (!file_exists($absolutePath) || !is_readable($absolutePath)) {
+                throw new Exception("File does not exist or is not readable at path: {$absolutePath}");
+            }
+    
+            // Read and encode the file content
+            $fileContent = file_get_contents($absolutePath);
+            if (!$fileContent) {
+                throw new Exception("File content is empty.");
+            }
+            $fileContentBase64 = base64_encode($fileContent);
+    
+            // Dynamically determine mime type
+            $mimeType = mime_content_type($absolutePath);
+    
+            // Build the prompt
+            $prompt = "You are an expert in analyzing handwritten documents. Analyze the following HANDWRITTEN letter, which has been provided as an image. Your task is to:\n"
+                . "1. Perform OCR on the image to recognize the text.\n"
+                . "2. Identify the language(s) used in the letter.\n"
+                . "3. Extract metadata (author, date, addressee) if available.\n"
+                . "4. Return only a valid JSON object with the keys: 'language', 'summary', 'metadata', and 'full_text'.";
+    
+            // Prepare the API request payload
+            $payload = [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $prompt],
+                            ['inline_data' => [
+                                'mime_type' => $mimeType,
+                                'data' => $fileContentBase64
+                            ]]
+                        ]
+                    ]
+                ]
+            ];
+    
+            // Send HTTP request to Google Gemini API
+            $client = new Client();
+            $response = $client->post(self::$endpoint . "?key={$apiKey}", [
+                'json' => $payload,
+                'headers' => ['Content-Type' => 'application/json'],
+            ]);
+    
+            // Parse the API response
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+            $generatedText = $responseBody['candidates'][0]['content']['parts'][0]['text'] ?? null;
+    
+            if (!$generatedText) {
+                throw new Exception("No valid response from Google Gemini API.");
+            }
+    
+            // Clean and decode the response JSON
+            $cleanedText = preg_replace('/^```json\s*|```\s*$/', '', $generatedText);
+            $decodedResponse = json_decode($cleanedText, true);
+    
+            if (!$decodedResponse) {
+                throw new Exception("Failed to decode JSON response: {$generatedText}");
+            }
+    
+            return $decodedResponse;
+    
         } catch (Exception $e) {
-            throw new Exception("Error during Gemini document processing: " . $e->getMessage());
+            throw new Exception("Error processing handwritten letter: " . $e->getMessage());
         }
-    }
+    }    
 }
