@@ -4,100 +4,107 @@ namespace App\Services;
 
 use Exception;
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class DocumentService
 {
     private static string $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
     /**
-     * Process a handwritten letter image using Google Gemini API.
+     * Process a handwritten letter and extract metadata.
      *
-     * @param string $imagePath
-     * @param string $language
+     * @param string $filePath
      * @return array
      * @throws Exception
      */
-    public static function processHandwrittenLetter(string $imagePath, string $language = 'en'): array
+    public static function processHandwrittenLetter(string $filePath): array
     {
         try {
-            // Load API key
             $apiKey = config('services.gemini.api_key');
+
             if (!$apiKey) {
-                throw new Exception("Gemini API key is not configured.");
+                throw new Exception("API key not configured.");
             }
-    
-            // Ensure the path is correct
-            if (!str_starts_with($imagePath, storage_path())) {
-                $absolutePath = storage_path("blekastad/app/{$imagePath}");
-            } else {
-                $absolutePath = $imagePath;
+
+            if (!file_exists($filePath) || !is_readable($filePath)) {
+                throw new Exception("File does not exist or is unreadable: {$filePath}");
             }
-    
-            // Validate file existence
-            if (!file_exists($absolutePath) || !is_readable($absolutePath)) {
-                throw new Exception("File does not exist or is not readable at path: {$absolutePath}");
-            }
-    
-            // Read and encode the file content
-            $fileContent = file_get_contents($absolutePath);
-            if (!$fileContent) {
-                throw new Exception("File content is empty.");
-            }
-            $fileContentBase64 = base64_encode($fileContent);
-    
-            // Dynamically determine mime type
-            $mimeType = mime_content_type($absolutePath);
-    
-            // Build the prompt
-            $prompt = "You are an expert in analyzing handwritten documents. Analyze the following HANDWRITTEN letter, which has been provided as an image. Your task is to:\n"
-                . "1. Perform OCR on the image to recognize the text.\n"
-                . "2. Identify the language(s) used in the letter.\n"
-                . "3. Extract metadata (author, date, addressee) if available.\n"
-                . "4. Return only a valid JSON object with the keys: 'language', 'summary', 'metadata', and 'full_text'.";
-    
-            // Prepare the API request payload
+
+            $fileContent = base64_encode(file_get_contents($filePath));
+            $mimeType = mime_content_type($filePath);
+
             $payload = [
                 'contents' => [
                     [
                         'parts' => [
-                            ['text' => $prompt],
+                            ['text' => self::buildPrompt()],
                             ['inline_data' => [
                                 'mime_type' => $mimeType,
-                                'data' => $fileContentBase64
+                                'data' => $fileContent
                             ]]
                         ]
                     ]
                 ]
             ];
-    
-            // Send HTTP request to Google Gemini API
-            $client = new Client();
-            $response = $client->post(self::$endpoint . "?key={$apiKey}", [
+
+            $response = (new Client())->post(self::$endpoint . "?key={$apiKey}", [
                 'json' => $payload,
-                'headers' => ['Content-Type' => 'application/json'],
+                'headers' => ['Content-Type' => 'application/json']
             ]);
-    
-            // Parse the API response
+
             $responseBody = json_decode($response->getBody()->getContents(), true);
-            $generatedText = $responseBody['candidates'][0]['content']['parts'][0]['text'] ?? null;
-    
-            if (!$generatedText) {
-                throw new Exception("No valid response from Google Gemini API.");
-            }
-    
-            // Clean and decode the response JSON
-            $cleanedText = preg_replace('/^```json\s*|```\s*$/', '', $generatedText);
-            $decodedResponse = json_decode($cleanedText, true);
-    
-            if (!$decodedResponse) {
-                throw new Exception("Failed to decode JSON response: {$generatedText}");
-            }
-    
-            return $decodedResponse;
-    
+
+            Log::info('OCR API Response', ['response' => $responseBody]);
+
+            $responseText = $responseBody['candidates'][0]['content']['parts'][0]['text'] ?? '';
+            return self::parseApiResponse($responseText);
+
         } catch (Exception $e) {
-            throw new Exception("Error processing handwritten letter: " . $e->getMessage());
+            Log::error("OCR Processing Error: " . $e->getMessage());
+            throw new Exception("Error processing letter: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Build prompt for Gemini API.
+     *
+     * @return string
+     */
+    private static function buildPrompt(): string
+    {
+        return "You are analyzing a handwritten letter. Extract the following metadata in JSON format:\n"
+            . "- date_year, date_month, date_day, date_marked, date_uncertain, date_approximate, date_inferred, date_is_range\n"
+            . "- range_year, range_month, range_day, date_note\n"
+            . "- author_inferred, author_uncertain, author_note\n"
+            . "- recipient_inferred, recipient_uncertain, recipient_note\n"
+            . "- origin_inferred, origin_uncertain, origin_note\n"
+            . "- destination_inferred, destination_uncertain, destination_note\n"
+            . "- languages[], keywords[], abstract_cs, abstract_en, incipit, explicit, mentioned[], people_mentioned_note\n"
+            . "- notes_private, notes_public, copyright, status\n"
+            . "Ensure all fields are returned with valid JSON keys.";
+    }
+
+    /**
+     * Parse and clean the API response.
+     *
+     * @param string $response
+     * @return array
+     * @throws Exception
+     */
+    private static function parseApiResponse(string $response): array
+    {
+        $cleaned = preg_replace('/^```json\\s*|```\\s*$/', '', $response);
+        $decoded = json_decode($cleaned, true);
+    
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("Failed to parse API response.");
+        }
+    
+        // Concatenate multi-line 'incipit' and 'explicit' to form a complete 'full_text'
+        if (isset($decoded['incipit']) || isset($decoded['explicit'])) {
+            $decoded['full_text'] = trim(($decoded['incipit'] ?? '') . "\n" . ($decoded['explicit'] ?? ''));
+        }
+    
+        return $decoded;
     }    
 }

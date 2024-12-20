@@ -75,16 +75,19 @@ class ApiLetterController extends Controller
 
     protected function addScopeByRole($query, $request, $role, $type)
     {
-        if ($request->input($role)) {
-            $query->whereHas($type, function ($subquery) use ($request, $role, $type) {
+        $roleInput = $request->input($role);
+    
+        if ($roleInput) {
+            $ids = array_map('intval', explode(',', $roleInput));
+            $query->whereHas($type, function ($subquery) use ($ids, $role, $type) {
                 $subquery
                     ->where('role', $role)
-                    ->whereIn("{$type}.id", array_map('intval', explode(',', $request->input($role))));
+                    ->whereIn("{$type}.id", $ids);
             });
         }
-
+    
         return $query;
-    }
+    }    
 
     protected function relationships(Request $request): array
     {

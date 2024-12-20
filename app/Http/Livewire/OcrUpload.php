@@ -5,120 +5,60 @@ namespace App\Http\Livewire;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Services\DocumentService;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class OcrUpload extends Component
 {
     use WithFileUploads;
 
-    public $selectedLanguage = 'cs';
     public $photo;
     public $isProcessing = false;
-    public $tempImageName;
-    public $tempImagePath;
     public $ocrText = '';
     public $metadata = [];
-    public $filterMetadata = '';
-
-    public function saveOcrText()
-    {
-        // Save the OCR text and metadata to the database
-        $this->validate(['ocrText' => 'required|string']);
-        $letter = new \App\Models\Letter();
-        $letter->content = $this->ocrText;
-        //$letter->metadata = json_encode($this->metadata);
-        $letter->save();
-
-        $this->dispatch('ocr-saved');
-        Log::info("OCR Text and metadata saved: {$letter->id}");
-        session()->flash('message', __('hiko.text_saved'));
-    }
 
     protected $rules = [
-        'photo' => 'required|required|mimes:jpeg,jpg,png,pdf|max:10240',
-        'selectedLanguage' => 'required|in:cs,en,de,fr,es',
+        'photo' => 'required|mimes:jpeg,jpg,png,pdf|max:10240',
     ];
 
-    protected $listeners = [
-        'clearSelection' => 'clearSelectedText',
-    ];
-
-    public function uploadAndProcess(DocumentService $documentService)
+    public function uploadAndProcess()
     {
         $this->validate();
-
         $this->isProcessing = true;
 
         try {
-            $this->saveUploadedFile();
-            $this->processWithGemini($documentService);
-            $this->dispatch('ocr-completed');
-             session()->flash('message', __('hiko.ocr_completed'));
+            $filePath = $this->saveUploadedFile();
+            $result = DocumentService::processHandwrittenLetter($filePath);
 
+            // Use incipit or explicit if full_text is not available
+            $this->ocrText = $result['incipit'] ?? $result['explicit'] ?? __('hiko.no_text_found');
+            $this->metadata = $result;
+
+            session()->flash('message', __('hiko.ocr_completed'));
         } catch (\Exception $e) {
-            Log::error('Document Processing Error: ' . $e->getMessage());
-            $this->dispatch('ocr-failed', ['message' => __('hiko.ocr_processing_error')]);
-             session()->flash('error', __('hiko.ocr_processing_error'));
+            Log::error('OCR Processing Error: ' . $e->getMessage());
+            session()->flash('error', __('hiko.ocr_processing_error'));
         } finally {
             $this->isProcessing = false;
-            $this->deleteTemporaryFile();
         }
     }
 
-    private function saveUploadedFile()
+    private function saveUploadedFile(): string
     {
-        $this->tempImageName = Str::uuid() . '.' . $this->photo->getClientOriginalExtension();
-        $this->tempImagePath = "livewire-tmp/{$this->tempImageName}";
-    
-        // Save the file and ensure path resolution
-        $filePath = Storage::put($this->tempImagePath, file_get_contents($this->photo->getRealPath()));
-    
-        if (!$filePath) {
-            throw new \Exception("Failed to save uploaded file.");
-        }
-    
-        Log::info('File stored at: ' . Storage::path($this->tempImagePath));
-    }    
+        $fileName = Str::uuid() . '.' . $this->photo->getClientOriginalExtension();
+        $filePath = "uploads/ocr/{$fileName}";
 
-    private function processWithGemini(DocumentService $documentService)
-    {
-        $absolutePath = Storage::path($this->tempImagePath);
+        Storage::put($filePath, file_get_contents($this->photo->getRealPath()));
 
-        try {
-            $result = $documentService->processHandwrittenLetter($absolutePath, $this->selectedLanguage);
-
-            Log::info('Gemini Result:', $result);
-
-            $this->ocrText = $result['full_text'] ?? '';
-            $this->metadata = $result['metadata'] ?? [];
-
-        } catch (\Exception $e) {
-            Log::error('Error processing document with Gemini: ' . $e->getMessage());
-            $this->ocrText = '';
-            $this->metadata = [];
-               session()->flash('error', $e->getMessage());
-        }
-    }
-
-
-
-    public function clearSelectedText()
-    {
-        $this->ocrText = '';
-    }
-
-    private function deleteTemporaryFile()
-    {
-        if ($this->tempImagePath && Storage::exists($this->tempImagePath)) {
-            Storage::delete($this->tempImagePath);
-            Log::info("Temporary file deleted: {$this->tempImagePath}");
-        }
+        return Storage::path($filePath);
     }
 
     public function render()
     {
-        return view('livewire.ocr-upload');
+        return view('livewire.ocr-upload', [
+            'ocrText' => $this->ocrText,
+            'metadata' => $this->metadata,
+        ]);
     }
 }
