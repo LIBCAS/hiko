@@ -1,28 +1,66 @@
-<div class="p-6 bg-white rounded-lg shadow-lg" x-data="{ isProcessing: false }">
+<div
+    class="p-6 bg-white rounded-lg shadow-lg"
+    x-data="{ isProcessing: @entangle('isProcessing') }"  {{-- Livewire v3: two-way binding for isProcessing --}}
+>
     <!-- File Upload Form -->
     <form wire:submit.prevent="uploadAndProcess" class="space-y-6">
-        <!-- File Upload -->
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1">{{ __('hiko.upload_image') }}</label>
-            <input type="file" wire:model="photo" accept="image/*"
-                class="w-full text-gray-500 border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4
-                       file:rounded file:border-0 file:bg-blue-50 file:text-blue-700
-                       hover:file:bg-blue-100 transition" />
-            @error('photo') 
-                <span class="text-red-500 text-xs">{{ $message }}</span> 
+        <!-- File Input -->
+        <div class="flex flex-col space-y-1">
+            <label for="photo" class="text-sm font-medium text-gray-700">
+                {{ __('hiko.upload_image') }}
+            </label>
+            <input
+                id="photo"
+                type="file"
+                wire:model="photo"
+                accept="image/*,application/pdf"
+                class="block w-full text-sm text-gray-900 border border-gray-300 rounded cursor-pointer
+                       focus:outline-none focus:ring focus:ring-blue-300
+                       file:mr-4 file:py-2 file:px-4 file:rounded file:border-0
+                       file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+            @error('photo')
+                <span class="text-xs text-red-500">{{ $message }}</span>
             @enderror
         </div>
 
-        <!-- Submit Button with Loader -->
+        <!-- Submit Button + Loader -->
         <div>
-            <button type="submit"
-                class="w-full flex justify-center items-center py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
-                wire:loading.attr="disabled" @click="isProcessing = true">
-                <span x-show="!isProcessing">{{ __('hiko.upload_and_process') }}</span>
-                <span x-show="isProcessing">
-                    <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            <button
+                type="submit"
+                class="relative w-full flex items-center justify-center px-4 py-2 text-sm
+                       font-medium text-white bg-blue-600 rounded
+                       hover:bg-blue-700 disabled:opacity-50 transition"
+                wire:loading.attr="disabled"
+                wire:target="uploadAndProcess,photo"
+                @click="isProcessing = true"
+            >
+                <!-- Button Text when not processing -->
+                <span x-show="!isProcessing" x-transition>
+                    {{ __('hiko.upload_and_process') }}
+                </span>
+
+                <!-- Loader when processing -->
+                <span x-show="isProcessing" x-transition class="flex items-center">
+                    <svg
+                        class="animate-spin h-5 w-5 mr-2 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4"
+                        ></circle>
+                        <path
+                            class="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8H4z"
+                        ></path>
                     </svg>
                     {{ __('hiko.processing') }}
                 </span>
@@ -30,14 +68,18 @@
         </div>
     </form>
 
-    <!-- Results Section -->
+    <!-- Processing Results -->
     @if ($metadata)
-        <div class="mt-6 space-y-4">
+        <div class="mt-6 space-y-6">
             <!-- Recognized Text -->
             <div>
-                <h2 class="font-bold text-lg mb-2">{{ __('hiko.recognized_text') }}</h2>
+                <h2 class="mb-2 text-lg font-bold">{{ __('hiko.recognized_text') }}</h2>
                 @if (!empty($ocrText))
-                    <textarea class="w-full border-gray-300 rounded-lg p-3 focus:ring focus:ring-blue-200" rows="8" readonly>{{ $ocrText }}</textarea>
+                    <textarea
+                        class="w-full p-3 border border-gray-300 rounded
+                               focus:ring focus:ring-blue-200"
+                        rows="8"
+                    >{{ $ocrText }}</textarea>
                 @else
                     <p class="text-red-500">{{ __('hiko.no_text_found') }}</p>
                 @endif
@@ -45,15 +87,69 @@
 
             <!-- Extracted Metadata -->
             <div>
-                <h2 class="font-bold text-lg mb-2">{{ __('hiko.extracted_metadata') }}</h2>
+                <h2 class="mb-2 text-lg font-bold">{{ __('hiko.extracted_metadata') }}</h2>
+
                 @if (!empty($metadata))
-                    <div class="bg-gray-50 p-4 rounded-lg shadow">
-                        <ul class="space-y-1">
+                    <div class="p-4 bg-gray-50 rounded shadow">
+                        <ul class="space-y-2">
                             @foreach ($metadata as $key => $value)
-                                @if (is_array($value))
-                                    <li><strong>{{ __('hiko.' . $key) }}:</strong> {{ implode(', ', $value) }}</li>
-                                @elseif (!is_null($value))
-                                    <li><strong>{{ __('hiko.' . $key) }}:</strong> {{ $value }}</li>
+                                @php
+                                    // Skip recognized_text and full_text to avoid redundancy
+                                    if (in_array($key, ['recognized_text', 'full_text'])) {
+                                        continue;
+                                    }
+
+                                    // 1. Label (translation) - fallback to formatted key
+                                    $label = __('hiko.'.$key);
+                                    if ($label === 'hiko.'.$key) {
+                                        // No translation found, fallback
+                                        $label = ucfirst(str_replace('_', ' ', $key));
+                                    }
+
+                                    // 2. Determine if the value is empty
+                                    $isEmpty = false;
+                                    if (is_null($value)) {
+                                        $isEmpty = true;
+                                    } elseif (is_string($value) && trim($value) === '') {
+                                        $isEmpty = true;
+                                    } elseif (is_array($value) && count($value) === 0) {
+                                        $isEmpty = true;
+                                    }
+                                @endphp
+
+                                @if (!$isEmpty)
+                                    <li class="flex items-start space-x-2">
+                                        @if (is_array($value))
+                                            {{-- Check if the array is associative or indexed --}}
+                                            @php
+                                                $isAssoc = array_keys($value) !== range(0, count($value) - 1);
+                                            @endphp
+
+                                            @if ($isAssoc)
+                                                <ul class="ml-4 list-disc">
+                                                    @foreach ($value as $subKey => $subValue)
+                                                        <li>
+                                                            <strong>{{ ucfirst(str_replace('_', ' ', $subKey)) }}:</strong>
+                                                            @if (is_array($subValue))
+                                                                {{ implode(', ', $subValue) }}
+                                                            @elseif (is_bool($subValue))
+                                                                {{ $subValue ? __('hiko.yes') : __('hiko.no') }}
+                                                            @else
+                                                                {{ $subValue }}
+                                                            @endif
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @else
+                                                {{-- If array is flat --}}
+                                                {{ implode(', ', $value) }}
+                                            @endif
+                                        @elseif (is_bool($value))
+                                            {{ $value ? __('hiko.yes') : __('hiko.no') }}
+                                        @else
+                                            {{ $value }}
+                                        @endif
+                                    </li>
                                 @endif
                             @endforeach
                         </ul>

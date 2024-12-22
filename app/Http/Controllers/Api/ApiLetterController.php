@@ -7,132 +7,181 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LetterResource;
 use App\Http\Resources\LetterCollection;
+use Illuminate\Support\Facades\Log;
 
 class ApiLetterController extends Controller
 {
+    /**
+     * Display a paginated list of published letters.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \App\Http\Resources\LetterCollection
+     */
     public function index(Request $request): LetterCollection
     {
-        return new LetterCollection(
-            $this->prepareQuery($request)->paginate($this->limit($request))
-        );
-    }
+        try {
+            $lettersQuery = $this->prepareQuery($request);
+            $limit = $this->limit($request);
 
-    public function show($uuid): LetterResource
-    {
-        $letter = Letter::where('uuid', $uuid)
-            ->where('status', 'publish')
-            ->first();
+            $letters = $lettersQuery->paginate($limit);
 
-        if (!$letter) {
-            abort(404);
+            return new LetterCollection($letters);
+        } catch (\Exception $e) {
+            Log::error('Error fetching letters: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'An error occurred while fetching letters.'
+            ], 500);
         }
-
-        $letter->load([
-            'identities' => function ($query) {
-                return $query->select(['name']);
-            },
-            'places' => function ($query) {
-                return $query->select(['name']);
-            },
-            'keywords' => function ($query) {
-                return $query->select(['name']);
-            },
-        ]);
-
-        return new LetterResource($letter);
     }
 
+    /**
+     * Display a specific published letter by UUID.
+     *
+     * @param  string  $uuid
+     * @return \App\Http\Resources\LetterResource|\Illuminate\Http\JsonResponse
+     */
+    public function show(string $uuid)
+    {
+        try {
+            $letter = Letter::where('uuid', $uuid)
+                ->where('status', 'publish')
+                ->with($this->relationships())
+                ->first();
+
+            if (!$letter) {
+                return response()->json([
+                    'message' => 'Letter not found.'
+                ], 404);
+            }
+
+            return new LetterResource($letter);
+        } catch (\Exception $e) {
+            Log::error('Error fetching letter: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'An error occurred while fetching the letter.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Prepare the query based on request parameters.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     protected function prepareQuery(Request $request)
     {
-        $query = Letter::with($this->relationships($request))
+        $query = Letter::with($this->relationships())
             ->where('status', 'publish');
 
-        $query = $this->addScopeByRole($query, $request, 'author', 'identities');
-        $query = $this->addScopeByRole($query, $request, 'recipient', 'identities');
-        $query = $this->addScopeByRole($query, $request, 'origin', 'places');
-        $query = $this->addScopeByRole($query, $request, 'destination', 'places');
-
-        if ($request->input('keyword')) {
-            $query->whereHas('keywords', function ($subquery) use ($request) {
-                $subquery->whereIn('keywords.id', array_map('intval', explode(',', $request->input('keyword'))));
-            });
+        // Apply filters based on roles and relationships
+        $roles = ['author', 'recipient', 'origin', 'destination'];
+        foreach ($roles as $role) {
+            $type = in_array($role, ['author', 'recipient']) ? 'identities' : 'places';
+            $query = $this->addScopeByRole($query, $request, $role, $type);
         }
 
-        if ($request->input('after')) {
-            $query->after($request->input('after'));
+        // Filter by keywords
+        if ($request->filled('keyword')) {
+            $keywordIds = array_filter(array_map('intval', explode(',', $request->input('keyword'))));
+            if (!empty($keywordIds)) {
+                $query->whereHas('keywords', function ($subquery) use ($keywordIds) {
+                    $subquery->whereIn('keywords.id', $keywordIds);
+                });
+            }
         }
 
-        if ($request->input('before')) {
-            $query->before($request->input('before'));
+        // Filter by date range
+        if ($request->filled('after')) {
+            $query->where('date_computed', '>=', $request->input('after'));
         }
 
-        if ($request->input('content')) {
+        if ($request->filled('before')) {
+            $query->where('date_computed', '<=', $request->input('before'));
+        }
+
+        // Filter by content
+        if ($request->filled('content')) {
             $query->where('content', 'LIKE', '%' . $request->input('content') . '%');
         }
 
-        return $query->orderBy('date_computed', $this->order($request));
-    }
+        // Order the results
+        $order = $this->order($request);
+        $query->orderBy('date_computed', $order);
 
-    protected function addScopeByRole($query, $request, $role, $type)
-    {
-        $roleInput = $request->input($role);
-    
-        if ($roleInput) {
-            $ids = array_map('intval', explode(',', $roleInput));
-            $query->whereHas($type, function ($subquery) use ($ids, $role, $type) {
-                $subquery
-                    ->where('role', $role)
-                    ->whereIn("{$type}.id", $ids);
-            });
-        }
-    
         return $query;
-    }    
-
-    protected function relationships(Request $request): array
-    {
-        $with = [];
-
-        if ($request->input('author') || $request->input('recipient')) {
-            $with['identities'] = function ($subquery) {
-                $subquery->select('identities.id', 'name', 'role')
-                    ->whereIn('role', ['author', 'recipient'])
-                    ->orderBy('position');
-            };
-        }
-
-        if ($request->input('origin') || $request->input('destination')) {
-            $with['places'] = function ($subquery) {
-                $subquery->select('places.id', 'name', 'role')
-                    ->whereIn('role', ['origin', 'destination'])
-                    ->orderBy('position');
-            };
-        }
-
-        if ($request->input('keyword')) {
-            $with['keywords'] = function ($subquery) {
-                $subquery->select('keywords.id', 'name');
-            };
-        }
-
-        return $with;
     }
 
+    /**
+     * Apply scope based on role and type.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $role
+     * @param  string  $type
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected function addScopeByRole($query, Request $request, string $role, string $type)
+    {
+        if ($request->filled($role)) {
+            $ids = array_filter(array_map('intval', explode(',', $request->input($role))));
+            if (!empty($ids)) {
+                $query->whereHas($type, function ($subquery) use ($ids, $role, $type) {
+                    $subquery->where('role', $role)
+                             ->whereIn("{$type}.id", $ids);
+                });
+            }
+        }
+
+        return $query;
+    }
+
+    /**
+     * Define the relationships to load based on request parameters.
+     *
+     * @return array
+     */
+    protected function relationships(): array
+    {
+        // Define all possible relationships with necessary constraints
+        return [
+            'identities' => function ($query) {
+                $query->select('identities.id', 'name', 'role')
+                      ->whereIn('role', ['author', 'recipient'])
+                      ->orderBy('position');
+            },
+            'places' => function ($query) {
+                $query->select('places.id', 'name', 'role')
+                      ->whereIn('role', ['origin', 'destination'])
+                      ->orderBy('position');
+            },
+            'keywords' => function ($query) {
+                $query->select('keywords.id', 'name');
+            },
+        ];
+    }
+
+    /**
+     * Determine the pagination limit.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return int
+     */
     protected function limit(Request $request): int
     {
         $limit = (int) $request->input('limit', 10);
-
-        return $limit > 0 && $limit <= 100
-            ? $limit
-            : 10;
+        return ($limit > 0 && $limit <= 100) ? $limit : 10;
     }
 
+    /**
+     * Determine the order direction.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return string
+     */
     protected function order(Request $request): string
     {
-        $order = $request->input('order', 'asc');
-
-        return in_array($order, ['asc', 'desc'])
-            ? $order
-            : 'asc';
+        $order = strtolower($request->input('order', 'asc'));
+        return in_array($order, ['asc', 'desc']) ? $order : 'asc';
     }
 }

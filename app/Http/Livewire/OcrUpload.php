@@ -31,8 +31,16 @@ class OcrUpload extends Component
             $filePath = $this->saveUploadedFile();
             $result = DocumentService::processHandwrittenLetter($filePath);
 
-            // Use incipit or explicit if full_text is not available
-            $this->ocrText = $result['incipit'] ?? $result['explicit'] ?? __('hiko.no_text_found');
+            // Determine what to display in the recognized text
+            if (!empty($result['recognized_text'])) {
+                $this->ocrText = $result['recognized_text'];
+            } elseif (!empty($result['full_text'])) { // Updated to use 'full_text'
+                $this->ocrText = trim($result['full_text']);
+            } else {
+                $this->ocrText = __('hiko.no_text_found');
+            }
+
+            // Assign metadata as an array
             $this->metadata = $result;
 
             session()->flash('message', __('hiko.ocr_completed'));
@@ -57,7 +65,7 @@ class OcrUpload extends Component
     public function render()
     {
         return view('livewire.ocr-upload', [
-            'ocrText' => $this->ocrText,
+            'ocrText'  => $this->ocrText,
             'metadata' => $this->metadata,
         ]);
     }
