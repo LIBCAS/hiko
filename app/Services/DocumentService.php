@@ -97,18 +97,18 @@ class DocumentService
     {
         return "You are analyzing a handwritten letter that may be written in any language. "
             . "The letter may contain both text and numerical data, including Arabic numerals (0-9) and Roman numerals (I, II, III, etc.). "
-            . "When encountering Roman numerals, ensure they are preserved accurately and not converted to Arabic numerals, and vice versa. "
+            . "When encountering Roman numerals, especially in dates, ensure they are preserved accurately and not converted to Arabic numerals, and vice versa. "
             . "Extract the recognized text and detailed metadata in JSON format with all field names in English. "
             . "Return the recognized text under 'recognized_text' and the metadata under 'metadata'. "
             . "Ensure that dates and numerical information correctly reflect the numeral systems used in the original document. "
             . "The JSON structure should follow this example:\n"
             . "```\n"
             . "{\n"
-            . "  \"recognized_text\": \"Luna V/5/1967 a fost o zi importantă.\",\n"
+            . "  \"recognized_text\": \"LUZ-HOTEL WALDLUST 57I.1967 729 Freudenstadt/Schwarzw. 750 m ü. M.\",\n"
             . "  \"metadata\": {\n"
             . "    \"date_year\": \"1967\",\n"
             . "    \"date_month\": \"5\",\n"
-            . "    \"date_day\": \"V\",\n"
+            . "    \"date_day\": \"7\",\n" // Corrected example
             . "    \"date_marked\": \"Yes\",\n"
             . "    \"date_uncertain\": \"No\",\n"
             . "    \"date_approximate\": \"No\",\n"
@@ -130,12 +130,12 @@ class DocumentService
             . "    \"destination_inferred\": \"No\",\n"
             . "    \"destination_uncertain\": \"No\",\n"
             . "    \"destination_note\": \"\",\n"
-            . "    \"languages\": [\"Romanian\"],\n"
-            . "    \"keywords\": [\"Important\", \"Letter\"],\n"
+            . "    \"languages\": [\"German\"],\n"
+            . "    \"keywords\": [\"Hotel\", \"Winter\"],\n"
             . "    \"abstract_cs\": \"\",\n"
             . "    \"abstract_en\": \"\",\n"
-            . "    \"incipit\": \"\",\n"
-            . "    \"explicit\": \"\",\n"
+            . "    \"incipit\": \"Sahi perche Fan Bleka Lad: Ke\",\n"
+            . "    \"explicit\": \"egeb Blunel\",\n"
             . "    \"mentioned\": [\"\"],\n"
             . "    \"people_mentioned_note\": \"\",\n"
             . "    \"notes_private\": \"\",\n"
@@ -178,6 +178,31 @@ class DocumentService
         // Log the raw decoded response for debugging
         Log::debug('Decoded Gemini 2.0 Flash API Response', ['decoded_response' => $decoded]);
 
+        // Initialize all metadata fields to ensure completeness
+        $metadataFields = [
+            'date_year', 'date_month', 'date_day', 'date_marked', 'date_uncertain',
+            'date_approximate', 'date_inferred', 'date_is_range', 'range_year',
+            'range_month', 'range_day', 'date_note', 'author_inferred',
+            'author_uncertain', 'author_note', 'recipient_inferred',
+            'recipient_uncertain', 'recipient_note', 'origin_inferred',
+            'origin_uncertain', 'origin_note', 'destination_inferred',
+            'destination_uncertain', 'destination_note', 'languages',
+            'keywords', 'abstract_cs', 'abstract_en', 'incipit', 'explicit',
+            'mentioned', 'people_mentioned_note', 'notes_private',
+            'notes_public', 'copyright', 'status'
+        ];
+
+        // Ensure all metadata fields are present
+        if (!isset($decoded['metadata'])) {
+            $decoded['metadata'] = [];
+        }
+
+        foreach ($metadataFields as $field) {
+            if (!array_key_exists($field, $decoded['metadata'])) {
+                $decoded['metadata'][$field] = is_array($field) ? [] : '';
+            }
+        }
+
         // Trim recognized_text
         if (isset($decoded['recognized_text'])) {
             $decoded['recognized_text'] = trim($decoded['recognized_text']);
@@ -200,7 +225,7 @@ class DocumentService
         // Post-processing corrections
         if (isset($decoded['recognized_text'])) {
             $decoded['recognized_text'] = self::correctMisrecognitions($decoded['recognized_text']);
-            $decoded['recognized_text'] = self::correctDateMisinterpretations($decoded['recognized_text']);
+            $decoded['recognized_text'] = self::validateMetadata($decoded['metadata'], $decoded['recognized_text']);
         }
 
         return $decoded;
@@ -237,6 +262,130 @@ class DocumentService
         }
 
         return $ocrText;
+    }
+
+    /**
+     * Validate and correct metadata fields.
+     *
+     * @param array $metadata
+     * @param string $ocrText
+     * @return string
+     */
+    private static function validateMetadata(array &$metadata, string $ocrText): string
+    {
+        // Validate date_day
+        if (isset($metadata['date_day'])) {
+            $day = $metadata['date_day'];
+            if (is_numeric($day)) {
+                $day = (int) $day;
+                if ($day < 1 || $day > 31) {
+                    Log::warning("Invalid date_day detected: {$day}. Setting to empty.");
+                    $metadata['date_day'] = '';
+                } else {
+                    $metadata['date_day'] = (string) $day;
+                }
+            } elseif (preg_match('/(\d{1,2})[IVX]+/', $day, $matches)) {
+                // Extract numeric part from mixed alphanumeric day
+                $numericDay = (int) $matches[1];
+                if ($numericDay >= 1 && $numericDay <= 31) {
+                    $metadata['date_day'] = (string) $numericDay;
+                } else {
+                    Log::warning("Invalid numeric part in date_day detected: {$numericDay}. Setting to empty.");
+                    $metadata['date_day'] = '';
+                }
+            } else {
+                // Attempt to extract numeric value if possible
+                $numericDay = filter_var($day, FILTER_SANITIZE_NUMBER_INT);
+                if ($numericDay && is_numeric($numericDay)) {
+                    $numericDay = (int) $numericDay;
+                    if ($numericDay >= 1 && $numericDay <= 31) {
+                        $metadata['date_day'] = (string) $numericDay;
+                    } else {
+                        Log::warning("Invalid numeric day extracted from date_day: {$numericDay}. Setting to empty.");
+                        $metadata['date_day'] = '';
+                    }
+                } else {
+                    Log::warning("Non-numeric date_day detected: {$day}. Setting to empty.");
+                    $metadata['date_day'] = '';
+                }
+            }
+        }
+
+        // Validate date_month
+        if (isset($metadata['date_month'])) {
+            $month = $metadata['date_month'];
+            if (preg_match('/^[IVX]+$/', $month)) {
+                // Convert Roman numeral to integer
+                $monthNumeric = self::romanToInt($month);
+                if ($monthNumeric >= 1 && $monthNumeric <= 12) {
+                    $metadata['date_month'] = (string) $monthNumeric;
+                } else {
+                    Log::warning("Invalid date_month detected (Roman): {$month}. Setting to empty.");
+                    $metadata['date_month'] = '';
+                }
+            } elseif (is_numeric($month)) {
+                $month = (int) $month;
+                if ($month < 1 || $month > 12) {
+                    Log::warning("Invalid date_month detected: {$month}. Setting to empty.");
+                    $metadata['date_month'] = '';
+                } else {
+                    $metadata['date_month'] = (string) $month;
+                }
+            } else {
+                Log::warning("Invalid date_month format: {$month}. Setting to empty.");
+                $metadata['date_month'] = '';
+            }
+        }
+
+        // Validate date_year
+        if (isset($metadata['date_year'])) {
+            $year = $metadata['date_year'];
+            if (!is_numeric($year) || (int)$year < 0) {
+                Log::warning("Invalid date_year detected: {$year}. Setting to empty.");
+                $metadata['date_year'] = '';
+            } else {
+                $metadata['date_year'] = (string) (int)$year;
+            }
+        }
+
+        // Additional Validations
+        // You can add more validations for other fields as necessary
+
+        return $ocrText;
+    }
+
+    /**
+     * Convert Roman numeral to integer.
+     *
+     * @param string $roman
+     * @return int
+     */
+    private static function romanToInt(string $roman): int
+    {
+        $romans = [
+            'M' => 1000,
+            'CM' => 900,
+            'D' => 500,
+            'CD' => 400,
+            'C' => 100,
+            'XC' => 90,
+            'L' => 50,
+            'XL' => 40,
+            'X' => 10,
+            'IX' => 9,
+            'V' => 5,
+            'IV' => 4,
+            'I' => 1
+        ];
+
+        $result = 0;
+        foreach ($romans as $romanChar => $value) {
+            while (strpos($roman, $romanChar) === 0) {
+                $result += $value;
+                $roman = substr($roman, strlen($romanChar));
+            }
+        }
+        return $result;
     }
 
     /**
