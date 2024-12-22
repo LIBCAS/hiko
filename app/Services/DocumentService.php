@@ -37,7 +37,7 @@ class DocumentService
             $fileContent = base64_encode(file_get_contents($filePath));
             $mimeType = mime_content_type($filePath);
 
-            // Construct the payload without unsupported fields like 'parameters'
+            // Construct the payload with enhanced instructions and precise JSON structure
             $payload = [
                 'contents' => [
                     [
@@ -89,26 +89,27 @@ class DocumentService
     }
 
     /**
-     * Build prompt for Gemini 2.0 Flash API with enhanced instructions for numeral systems.
+     * Build prompt for Gemini 2.0 Flash API with enhanced instructions for multilingual and numeral system handling.
      *
      * @return string
      */
     private static function buildPrompt(): string
     {
-        return "You are analyzing a handwritten letter that may be written in any language. "
-            . "The letter may contain both text and numerical data, including Arabic numerals (0-9) and Roman numerals (I, II, III, etc.). "
-            . "When encountering Roman numerals, especially in dates, ensure they are preserved accurately and not converted to Arabic numerals, and vice versa. "
-            . "Extract the recognized text and detailed metadata in JSON format with all field names in English. "
-            . "Return the recognized text under 'recognized_text' and the metadata under 'metadata'. "
+        return "You are an intelligent OCR system analyzing a scanned handwritten letter that may be written in any language. "
+            . "First, accurately identify the language of the letter and determine the handwriting style (e.g., neat, cursive, messy). "
+            . "The letter may contain both textual and numerical data, including Arabic numerals (0-9) and Roman numerals (I, II, III, etc.). "
+            . "Ensure that Roman numerals, especially in dates, are preserved accurately and not converted to Arabic numerals, and vice versa. "
+            . "Extract the recognized text and detailed metadata in a well-structured JSON format with all field names in English. "
+            . "Return the recognized text under the key 'recognized_text' and the metadata under the key 'metadata'. "
             . "Ensure that dates and numerical information correctly reflect the numeral systems used in the original document. "
             . "The JSON structure should follow this example:\n"
             . "```\n"
             . "{\n"
-            . "  \"recognized_text\": \"LUZ-HOTEL WALDLUST 57I.1967 729 Freudenstadt/Schwarzw. 750 m ü. M.\",\n"
+            . "  \"recognized_text\": \"Clovis p. profenon, prosím Vás, recti mně clodávali člantly a česgrity erdy Rolem I. Karvela monte, prodo iz 15. cila muni testi hotova.\",\n"
             . "  \"metadata\": {\n"
             . "    \"date_year\": \"1967\",\n"
-            . "    \"date_month\": \"5\",\n"
-            . "    \"date_day\": \"7\",\n" // Corrected example
+            . "    \"date_month\": \"1\",\n"
+            . "    \"date_day\": \"22\",\n"
             . "    \"date_marked\": \"Yes\",\n"
             . "    \"date_uncertain\": \"No\",\n"
             . "    \"date_approximate\": \"No\",\n"
@@ -130,7 +131,7 @@ class DocumentService
             . "    \"destination_inferred\": \"No\",\n"
             . "    \"destination_uncertain\": \"No\",\n"
             . "    \"destination_note\": \"\",\n"
-            . "    \"languages\": [\"German\"],\n"
+            . "    \"languages\": [\"Czech\", \"German\"],\n"
             . "    \"keywords\": [\"Hotel\", \"Winter\"],\n"
             . "    \"abstract_cs\": \"\",\n"
             . "    \"abstract_en\": \"\",\n"
@@ -145,7 +146,7 @@ class DocumentService
             . "  }\n"
             . "}\n"
             . "```\n"
-            . "Include the following metadata fields in English:\n"
+            . "Include the following metadata fields:\n"
             . "- date_year, date_month, date_day, date_marked, date_uncertain, date_approximate, date_inferred, date_is_range\n"
             . "- range_year, range_month, range_day, date_note\n"
             . "- author_inferred, author_uncertain, author_note\n"
@@ -154,7 +155,7 @@ class DocumentService
             . "- destination_inferred, destination_uncertain, destination_note\n"
             . "- languages (array), keywords (array), abstract_cs, abstract_en, incipit, explicit, mentioned (array), people_mentioned_note\n"
             . "- notes_private, notes_public, copyright, status\n"
-            . "Ensure all fields are present. If a field is unknown, assign it an empty string or empty array.";
+            . "Ensure all fields are present. Utilize intelligent recognition to accurately populate each field. If a field is unknown or not applicable, assign it an empty string or an empty array as appropriate.";
     }
 
     /**
@@ -199,7 +200,7 @@ class DocumentService
 
         foreach ($metadataFields as $field) {
             if (!array_key_exists($field, $decoded['metadata'])) {
-                $decoded['metadata'][$field] = is_array($field) ? [] : '';
+                $decoded['metadata'][$field] = is_array($decoded[$field] ?? '') ? [] : '';
             }
         }
 
@@ -241,20 +242,25 @@ class DocumentService
     {
         // Define common misrecognitions (e.g., '1' -> 'I', '5' -> 'V', etc.)
         $corrections = [
-            '/\b1\b/' => 'I',
-            '/\b2\b/' => 'II',
-            '/\b3\b/' => 'III',
-            '/\b4\b/' => 'IV',
-            '/\b5\b/' => 'V',
-            '/\b6\b/' => 'VI',
-            '/\b7\b/' => 'VII',
-            '/\b8\b/' => 'VIII',
-            '/\b9\b/' => 'IX',
-            '/\b10\b/' => 'X',
-            '/\b50\b/' => 'L',
-            '/\b100\b/' => 'C',
-            '/\b500\b/' => 'D',
-            '/\b1000\b/' => 'M',
+            '/\b1\b/'     => 'I',
+            '/\b2\b/'     => 'II',
+            '/\b3\b/'     => 'III',
+            '/\b4\b/'     => 'IV',
+            '/\b5\b/'     => 'V',
+            '/\b6\b/'     => 'VI',
+            '/\b7\b/'     => 'VII',
+            '/\b8\b/'     => 'VIII',
+            '/\b9\b/'     => 'IX',
+            '/\b10\b/'    => 'X',
+            '/\b50\b/'    => 'L',
+            '/\b100\b/'   => 'C',
+            '/\b500\b/'   => 'D',
+            '/\b1000\b/'  => 'M',
+            // Additional corrections based on observed OCR errors
+            '/\b0\b/'     => 'O',          // '0' misread as 'O'
+            '/\b57I\b/'   => 'VII',        // Specific correction for '57I'
+            '/\b22\/I\b/' => '22/I',        // Ensuring '22/I' is preserved
+            // Add more patterns as needed
         ];
 
         foreach ($corrections as $pattern => $replacement) {
@@ -348,8 +354,36 @@ class DocumentService
             }
         }
 
+        // Validate date_is_range
+        if (isset($metadata['date_is_range'])) {
+            $isRange = strtolower($metadata['date_is_range']);
+            $metadata['date_is_range'] = in_array($isRange, ['yes', 'true', '1'], true) ? true : false;
+        }
+
+        // Validate boolean fields
+        $booleanFields = [
+            'date_uncertain', 'date_approximate', 'date_inferred',
+            'author_inferred', 'author_uncertain',
+            'recipient_inferred', 'recipient_uncertain',
+            'origin_inferred', 'origin_uncertain',
+            'destination_inferred', 'destination_uncertain',
+        ];
+
+        foreach ($booleanFields as $field) {
+            if (isset($metadata[$field])) {
+                $value = strtolower($metadata[$field]);
+                $metadata[$field] = in_array($value, ['yes', 'true', '1'], true) ? true : false;
+            }
+        }
+
         // Additional Validations
-        // You can add more validations for other fields as necessary
+        // Example: Validate date_note length
+        if (isset($metadata['date_note']) && strlen($metadata['date_note']) > 500) {
+            Log::warning("date_note exceeds maximum length. Truncating.");
+            $metadata['date_note'] = substr($metadata['date_note'], 0, 500);
+        }
+
+        // Similarly, add validations for other fields as needed
 
         return $ocrText;
     }
@@ -363,19 +397,19 @@ class DocumentService
     private static function romanToInt(string $roman): int
     {
         $romans = [
-            'M' => 1000,
+            'M'  => 1000,
             'CM' => 900,
-            'D' => 500,
+            'D'  => 500,
             'CD' => 400,
-            'C' => 100,
+            'C'  => 100,
             'XC' => 90,
-            'L' => 50,
+            'L'  => 50,
             'XL' => 40,
-            'X' => 10,
+            'X'  => 10,
             'IX' => 9,
-            'V' => 5,
+            'V'  => 5,
             'IV' => 4,
-            'I' => 1
+            'I'  => 1
         ];
 
         $result = 0;
@@ -410,9 +444,18 @@ class DocumentService
 
             // If month is a Roman numeral, ensure it's valid
             $romanMonths = [
-                'I' => 'I', 'II' => 'II', 'III' => 'III', 'IV' => 'IV',
-                'V' => 'V', 'VI' => 'VI', 'VII' => 'VII', 'VIII' => 'VIII',
-                'IX' => 'IX', 'X' => 'X', 'XI' => 'XI', 'XII' => 'XII'
+                'I'    => 'I',
+                'II'   => 'II',
+                'III'  => 'III',
+                'IV'   => 'IV',
+                'V'    => 'V',
+                'VI'   => 'VI',
+                'VII'  => 'VII',
+                'VIII' => 'VIII',
+                'IX'   => 'IX',
+                'X'    => 'X',
+                'XI'   => 'XI',
+                'XII'  => 'XII'
             ];
 
             return "{$day}/" . ($romanMonths[$month] ?? $month) . "/{$year}";
