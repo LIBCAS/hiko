@@ -8,6 +8,7 @@ use App\Services\DocumentService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Exception;
 
 class OcrUpload extends Component
 {
@@ -19,9 +20,14 @@ class OcrUpload extends Component
     public $metadata = [];
 
     protected $rules = [
-        'photo' => 'required|mimes:jpeg,jpg,png,pdf|max:10240',
+        'photo' => 'required|mimes:jpeg,jpg,png,pdf|max:10240', // Max 10MB
     ];
 
+    /**
+     * Upload and process the handwritten letter using Gemini 2.0 Flash.
+     *
+     * @return void
+     */
     public function uploadAndProcess()
     {
         $this->validate();
@@ -31,37 +37,44 @@ class OcrUpload extends Component
             $filePath = $this->saveUploadedFile();
             $result = DocumentService::processHandwrittenLetter($filePath);
 
-            // Determine what to display in the recognized text
-            if (!empty($result['recognized_text'])) {
-                $this->ocrText = $result['recognized_text'];
-            } elseif (!empty($result['full_text'])) { // Updated to use 'full_text'
-                $this->ocrText = trim($result['full_text']);
-            } else {
-                $this->ocrText = __('hiko.no_text_found');
-            }
+            // Assign recognized text
+            $this->ocrText = $result['recognized_text'] ?? 'No text found';
 
-            // Assign metadata as an array
-            $this->metadata = $result;
+            // Assign metadata
+            $this->metadata = $result['metadata'] ?? [];
 
-            session()->flash('message', __('hiko.ocr_completed'));
-        } catch (\Exception $e) {
-            Log::error('OCR Processing Error: ' . $e->getMessage());
-            session()->flash('error', __('hiko.ocr_processing_error'));
+            session()->flash('message', 'OCR processing completed successfully.');
+        } catch (Exception $e) {
+            Log::error('Gemini 2.0 Flash OCR Processing Error: ' . $e->getMessage());
+            session()->flash('error', 'There was an error processing the document.');
         } finally {
             $this->isProcessing = false;
         }
     }
 
+    /**
+     * Save the uploaded file to storage.
+     *
+     * @return string
+     * @throws Exception
+     */
     private function saveUploadedFile(): string
     {
         $fileName = Str::uuid() . '.' . $this->photo->getClientOriginalExtension();
         $filePath = "uploads/ocr/{$fileName}";
 
-        Storage::put($filePath, file_get_contents($this->photo->getRealPath()));
+        if (!Storage::disk('public')->put($filePath, file_get_contents($this->photo->getRealPath()))) {
+            throw new Exception("Failed to save the uploaded file.");
+        }
 
-        return Storage::path($filePath);
+        return Storage::disk('public')->path($filePath);
     }
 
+    /**
+     * Render the Livewire component view.
+     *
+     * @return \Illuminate\View\View
+     */
     public function render()
     {
         return view('livewire.ocr-upload', [

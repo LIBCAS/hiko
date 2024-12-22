@@ -15,9 +15,9 @@ class ApiLetterController extends Controller
      * Display a paginated list of published letters.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \App\Http\Resources\LetterCollection
+     * @return \App\Http\Resources\LetterCollection|\Illuminate\Http\JsonResponse
      */
-    public function index(Request $request): LetterCollection
+    public function index(Request $request): LetterCollection|\Illuminate\Http\JsonResponse
     {
         try {
             $lettersQuery = $this->prepareQuery($request);
@@ -40,7 +40,7 @@ class ApiLetterController extends Controller
      * @param  string  $uuid
      * @return \App\Http\Resources\LetterResource|\Illuminate\Http\JsonResponse
      */
-    public function show(string $uuid)
+    public function show(string $uuid): LetterResource|\Illuminate\Http\JsonResponse
     {
         try {
             $letter = Letter::where('uuid', $uuid)
@@ -143,7 +143,6 @@ class ApiLetterController extends Controller
      */
     protected function relationships(): array
     {
-        // Define all possible relationships with necessary constraints
         return [
             'identities' => function ($query) {
                 $query->select('identities.id', 'name', 'role')

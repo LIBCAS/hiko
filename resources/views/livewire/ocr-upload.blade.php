@@ -1,13 +1,13 @@
 <div
     class="p-6 bg-white rounded-lg shadow-lg"
-    x-data="{ isProcessing: @entangle('isProcessing') }"  {{-- Livewire v3: two-way binding for isProcessing --}}
+    x-data="{ isProcessing: @entangle('isProcessing') }"
 >
     <!-- File Upload Form -->
     <form wire:submit.prevent="uploadAndProcess" class="space-y-6">
         <!-- File Input -->
         <div class="flex flex-col space-y-1">
             <label for="photo" class="text-sm font-medium text-gray-700">
-                {{ __('hiko.upload_image') }}
+                Upload Document
             </label>
             <input
                 id="photo"
@@ -37,7 +37,7 @@
             >
                 <!-- Button Text when not processing -->
                 <span x-show="!isProcessing" x-transition>
-                    {{ __('hiko.upload_and_process') }}
+                    Upload and Process
                 </span>
 
                 <!-- Loader when processing -->
@@ -62,7 +62,7 @@
                             d="M4 12a8 8 0 018-8v8H4z"
                         ></path>
                     </svg>
-                    {{ __('hiko.processing') }}
+                    Processing...
                 </span>
             </button>
         </div>
@@ -73,21 +73,22 @@
         <div class="mt-6 space-y-6">
             <!-- Recognized Text -->
             <div>
-                <h2 class="mb-2 text-lg font-bold">{{ __('hiko.recognized_text') }}</h2>
+                <h2 class="mb-2 text-lg font-bold">Recognized Text</h2>
                 @if (!empty($ocrText))
                     <textarea
                         class="w-full p-3 border border-gray-300 rounded
                                focus:ring focus:ring-blue-200"
                         rows="8"
+                        readonly
                     >{{ $ocrText }}</textarea>
                 @else
-                    <p class="text-red-500">{{ __('hiko.no_text_found') }}</p>
+                    <p class="text-red-500">No text found.</p>
                 @endif
             </div>
 
             <!-- Extracted Metadata -->
             <div>
-                <h2 class="mb-2 text-lg font-bold">{{ __('hiko.extracted_metadata') }}</h2>
+                <h2 class="mb-2 text-lg font-bold">Extracted Metadata</h2>
 
                 @if (!empty($metadata))
                     <div class="p-4 bg-gray-50 rounded shadow">
@@ -99,14 +100,10 @@
                                         continue;
                                     }
 
-                                    // 1. Label (translation) - fallback to formatted key
-                                    $label = __('hiko.'.$key);
-                                    if ($label === 'hiko.'.$key) {
-                                        // No translation found, fallback
-                                        $label = ucfirst(str_replace('_', ' ', $key));
-                                    }
+                                    // Label (fallback to formatted key)
+                                    $label = ucfirst(str_replace('_', ' ', $key));
 
-                                    // 2. Determine if the value is empty
+                                    // Determine if the value is empty
                                     $isEmpty = false;
                                     if (is_null($value)) {
                                         $isEmpty = true;
@@ -118,7 +115,8 @@
                                 @endphp
 
                                 @if (!$isEmpty)
-                                    <li class="flex items-start space-x-2">
+                                    <li class="flex flex-col space-y-1">
+                                        <strong>{{ $label }}:</strong>
                                         @if (is_array($value))
                                             {{-- Check if the array is associative or indexed --}}
                                             @php
@@ -133,7 +131,7 @@
                                                             @if (is_array($subValue))
                                                                 {{ implode(', ', $subValue) }}
                                                             @elseif (is_bool($subValue))
-                                                                {{ $subValue ? __('hiko.yes') : __('hiko.no') }}
+                                                                {{ $subValue ? 'Yes' : 'No' }}
                                                             @else
                                                                 {{ $subValue }}
                                                             @endif
@@ -142,12 +140,12 @@
                                                 </ul>
                                             @else
                                                 {{-- If array is flat --}}
-                                                {{ implode(', ', $value) }}
+                                                <span>{{ implode(', ', $value) }}</span>
                                             @endif
                                         @elseif (is_bool($value))
-                                            {{ $value ? __('hiko.yes') : __('hiko.no') }}
+                                            <span>{{ $value ? 'Yes' : 'No' }}</span>
                                         @else
-                                            {{ $value }}
+                                            <span>{{ $value }}</span>
                                         @endif
                                     </li>
                                 @endif
@@ -155,7 +153,7 @@
                         </ul>
                     </div>
                 @else
-                    <p class="text-red-500">{{ __('hiko.no_metadata_found') }}</p>
+                    <p class="text-red-500">No metadata found.</p>
                 @endif
             </div>
         </div>
