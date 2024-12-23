@@ -7,35 +7,20 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Log;
 
 class Language
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     * @param Request $request
+     * @param  \Closure(Request): (Response|RedirectResponse)  $next
+     * @return Response|RedirectResponse
      */
     public function handle(Request $request, Closure $next)
     {
-        try {
-            $locale = $request->session()->get('locale');
-
-            if ($locale && in_array($locale, ['cs', 'en'])) {
-                App::setLocale($locale);
-            } else {
-                App::setLocale(config('app.locale')); // Set to default locale
-            }
-        } catch (\Exception $e) {
-            Log::error('Error setting locale.', [
-                'error' => $e->getMessage(),
-                'user_id' => auth()->id(),
-                'current_locale' => $locale,
-            ]);
-            // Optionally, you can abort or handle the error as needed
-            abort(400, 'Invalid locale setting.');
+        if ($request->session()->has('locale') && in_array($request->session()->get('locale'), ['cs', 'en'])) {
+            App::setLocale($request->session()->get('locale'));
         }
 
         return $next($request);
