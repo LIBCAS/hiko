@@ -25,7 +25,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/scout": "^10.0",
         "laravel/tinker": "^2.8",
-        "livewire/livewire": "^3.4",
+        "livewire/livewire": "^3.5",
         "maatwebsite/excel": "^3.1",
         "nesbot/carbon": "^2.72",
         "predis/predis": "*",

@@ -6,8 +6,11 @@ use Livewire\Component;
 
 class RelatedResources extends Component
 {
-    public $resources;
+    public $resources = []; // Always init. as an array.
 
+    /**
+     * Resource to the list.
+     */
     public function addItem()
     {
         $this->resources[] = [
@@ -16,23 +19,36 @@ class RelatedResources extends Component
         ];
     }
 
+    /**
+     * No index init.
+     *
+     * @param int $index
+     */
     public function removeItem($index)
     {
         unset($this->resources[$index]);
-        $this->resources = array_values($this->resources);
+        $this->resources = array_values($this->resources); // Re-index the array
     }
 
+    /**
+     * Resources initialization.
+     */
     public function mount()
     {
-        if (request()->old('related_resources')) {
-            $this->resources = request()->old('related_resources');
-        }
+        // Initialize from old request data if available
+        $this->resources = request()->old('related_resources', []);
 
-        if (empty($this->resources)) {
+        // It's always an array
+        if (!is_array($this->resources)) {
             $this->resources = [];
         }
     }
 
+    /**
+     * Component rendering.
+     *
+     * @return \Illuminate\View\View
+     */
     public function render()
     {
         return view('livewire.related-resources');

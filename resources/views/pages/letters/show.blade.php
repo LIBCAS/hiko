@@ -315,7 +315,7 @@
             @endif
         </tbody>
     </table>
-    @if ($letter->copies)
+    @if (!empty($letter->copies) && is_array($letter->copies))
         <h2 class="text-lg font-bold">{{ __('hiko.repositories_and_versions') }}</h2>
         @foreach ($letter->copies as $c)
             <table class="w-full mb-10 text-sm">
@@ -415,7 +415,7 @@
             </tbody>
         </table>
     @endif
-    @if ($letter->related_resources)
+    @if (!empty($letter->related_resources) && is_iterable($letter->related_resources))
         <h2 class="text-lg font-bold">{{ __('hiko.related_resources') }} </h2>
         <table class="w-full mb-10 text-sm">
             <tbody>
@@ -447,11 +447,4 @@
             {!! $letter->content !!}
         </div>
     @endif
-    <div class="flex flex-wrap mb-6 -m-x-1 gallery space-x-1">
-        @foreach ($letter->media as $image)
-            <a href="{{ $image->getUrl() }}" target="_blank">
-                <img src="{{ $image->getUrl('thumb') }}" alt="{{ $image->description }}" loading="lazy" class="w-full">
-            </a>
-        @endforeach
-    </div>
 </x-app-layout>

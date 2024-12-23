@@ -6,47 +6,42 @@ use Livewire\Component;
 
 class LetterMetaField extends Component
 {
-    public array $items;
-    public array $fields;
+    public array $items = [];
+    public array $fields = [];
     public string $route;
     public string $label;
     public string $fieldKey;
 
     public function addItem()
     {
-        $fields = array_merge(['value', 'label'], collect($this->fields)->map(function ($field) {
-            return $field['key'];
-        })->toArray());
+        $fields = array_merge(['value', 'label'], array_map(fn($field) => $field['key'], $this->fields));
 
         $newItem = [];
-
         foreach ($fields as $field) {
             $newItem[$field] = '';
         }
 
         $this->items[] = $newItem;
 
-        $this->emit('itemChanged');
+        $this->dispatch('itemChanged');
     }
 
-    public function removeItem($index)
+    public function removeItem(int $index)
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
-        $this->emit('itemChanged');
+        $this->dispatch('itemChanged');
     }
 
-    public function changeItemValue($index, $data)
+    public function changeItemValue(int $index, array $data)
     {
-        $this->items[$index]['label'] = $data['label'] ?: '';
-        $this->items[$index]['value'] = $data['label'] ? $data['value'] : '';
+        $this->items[$index]['label'] = $data['label'] ?? '';
+        $this->items[$index]['value'] = !empty($data['label']) ? $data['value'] : '';
     }
 
     public function mount()
     {
-        if (empty($this->items)) {
-            $this->items = [];
-        }
+        $this->items = $this->items ?? [];
     }
 
     public function render()
@@ -56,6 +51,6 @@ class LetterMetaField extends Component
 
     public function updatedItems()
     {
-        $this->emit('itemChanged');
+        $this->dispatch('itemChanged');
     }
 }
