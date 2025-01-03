@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Media;
@@ -56,13 +56,13 @@ class ImageMetadataForm extends Component
             }
         });
 
-        $this->emit('imageChanged');
+        $this->dispatch('imageChanged');
     }
 
     public function remove($id)
     {
         Media::where('id', $id)->delete();
-        $this->emit('imageRemoved');
+        $this->dispatch('imageRemoved');
     }
 
     public function mount()

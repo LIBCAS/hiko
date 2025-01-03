@@ -4,77 +4,77 @@
             <span class="block text-sm">
                 ID
             </span>
-            <x-input wire:model.defer="filters.id" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.id" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.from') }}</span>
-            <x-input wire:model.defer="filters.after" class="block w-full px-2 text-sm lg:w-32" type="date" />
+            <x-input wire:model="filters.after" class="block w-full px-2 text-sm lg:w-32" type="date" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.to') }}</span>
-            <x-input wire:model.defer="filters.before" class="block w-full px-2 text-sm lg:w-32" type="date" />
+            <x-input wire:model="filters.before" class="block w-full px-2 text-sm lg:w-32" type="date" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.signature') }}</span>
-            <x-input wire:model.defer="filters.signature" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.signature" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.author') }}</span>
-            <x-input wire:model.defer="filters.author" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.author" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.recipient') }}</span>
-            <x-input wire:model.defer="filters.recipient" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.recipient" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.origin') }}</span>
-            <x-input wire:model.defer="filters.origin" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.origin" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.destination') }}</span>
-            <x-input wire:model.defer="filters.destination" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.destination" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.repository') }}</span>
-            <x-input wire:model.defer="filters.repository" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.repository" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.archive') }}</span>
-            <x-input wire:model.defer="filters.archive" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.archive" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.collection') }}</span>
-            <x-input wire:model.defer="filters.collection" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.collection" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.keywords') }}</span>
-            <x-input wire:model.defer="filters.keyword" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.keyword" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.mentioned') }}</span>
-            <x-input wire:model.defer="filters.mentioned" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.mentioned" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.full_text') }}</span>
-            <x-input wire:model.defer="filters.fulltext" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.fulltext" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.abstract') }}</span>
-            <x-input wire:model.defer="filters.abstract" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.abstract" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.language') }} {{ __('hiko.in_english') }}</span>
-            <x-input wire:model.defer="filters.languages" class="block w-full px-2 text-sm lg:w-32" type="text" />
+            <x-input wire:model="filters.languages" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">{{ __('hiko.note') }}</span>
-            <x-input wire:model.defer="filters.note" class="block w-full px-2 text-sm lg:w-32" type="text"/>
+            <x-input wire:model="filters.note" class="block w-full px-2 text-sm lg:w-32" type="text"/>
         </label>
         <label>
             <span class="block text-sm">
                 {{ __('hiko.media') }}
             </span>
-            <x-select wire:model.defer="filters.media" class="w-full px-2 text-sm lg:w-32">
+            <x-select wire:model="filters.media" class="w-full px-2 text-sm lg:w-32">
                 <option value="">
                     ---
                 </option>
@@ -90,7 +90,7 @@
             <span class="block text-sm">
                 {{ __('hiko.status') }}
             </span>
-            <x-select wire:model.defer="filters.status" class="w-full px-2 text-sm lg:w-32">
+            <x-select wire:model="filters.status" class="w-full px-2 text-sm lg:w-32">
                 <option value="">
                     ---
                 </option>
@@ -105,14 +105,14 @@
         @can('manage-users')
             <label>
                 <span class="block text-sm">{{ __('hiko.editors') }}</span>
-                <x-input wire:model.defer="filters.editor" class="block w-full px-2 text-sm lg:w-32" type="text" />
+                <x-input wire:model="filters.editor" class="block w-full px-2 text-sm lg:w-32" type="text" />
             </label>
         @elsecan('manage-metadata')
             <label>
                 <span class="block text-sm">
                     {{ __('hiko.only_my_records') }}
                 </span>
-                <x-select wire:model.defer="filters.editor" class="w-full px-2 text-sm lg:w-32">
+                <x-select wire:model="filters.editor" class="w-full px-2 text-sm lg:w-32">
                     <option value="">
                         {{ __('hiko.no') }}
                     </option>
@@ -126,7 +126,7 @@
             <span class="block text-sm">
                 {{ __('hiko.order_by') }}
             </span>
-            <x-select wire:model.defer="filters.order" class="w-full px-2 text-sm lg:w-40">
+            <x-select wire:model="filters.order" class="w-full px-2 text-sm lg:w-40">
                 <option value='updated_at'>
                     {{ __('hiko.by_update') }}
                 </option>
@@ -143,10 +143,10 @@
                 {{ __('hiko.order_direction') }}
             </span>
             <div class="flex flex-col">
-                <x-radio name="direction" wire:model.defer="filters.direction"
+                <x-radio name="direction" wire:model="filters.direction"
                     aria-label="{{ __('hiko.ascending') }}" title="{{ __('hiko.ascending') }}" label="ASC"
                     value="asc" />
-                <x-radio name="direction" wire:model.defer="filters.direction"
+                <x-radio name="direction" wire:model="filters.direction"
                     aria-label="{{ __('hiko.descending') }}" title="{{ __('hiko.descending') }}" label="DESC"
                     value="desc" />
             </div>

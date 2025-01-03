@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire;
 
 use App\Models\Letter;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -24,7 +24,7 @@ class LettersTable extends Component
     public function search()
     {
         $this->resetPage();
-        // Было: $this->emit('filtersChanged', $this->filters);
+        // Было: $this->dispatch('filtersChanged', $this->filters);
         // Стало:
         $this->dispatch('filtersChanged', filters: $this->filters);
 

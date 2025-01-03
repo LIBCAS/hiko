@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire;
 
 use Livewire\Component;
 
@@ -13,7 +13,7 @@ class Editor extends Component
         $this->letter->content = $html;
         $this->letter->content_stripped = $plainText;
         $this->letter->save();
-        $this->emit('saved');
+        $this->dispatch('saved');
     }
 
     public function render()

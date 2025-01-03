@@ -1,13 +1,10 @@
 <div>
-    <div class="relative" x-data="{ isVisible: true }" @click.away="isVisible = false">
-        <x-input wire:model="search" class="block w-full mt-1" type="search" x-ref="search"
-            @focus="isVisible = true" @keydown.escape.window="isVisible = false" @keydown="isVisible = true"
-            @keydown.shift.tab="isVisible = false" />
+    <div class="relative">
+        <x-input wire:model.live="search" class="block w-full mt-1" type="search" id="search-input" />
         <x-icons.refresh wire:loading
             class="absolute top-0 right-0 h-5 mt-3 mr-4 text-primary-light motion-safe:animate-spin" />
         @if (strlen($search) >= 2)
-            <div class="absolute z-50 w-full mt-1 text-sm bg-purple-100 rounded-md"
-                x-show.transition.opacity.duration.200="isVisible">
+            <div class="absolute z-50 w-full mt-1 text-sm bg-purple-100 rounded-md">
                 <ul class="mb-8">
                     @foreach ($searchResults as $city)
                         <li class="border border-primary-dark">

@@ -1,4 +1,4 @@
-<form wire:submit.prevent="search" wire:keydown.enter="search"
+<form wire:submit="search" wire:keydown.enter="search"
     class="flex flex-col flex-wrap w-full gap-4 p-3 my-8 rounded-lg bg-gray-200 shadow-sm items-center lg:flex-row">
     {{ $slot }}
     <x-button-simple type="button" wire:click="search" class="flex justify-center py-3 lg:justify-start">

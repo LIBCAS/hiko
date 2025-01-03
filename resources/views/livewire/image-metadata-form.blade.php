@@ -33,7 +33,7 @@
                     </a>
                     <div class="w-full max-w-sm">
                         <form class="w-full max-w-sm space-y-1"
-                            wire:submit.prevent="edit({{ $image['id'] }}, Object.fromEntries(new FormData($event.target)))">
+                            wire:submit="edit({{ $image['id'] }}, Object.fromEntries(new FormData($event.target)))">
                             <div>
                                 <x-label for="description" :value="__('hiko.description')" />
                                 <x-textarea name="description" id="description" class="block w-full mt-1">

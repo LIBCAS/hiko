@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Str;
@@ -37,7 +37,7 @@ class ImageForm extends Component
 
         $this->images = [];
 
-        $this->dispatchBrowserEvent('remove-images');
+        $this->dispatch('remove-images');
 
         $this->dispatch('imageAdded');
     }

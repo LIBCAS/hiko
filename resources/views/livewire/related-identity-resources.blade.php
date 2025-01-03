@@ -7,13 +7,13 @@
             <div wire:key="{{ $loop->index }}" class="p-3 space-y-6 bg-gray-200 shadow">
                 <div class="required">
                     <x-label for="resource_title-{{ $loop->index }}" :value="__('hiko.name_2')" />
-                    <x-input wire:model.defer="resources.{{ $loop->index }}.title"
+                    <x-input wire:model="resources.{{ $loop->index }}.title"
                         name="related_identity_resources[{{ $loop->index }}][title]" id="resource_title-{{ $loop->index }}"
                         :value="$resource['title']" class="block w-full mt-1" type="text" required />
                 </div>
                 <div>
                     <x-label for="resource_link-{{ $loop->index }}" value="URL" />
-                    <x-input wire:model.defer="resources.{{ $loop->index }}.link"
+                    <x-input wire:model="resources.{{ $loop->index }}.link"
                         name="related_identity_resources[{{ $loop->index }}][link]" id="resource_link-{{ $loop->index }}"
                         :value="$resource['link']" class="block w-full mt-1" type="text" type="url" />
                 </div>

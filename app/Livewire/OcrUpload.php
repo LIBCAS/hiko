@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -18,7 +18,7 @@ class OcrUpload extends Component
     /**
      * Uploaded photo or document.
      *
-     * @var \Livewire\TemporaryUploadedFile|null
+     * @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null
      */
     public $photo;
 

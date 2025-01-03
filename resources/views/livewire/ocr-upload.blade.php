@@ -13,7 +13,7 @@
     @endif
 
     <!-- File Upload Form -->
-    <form wire:submit.prevent="uploadAndProcess" class="space-y-6" enctype="multipart/form-data">
+    <form wire:submit="uploadAndProcess" class="space-y-6" enctype="multipart/form-data">
         <!-- File Input -->
         <div class="flex flex-col space-y-1">
             <label for="photo" class="text-sm font-medium text-gray-700">
@@ -22,7 +22,7 @@
             <input
                 id="photo"
                 type="file"
-                wire:model.defer="photo"
+                wire:model="photo"
                 accept="image/*,application/pdf"
                 class="block w-full text-sm text-gray-900 border border-gray-300 rounded cursor-pointer
                        focus:outline-none focus:ring focus:ring-blue-300

@@ -5,7 +5,7 @@
     @error('images.*')
         <p class="text-red-600">{{ $message }}</p>
     @enderror
-    <form wire:submit.prevent="save" class="max-w-sm border border-primary-light">
+    <form wire:submit="save" class="max-w-sm border border-primary-light">
         <div wire:ignore x-data="{ pond: null }" x-on:remove-images.window="pond.removeFiles();" x-init="
                 FilePond.setOptions({
                     server: {
@@ -19,7 +19,7 @@
                 });
                 pond = FilePond.create($refs.input);
             ">
-            <input wire:ignore wire:model="images" type="file" x-ref="input" multiple data-allow-reorder="true"
+            <input wire:ignore wire:model.live="images" type="file" x-ref="input" multiple data-allow-reorder="true"
                 data-max-file-size="500KB" accept="image/png, image/jpeg">
             <x-button-simple class="w-full">
                 {{ __('hiko.insert') }}

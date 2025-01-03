@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -35,7 +35,7 @@ class PasswordChange extends Component
         $this->validate();
         auth()->user()->password = Hash::make($this->newPassword);
         auth()->user()->save();
-        $this->emit('saved');
+        $this->dispatch('saved');
     }
 
     public function render()
