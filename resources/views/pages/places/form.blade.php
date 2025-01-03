@@ -144,18 +144,30 @@
     </div>
     @push('scripts')
         <script>
-             Livewire.on('updateMainForm', data => {
+            Livewire.on('updateMainForm', data => {
                 console.log('updateMainForm event received:', data);
-                document.getElementById('name').value = data[0].name;
-                document.getElementById('search-input').value = data[0].name;
-                document.getElementById('latitude').value = data[0].latitude;
-                document.getElementById('longitude').value = data[0].longitude;
-                document.getElementById('geoname_id').value = data[0].id;
+
+                const nameInput = document.getElementById('name');
+                nameInput.value = data[0].name;
+                nameInput.dispatchEvent(new Event('input')); // Trigger input event
+
+                const latitudeInput = document.getElementById('latitude');
+                latitudeInput.value = data[0].latitude;
+                latitudeInput.dispatchEvent(new Event('input')); // Trigger input event
+
+                const longitudeInput = document.getElementById('longitude');
+                longitudeInput.value = data[0].longitude;
+                longitudeInput.dispatchEvent(new Event('input')); // Trigger input event
+
+                const geonameIdInput = document.getElementById('geoname_id');
+                geonameIdInput.value = data[0].id;
+                geonameIdInput.dispatchEvent(new Event('input')); // Trigger input event
+
                 const cityNameContainer = document.querySelector('[x-ref="cityNameContainer"]');
-                    if(cityNameContainer) {
-                        cityNameContainer.__x.$data.cityName = data[0].name
-                    }
-             });
+                if(cityNameContainer) {
+                    cityNameContainer.__x.$data.cityName = data[0].name
+                }
+            });
         </script>
     @endpush
 </x-app-layout>
