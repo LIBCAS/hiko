@@ -9,7 +9,7 @@
                     @foreach ($searchResults as $city)
                         <li class="border border-primary-dark">
                             <button type="button" class="w-full p-2 text-left"
-                                wire:click="selectCity({{ $city['id'] }}, {{ $city['latitude'] }}, {{ $city['longitude'] }})">
+                                wire:click="selectCity({{ $city['id'] }}, {{ $city['latitude'] }}, {{ $city['longitude'] }}, '{{$city['name']}}')">
                                 {{ $city['name'] }} ({{ $city['adminName'] }} – {{ $city['country'] }})
                             </button>
                         </li>
@@ -27,10 +27,8 @@
     @push('scripts')
         <script>
             Livewire.on('citySelected', data => {
-                document.getElementById('latitude').value = data.latitude;
-                document.getElementById('longitude').value = data.longitude;
-                document.getElementById('geoname_id').value = data.id;
-            })
+               Livewire.dispatch('updateCoordinates', data);
+            });
         </script>
     @endpush
 </div>

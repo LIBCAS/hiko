@@ -9,10 +9,13 @@ use App\Services\Geonames;
 use App\Exports\PlacesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class PlaceController extends Controller
 {
-    protected $rules = [
+    protected array $rules = [
         'name' => ['required', 'string', 'max:255'],
         'country' => ['required', 'string', 'max:255'],
         'division' => ['nullable', 'string'],
@@ -22,21 +25,21 @@ class PlaceController extends Controller
         'geoname_id' => ['nullable', 'integer'],
     ];
 
-    protected $geonames;
+    protected Geonames $geonames;
 
     public function __construct(Geonames $geonames)
     {
         $this->geonames = $geonames;
     }
 
-    public function index()
+    public function index(): View
     {
         return view('pages.places.index', [
             'title' => __('hiko.places'),
         ]);
     }
 
-    public function create()
+    public function create(): View
     {
         return view('pages.places.form', [
             'title' => __('hiko.new_place'),
@@ -47,45 +50,40 @@ class PlaceController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         Log::info('Store method called with request data:', $request->all());
-    
+
         $validated = $request->validate($this->rules);
         Log::info('Validation passed. Data:', $validated);
-    
-        // Fetch alternative names from Geonames and set them directly
+
         $alternativeNames = $this->fetchAlternativeNames($validated['geoname_id']);
         Log::info('Fetched alternative names:', ['alternative_names' => $alternativeNames]);
-    
-        // Create the Place entry without alternative_names
+
         $place = Place::create($validated);
-    
-        // Now explicitly set and save alternative_names on the created Place
         $place->alternative_names = $alternativeNames;
-        $place->save(); // Force save the alternative_names field
-    
+        $place->save();
+
         Log::info('Place created successfully with alternative names after save. ID:', ['place_id' => $place->id]);
         Log::info('Final stored alternative names:', ['alternative_names' => $place->alternative_names]);
-    
+
         return redirect()
             ->route('places.edit', $place->id)
             ->with('success', __('hiko.saved'));
-    }       
+    }
 
-    public function update(Request $request, Place $place)
+    public function update(Request $request, Place $place): RedirectResponse
     {
         Log::info('Update method called for Place ID:', ['place_id' => $place->id]);
 
         $validated = $request->validate($this->rules);
         Log::info('Validation passed. Data:', $validated);
 
-        // Fetch alternative names from Geonames
-        $validated['alternative_names'] = $this->fetchAlternativeNames($validated['geoname_id']);
-        Log::info('Fetched alternative names:', ['alternative_names' => $validated['alternative_names']]);
+        $alternativeNames = $this->fetchAlternativeNames($validated['geoname_id']);
+        Log::info('Fetched alternative names:', ['alternative_names' => $alternativeNames]);
 
-        // Update Place entry
-        $place->update($validated);
+        $place->update(array_merge($validated, ['alternative_names' => $alternativeNames]));
+
         Log::info('Place updated successfully with ID:', ['place_id' => $place->id]);
 
         return redirect()
@@ -93,7 +91,7 @@ class PlaceController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function edit(Place $place)
+    public function edit(Place $place): View
     {
         return view('pages.places.form', [
             'title' => __('hiko.place') . ': ' . $place->id,
@@ -105,7 +103,7 @@ class PlaceController extends Controller
         ]);
     }
 
-    public function destroy(Place $place)
+    public function destroy(Place $place): RedirectResponse
     {
         $place->delete();
         Log::info('Place deleted successfully with ID:', ['place_id' => $place->id]);
@@ -120,10 +118,8 @@ class PlaceController extends Controller
         return Excel::download(new PlacesExport, 'places.xlsx');
     }
 
-    /**
-     * Fetch alternative names from Geonames service.
-     */
-    protected function fetchAlternativeNames($geonameId): array
+
+    protected function fetchAlternativeNames(?int $geonameId): array
     {
         if (!$geonameId) {
             Log::info('No geoname ID provided, skipping alternative names fetch.');
@@ -136,7 +132,6 @@ class PlaceController extends Controller
             Log::error('Alternative names fetched are not an array:', ['alternative_names' => $alternativeNames]);
             return [];
         }
-
         return $alternativeNames;
     }
 }
