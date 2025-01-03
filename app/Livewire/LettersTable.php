@@ -24,8 +24,6 @@ class LettersTable extends Component
     public function search()
     {
         $this->resetPage();
-        // Было: $this->dispatch('filtersChanged', $this->filters);
-        // Стало:
         $this->dispatch('filtersChanged', filters: $this->filters);
 
         session()->put('lettersTableFilters', $this->filters);

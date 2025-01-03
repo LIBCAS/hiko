@@ -21,10 +21,10 @@ use App\Http\Controllers\GlobalProfessionController;
 use App\Http\Controllers\GlobalProfessionCategoryController;
 use App\Http\Controllers\LetterPreviewController;
 use App\Http\Controllers\KeywordCategoryController;
+use App\Http\Controllers\GlobalKeywordController;
+use App\Http\Controllers\GlobalKeywordCategoryController;
 use App\Http\Controllers\LetterComparisonController;
 use App\Http\Controllers\TenantStorageController;
-use App\Http\Controllers\FileController;
-use Google\Cloud\DocumentAI\V1\Client\DocumentProcessorServiceClient;
 use App\Http\Controllers\Ajax\AjaxPlaceController;
 use App\Http\Controllers\Ajax\AjaxKeywordController;
 use App\Http\Controllers\Ajax\AjaxIdentityController;
@@ -34,6 +34,7 @@ use App\Http\Controllers\Ajax\SimilarPlacesController;
 use App\Http\Controllers\Ajax\AjaxProfessionController;
 use App\Http\Controllers\Ajax\SimilarLocationsController;
 use App\Http\Controllers\Ajax\AjaxKeywordCategoryController;
+use App\Http\Controllers\Ajax\AjaxGlobalKeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxGlobalProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxLetterComparisonController;
@@ -291,6 +292,58 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
             ->middleware(['auth', 'can:manage-metadata']);
     });
 
+    Route::prefix('global-keywords')->middleware(['auth'])->name('global.keywords.')->group(function () {
+        Route::get('/', [GlobalKeywordController::class, 'index'])
+            ->name('index')
+            ->middleware('can:view-users');
+    
+        Route::get('create', [GlobalKeywordController::class, 'create'])
+            ->name('create')
+            ->middleware('can:manage-users');
+
+        Route::get('{globalKeyword}/edit', [GlobalKeywordController::class, 'edit'])
+            ->name('edit')
+            ->middleware('can:manage-users');
+
+        Route::post('/', [GlobalKeywordController::class, 'store'])
+            ->name('store')
+            ->middleware('can:manage-users');
+
+        Route::put('{globalKeyword}', [GlobalKeywordController::class, 'update'])
+            ->name('update')
+            ->middleware('can:manage-users');
+
+        Route::delete('{globalKeyword}', [KeywordController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('can:manage-users');
+    });
+    
+    Route::prefix('global-keyword-categories')->middleware(['auth'])->name('global.keywords.category.')->group(function () {
+        Route::get('/', [GlobalKeywordCategoryController::class, 'index'])
+            ->name('index')
+            ->middleware('can:view-users');
+    
+        Route::get('create', [GlobalKeywordCategoryController::class, 'create'])
+            ->name('create')
+            ->middleware('can:manage-users');
+
+        Route::get('{globalKeywordCategory}/edit', [GlobalKeywordCategoryController::class, 'edit'])
+            ->name('edit')
+            ->middleware('can:manage-users');
+
+        Route::post('/', [GlobalKeywordCategoryController::class, 'store'])
+            ->name('store')
+            ->middleware('can:manage-users');
+
+        Route::put('{globalKeywordCategory}', [GlobalKeywordCategoryController::class, 'update'])
+            ->name('update')
+            ->middleware('can:manage-users');
+
+        Route::delete('{globalKeywordCategory}', [GlobalKeywordCategoryController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('can:manage-users');
+    });
+
     Route::prefix('places')->group(function () {
         Route::get('/', [PlaceController::class, 'index'])
             ->name('places')
@@ -458,6 +511,10 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
     
         Route::get('keyword', [AjaxKeywordController::class, '__invoke'])
             ->name('ajax.keywords')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('global-keyword-category', [AjaxGlobalKeywordCategoryController::class, '__invoke'])
+            ->name('ajax.global.keywords.category')
             ->middleware(['auth', 'can:manage-metadata']);
     
         Route::get('locations/similar', [SimilarLocationsController::class, '__invoke'])
