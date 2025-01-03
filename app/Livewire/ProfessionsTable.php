@@ -6,7 +6,8 @@ use App\Models\Profession;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProfessionsTable extends Component
 {
@@ -41,57 +42,58 @@ class ProfessionsTable extends Component
         ]);
     }
 
-    protected function findProfessions()
+     protected function findProfessions(): LengthAwarePaginator
     {
         $filters = $this->filters;
-
-        $professions = collect();
-
-        // Fetch tenant professions if 'local' or 'all' is selected
-        if ($filters['source'] === 'local' || $filters['source'] === 'all') {
-            $tenantProfessions = $this->getTenantProfessions();
-            $professions = $professions->merge($tenantProfessions);
-        }
-
-        // Fetch global professions if 'global' or 'all' is selected
-        if ($filters['source'] === 'global' || $filters['source'] === 'all') {
-            $globalProfessions = $this->getGlobalProfessions();
-            $professions = $professions->merge($globalProfessions);
-        }
-
-        // Sort the collection
-        if ($filters['order'] === 'cs' || $filters['order'] === 'en') {
-            $professions = $professions->sortBy(function ($item) use ($filters) {
-                return strtolower($item->getTranslation('name', $filters['order']) ?? '');
-            })->values();
-        }
-
-        // Paginate the collection
-        $page = $this->professionsPage ?? 1;
         $perPage = 10;
-        $total = $professions->count();
 
-        $professionsForPage = $professions->slice(($page - 1) * $perPage, $perPage)->values();
+        $tenantProfessionsQuery = $this->getTenantProfessionsQuery();
+        $globalProfessionsQuery = $this->getGlobalProfessionsQuery();
 
-        $paginator = new LengthAwarePaginator(
-            $professionsForPage,
-            $total,
-            $perPage,
-            $page,
-            [
-                'path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(),
-                'pageName' => 'professionsPage',
-            ]
-        );
+        $query = match($filters['source']){
+            'local' => $tenantProfessionsQuery,
+            'global' => $globalProfessionsQuery,
+            default => $this->mergeQueries($tenantProfessionsQuery, $globalProfessionsQuery),
+         };
 
-        return $paginator;
+       if ($filters['order'] === 'cs' || $filters['order'] === 'en') {
+         $orderColumn = "name->{$filters['order']}";
+           $query->orderBy($orderColumn);
+        }
+        return $query->paginate($perPage);
     }
 
-    protected function getTenantProfessions()
+    protected function mergeQueries($tenantProfessionsQuery, $globalProfessionsQuery): Builder
+    {
+           // get the underlying query
+          $unionQuery = $tenantProfessionsQuery->toBase();
+          $unionQuery->unionAll($globalProfessionsQuery->toBase());
+
+
+           // create a base query to work with
+           $query =  Profession::query()->from(DB::raw('('.$unionQuery->toSql().') as professions'));
+           // need to set the source manually, so we can map results later to the right model
+           $query->select(
+               'id',
+                'profession_category_id',
+               'name',
+               'source',
+           );
+
+            foreach ($unionQuery->getBindings() as $binding) {
+              $query->addBinding($binding);
+            }
+
+           return $query;
+
+    }
+
+
+    protected function getTenantProfessionsQuery()
     {
         $filters = $this->filters;
 
-        $tenantProfessions = Profession::with('profession_category')
+         $tenantProfessions = Profession::with('profession_category')
             ->select(
                 'id',
                 'profession_category_id',
@@ -102,12 +104,12 @@ class ProfessionsTable extends Component
         // Apply search filters
         if (!empty($filters['cs'])) {
             $csFilter = strtolower($filters['cs']);
-            $tenantProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) LIKE ?", ["%{$csFilter}%"]);
+             $tenantProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) LIKE ?", ["%{$csFilter}%"]);
         }
 
         if (!empty($filters['en'])) {
             $enFilter = strtolower($filters['en']);
-            $tenantProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$enFilter}%"]);
+             $tenantProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$enFilter}%"]);
         }
 
         // Apply category filter
@@ -118,14 +120,15 @@ class ProfessionsTable extends Component
             });
         }
 
-        return $tenantProfessions->get();
+
+        return $tenantProfessions;
     }
 
-    protected function getGlobalProfessions()
+    protected function getGlobalProfessionsQuery()
     {
         $filters = $this->filters;
 
-        $globalProfessions = \App\Models\GlobalProfession::with('profession_category')
+         $globalProfessions = \App\Models\GlobalProfession::with('profession_category')
             ->select(
                 'id',
                 'name',
@@ -147,28 +150,33 @@ class ProfessionsTable extends Component
         // Apply category filter
         if (!empty($filters['category'])) {
             $categoryFilter = strtolower($filters['category']);
-            $globalProfessions->whereHas('profession_category', function ($query) use ($categoryFilter) {
+           $globalProfessions->whereHas('profession_category', function ($query) use ($categoryFilter) {
                 $query->searchByName($categoryFilter);
             });
         }
 
-        return $globalProfessions->get();
+        return $globalProfessions;
     }
-        
+
     protected function formatTableData($data)
     {
         return [
             'header' => auth()->user()->cannot('manage-metadata')
                 ? [__('hiko.source'), 'CS', 'EN', __('hiko.category')]
                 : ['', __('hiko.source'), 'CS', 'EN', __('hiko.category')],
-            'rows' => $data->map(function ($pf) {
-                $csName = $pf->getTranslation('name', 'cs') ?? 'No CS name';
-                $enName = $pf->getTranslation('name', 'en') ?? 'No EN name';
+           'rows' => $data->map(function ($pf) {
+               if($pf->source === 'local'){
+                  $profession = Profession::find($pf->id);
+               }else{
+                   $profession = \App\Models\GlobalProfession::find($pf->id);
+               }
+                $csName = $profession->getTranslation('name', 'cs') ?? 'No CS name';
+                $enName = $profession->getTranslation('name', 'en') ?? 'No EN name';
                 $sourceLabel = $pf->source === 'local'
                     ? "<span class='inline-block text-blue-600 border border-blue-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.local')."</span>"
                     : "<span class='inline-block bg-red-100 text-red-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.global')."</span>";
-                $categoryDisplay = $pf->profession_category
-                    ? $pf->profession_category->getTranslation('name', 'cs') ?? ''
+                $categoryDisplay = $profession->profession_category
+                    ? $profession->profession_category->getTranslation('name', 'cs') ?? ''
                     : __('hiko.no_category');
 
                 if ($pf->source === 'local') {

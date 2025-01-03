@@ -6,7 +6,8 @@ use App\Models\Keyword;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class KeywordsTable extends Component
 {
@@ -41,53 +42,56 @@ class KeywordsTable extends Component
         ]);
     }
 
-    protected function findKeywords()
+    protected function findKeywords(): LengthAwarePaginator
     {
         $filters = $this->filters;
-
-        $keywords = collect();
-
-        // Fetch tenant keywords if 'local' or 'all' is selected
-        if ($filters['source'] === 'local' || $filters['source'] === 'all') {
-            $tenantKeywords = $this->getTenantKeywords();
-            $keywords = $keywords->merge($tenantKeywords);
-        }
-
-        // Fetch global keywords if 'global' or 'all' is selected
-        if ($filters['source'] === 'global' || $filters['source'] === 'all') {
-            $globalKeywords = $this->getGlobalKeywords();
-            $keywords = $keywords->merge($globalKeywords);
-        }
-
-        // Sort the collection
-        if ($filters['order'] === 'cs' || $filters['order'] === 'en') {
-            $keywords = $keywords->sortBy(function ($item) use ($filters) {
-                return strtolower($item->getTranslation('name', $filters['order']) ?? '');
-            })->values();
-        }
-
-        // Paginate the collection
-        $page = $this->page ?? 1;
         $perPage = 10;
-        $total = $keywords->count();
 
-        $keywordsForPage = $keywords->slice(($page - 1) * $perPage, $perPage)->values();
+        $tenantKeywordsQuery = $this->getTenantKeywordsQuery();
+        $globalKeywordsQuery = $this->getGlobalKeywordsQuery();
 
-        $paginator = new LengthAwarePaginator(
-            $keywordsForPage,
-            $total,
-            $perPage,
-            $page,
-            [
-                'path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(),
-                'pageName' => 'keywordsPage',
-            ]
-        );
+         $query = match($filters['source']){
+            'local' => $tenantKeywordsQuery,
+            'global' => $globalKeywordsQuery,
+             default => $this->mergeQueries($tenantKeywordsQuery, $globalKeywordsQuery),
+        };
 
-        return $paginator;
+        if ($filters['order'] === 'cs' || $filters['order'] === 'en') {
+            $orderColumn = "name->{$filters['order']}";
+             $query->orderBy($orderColumn);
+       }
+
+        return $query->paginate($perPage);
     }
 
-    protected function getTenantKeywords()
+    protected function mergeQueries($tenantKeywordsQuery, $globalKeywordsQuery): Builder
+    {
+           // get the underlying query
+          $unionQuery = $tenantKeywordsQuery->toBase();
+          $unionQuery->unionAll($globalKeywordsQuery->toBase());
+
+
+           // create a base query to work with
+           $query =  Keyword::query()->from(DB::raw('('.$unionQuery->toSql().') as keywords'));
+           // need to set the source manually, so we can map results later to the right model
+           $query->select(
+               'id',
+               'keyword_category_id',
+               'name',
+               'source',
+           );
+
+            foreach ($unionQuery->getBindings() as $binding) {
+              $query->addBinding($binding);
+            }
+
+
+           return $query;
+
+    }
+
+
+    protected function getTenantKeywordsQuery()
     {
         $filters = $this->filters;
 
@@ -118,10 +122,10 @@ class KeywordsTable extends Component
             });
         }
 
-        return $tenantKeywords->get();
+        return $tenantKeywords;
     }
 
-    protected function getGlobalKeywords()
+    protected function getGlobalKeywordsQuery()
     {
         $filters = $this->filters;
 
@@ -130,11 +134,11 @@ class KeywordsTable extends Component
                 'id',
                 'name',
                 'keyword_category_id',
-                DB::raw("'global' AS source")
+                 DB::raw("'global' AS source")
             );
 
         // Apply search filters
-        if (!empty($filters['cs'])) {
+         if (!empty($filters['cs'])) {
             $csFilter = strtolower($filters['cs']);
             $globalKeywords->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"cs\"'))) LIKE ?", ["%{$csFilter}%"]);
         }
@@ -152,24 +156,30 @@ class KeywordsTable extends Component
             });
         }
 
-        return $globalKeywords->get();
+        return $globalKeywords;
     }
-        
-    protected function formatTableData($data)
+
+    protected function formatTableData($data): array
     {
         return [
             'header' => auth()->user()->cannot('manage-metadata')
                 ? [__('hiko.source'), 'CS', 'EN', __('hiko.category')]
                 : ['', __('hiko.source'), 'CS', 'EN', __('hiko.category')],
             'rows' => $data->map(function ($pf) {
-                $csName = $pf->getTranslation('name', 'cs') ?? 'No CS name';
-                $enName = $pf->getTranslation('name', 'en') ?? 'No EN name';
+                 if($pf->source === 'local'){
+                    $keyword = Keyword::find($pf->id);
+                }else{
+                    $keyword = \App\Models\GlobalKeyword::find($pf->id);
+                }
+                $csName = $keyword->getTranslation('name', 'cs') ?? 'No CS name';
+                $enName = $keyword->getTranslation('name', 'en') ?? 'No EN name';
                 $sourceLabel = $pf->source === 'local'
                     ? "<span class='inline-block text-blue-600 border border-blue-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.local')."</span>"
                     : "<span class='inline-block bg-red-100 text-red-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.global')."</span>";
-                $categoryDisplay = $pf->keyword_category
-                    ? $pf->keyword_category->getTranslation('name', 'cs') ?? ''
+                $categoryDisplay = $keyword->keyword_category
+                    ? $keyword->keyword_category->getTranslation('name', 'cs') ?? ''
                     : __('hiko.no_category');
+
 
                 if ($pf->source === 'local') {
                     $editLink = [

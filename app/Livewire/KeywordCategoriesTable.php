@@ -6,7 +6,8 @@ use App\Models\KeywordCategory;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class KeywordCategoriesTable extends Component
 {
@@ -40,57 +41,58 @@ class KeywordCategoriesTable extends Component
         ]);
     }
 
-    protected function findCategories()
+    protected function findCategories(): LengthAwarePaginator
     {
         $filters = $this->filters;
-
-        $categories = collect();
-
-        // Fetch tenant categories if 'local' or 'all' is selected
-        if ($filters['source'] === 'local' || $filters['source'] === 'all') {
-            $tenantCategories = $this->getTenantCategories();
-            $categories = $categories->merge($tenantCategories);
-        }
-
-        // Fetch global categories if 'global' or 'all' is selected
-        if ($filters['source'] === 'global' || $filters['source'] === 'all') {
-            $globalCategories = $this->getGlobalCategories();
-            $categories = $categories->merge($globalCategories);
-        }
-
-        // Sort the collection
-        if ($filters['order'] === 'cs' || $filters['order'] === 'en') {
-            $categories = $categories->sortBy(function ($item) use ($filters) {
-                return strtolower($item->getTranslation('name', $filters['order']) ?? '');
-            })->values();
-        }
-
-        // Paginate the collection
-        $page = $this->categoriesPage ?? 1;
         $perPage = 10;
-        $total = $categories->count();
 
-        $categoriesForPage = $categories->slice(($page - 1) * $perPage, $perPage)->values();
+        $tenantCategoriesQuery = $this->getTenantCategoriesQuery();
+        $globalCategoriesQuery = $this->getGlobalCategoriesQuery();
 
-        $paginator = new LengthAwarePaginator(
-            $categoriesForPage,
-            $total,
-            $perPage,
-            $page,
-            [
-                'path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(),
-                'pageName' => 'categoriesPage',
-            ]
-        );
 
-        return $paginator;
+          $query = match($filters['source']){
+            'local' => $tenantCategoriesQuery,
+            'global' => $globalCategoriesQuery,
+             default => $this->mergeQueries($tenantCategoriesQuery, $globalCategoriesQuery),
+        };
+
+       if ($filters['order'] === 'cs' || $filters['order'] === 'en') {
+         $orderColumn = "name->{$filters['order']}";
+           $query->orderBy($orderColumn);
+        }
+
+        return $query->paginate($perPage);
     }
 
-    protected function getTenantCategories()
+    protected function mergeQueries($tenantCategoriesQuery, $globalCategoriesQuery): Builder
+    {
+           // get the underlying query
+          $unionQuery = $tenantCategoriesQuery->toBase();
+          $unionQuery->unionAll($globalCategoriesQuery->toBase());
+
+
+           // create a base query to work with
+           $query =  KeywordCategory::query()->from(DB::raw('('.$unionQuery->toSql().') as keyword_categories'));
+           // need to set the source manually, so we can map results later to the right model
+           $query->select(
+               'id',
+               'name',
+               'source',
+           );
+
+            foreach ($unionQuery->getBindings() as $binding) {
+              $query->addBinding($binding);
+            }
+
+           return $query;
+
+    }
+
+    protected function getTenantCategoriesQuery()
     {
         $filters = $this->filters;
 
-        $tenantCategories = KeywordCategory::select(
+       $tenantCategories = KeywordCategory::select(
                 'id',
                 'name',
                 DB::raw("'local' AS source")
@@ -104,17 +106,17 @@ class KeywordCategoriesTable extends Component
 
         if (!empty($filters['en'])) {
             $enFilter = strtolower($filters['en']);
-            $tenantCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$enFilter}%"]);
+           $tenantCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$enFilter}%"]);
         }
 
-        return $tenantCategories->get();
+        return $tenantCategories;
     }
 
-    protected function getGlobalCategories()
+    protected function getGlobalCategoriesQuery()
     {
-        $filters = $this->filters;
+         $filters = $this->filters;
 
-        $globalCategories = \App\Models\GlobalKeywordCategory::select(
+         $globalCategories = \App\Models\GlobalKeywordCategory::select(
                 'id',
                 'name',
                 DB::raw("'global' AS source")
@@ -131,7 +133,7 @@ class KeywordCategoriesTable extends Component
             $globalCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"en\"'))) LIKE ?", ["%{$enFilter}%"]);
         }
 
-        return $globalCategories->get();
+        return $globalCategories;
     }
 
     protected function formatTableData($data)
@@ -139,19 +141,24 @@ class KeywordCategoriesTable extends Component
         $header = auth()->user()->cannot('manage-metadata')
             ? [__('hiko.source'), 'CS', 'EN']
             : ['', __('hiko.source'), 'CS', 'EN'];
-    
+
         return [
             'header' => $header,
-            'rows' => $data->map(function ($category) {
+             'rows' => $data->map(function ($category) {
+                  if($category->source === 'local'){
+                       $cat = KeywordCategory::find($category->id);
+                   }else{
+                        $cat = \App\Models\GlobalKeywordCategory::find($category->id);
+                   }
                 // Access translations
-                $csName = $category->getTranslation('name', 'cs') ?? 'No CS name';
-                $enName = $category->getTranslation('name', 'en') ?? 'No EN name';
-    
+                $csName = $cat->getTranslation('name', 'cs') ?? 'No CS name';
+                $enName = $cat->getTranslation('name', 'en') ?? 'No EN name';
+
                 // Source label
                 $sourceLabel = $category->source === 'local'
                     ? "<span class='inline-block text-blue-600 border border-blue-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.local')."</span>"
                     : "<span class='inline-block bg-red-100 text-red-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.global')."</span>";
-    
+
                 // Build the edit link with the correct route name
                 if ($category->source === 'local') {
                     $editLink = [
@@ -170,14 +177,14 @@ class KeywordCategoriesTable extends Component
                         'disabled' => true,
                     ];
                 }
-    
+
                 // Construct the row
                 $row = auth()->user()->cannot('manage-metadata') ? [] : [$editLink];
-    
+
                 $row[] = [
                     'label' => $sourceLabel,
                 ];
-    
+
                 $row = array_merge($row, [
                     [
                         'label' => $csName,
@@ -186,7 +193,7 @@ class KeywordCategoriesTable extends Component
                         'label' => $enName,
                     ],
                 ]);
-    
+
                 return $row;
             })->toArray(),
         ];
