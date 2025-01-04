@@ -22,7 +22,7 @@
             <input
                 id="photo"
                 type="file"
-                wire:model="photo"
+                wire:model.live="photo"
                 accept="image/*,application/pdf"
                 class="block w-full text-sm text-gray-900 border border-gray-300 rounded cursor-pointer
                        focus:outline-none focus:ring focus:ring-blue-300

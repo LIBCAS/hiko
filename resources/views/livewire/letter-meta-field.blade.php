@@ -15,7 +15,7 @@
                         wire:key="select-{{ $loop->index }}">
                         
                         <x-select 
-                            wire:model="items.{{ $loop->index }}.value" 
+                            wire:model.live="items.{{ $loop->index }}.value" 
                             class="block w-full mt-1"
                             name="{{ $fieldKey }}[{{ $loop->index }}][value]" 
                             :id="$fieldKey . '-' . $loop->index">
@@ -38,7 +38,7 @@
                                 for="{{ $fieldKey }}-{{ $field['key'] . '-' . $loop->parent->index }}" 
                                 value="{{ $field['label'] }}" />
                             <x-input 
-                                wire:model="items.{{ $loop->parent->index }}.{{ $field['key'] }}"
+                                wire:model.live="items.{{ $loop->parent->index }}.{{ $field['key'] }}"
                                 name="{{ $fieldKey }}[{{ $loop->parent->index }}][{{ $field['key'] }}]"
                                 id="{{ $fieldKey }}-{{ $field['key'] . '-' . $loop->parent->index }}"
                                 class="block w-full mt-1" 

@@ -4,13 +4,13 @@
             <span class="block text-sm">
                 {{ __('hiko.name') }}
             </span>
-            <x-input wire:model="filters.name" class="block w-full px-2 text-sm lg:w-64" type="text" />
+            <x-input wire:model.live="filters.name" class="block w-full px-2 text-sm lg:w-64" type="text" />
         </label>
         <label>
             <span class="block text-sm">
                 {{ __('hiko.role') }}
             </span>
-            <x-select wire:model="filters.role" class="w-full px-2 text-sm lg:w-64">
+            <x-select wire:model.live="filters.role" class="w-full px-2 text-sm lg:w-64">
                 <option value="">---</option>
                 @foreach ($roles as $role)
                     <option value="{{ $role }}">
@@ -23,7 +23,7 @@
             <span class="block text-sm">
                 {{ __('hiko.status') }}
             </span>
-            <x-select wire:model="filters.status" class="w-full px-2 text-sm lg:w-64">
+            <x-select wire:model.live="filters.status" class="w-full px-2 text-sm lg:w-64">
                 <option value="">---</option>
                 <option value="1">
                     {{ __('hiko.active') }}

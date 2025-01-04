@@ -20,7 +20,7 @@
 
         <label>
             <span class="block text-sm">{{ __('hiko.compare_order_by') }}</span>
-            <x-select wire:model="filters.order" class="w-full px-2 text-sm lg:w-64">
+            <x-select wire:model.live="filters.order" class="w-full px-2 text-sm lg:w-64">
                 <option value="similarity">{{ __('hiko.compare_similarity') }}</option>
                 <option value="date_computed">{{ __('hiko.compare_date_computed') }}</option>
                 <option value="letter_id">{{ __('hiko.compare_letter_id') }}</option>
