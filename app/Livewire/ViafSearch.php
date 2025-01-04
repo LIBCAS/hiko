@@ -17,7 +17,7 @@ class ViafSearch extends Component
     {
         $this->search = '';
 
-        $this->emit('identitySelected', [
+        $this->dispatch('identitySelected', [
             'id' => $id,
         ]);
     }
