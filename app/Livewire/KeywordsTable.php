@@ -158,7 +158,6 @@ class KeywordsTable extends Component
 
         return $globalKeywords;
     }
-
     protected function formatTableData($data): array
     {
         return [
@@ -166,39 +165,44 @@ class KeywordsTable extends Component
                 ? [__('hiko.source'), 'CS', 'EN', __('hiko.category')]
                 : ['', __('hiko.source'), 'CS', 'EN', __('hiko.category')],
             'rows' => $data->map(function ($pf) {
-                 if($pf->source === 'local'){
-                    $keyword = Keyword::find($pf->id);
-                }else{
-                    $keyword = \App\Models\GlobalKeyword::find($pf->id);
+                // Determine whether the keyword is local or global
+                $keyword = $pf->source === 'local'
+                    ? Keyword::find($pf->id)
+                    : \App\Models\GlobalKeyword::find($pf->id);
+    
+                // Handle cases where $keyword is null
+                if (!$keyword) {
+                    return [
+                        ['label' => 'N/A'], // Placeholder for edit link
+                        ['label' => 'N/A'], // Placeholder for source
+                        ['label' => 'No CS name'],
+                        ['label' => 'No EN name'],
+                        ['label' => "<span class='text-red-600'>" . __('hiko.no_attached_category') . "</span>"],
+                    ];
                 }
+    
+                // Translations
                 $csName = $keyword->getTranslation('name', 'cs') ?? 'No CS name';
                 $enName = $keyword->getTranslation('name', 'en') ?? 'No EN name';
+    
+                // Source label
                 $sourceLabel = $pf->source === 'local'
                     ? "<span class='inline-block text-blue-600 border border-blue-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.local')."</span>"
                     : "<span class='inline-block bg-red-100 text-red-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.global')."</span>";
+    
+                // Category display with red text for missing category
                 $categoryDisplay = $keyword->keyword_category
                     ? $keyword->keyword_category->getTranslation('name', 'cs') ?? ''
-                    : __('hiko.no_category');
-
-
-                if ($pf->source === 'local') {
-                    $editLink = [
-                        'label' => __('hiko.edit'),
-                        'link' => route('keywords.edit', $pf->id),
-                    ];
-                } elseif ($pf->source === 'global' && auth()->user()->can('manage-users')) {
-                    $editLink = [
-                        'label' => __('hiko.edit'),
-                        'link' => route('global.keywords.edit', $pf->id),
-                    ];
-                } else {
-                    $editLink = [
-                        'label' => __('hiko.edit'),
-                        'link' => '#',
-                        'disabled' => true,
-                    ];
-                }
-
+                    : "<span class='text-red-600'>" . __('hiko.no_attached_category') . "</span>";
+    
+                // Edit link logic
+                $editLink = $pf->source === 'local'
+                    ? ['label' => __('hiko.edit'), 'link' => route('keywords.edit', $pf->id)]
+                    : (auth()->user()->can('manage-users')
+                        ? ['label' => __('hiko.edit'), 'link' => route('global.keywords.edit', $pf->id)]
+                        : ['label' => __('hiko.edit'), 'link' => '#', 'disabled' => true]);
+    
+                // Compile the row
                 $row = auth()->user()->cannot('manage-metadata') ? [] : [$editLink];
                 $row[] = ['label' => $sourceLabel];
                 $row = array_merge($row, [
@@ -206,9 +210,9 @@ class KeywordsTable extends Component
                     ['label' => $enName],
                     ['label' => $categoryDisplay],
                 ]);
-
+    
                 return $row;
             })->toArray(),
         ];
-    }
+    }    
 }

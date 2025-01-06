@@ -164,21 +164,23 @@ class ProfessionsTable extends Component
             'header' => auth()->user()->cannot('manage-metadata')
                 ? [__('hiko.source'), 'CS', 'EN', __('hiko.category')]
                 : ['', __('hiko.source'), 'CS', 'EN', __('hiko.category')],
-           'rows' => $data->map(function ($pf) {
-               if($pf->source === 'local'){
-                  $profession = Profession::find($pf->id);
-               }else{
-                   $profession = \App\Models\GlobalProfession::find($pf->id);
-               }
+            'rows' => $data->map(function ($pf) {
+                if($pf->source === 'local'){
+                    $profession = Profession::find($pf->id);
+                } else {
+                    $profession = \App\Models\GlobalProfession::find($pf->id);
+                }
                 $csName = $profession->getTranslation('name', 'cs') ?? 'No CS name';
                 $enName = $profession->getTranslation('name', 'en') ?? 'No EN name';
                 $sourceLabel = $pf->source === 'local'
                     ? "<span class='inline-block text-blue-600 border border-blue-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.local')."</span>"
                     : "<span class='inline-block bg-red-100 text-red-600 text-xs uppercase px-2 py-1 rounded'>".__('hiko.global')."</span>";
+                    
+                // Wrap "no_attached_category" in a span with red text
                 $categoryDisplay = $profession->profession_category
                     ? $profession->profession_category->getTranslation('name', 'cs') ?? ''
-                    : __('hiko.no_category');
-
+                    : "<span class='text-red-600'>".__('hiko.no_attached_category')."</span>";
+    
                 if ($pf->source === 'local') {
                     $editLink = [
                         'label' => __('hiko.edit'),
@@ -196,7 +198,7 @@ class ProfessionsTable extends Component
                         'disabled' => true,
                     ];
                 }
-
+    
                 $row = auth()->user()->cannot('manage-metadata') ? [] : [$editLink];
                 $row[] = ['label' => $sourceLabel];
                 $row = array_merge($row, [
@@ -204,9 +206,9 @@ class ProfessionsTable extends Component
                     ['label' => $enName],
                     ['label' => $categoryDisplay],
                 ]);
-
+    
                 return $row;
             })->toArray(),
         ];
-    }
+    }    
 }
