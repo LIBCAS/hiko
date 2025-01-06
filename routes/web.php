@@ -25,6 +25,7 @@ use App\Http\Controllers\GlobalKeywordController;
 use App\Http\Controllers\GlobalKeywordCategoryController;
 use App\Http\Controllers\LetterComparisonController;
 use App\Http\Controllers\TenantStorageController;
+use App\Http\Controllers\OAIPMHController;
 use App\Http\Controllers\Ajax\AjaxPlaceController;
 use App\Http\Controllers\Ajax\AjaxKeywordController;
 use App\Http\Controllers\Ajax\AjaxIdentityController;
@@ -582,6 +583,8 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
         
             return response($file, 200)->header('Content-Type', $type);
         })->name('serve-local-file')->where('path', '.*');
+
+    Route::get('/oai-pmh', [OAIPMHController::class, 'handle'])->name('oai-pmh');
 });
 
 require __DIR__ . '/auth.php';
