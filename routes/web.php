@@ -313,7 +313,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
             ->name('update')
             ->middleware('can:manage-users');
 
-        Route::delete('{globalKeyword}', [KeywordController::class, 'destroy'])
+        Route::delete('{globalKeyword}', [GlobalKeywordController::class, 'destroy'])
             ->name('destroy')
             ->middleware('can:manage-users');
     });
