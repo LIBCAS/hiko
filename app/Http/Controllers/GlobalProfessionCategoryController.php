@@ -14,13 +14,19 @@ class GlobalProfessionCategoryController extends Controller
         'en' => ['nullable', 'string', 'max:255'],
     ];
 
+    /**
+     * Display a listing of the resource.
+     */
     public function index(): View
     {
         $categories = GlobalProfessionCategory::with('professions')->paginate(20);
-        return view('pages.global-professions-categories.index', compact('categories'))
+        return view('pages.global-professions-categories', compact('categories'))
             ->with('title', __('hiko.global_profession_categories'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
         return view('pages.global-professions-categories.form', [
@@ -31,6 +37,9 @@ class GlobalProfessionCategoryController extends Controller
         ]);
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate($this->rules);
@@ -42,11 +51,21 @@ class GlobalProfessionCategoryController extends Controller
             ],
         ]);
 
+        // Handle 'action' parameter
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('global.professions.category.create')
+                ->with('success', __('hiko.saved'));
+        }
+
         return redirect()
             ->route('global.professions.category.edit', $globalProfessionCategory->id)
             ->with('success', __('hiko.saved'));
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(GlobalProfessionCategory $globalProfessionCategory): View
     {
         $globalProfessionCategory->load('professions');
@@ -61,6 +80,9 @@ class GlobalProfessionCategoryController extends Controller
         ]);
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, GlobalProfessionCategory $globalProfessionCategory): RedirectResponse
     {
         $validated = $request->validate($this->rules);
@@ -72,11 +94,21 @@ class GlobalProfessionCategoryController extends Controller
             ],
         ]);
 
+        // Handle 'action' parameter
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('global.professions.category.create')
+                ->with('success', __('hiko.saved'));
+        }
+
         return redirect()
             ->route('global.professions.category.edit', $globalProfessionCategory->id)
             ->with('success', __('hiko.saved'));
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(GlobalProfessionCategory $globalProfessionCategory): RedirectResponse
     {
         $globalProfessionCategory->delete();

@@ -16,6 +16,9 @@ class GlobalProfessionController extends Controller
         'category_id' => ['nullable', 'exists:global_profession_categories,id'],
     ];    
 
+    /**
+     * Display a listing of the resource.
+     */
     public function index(): View
     {
         $professions = GlobalProfession::with('profession_category')->paginate(20);
@@ -23,6 +26,9 @@ class GlobalProfessionController extends Controller
             ->with('title', __('hiko.global_professions'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
         $categories = GlobalProfessionCategory::all();
@@ -35,6 +41,9 @@ class GlobalProfessionController extends Controller
         ]);
     }    
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate($this->rules);
@@ -49,15 +58,25 @@ class GlobalProfessionController extends Controller
     
         $profession = GlobalProfession::create($professionData);
     
+        // Handle 'action' parameter
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('global.professions.create')
+                ->with('success', __('hiko.saved'));
+        }
+    
         return redirect()
             ->route('global.professions.edit', $profession->id)
             ->with('success', __('hiko.saved'));
     }      
 
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(GlobalProfession $globalProfession): View
     {
         $categories = GlobalProfessionCategory::all();
-        $globalProfession->load('identities');
+        $globalProfession->load('profession_category');
     
         return view('pages.global-professions.form', [
             'title' => __('hiko.global_profession'),
@@ -69,6 +88,9 @@ class GlobalProfessionController extends Controller
         ]);
     }    
     
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, GlobalProfession $globalProfession): RedirectResponse
     {
         $validated = $request->validate($this->rules);
@@ -83,11 +105,21 @@ class GlobalProfessionController extends Controller
     
         $globalProfession->update($updateData);
     
+        // Handle 'action' parameter
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('global.professions.create')
+                ->with('success', __('hiko.saved'));
+        }
+    
         return redirect()
             ->route('global.professions.edit', $globalProfession->id)
             ->with('success', __('hiko.saved'));
     }       
-
+    
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(GlobalProfession $globalProfession): RedirectResponse
     {
         $globalProfession->delete();

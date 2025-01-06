@@ -16,13 +16,19 @@ class GlobalKeywordController extends Controller
         'category_id' => ['nullable', 'exists:global_keyword_categories,id'],
     ];
 
+    /**
+     * Display a listing of the resource.
+     */
     public function index(): View
     {
         $keywords = GlobalKeyword::with('keyword_category')->paginate(20);
-        return view('pages.global-keywords.index', compact('keywords'))
+        return view('pages.global-keywords', compact('keywords'))
             ->with('title', __('hiko.global_keywords'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
         $categories = GlobalKeywordCategory::all();
@@ -35,6 +41,9 @@ class GlobalKeywordController extends Controller
         ]);
     }    
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate($this->rules);
@@ -49,15 +58,25 @@ class GlobalKeywordController extends Controller
     
         $keyword = GlobalKeyword::create($keywordData);
     
+        // Handle 'action' parameter
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('global.keywords.create')
+                ->with('success', __('hiko.saved'));
+        }
+    
         return redirect()
             ->route('global.keywords.edit', $keyword->id)
             ->with('success', __('hiko.saved'));
     }    
 
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(GlobalKeyword $globalKeyword): View
     {
         $categories = GlobalKeywordCategory::all();
-        $globalKeyword->load('identities');
+        $globalKeyword->load('keyword_category');
     
         return view('pages.global-keywords.form', [
             'title' => __('hiko.global_keyword'),
@@ -69,6 +88,9 @@ class GlobalKeywordController extends Controller
         ]);
     }    
     
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, GlobalKeyword $globalKeyword): RedirectResponse
     {
         $validated = $request->validate($this->rules);
@@ -83,11 +105,21 @@ class GlobalKeywordController extends Controller
     
         $globalKeyword->update($updateData);
     
+        // Handle 'action' parameter
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('global.keywords.create')
+                ->with('success', __('hiko.saved'));
+        }
+    
         return redirect()
             ->route('global.keywords.edit', $globalKeyword->id)
             ->with('success', __('hiko.saved'));
     }    
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(GlobalKeyword $globalKeyword): RedirectResponse
     {
         $globalKeyword->delete();

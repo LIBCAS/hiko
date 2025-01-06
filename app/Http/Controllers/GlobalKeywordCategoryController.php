@@ -20,7 +20,7 @@ class GlobalKeywordCategoryController extends Controller
     public function index(): View
     {
         $categories = GlobalKeywordCategory::with('keywords')->paginate(20);
-        return view('pages.global-keywords-categories', compact('categories'))
+        return view('pages.global-keywords-categories.index', compact('categories'))
             ->with('title', __('hiko.global_keyword_categories'));
     }
 
@@ -53,6 +53,13 @@ class GlobalKeywordCategoryController extends Controller
 
         $category = GlobalKeywordCategory::create($categoryData);
 
+        // Handle action parameter
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('global.keywords.category.create')
+                ->with('success', __('hiko.saved'));
+        }
+
         return redirect()
             ->route('global.keywords.category.edit', $category->id)
             ->with('success', __('hiko.saved'));
@@ -66,7 +73,7 @@ class GlobalKeywordCategoryController extends Controller
         $globalKeywordCategory->load('keywords');
 
         return view('pages.global-keywords-categories.form', [
-            'title' => __('hiko.global_keyword_category'),
+            'title' => __('hiko.edit_global_keyword_category'),
             'keywordCategory' => $globalKeywordCategory,
             'action' => route('global.keywords.category.update', $globalKeywordCategory->id),
             'method' => 'PUT',
@@ -89,6 +96,13 @@ class GlobalKeywordCategoryController extends Controller
         ];
 
         $globalKeywordCategory->update($updateData);
+
+        // Handle action parameter
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('global.keywords.category.create')
+                ->with('success', __('hiko.saved'));
+        }
 
         return redirect()
             ->route('global.keywords.category.edit', $globalKeywordCategory->id)
