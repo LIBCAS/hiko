@@ -30,7 +30,7 @@ class GlobalKeywordCategoryController extends Controller
     public function create(): View
     {
         return view('pages.global-keywords-categories.form', [
-            'title' => __('hiko.new_global_keyword_category'),
+            'title' => __('hiko.new_global_keywords_category'),
             'keywordCategory' => new GlobalKeywordCategory(),
             'action' => route('global.keywords.category.store'),
             'label' => __('hiko.create'),

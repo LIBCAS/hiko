@@ -17,7 +17,7 @@
         <!-- File Input -->
         <div class="flex flex-col space-y-1">
             <label for="photo" class="text-sm font-medium text-gray-700">
-                Upload Document
+                {{ __('hiko.upload_document') }}
             </label>
             <input
                 id="photo"
@@ -31,7 +31,7 @@
                 aria-describedby="photoHelp"
                 aria-required="true"
             />
-            <small id="photoHelp" class="text-xs text-gray-500">Supported formats: JPEG, PNG, PDF. Max size: 10MB.</small>
+            <small id="photoHelp" class="text-xs text-gray-500">{{ __('hiko.supported_formats') }}</small>
             @error('photo')
                 <span class="text-xs text-red-500">{{ $message }}</span>
             @enderror
@@ -49,12 +49,9 @@
                 wire:target="uploadAndProcess"
                 aria-busy="{{ $isProcessing ? 'true' : 'false' }}"
             >
-                <!-- Button Text when not processing -->
                 <span wire:loading.remove wire:target="uploadAndProcess">
-                    Upload and Process
+                    {{ __('hiko.upload_and_process') }}
                 </span>
-
-                <!-- Loader when processing -->
                 <span wire:loading wire:target="uploadAndProcess" class="flex items-center">
                     <svg
                         class="animate-spin h-5 w-5 mr-2 text-white"
@@ -77,7 +74,7 @@
                             d="M4 12a8 8 0 018-8v8H4z"
                         ></path>
                     </svg>
-                    Processing...
+                    {{ __('hiko.loading') }}
                 </span>
             </button>
 
@@ -88,99 +85,8 @@
                 class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded
                        hover:bg-gray-300 transition"
             >
-                Reset
+                {{ __('hiko.reset') }}
             </button>
         </div>
     </form>
-
-    <!-- Processing Results -->
-    @if ($metadata)
-        <div class="mt-6 space-y-6">
-            <!-- Recognized Text -->
-            <div>
-                <h2 class="mb-2 text-lg font-bold">Recognized Text</h2>
-                @if (!empty($ocrText))
-                    <textarea
-                        class="w-full p-3 border border-gray-300 rounded
-                               focus:ring focus:ring-blue-200"
-                        rows="8"
-                        readonly
-                    >{{ $ocrText }}</textarea>
-                @else
-                    <p class="text-red-500">No text found.</p>
-                @endif
-            </div>
-
-            <!-- Extracted Metadata -->
-            <div>
-                <h2 class="mb-2 text-lg font-bold">Extracted Metadata</h2>
-
-                @if (!empty($metadata))
-                    <div class="p-4 bg-gray-50 rounded shadow">
-                        <ul class="space-y-2">
-                            @foreach ($metadata as $key => $value)
-                                @php
-                                    // Skip recognized_text and full_text to avoid redundancy
-                                    if (in_array($key, ['recognized_text', 'full_text'])) {
-                                        continue;
-                                    }
-
-                                    // Label (fallback to formatted key)
-                                    $label = ucfirst(str_replace('_', ' ', $key));
-
-                                    // Determine if the value is empty
-                                    $isEmpty = false;
-                                    if (is_null($value)) {
-                                        $isEmpty = true;
-                                    } elseif (is_string($value) && trim($value) === '') {
-                                        $isEmpty = true;
-                                    } elseif (is_array($value) && count($value) === 0) {
-                                        $isEmpty = true;
-                                    }
-                                @endphp
-
-                                @if (!$isEmpty)
-                                    <li class="flex flex-col space-y-1">
-                                        <strong>{{ $label }}:</strong>
-                                        @if (is_array($value))
-                                            {{-- Check if the array is associative or indexed --}}
-                                            @php
-                                                $isAssoc = array_keys($value) !== range(0, count($value) - 1);
-                                            @endphp
-
-                                            @if ($isAssoc)
-                                                <ul class="ml-4 list-disc">
-                                                    @foreach ($value as $subKey => $subValue)
-                                                        <li>
-                                                            <strong>{{ ucfirst(str_replace('_', ' ', $subKey)) }}:</strong>
-                                                            @if (is_array($subValue))
-                                                                {{ implode(', ', $subValue) }}
-                                                            @elseif (is_bool($subValue))
-                                                                {{ $subValue ? 'Yes' : 'No' }}
-                                                            @else
-                                                                {{ $subValue }}
-                                                            @endif
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            @else
-                                                {{-- If array is flat --}}
-                                                <span>{{ implode(', ', $value) }}</span>
-                                            @endif
-                                        @elseif (is_bool($value))
-                                            <span>{{ $value ? 'Yes' : 'No' }}</span>
-                                        @else
-                                            <span>{{ $value }}</span>
-                                        @endif
-                                    </li>
-                                @endif
-                            @endforeach
-                        </ul>
-                    </div>
-                @else
-                    <p class="text-red-500">No metadata found.</p>
-                @endif
-            </div>
-        </div>
-    @endif
 </div>

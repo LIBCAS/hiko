@@ -19,7 +19,7 @@
     <!-- Keydwords Categories Section -->
     @can('manage-metadata')
         <div class="flex items-center space-x-4 mt-8">
-            <x-create-link label="{{ __('hiko.new_keywords_category') }}" link="{{ route('keywords.category.create') }}" />
+            <x-create-link label="{{ __('hiko.new_keyword_category') }}" link="{{ route('keywords.category.create') }}" />
             @can('manage-users')
                 <x-create-link label="{{ __('hiko.new_global_keywords_category') }}" link="{{ route('global.keywords.category.create') }}" />
             @endcan
