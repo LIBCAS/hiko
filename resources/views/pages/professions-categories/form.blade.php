@@ -82,25 +82,6 @@
 
         @if ($professionCategory->id)
             <div class="max-w-sm bg-white p-6 shadow rounded-md">
-                @if ($professionCategory->identities?->count() > 0)
-                    <h2 class="text-l font-semibold">
-                        {{ __('hiko.attached_persons_count') }}: {{ $professionCategory->identities->count() }}
-                    </h2>
-                    <ul class="list-disc px-3 py-3">
-                        @foreach ($professionCategory->identities as $identity)
-                            <li>
-                                <a href="{{ route('identities.edit', $identity->id) }}" class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">
-                                    {{ $identity->name }}
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                @else
-                    <h2 class="text-l font-semibold">{{ __('hiko.no_attached_persons') }}</h2>
-                @endif
-            </div>
-
-            <div class="max-w-sm bg-white p-6 shadow rounded-md">
                 <h2 class="text-l font-semibold">
                     {{ __('hiko.professions') }}: {{ $professionCategory->professions?->count() ?? 0 }}
                 </h2>

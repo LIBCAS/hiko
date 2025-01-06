@@ -48,12 +48,20 @@ class Identity extends Model
 
     public function profession_categories(): BelongsToMany
     {
-        $pivotTable = $this->isTenancyInitialized()
-            ? "{$this->getTenantPrefix()}__identity_profession_category"
-            : 'global_identity_profession_category';
+        if ($this->isTenancyInitialized()) {
+            $pivotTable = "{$this->getTenantPrefix()}__identity_profession_category";
 
-        return $this->belongsToMany(ProfessionCategory::class, $pivotTable, 'identity_id', 'profession_category_id')
-                    ->withPivot('position');
+            return $this->belongsToMany(
+                ProfessionCategory::class,
+                $pivotTable,
+                'identity_id',
+                'profession_category_id'
+            )->withPivot('position');
+        }
+
+        // Return an empty BelongsToMany relationship to prevent errors
+        return $this->belongsToMany(ProfessionCategory::class, null, null, null)
+                    ->whereRaw('1 = 0'); // Ensures no records are returned
     }
 
     public function letters(): BelongsToMany

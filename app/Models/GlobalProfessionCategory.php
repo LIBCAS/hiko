@@ -20,6 +20,23 @@ class GlobalProfessionCategory extends Model
 
     public function identities()
     {
-        return $this->belongsToMany(Identity::class, 'global_identity_profession_category', 'profession_category_id', 'identity_id');
+        if ($this->isTenancyInitialized()) {
+            $pivotTable = "{$this->getTenantPrefix()}__identity_profession_category";
+            return $this->belongsToMany(Identity::class, $pivotTable, 'profession_category_id', 'identity_id');
+        }
+
+        // Return an empty relationship to prevent accessing non-existent tables
+        return $this->belongsToMany(Identity::class, null, null, null)
+                    ->whereRaw('1 = 0'); // Ensures no records are returned
+    }
+
+    protected function isTenancyInitialized(): bool
+    {
+        return tenancy()->initialized;
+    }
+
+    protected function getTenantPrefix(): ?string
+    {
+        return tenancy()->tenant ? tenancy()->tenant->table_prefix : null;
     }
 }

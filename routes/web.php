@@ -201,7 +201,7 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
             ->name('update')
             ->middleware('can:manage-users');
 
-        Route::delete('{globalProfession}', [ProfessionController::class, 'destroy'])
+        Route::delete('{globalProfession}', [GlobalProfessionController::class, 'destroy'])
             ->name('destroy')
             ->middleware('can:manage-users');
     });

@@ -14,12 +14,12 @@ class GlobalProfessionController extends Controller
         'cs' => ['required', 'string', 'max:255'],
         'en' => ['nullable', 'string', 'max:255'],
         'category_id' => ['nullable', 'exists:global_profession_categories,id'],
-    ];
+    ];    
 
     public function index(): View
     {
         $professions = GlobalProfession::with('profession_category')->paginate(20);
-        return view('pages.global-professions.index', compact('professions'))
+        return view('pages.global-professions', compact('professions'))
             ->with('title', __('hiko.global_professions'));
     }
 
@@ -38,7 +38,7 @@ class GlobalProfessionController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate($this->rules);
-
+    
         $professionData = [
             'name' => [
                 'cs' => $validated['cs'],
@@ -52,7 +52,7 @@ class GlobalProfessionController extends Controller
         return redirect()
             ->route('global.professions.edit', $profession->id)
             ->with('success', __('hiko.saved'));
-    }    
+    }      
 
     public function edit(GlobalProfession $globalProfession): View
     {
@@ -86,7 +86,7 @@ class GlobalProfessionController extends Controller
         return redirect()
             ->route('global.professions.edit', $globalProfession->id)
             ->with('success', __('hiko.saved'));
-    }    
+    }       
 
     public function destroy(GlobalProfession $globalProfession): RedirectResponse
     {

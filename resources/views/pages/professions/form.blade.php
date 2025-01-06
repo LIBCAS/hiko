@@ -42,10 +42,10 @@
                         <option value="">{{ __('hiko.select_category') }}</option>
                         @foreach ($availableCategories as $availableCategory)
                             @if ((tenancy()->initialized && $availableCategory instanceof \App\Models\ProfessionCategory) ||
-                                 (!tenancy()->initialized && $availableCategory instanceof \App\Models\GlobalProfessionCategory))
+                                (!tenancy()->initialized && $availableCategory instanceof \App\Models\GlobalProfessionCategory))
                                 <option value="{{ $availableCategory->id }}" 
                                     {{ old('category', $profession->profession_category_id ?? null) == $availableCategory->id ? 'selected' : '' }}>
-                                    {{ $availableCategory->name }}
+                                    {{ $availableCategory->getTranslation('name', app()->getLocale()) }}
                                 </option>
                             @endif
                         @endforeach
@@ -99,15 +99,15 @@
 
             <!-- Category Section -->
             <div class="max-w-sm bg-white p-6 shadow rounded-md">
-                @if ($profession->profession_category)
-                    <h2 class="text-l font-semibold">{{ __('hiko.attached_category') }}: 
-                        <a href="{{ route('professions.category.edit', $profession->profession_category->id) }}" class="border-b-2 text-primary-dark border-primary-light hover:border-primary-dark">
-                            {{ $profession->profession_category->name }}
-                        </a>
-                    </h2>
-                @else
-                    <h2 class="text-l font-semibold">{{ __('hiko.no_attached_category') }}</h2>
-                @endif
+            @if ($profession->profession_category)
+                <h2 class="text-l font-semibold">{{ __('hiko.attached_category') }}: 
+                    <a href="{{ route('professions.category.edit', $profession->profession_category->id) }}" class="border-b-2 text-primary-dark border-primary-light hover:border-primary-dark">
+                        {{ $profession->profession_category->getTranslation('name', app()->getLocale()) }}
+                    </a>
+                </h2>
+            @else
+                <h2 class="text-l font-semibold">{{ __('hiko.no_attached_category') }}</h2>
+            @endif
             </div>
         @endif
     </div>

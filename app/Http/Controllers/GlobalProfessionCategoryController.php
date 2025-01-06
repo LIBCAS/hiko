@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
 use App\Models\GlobalProfessionCategory;
-use App\Models\GlobalProfession;
+use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class GlobalProfessionCategoryController extends Controller
 {
     protected array $rules = [
-        'cs' => ['required_without:en', 'max:255'],
-        'en' => ['required_without:cs', 'max:255'],
+        'cs' => ['required_without:en', 'string', 'max:255'],
+        'en' => ['nullable', 'string', 'max:255'],
     ];
 
     public function index(): View
@@ -25,7 +24,7 @@ class GlobalProfessionCategoryController extends Controller
     public function create(): View
     {
         return view('pages.global-professions-categories.form', [
-            'title' => __('hiko.new_global_professions_category'),
+            'title' => __('hiko.new_global_profession_category'),
             'professionCategory' => new GlobalProfessionCategory(),
             'action' => route('global.professions.category.store'),
             'label' => __('hiko.create'),
@@ -53,11 +52,12 @@ class GlobalProfessionCategoryController extends Controller
         $globalProfessionCategory->load('professions');
 
         return view('pages.global-professions-categories.form', [
-            'title' => __('hiko.global_professions_category'),
+            'title' => __('hiko.global_profession_category'),
             'professionCategory' => $globalProfessionCategory,
             'action' => route('global.professions.category.update', $globalProfessionCategory->id),
             'method' => 'PUT',
             'label' => __('hiko.save'),
+            'professions' => $globalProfessionCategory->professions, // Assuming you pass related professions
         ]);
     }
 
@@ -82,7 +82,7 @@ class GlobalProfessionCategoryController extends Controller
         $globalProfessionCategory->delete();
 
         return redirect()
-            ->route('global.professions.category.index')
+            ->route('professions')
             ->with('success', __('hiko.removed'));
     }
 }

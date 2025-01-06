@@ -54,7 +54,7 @@
                 <!-- Category Dropdown -->
                 <div class="required">
                     <x-label for="category" :value="__('hiko.category')" />
-                    <x-select name="category" id="category" class="block w-full mt-1" 
+                    <x-select name="category_id" id="category" class="block w-full mt-1" 
                         x-data="ajaxChoices({ url: '{{ route('ajax.global.professions.category') }}', element: $el })"
                         x-init="initSelect()"
                     >
@@ -62,13 +62,13 @@
                         @foreach ($availableCategories as $availableCategory)
                             @if ($availableCategory instanceof \App\Models\GlobalProfessionCategory)
                                 <option value="{{ $availableCategory->id }}" 
-                                    {{ old('category', $profession->profession_category_id ?? null) == $availableCategory->id ? 'selected' : '' }}>
+                                    {{ old('category_id', $profession->profession_category_id ?? null) == $availableCategory->id ? 'selected' : '' }}>
                                     {{ $availableCategory->getTranslation('name', app()->getLocale()) }}
                                 </option>
                             @endif
                         @endforeach
                     </x-select>
-                    @error('category')
+                    @error('category_id')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>
@@ -121,15 +121,15 @@
 
             <!-- Category Section -->
             <div class="max-w-sm bg-white p-6 shadow rounded-md">
-                @if ($profession->profession_category)
-                    <h2 class="text-l font-semibold">{{ __('hiko.attached_category') }}: 
-                        <a href="{{ route('professions.category.edit', $profession->profession_category->id) }}" class="border-b-2 text-primary-dark border-primary-light hover:border-primary-dark">
-                            {{ $profession->profession_category->name }}
-                        </a>
-                    </h2>
-                @else
-                    <h2 class="text-l font-semibold">{{ __('hiko.no_attached_category') }}</h2>
-                @endif
+            @if ($profession->profession_category)
+                <h2 class="text-l font-semibold">{{ __('hiko.attached_category') }}: 
+                    <a href="{{ route('global.professions.category.edit', $profession->profession_category->id) }}" class="border-b-2 text-primary-dark border-primary-light hover:border-primary-dark">
+                        {{ $profession->profession_category->name }}
+                    </a>
+                </h2>
+            @else
+                <h2 class="text-l font-semibold">{{ __('hiko.no_attached_category') }}</h2>
+            @endif
             </div>
         @endif
     </div>
