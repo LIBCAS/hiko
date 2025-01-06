@@ -17,9 +17,4 @@ class GlobalKeywordCategory extends Model
     {
         return $this->hasMany(GlobalKeyword::class, 'keyword_category_id');
     }
-
-    public function identities()
-    {
-        return $this->belongsToMany(Identity::class, 'global_identity_keyword_category', 'keyword_category_id', 'identity_id');
-    }
 }

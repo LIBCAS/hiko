@@ -22,15 +22,4 @@ class GlobalKeyword extends Model
     {
         return $this->belongsTo(GlobalKeywordCategory::class, 'keyword_category_id');
     }
-
-    /**
-     * Relationship with the Identity model.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
-    public function identities()
-    {
-        return $this->belongsToMany(Identity::class, 'global_identity_keyword', 'keyword_id', 'identity_id');
-    }  
-    
 }

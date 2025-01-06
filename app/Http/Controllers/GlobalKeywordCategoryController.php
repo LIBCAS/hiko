@@ -2,58 +2,71 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
 use App\Models\GlobalKeywordCategory;
-use App\Models\GlobalKeyword;
+use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class GlobalKeywordCategoryController extends Controller
 {
     protected array $rules = [
-        'cs' => ['required_without:en', 'max:255'],
-        'en' => ['required_without:cs', 'max:255'],
+        'cs' => ['required_without:en', 'string', 'max:255'],
+        'en' => ['required_without:cs', 'string', 'max:255'],
     ];
 
+    /**
+     * Display a listing of the resource.
+     */
     public function index(): View
     {
         $categories = GlobalKeywordCategory::with('keywords')->paginate(20);
-        return view('pages.global-keywords-categories.index', compact('categories'))
+        return view('pages.global-keywords-categories', compact('categories'))
             ->with('title', __('hiko.global_keyword_categories'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(): View
     {
         return view('pages.global-keywords-categories.form', [
-            'title' => __('hiko.new_global_keywords_category'),
+            'title' => __('hiko.new_global_keyword_category'),
             'keywordCategory' => new GlobalKeywordCategory(),
             'action' => route('global.keywords.category.store'),
             'label' => __('hiko.create'),
         ]);
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate($this->rules);
 
-        $globalKeywordCategory = GlobalKeywordCategory::create([
+        $categoryData = [
             'name' => [
                 'cs' => $validated['cs'],
                 'en' => $validated['en'] ?? null,
             ],
-        ]);
+        ];
+
+        $category = GlobalKeywordCategory::create($categoryData);
 
         return redirect()
-            ->route('global.keywords.category.edit', $globalKeywordCategory->id)
+            ->route('global.keywords.category.edit', $category->id)
             ->with('success', __('hiko.saved'));
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(GlobalKeywordCategory $globalKeywordCategory): View
     {
         $globalKeywordCategory->load('keywords');
 
         return view('pages.global-keywords-categories.form', [
-            'title' => __('hiko.global_keywords_category'),
+            'title' => __('hiko.global_keyword_category'),
             'keywordCategory' => $globalKeywordCategory,
             'action' => route('global.keywords.category.update', $globalKeywordCategory->id),
             'method' => 'PUT',
@@ -61,28 +74,36 @@ class GlobalKeywordCategoryController extends Controller
         ]);
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, GlobalKeywordCategory $globalKeywordCategory): RedirectResponse
     {
         $validated = $request->validate($this->rules);
 
-        $globalKeywordCategory->update([
+        $updateData = [
             'name' => [
                 'cs' => $validated['cs'],
                 'en' => $validated['en'] ?? null,
             ],
-        ]);
+        ];
+
+        $globalKeywordCategory->update($updateData);
 
         return redirect()
             ->route('global.keywords.category.edit', $globalKeywordCategory->id)
             ->with('success', __('hiko.saved'));
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(GlobalKeywordCategory $globalKeywordCategory): RedirectResponse
     {
         $globalKeywordCategory->delete();
 
         return redirect()
-            ->route('global.keywords.category.index')
+            ->route('keywords')
             ->with('success', __('hiko.removed'));
-    }
+    }   
 }
