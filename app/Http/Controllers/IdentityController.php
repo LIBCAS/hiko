@@ -7,6 +7,8 @@ use App\Models\Profession;
 use App\Models\GlobalProfession;
 use App\Models\ProfessionCategory;
 use App\Http\Requests\IdentityRequest;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\IdentitiesExport;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -157,6 +159,20 @@ class IdentityController extends Controller
         return redirect()
             ->route('identities.edit', $identity->id)
             ->with('success', __('hiko.saved'));
+    }
+
+    public function destroy(Identity $identity): RedirectResponse
+    {
+        $identity->delete();
+
+        return redirect()
+            ->route('identities')
+            ->with('success', __('hiko.removed'));
+    }
+
+    public function export(): BinaryFileResponse
+    {
+        return Excel::download(new IdentitiesExport, 'identities.xlsx');
     }
 
     protected function syncRelations(Identity $identity, array $validated)
