@@ -102,6 +102,22 @@
                 </option>
             </x-select>
         </label>
+        <label>
+            <span class="block text-sm">
+                {{ __('hiko.approval') }}
+            </span>
+            <x-select wire:model.live="filters.approval" class="w-full px-2 text-sm lg:w-32">
+                <option value="">
+                    ---
+                </option>
+                <option value="{{ \App\Models\Letter::APPROVED }}">
+                    {{ __('hiko.approved') }}
+                </option>
+                <option value="{{ \App\Models\Letter::NOT_APPROVED }}">
+                    {{ __('hiko.not_approved') }}
+                </option>
+            </x-select>
+        </label>
         @can('manage-users')
             <label>
                 <span class="block text-sm">{{ __('hiko.editors') }}</span>

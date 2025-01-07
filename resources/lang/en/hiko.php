@@ -308,4 +308,7 @@ return [
     'ocr_processing_completed_successfully' => 'OCR processing completed successfully.',
     'error_processing_document' => 'There was an error processing the document:',
     'failed_to_save_the_uploaded_file' => 'Failed to save the uploaded file.',
+    'approval' => 'Approval',
+    'approved' => 'Approved',
+    'not_approved' => 'Not Approved',
 ];

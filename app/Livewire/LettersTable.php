@@ -74,7 +74,7 @@ class LettersTable extends Component
                 $subquery->select('users.id', 'name');
             },
         ])
-        ->select('id', 'uuid', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status');
+        ->select('id', 'uuid', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status', 'approval');
 
         $query->filter($this->filters);
 
@@ -86,7 +86,7 @@ class LettersTable extends Component
     protected function formatTableData($data): array
     {
         return [
-            'header' => ['', 'ID', __('hiko.date'), __('hiko.signature'), __('hiko.author'), __('hiko.recipient'), __('hiko.origin'), __('hiko.destination'), __('hiko.keywords'), __('hiko.media'), __('hiko.status')],
+            'header' => ['', 'ID', __('hiko.date'), __('hiko.signature'), __('hiko.author'), __('hiko.recipient'), __('hiko.origin'), __('hiko.destination'), __('hiko.keywords'), __('hiko.media'), __('hiko.approval'), __('hiko.status')],
             'rows' => $data->map(function ($letter) {
                 $identities = $letter->identities->groupBy('pivot.role')->toArray();
                 $places = $letter->places->groupBy('pivot.role')->toArray();
@@ -135,6 +135,13 @@ class LettersTable extends Component
                         'label' => __("hiko.{$letter->status}"),
                         'link' => $showPublicUrl ? config('hiko.public_url') . '?letter=' . $letter->uuid : '',
                         'external' => $showPublicUrl,
+                    ],
+                    [
+                        'label' => $letter->approval === Letter::APPROVED 
+                            ? '<span class="text-green-600">'. __('hiko.approved') .'</span>' 
+                            : '<span class="text-red-600">'. __('hiko.not_approved') .'</span>',
+                        'link' => '',
+                        'external' => false,
                     ],
                 ];
             })->toArray(),

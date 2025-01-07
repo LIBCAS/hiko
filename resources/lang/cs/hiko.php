@@ -305,4 +305,7 @@ return [
     'ocr_processing_completed_successfully' => 'OCR zpracování proběhlo úspěšně.',
     'error_processing_document' => 'Došlo k chybě při zpracování dokumentu:',
     'failed_to_save_the_uploaded_file' => 'Nepodařilo se uložit nahraný soubor.',
+    'approval' => 'Schválení',
+    'approved' => 'Schváleno',
+    'not_approved' => 'Neschváleno',    
 ];

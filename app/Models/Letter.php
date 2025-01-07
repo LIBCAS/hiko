@@ -19,6 +19,10 @@ class Letter extends Model implements HasMedia
 {
     use HasTranslations, InteractsWithMedia, HasFactory, Searchable;
 
+    // Constants for approval
+    const APPROVED = 1;
+    const NOT_APPROVED = 0;
+
     /**
      * The database connection name.
      *
@@ -41,13 +45,22 @@ class Letter extends Model implements HasMedia
     protected $guarded = ['id', 'uuid'];
 
     /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'approval' => 'integer',
+    ];
+
+    /**
      * The table associated with the model.
      *
      * @var string
      */
     protected $table;
 
-    /**
+   /**
      * Letter constructor.
      *
      * Dynamically sets the table name based on tenancy.
@@ -66,7 +79,7 @@ class Letter extends Model implements HasMedia
             // Prevent errors if tenancy is not initialized
             $this->table = 'default_letters'; // Or throw an exception if required
         }
-    }   
+    } 
 
     public function registerMediaConversions(Media $media = null): void
     {

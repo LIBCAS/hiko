@@ -22,27 +22,27 @@ class LetterRequest extends FormRequest
             'range_month' => ['nullable', 'integer', 'numeric'],
             'range_day' => ['nullable', 'integer', 'numeric'],
             'date_note' => ['nullable', 'string'],
-
+    
             // Author-related fields
             'author_uncertain' => ['nullable', 'boolean'],
             'author_inferred' => ['nullable', 'boolean'],
             'author_note' => ['nullable', 'string'],
-
+    
             // Recipient-related fields
             'recipient_uncertain' => ['nullable', 'boolean'],
             'recipient_inferred' => ['nullable', 'boolean'],
             'recipient_note' => ['nullable', 'string'],
-
+    
             // Destination-related fields
             'destination_uncertain' => ['nullable', 'boolean'],
             'destination_inferred' => ['nullable', 'boolean'],
             'destination_note' => ['nullable', 'string'],
-
+    
             // Origin-related fields
             'origin_uncertain' => ['nullable', 'boolean'],
             'origin_inferred' => ['nullable', 'boolean'],
             'origin_note' => ['nullable', 'string'],
-
+    
             // Metadata
             'people_mentioned_note' => ['nullable', 'string'],
             'copies' => ['nullable', 'array'],
@@ -55,26 +55,27 @@ class LetterRequest extends FormRequest
             'notes_private' => ['nullable', 'string'],
             'notes_public' => ['nullable', 'string'],
             'status' => ['required', 'string', 'max:255'],
-
+            'approval' => ['required', 'integer', 'in:1,0'],
+    
             // Relationships (arrays with nested objects)
             'authors' => ['nullable', 'array'],
             'authors.*.value' => ['required', 'integer'], // Author ID
             'authors.*.marked' => ['nullable', 'string'], // Optional "marked" data
-
+    
             'recipients' => ['nullable', 'array'],
             'recipients.*.value' => ['required', 'integer'], // Recipient ID
             'recipients.*.marked' => ['nullable', 'string'], // Optional "marked" data
             'recipients.*.salutation' => ['nullable', 'string'], // Optional salutation
-
+    
             'origins' => ['nullable', 'array'],
             'origins.*.value' => ['required', 'integer'], // Origin ID
             'origins.*.marked' => ['nullable', 'string'], // Optional "marked" data
-
+    
             'destinations' => ['nullable', 'array'],
             'destinations.*.value' => ['required', 'integer'], // Destination ID
             'destinations.*.marked' => ['nullable', 'string'], // Optional "marked" data
         ];
-    }
+    }    
 
     public function attributes()
     {
@@ -115,16 +116,17 @@ class LetterRequest extends FormRequest
                 })
                 ->toArray(),
         ]);
-
+    
         // Convert boolean-like values to integers
         foreach ($this->rules() as $key => $fieldRules) {
-            if (in_array('boolean', $fieldRules)) {
+            // Ensure $fieldRules is an array before using in_array
+            if (is_array($fieldRules) && in_array('boolean', $fieldRules)) {
                 $this->merge([
                     $key => $this->boolean($key),
                 ]);
             }
         }
-    }
+    }    
 
     public function messages()
     {

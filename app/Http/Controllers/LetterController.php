@@ -81,7 +81,6 @@ class LetterController extends Controller
             'method' => 'PUT',
             'action' => route('letters.update', $letter),
             'label' => __('hiko.edit'),
-            'globalKeywords' => \App\Models\GlobalKeyword::all(), // Fetch all global keywords
         ], $this->viewData($letter)));
     }
 
@@ -172,44 +171,29 @@ class LetterController extends Controller
     {
         return [
             'letter' => $letter,
-            'selectedAuthors' => $this->getSelectedMeta($letter, 'Identity', 'authors', ['marked']),
-            'selectedRecipients' => $this->getSelectedMeta($letter, 'Identity', 'recipients', ['marked', 'salutation']),
-            'selectedOrigins' => $this->getSelectedMeta($letter, 'Place', 'origins', ['marked']),
-            'selectedDestinations' => $this->getSelectedMeta($letter, 'Place', 'destinations', ['marked']),
-            'selectedKeywords' => $this->getSelectedKeywords($letter),
+            'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
+            'selectedRecipients' => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
+            'selectedOrigins' => $this->getSelectedMetaFields($letter, 'origins', ['marked']),
+            'selectedDestinations' => $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
+            'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
             'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
             'languages' => Language::all()->pluck('name'),
-            'selectedLanguages' => request()->old('languages', explode(';', $letter->languages ?? '')),
+            'selectedLanguages' => request()->old('languages')
+                ? (array) request()->old('languages')
+                : explode(';', $letter->languages),
         ];
     }
-    
-    protected function getSelectedKeywords(Letter $letter): array
-    {
-        return $letter->keywords->map(fn($keyword) => [
-            'value' => $keyword->id,
-            'label' => $keyword->getTranslation('name', config('app.locale')),
-        ])->toArray();
-    }   
 
     protected function attachRelated(Request $request, Letter $letter)
     {
-        // Sync global keyword IDs
-        $globalKeywordIds = collect($request->keywords)->filter(function ($keywordId) {
-            return \App\Models\GlobalKeyword::find($keywordId); // Check if the global keyword exists
-        });
-    
-        $letter->keywords()->sync($globalKeywordIds);
-    
-        // Process other relationships
+        $letter->keywords()->sync($request->keywords);
         $letter->identities()->detach();
         $letter->places()->detach();
-    
         $letter->identities()->attach($this->prepareAttachmentData($request, 'authors', 'author'));
         $letter->identities()->attach($this->prepareAttachmentData($request, 'recipients', 'recipient', ['salutation']));
         $letter->places()->attach($this->prepareAttachmentData($request, 'origins', 'origin'));
         $letter->places()->attach($this->prepareAttachmentData($request, 'destinations', 'destination'));
-    
-        // Handle mentioned identities
+
         $mentioned = [];
         foreach ((array) $request->mentioned as $key => $id) {
             $mentioned[$id] = [
@@ -217,9 +201,10 @@ class LetterController extends Controller
                 'role' => 'mentioned',
             ];
         }
+
         $letter->identities()->attach($mentioned);
-    }    
-    
+    }
+
     protected function prepareAttachmentData(Request $request, string $fieldKey, string $role, array $pivotFields = []): array
     {
         if (!isset($request->{$fieldKey})) {
@@ -246,40 +231,51 @@ class LetterController extends Controller
         return $items;
     }
 
-    protected function getSelectedMeta(Letter $letter, string $model, string $fieldKey, array $pivotFields = []): array
+    protected function getSelectedMetaFields(Letter $letter, string $fieldKey, array $pivotFields): array
     {
-        // Check for old form data
         if (request()->old($fieldKey)) {
-            $ids = request()->old($fieldKey);
-            return app("App\Models\\{$model}")
-                ->whereIn('id', $ids)
-                ->get()
-                ->map(function ($item) use ($pivotFields) {
-                    $result = [
-                        'value' => $item->id,
-                        'label' => $item->name,
-                    ];
-                    foreach ($pivotFields as $field) {
-                        $result[$field] = $item->pivot->{$field} ?? null;
-                    }
-                    return $result;
-                })->toArray();
+            return is_array(request()->old($fieldKey))
+                ? request()->old($fieldKey)
+                : json_decode(request()->old($fieldKey), true);
         }
-    
-        // Fetch related data from the letter model
+
         return $letter->{$fieldKey}
             ->map(function ($item) use ($pivotFields) {
                 $result = [
                     'value' => $item->id,
                     'label' => $item->name,
                 ];
+
                 foreach ($pivotFields as $field) {
-                    $result[$field] = $item->pivot->{$field} ?? null;
+                    $result[$field] = $item->pivot->{$field};
                 }
+
                 return $result;
             })
             ->toArray();
-    }    
+    }
+
+    protected function getSelectedMeta(Letter $letter, string $model, string $fieldKey): array
+    {
+        if (!request()->old($fieldKey) && !$letter->{$fieldKey}) {
+            return [];
+        }
+
+        $items = request()->old($fieldKey)
+            ? app("App\Models\\{$model}")::whereIn('id', request()->old($fieldKey))
+                ->orderByRaw('FIELD(id, ' . implode(',', request()->old($fieldKey)) . ')')
+                ->get()
+            : $letter->{$fieldKey};
+
+        return $items->map(function ($item) {
+            return [
+                'value' => $item->id,
+                'label' => is_array($item->name)
+                    ? $item->getTranslation('name', config('hiko.metadata_default_locale'))
+                    : $item->name,
+            ];
+        })->toArray();
+    }
 
     public function duplicate(Request $request, Letter $letter): RedirectResponse
     {

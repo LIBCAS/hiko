@@ -51,6 +51,10 @@ class LetterBuilder extends Builder
             $this->where('status', $filters['status']);
         }
 
+        if (!empty($filters['approval'])) {
+            $this->where('approval', $filters['approval']);
+        }
+
         if (!empty($filters['after'])) {
             $this->after($filters['after']);
         }

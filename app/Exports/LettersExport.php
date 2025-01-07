@@ -15,6 +15,11 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, WithChunkReading, ShouldAutoSize
 {
+    /**
+     * Define the query to retrieve letters with necessary relationships.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function query()
     {
         return Letter::query()->with([
@@ -23,9 +28,28 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, W
             'origins',
             'destinations',
             'keywords',
-        ]);
+        ])->select(
+            'id',
+            'uuid',
+            'created_at',
+            'updated_at',
+            'history',
+            'copies',
+            'date_year',
+            'date_month',
+            'date_day',
+            'date_computed',
+            'status',
+            'approval' // Include 'approval' in the select statement
+        );
     }
 
+    /**
+     * Map each letter to an array representing a row in the Excel sheet.
+     *
+     * @param \App\Models\Letter $letter
+     * @return array
+     */
     public function map($letter): array
     {
         // Related Resources split into titles and links
@@ -90,17 +114,23 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, W
             $letter->notes_private ?? '',
             $letter->notes_public ?? '',
             $letter->status ?? '',
+            $letter->approval ? __('hiko.approved') : __('hiko.not_approved'),
             $this->wrapText($letter->history ?? ''),
         ];
     }
 
+    /**
+     * Register events to style the Excel sheet, particularly headers and sub-headers.
+     *
+     * @return array
+     */
     public function registerEvents(): array
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
 
-                // Group Headers
+                // Define main headers with their respective merged cell ranges
                 $headers = [
                     ['General Information', 'A1:D1'],
                     ['Date Information', 'E1:M1'],
@@ -114,7 +144,7 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, W
                     ['Content and Notes', 'AL1:AV1'],
                 ];
 
-                // Correctly apply headers to the sheet
+                // Apply main headers and merge cells
                 foreach ($headers as $header) {
                     [$title, $range] = $header;
                     preg_match('/([A-Z]+)1/', $range, $matches);
@@ -123,26 +153,42 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, W
                     $sheet->mergeCells($range);
                 }
 
-                // Sub-Headers (Second row)
+                // Define sub-headers for the second row
                 $subHeaders = [
+                    // General Information
                     'ID', 'UUID', 'Created At', 'Updated At',
+
+                    // Date Information
                     'Date Year', 'Date Month', 'Date Day', 'Date Marked', 'Date Uncertain', 'Date Approximate', 'Date Inferred', 'Date Is Range', 'Date Note',
+
+                    // Authors
                     'Author Names', 'Author Notes', 'Author Salutations',
+
+                    // Recipients
                     'Recipient Names', 'Recipient Notes', 'Recipient Salutations',
+
+                    // Origins
                     'Origin Places', 'Origin Notes',
+
+                    // Destinations
                     'Destination Places', 'Destination Notes',
+
+                    // Keywords
                     'Keyword List',
+
+                    // Related Resources
                     'Related Resource Titles', 'Related Resource Links',
+
+                    // Copies
                     'MS Manifestation (EMLO)', 'Document Type', 'Preservation', 'Type', 'Manifestation Note', 'Letter Number', 'Repository', 'Archive', 'Collection', 'Shelfmark', 'Preservation Location Note',
-                    'Explicit', 'Incipit', 'Content (Summary)', 'Abstract CS', 'Abstract EN', 'Languages', 'Notes Private', 'Notes Public', 'Status', 'History'
+
+                    // Content and Notes
+                    'Explicit', 'Incipit', 'Content (Summary)', 'Abstract CS', 'Abstract EN', 'Languages', 'Notes Private', 'Notes Public', 'Status', 'Approval', 'History' // **Added 'Approval'**
                 ];
 
+                // Populate sub-headers in the second row
                 foreach ($subHeaders as $index => $subHeader) {
-                    $column = chr(65 + $index);
-                    if ($index >= 26) {
-                        // For columns beyond 'Z', generate double letters 'AA', 'AB', etc.
-                        $column = 'A' . chr(65 + ($index - 26));
-                    }
+                    $column = $this->getColumnName($index);
                     $cell = $column . '2';
                     $sheet->setCellValue($cell, $subHeader);
                 }
@@ -152,24 +198,41 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, W
                 $sheet->getStyle('A1:AV2')->getAlignment()->setHorizontal('center')->setVertical('center');
                 $sheet->getStyle('A1:AV2')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
-                // Freeze panes to keep headers visible
+                // Freeze panes to keep headers visible during scroll
                 $sheet->freezePane('A3');
             },
         ];
     }
 
+    /**
+     * Apply additional styles to the worksheet.
+     *
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet
+     * @return array
+     */
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:AV1')->getFont()->setBold(true);
+        // Example: Bold the first two rows (headers)
+        $sheet->getStyle('A1:AV2')->getFont()->setBold(true);
         return [];
     }
 
+    /**
+     * Define the chunk size for efficient memory usage during export.
+     *
+     * @return int
+     */
     public function chunkSize(): int
     {
-        return 1000; // Implementing the missing chunkSize method
+        return 1000;
     }
 
-    // Helper methods...
+    /**
+     * Process related resources to extract titles and links.
+     *
+     * @param mixed $resources
+     * @return array
+     */
     protected function processRelatedResources($resources): array
     {
         if (is_string($resources)) {
@@ -186,6 +249,12 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, W
         return [$titles, $links];
     }
 
+    /**
+     * Process copies to extract relevant information.
+     *
+     * @param mixed $copies
+     * @return array
+     */
     protected function processCopies($copies): array
     {
         if (is_string($copies)) {
@@ -193,10 +262,11 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, W
         }
 
         if (empty($copies)) {
+            // Assuming there are 11 copy-related columns
             return array_fill(0, 11, '');
         }
 
-        $copy = $copies[0] ?? [];
+        $copy = $copies[0] ?? []; // Take the first copy for export
 
         return [
             $copy['ms_manifestation'] ?? '',
@@ -208,48 +278,120 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, W
             $copy['repository'] ?? '',
             $copy['archive'] ?? '',
             $copy['collection'] ?? '',
-            $copy['signature'] ?? '',
-            $copy['location_note'] ?? '',
+            $copy['shelfmark'] ?? '',
+            $copy['preservation_location_note'] ?? '',
         ];
     }
 
+    /**
+     * Convert boolean values to 'Yes' or 'No' strings.
+     *
+     * @param mixed $value
+     * @return string
+     */
     protected function boolToString($value): string
     {
         return filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Yes' : 'No';
     }
 
+    /**
+     * Summarize text to a specified character limit.
+     *
+     * @param string|null $text
+     * @param int $limit
+     * @return string
+     */
     protected function summarize(?string $text, int $limit): string
     {
         return $text ? (mb_strlen($text) > $limit ? mb_substr($text, 0, $limit) . '...' : $text) : '';
     }
 
+    /**
+     * Retrieve the abstract in a specified language.
+     *
+     * @param \App\Models\Letter $letter
+     * @param string $language
+     * @return string
+     */
     protected function getAbstract($letter, string $language): string
     {
         return $letter->getTranslation('abstract', $language) ?? '';
     }
 
+    /**
+     * Format languages from a semicolon-separated string to a comma-separated string.
+     *
+     * @param string|null $languages
+     * @return string
+     */
     protected function formatLanguages(?string $languages): string
     {
         return $languages ? implode(', ', explode(';', $languages)) : '';
     }
 
+    /**
+     * Wrap text with double quotes and escape existing double quotes.
+     *
+     * @param string $text
+     * @return string
+     */
     protected function wrapText(string $text): string
     {
         return '"' . str_replace('"', '""', $text) . '"';
     }
 
+    /**
+     * Format names from a collection of related models.
+     *
+     * @param \Illuminate\Support\Collection $items
+     * @return string
+     */
     protected function formatNames($items): string
     {
         return $items->pluck('name')->filter()->implode('; ');
     }
 
+    /**
+     * Format pivot fields from related models.
+     *
+     * @param \Illuminate\Support\Collection $items
+     * @param string $field
+     * @return string
+     */
     protected function formatPivotField($items, string $field): string
     {
         return $items->pluck("pivot.$field")->filter()->implode('; ');
     }
 
+    /**
+     * Process keywords to a semicolon-separated string.
+     *
+     * @param \Illuminate\Support\Collection $keywords
+     * @return string
+     */
     protected function processKeywords($keywords): string
     {
         return $keywords->pluck('keyword_name')->filter()->implode('; ');
+    }
+
+    /**
+     * Get the column name based on the index (0-based).
+     * Handles columns beyond 'Z' by generating double letters (e.g., AA, AB).
+     *
+     * @param int $index
+     * @return string
+     */
+    protected function getColumnName(int $index): string
+    {
+        $index += 1; // Adjust for 1-based indexing
+        $columnName = '';
+
+        while ($index > 0) {
+            $modulo = ($index - 1) % 26;
+            $columnName = chr(65 + $modulo) . $columnName;
+            $index = (int)(($index - $modulo) / 26);
+        }
+
+        return $columnName;
     }
 }
