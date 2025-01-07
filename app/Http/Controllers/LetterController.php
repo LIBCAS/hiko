@@ -81,6 +81,7 @@ class LetterController extends Controller
             'method' => 'PUT',
             'action' => route('letters.update', $letter),
             'label' => __('hiko.edit'),
+            'globalKeywords' => \App\Models\GlobalKeyword::all(), // Fetch all global keywords
         ], $this->viewData($letter)));
     }
 
@@ -175,7 +176,7 @@ class LetterController extends Controller
             'selectedRecipients' => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
             'selectedOrigins' => $this->getSelectedMetaFields($letter, 'origins', ['marked']),
             'selectedDestinations' => $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
-            'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
+            'selectedKeywords' => $this->getSelectedKeywords($letter), // Updated
             'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
             'languages' => Language::all()->pluck('name'),
             'selectedLanguages' => request()->old('languages')
@@ -183,6 +184,19 @@ class LetterController extends Controller
                 : explode(';', $letter->languages),
         ];
     }
+    
+    protected function getSelectedKeywords(Letter $letter): array
+    {
+        $tenantKeywords = $letter->keywords()->get();
+        $globalKeywords = \App\Models\GlobalKeyword::all();
+    
+        $keywords = $tenantKeywords->merge($globalKeywords);
+    
+        return $keywords->map(fn($keyword) => [
+            'value' => $keyword->id,
+            'label' => $keyword->getTranslation('name', config('app.locale')),
+        ])->toArray();
+    }      
 
     protected function attachRelated(Request $request, Letter $letter)
     {

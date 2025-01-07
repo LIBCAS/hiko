@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Ajax;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Services\SearchKeyword;
+use App\Models\GlobalKeyword;
+use App\Models\Keyword;
 
 class AjaxKeywordController extends Controller
 {
@@ -15,16 +16,15 @@ class AjaxKeywordController extends Controller
             return [];
         }
 
-        $searchService = new SearchKeyword;
+        $tenantKeywords = Keyword::where('name', 'like', "%{$searchTerm}%")->get();
+        $globalKeywords = GlobalKeyword::where('name', 'like', "%{$searchTerm}%")->get();
 
-        return $searchService($searchTerm)
-            ->map(function ($keyword) {
-                return [
-                    'id' => $keyword->id,
-                    'value' => $keyword->id,
-                    'label' => $keyword->getTranslation('name', session('locale', config('hiko.metadata_default_locale'))),
-                ];
-            })
-            ->toArray();
+        $keywords = $tenantKeywords->merge($globalKeywords);
+
+        return $keywords->map(fn($keyword) => [
+            'id' => $keyword->id,
+            'value' => $keyword->id,
+            'label' => $keyword->getTranslation('name', config('app.locale')),
+        ])->toArray();
     }
 }

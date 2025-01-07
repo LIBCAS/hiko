@@ -122,22 +122,22 @@ class Letter extends Model implements HasMedia
         return $this->places()->wherePivot('role', 'destination');
     }
 
-    public function keywords(): BelongsToMany
+    public function keywords(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        if (!tenancy()->initialized) {
-            throw new \Exception('Tenancy is not initialized.');
-        }
-
-        $pivotTable = tenancy()->tenant->table_prefix . '__keyword_letter';
-
+        $pivotTable = tenancy()->initialized 
+            ? tenancy()->tenant->table_prefix . '__keyword_letter' 
+            : 'global_keyword_letter';
+    
         return $this->belongsToMany(
-            Keyword::class,
+            GlobalKeyword::class,
             $pivotTable,
-            'letter_id',
-            'keyword_id'
+            'letter_id',    // Foreign key on the pivot table referencing the letters table
+            'keyword_id',   // Foreign key on the pivot table referencing the keywords table
+            'id',           // Local key on the letters table
+            'id'            // Local key on the keywords table
         );
     }
-
+    
     public function media(): MorphMany
     {
         return $this->morphMany(\App\Models\Media::class, 'model')

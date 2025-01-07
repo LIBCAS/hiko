@@ -314,17 +314,19 @@
                         @enderror
                     </div>
                     <div>
-                        <x-label for="keywords" :value="__('hiko.keywords')" />
-                        <x-select name="keywords[]" class="block w-full mt-1" id="keywords" x-data="ajaxChoices({ url: '{{ route('ajax.keywords') }}', element: $el })"
+                    <x-select name="keywords[]" class="block w-full mt-1" id="keywords"
+                            x-data="ajaxChoices({ url: '{{ route('ajax.keywords') }}', element: $el })"
                             x-init="initSelect()" multiple>
-                            @foreach ($selectedKeywords as $kw)
-                                <option value="{{ $kw['value'] }}" selected>{{ $kw['label'] }}</option>
-                            @endforeach
-                        </x-select>
-                        @error('keywords')
-                            <div class="text-red-600">{{ $message }}</div>
-                        @enderror
-                        <livewire:create-new-item-modal :route="route('keywords.create')" :text="__('hiko.modal_new_keyword')" />
+                        @foreach ($selectedKeywords as $kw)
+                            <option value="{{ $kw['value'] }}" selected>{{ $kw['label'] }}</option>
+                        @endforeach
+                    </x-select>
+
+                    @error('keywords')
+                        <div class="text-red-600">{{ $message }}</div>
+                    @enderror
+
+                    <livewire:create-new-item-modal :route="route('global.keywords.create')" :text="__('hiko.modal_new_keyword')" />
                     </div>
                     <div>
                         <x-label for="abstract_cs" :value="__('hiko.abstract') . ' CS'" />

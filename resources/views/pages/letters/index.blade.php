@@ -3,11 +3,6 @@
     @can('manage-metadata')
         <x-create-link label="{{ __('hiko.new_letter') }}" link="{{ route('letters.create') }}" />
     @endcan
-    <p>
-        <a href="{{ route('letters.preview') }}" class="inline-block mt-3 text-sm font-semibold">
-            {{ __('hiko.preview_all_letters') }}
-        </a>
-    </p>
     <div class="w-20 mt-3">
         <x-dropdown label="{{ __('hiko.export') }}" class="font-semibold" :alignRight="false">
             <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
