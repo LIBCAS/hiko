@@ -299,4 +299,12 @@ return [
     'supported_formats' => 'Supported formats: JPEG, PNG, PDF. Max size: 10MB.',
     'upload_and_process' => 'Upload and process',
     'reset' => 'Reset',
+    'photo_required' => 'Please upload a document.',
+    'photo_file' => 'The uploaded file must be a valid file.',
+    'photo_mimes' => 'Only JPEG, PNG, and PDF files are allowed.',
+    'photo_max' => 'The uploaded file must not exceed 10MB.',
+    'no_text_found' => 'No text found',
+    'ocr_processing_completed_successfully' => 'OCR processing completed successfully.',
+    'error_processing_document' => 'There was an error processing the document:',
+    'failed_to_save_the_uploaded_file' => 'Failed to save the uploaded file.',
 ];

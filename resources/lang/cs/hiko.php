@@ -296,4 +296,12 @@ return [
     'supported_formats' => 'Podporované formáty: JPEG, PNG, PDF. Maximální velikost: 10 MB.',
     'upload_and_process' => 'Nahrát a zpracovat',
     'reset' => 'Resetovat',
+    'photo_required' => 'Nahrajte prosím dokument.',
+    'photo_file' => 'Nahraný soubor musí být platný soubor.',
+    'photo_mimes' => 'Povolené jsou pouze soubory typu JPEG, PNG a PDF.',
+    'photo_max' => 'Velikost nahraného souboru nesmí přesáhnout 10MB.',
+    'no_text_found' => 'Nebyly nalezeny žádné texty',
+    'ocr_processing_completed_successfully' => 'OCR zpracování proběhlo úspěšně.',
+    'error_processing_document' => 'Došlo k chybě při zpracování dokumentu:',
+    'failed_to_save_the_uploaded_file' => 'Nepodařilo se uložit nahraný soubor.',
 ];
