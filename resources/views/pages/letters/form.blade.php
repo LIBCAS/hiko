@@ -71,6 +71,13 @@
                         {{ __('hiko.status') }}
                     </a>
                 </li>
+                @can('delete-metadata')
+                    <li class="border-t border-primary-light">
+                        <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-approval">
+                            {{ __('hiko.approval') }}
+                        </a>
+                    </li>
+                @endcan
             </ul>
         </div>
         <div>
