@@ -95,24 +95,67 @@ class DocumentService
      */
     private static function buildPrompt(): string
     {
-        return "You are an intelligent OCR system analyzing a scanned handwritten letter that may be written in any language. "
-            . "First, accurately identify the language of the letter and determine the handwriting style (e.g., neat, cursive, messy). "
-            . "The letter may contain both textual and numerical data, including Arabic numerals (0-9) and Roman numerals (I, II, III, etc.). "
-            . "Ensure that Roman numerals, especially in dates, are preserved accurately and not converted to Arabic numerals, and vice versa. "
-            . "Extract the recognized text and detailed metadata in a well-structured JSON format with all field names in English. "
-            . "Return the recognized text under the key 'recognized_text' and the metadata under the key 'metadata'. "
-            . "Ensure that dates and numerical information correctly reflect the numeral systems used in the original document. "
-            . "Recognize language firstly and use diacrtitics if needed. Also fix mistakes based on the content written. "
-            . "Include the following metadata fields:\n"
-            . "- date_year, date_month, date_day, date_marked, date_uncertain, date_approximate, date_inferred, date_is_range\n"
-            . "- range_year, range_month, range_day, date_note\n"
-            . "- author_inferred, author_uncertain, author_note\n"
-            . "- recipient_inferred, recipient_uncertain, recipient_note\n"
-            . "- origin_inferred, origin_uncertain, origin_note\n"
-            . "- destination_inferred, destination_uncertain, destination_note\n"
-            . "- languages (array), keywords (array), abstract_cs, abstract_en, incipit, explicit, mentioned (array), people_mentioned_note\n"
-            . "- notes_private, notes_public, copyright, status\n"
-            . "Ensure all fields are present. Utilize intelligent recognition to accurately populate each field. If a field is unknown or not applicable, assign it an empty string or an empty array as appropriate.";
+        return "You are an expert OCR system specializing in the analysis of scanned handwritten letters in any language. Your objective is to accurately transcribe the text and extract detailed metadata with a strong focus on contextual understanding and error correction. You must follow the rules described.\n\n"
+            . "Task 1: Advanced Text Recognition, Contextual Analysis, and Error Correction\n"
+            . "   - First, identify all languages present in the letter. Return the result as an array of strings under the key 'languages'. If no language can be detected, use an empty array [].\n"
+            . "   - Perform advanced text recognition using diacritics and language-specific characters to accurately represent the text. Ensure all words and numbers are correct.\n"
+            . "   - Analyze the entire letter for context, correcting all grammatical, spelling, and contextual errors. Ensure proper sentence structure and phrasing.\n"
+            . "   - Pay special attention to misinterpretations caused by handwriting. Use the letter's context to fix those errors. Do not include words that are not in the original document. Do not add any spaces in between the characters if not present in the original document.\n"
+            . "   - The letter may contain a mixture of text and numbers, including Arabic numerals (0-9) and Roman numerals (I, II, III, IV, V, VI, VII, VIII, IX, X, L, C, D, M). Preserve all numerals, do not convert any of them, or add spaces in between characters.\n"
+             . "   - The objective is to return a polished and perfect version of the letter, and not just a literal transcription of the words and numbers. The returned text must be grammatically correct, as if the letter was originally written in that way, without any mistakes. Do not add extra characters or spaces if they do not exist.\n"
+            . "   - Return the contextually improved and perfectly transcribed text under the key 'recognized_text'.\n\n"
+            . "Task 2: Accurate Metadata Extraction and Validation\n"
+            . "   - Extract the following metadata from the letter. If any field is not present, set it to an empty string ('') or empty array ([]), depending on the field's data type. All fields must be present in the output.\n"
+            . "   - All metadata fields MUST be present in the JSON output, even if empty, and the JSON must be a valid object.\n"
+            . "   - For boolean fields (e.g., 'date_uncertain', 'author_inferred'), return true or false values. If there is no explicit value in the text, use `false` as default.\n"
+             . "   - The 'date_marked' is a direct string representation of the date as it appears in the document, with the original formatting. For example: 22/1 84, or 11. November 1900, or 22/II/1920. Always use the original formatting and order of the elements (day, month, year).\n"
+             . "   - Date and range dates (year, month, and day) should be extracted from the letter to the various fields, and represented in numeric format only. All values must be a string. If the date has no day, month or year, set them as empty strings. When month is represented in roman numerals, convert them to numbers. For example, II should be 2.\n"
+             . "   - If the year is represented with only two digits, try to infer the correct century, using the date and the content of the letter as a reference. If not possible, return the last 4 digits of the current year.\n"
+            . "   - 'keywords' and 'mentioned' fields should be arrays of strings. If there are no values found, use an empty array [].\n"
+            . "   - 'incipit' and 'explicit' are the first and last meaningful sentences of the letter. Return them as a string, without modifications, spaces, or any changes. Do not include words that are not in the original document. If there is no explicit or incipit, return an empty string ''.\n"
+            . "   - Other text-based fields should be returned as strings. If not found, it should be an empty string ('').\n"
+             . "   - Fields like 'date_uncertain', or 'author_inferred' should be set as `false` if they are not explicitly stated in the letter or if they can't be reliably determined.\n"
+             . "   - 'date_note', 'author_note', 'recipient_note', 'origin_note', 'destination_note', and 'people_mentioned_note' are notes about the respective fields. If these notes are not found, use empty strings ''.\n"
+            . "   Metadata Fields (Output exactly as shown):\n"
+            . "   {\n"
+            . "     \"date_year\": string,  \n"
+            . "     \"date_month\": string,  \n"
+             . "     \"date_day\": string,  \n"
+            . "     \"date_marked\": string, \n"
+             . "     \"date_uncertain\": boolean, \n"
+            . "     \"date_approximate\": boolean, \n"
+             . "     \"date_inferred\": boolean, \n"
+           . "     \"date_is_range\": boolean, \n"
+            . "     \"range_year\": string, \n"
+            . "     \"range_month\": string, \n"
+            . "     \"range_day\": string, \n"
+            . "     \"date_note\": string, \n"
+            . "     \"author_inferred\": boolean, \n"
+             . "     \"author_uncertain\": boolean, \n"
+           . "     \"author_note\": string, \n"
+            . "     \"recipient_inferred\": boolean, \n"
+           . "     \"recipient_uncertain\": boolean,  \n"
+            . "     \"recipient_note\": string, \n"
+            . "     \"origin_inferred\": boolean, \n"
+            . "     \"origin_uncertain\": boolean, \n"
+           . "     \"origin_note\": string, \n"
+            . "     \"destination_inferred\": boolean, \n"
+             . "     \"destination_uncertain\": boolean, \n"
+            . "     \"destination_note\": string, \n"
+             . "     \"languages\": array,  \n"
+            . "     \"keywords\": array, \n"
+            . "     \"abstract_cs\": string, \n"
+             . "     \"abstract_en\": string, \n"
+            . "     \"incipit\": string, \n"
+            . "     \"explicit\": string, \n"
+            . "     \"mentioned\": array, \n"
+            . "     \"people_mentioned_note\": string,\n"
+            . "     \"notes_private\": string, \n"
+             . "     \"notes_public\": string, \n"
+            . "     \"copyright\": string, \n"
+            . "     \"status\": string \n"
+           . "   }\n\n"
+           . "   Output should be a valid JSON object with keys 'recognized_text' and 'metadata'. The JSON must be valid and include all the keys, and follow all the instructions.\n";
     }
 
     /**
@@ -150,21 +193,22 @@ class DocumentService
             'notes_public', 'copyright', 'status'
         ];
 
-        // Ensure all metadata fields are present
-        if (!isset($decoded['metadata'])) {
-            $decoded['metadata'] = [];
-        }
-
-        foreach ($metadataFields as $field) {
-            if (!array_key_exists($field, $decoded['metadata'])) {
-                $decoded['metadata'][$field] = is_array($decoded[$field] ?? '') ? [] : '';
-            }
-        }
+         // Ensure all metadata fields are present
+         if (!isset($decoded['metadata'])) {
+             $decoded['metadata'] = [];
+         }
+ 
+         foreach ($metadataFields as $field) {
+             if (!array_key_exists($field, $decoded['metadata'])) {
+                $decoded['metadata'][$field] = is_array($decoded['metadata'][$field] ?? '') ? [] : '';
+             }
+         }
 
         // Trim recognized_text
         if (isset($decoded['recognized_text'])) {
             $decoded['recognized_text'] = trim($decoded['recognized_text']);
         }
+
 
         // Add language information to metadata based on 'languages' array
         if (isset($decoded['metadata']['languages']) && is_array($decoded['metadata']['languages'])) {
@@ -183,6 +227,7 @@ class DocumentService
         // Post-processing corrections
         if (isset($decoded['recognized_text'])) {
             $decoded['recognized_text'] = self::correctMisrecognitions($decoded['recognized_text']);
+            $decoded['recognized_text'] = self::correctDateMisinterpretations($decoded['recognized_text']);
             $decoded['recognized_text'] = self::validateMetadata($decoded['metadata'], $decoded['recognized_text']);
         }
 
