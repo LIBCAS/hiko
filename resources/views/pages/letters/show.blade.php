@@ -145,7 +145,7 @@
             @endif
             @if (isset($identities['mentioned']))
                 <tr class="align-baseline border-t border-b border-gray-200">
-                    <td class="py-2">Mentioned people</td>
+                    <td class="py-2">{{ __('hiko.mentioned') }}</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
                             @foreach ($identities['mentioned'] as $mentioned)
@@ -160,7 +160,7 @@
             @if ($letter->people_mentioned_note)
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="py-2">
-                        Notes on mentioned people
+                        {{ __('hiko.people_mentioned_note') }}
                     </td>
                     <td class="py-2">
                         {{ $letter->people_mentioned_note }}
@@ -200,7 +200,7 @@
             @if ($letter->origin_note)
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="py-2">
-                        Notes on origin
+                        {{ __('hiko.origin_note') }}
                     </td>
                     <td class="py-2">
                         {{ $letter->origin_note }}
@@ -441,7 +441,7 @@
     @endif
     @if ($letter->content)
         <h2 class="text-lg font-bold">
-            Full text
+            {{ __('hiko.full_text') }}
         </h2>
         <div class="p-3 mb-10 prose-sm prose bg-gray-200 shadow-sm">
             {!! $letter->content !!}

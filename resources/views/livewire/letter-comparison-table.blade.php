@@ -3,7 +3,7 @@
         <label>
             <span class="block text-sm">{{ __('hiko.compare_comparison_type') }}</span>
             <x-select wire:model.live="filters.compare_type" class="block w-full px-2 text-sm lg:w-64">
-                <option value="full_text">{{ __('hiko.compare_full_text') }}</option>
+                <option value="full_text">{{ __('hiko.full_text') }}</option>
                 <option value="other_columns">{{ __('hiko.compare_other_columns') }}</option>
             </x-select>
         </label>
