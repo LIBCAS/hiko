@@ -307,5 +307,6 @@ return [
     'failed_to_save_the_uploaded_file' => 'Nepodařilo se uložit nahraný soubor.',
     'approval' => 'Schválení',
     'approved' => 'Schváleno',
-    'not_approved' => 'Neschváleno',    
+    'not_approved' => 'Neschváleno',
+    'metadata_default_locale' => 'Metadata',
 ];
