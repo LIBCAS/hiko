@@ -95,67 +95,67 @@ class DocumentService
      */
     private static function buildPrompt(): string
     {
-        return "You are an expert OCR system specializing in the analysis of scanned handwritten letters in any language. Your objective is to accurately transcribe the text and extract detailed metadata with a strong focus on contextual understanding and error correction. You must follow the rules described.\n\n"
+        return "You are a universal document processing AI, skilled in analyzing scanned documents of any type, language, and format. Your objective is to accurately transcribe the text and extract detailed metadata with a strong focus on contextual understanding and error correction. You must follow all the rules described below.\n\n"
             . "Task 1: Advanced Text Recognition, Contextual Analysis, and Error Correction\n"
-            . "   - First, identify all languages present in the letter. Return the result as an array of strings under the key 'languages'. If no language can be detected, use an empty array [].\n"
+            . "   - First, identify all languages present in the document. Return the result as an array of strings under the key 'languages'. If no language can be detected, use an empty array [].\n"
             . "   - Perform advanced text recognition using diacritics and language-specific characters to accurately represent the text. Ensure all words and numbers are correct.\n"
-            . "   - Analyze the entire letter for context, correcting all grammatical, spelling, and contextual errors. Ensure proper sentence structure and phrasing.\n"
-            . "   - Pay special attention to misinterpretations caused by handwriting. Use the letter's context to fix those errors. Do not include words that are not in the original document. Do not add any spaces in between the characters if not present in the original document.\n"
-            . "   - The letter may contain a mixture of text and numbers, including Arabic numerals (0-9) and Roman numerals (I, II, III, IV, V, VI, VII, VIII, IX, X, L, C, D, M). Preserve all numerals, do not convert any of them, or add spaces in between characters.\n"
-             . "   - The objective is to return a polished and perfect version of the letter, and not just a literal transcription of the words and numbers. The returned text must be grammatically correct, as if the letter was originally written in that way, without any mistakes. Do not add extra characters or spaces if they do not exist.\n"
-            . "   - Return the contextually improved and perfectly transcribed text under the key 'recognized_text'.\n\n"
+            . "   - Analyze the entire document for context, correcting all grammatical, spelling, and contextual errors. Ensure proper sentence structure and phrasing. Correct all the errors, and provide a polished text.\n"
+            . "   - Pay special attention to misinterpretations caused by any imperfections in the document. Use the document's context to fix those errors. Do not include words that are not in the original document. Do not add any spaces in between the characters if not present in the original document.\n"
+            . "   - The document may contain a mixture of text and numbers, including Arabic numerals (0-9), Roman numerals (I, II, III, IV, V, VI, VII, VIII, IX, X, L, C, D, M), and any other numeric system. Preserve all numerals, do not convert any of them, or add spaces in between characters.\n"
+           . "   - The objective is to return a polished and perfect version of the document, and not just a literal transcription of the words and numbers. The returned text must be grammatically correct, as if the document was originally written in that way, without any mistakes. Do not add extra characters or spaces if they do not exist.\n"
+             . "   - Return the contextually improved and perfectly transcribed text under the key 'recognized_text'.\n\n"
             . "Task 2: Accurate Metadata Extraction and Validation\n"
-            . "   - Extract the following metadata from the letter. If any field is not present, set it to an empty string ('') or empty array ([]), depending on the field's data type. All fields must be present in the output.\n"
+             . "   - Extract the following metadata from the document. If any field is not present, set it to an empty string ('') or empty array ([]), depending on the field's data type. All fields must be present in the output.\n"
             . "   - All metadata fields MUST be present in the JSON output, even if empty, and the JSON must be a valid object.\n"
             . "   - For boolean fields (e.g., 'date_uncertain', 'author_inferred'), return true or false values. If there is no explicit value in the text, use `false` as default.\n"
-             . "   - The 'date_marked' is a direct string representation of the date as it appears in the document, with the original formatting. For example: 22/1 84, or 11. November 1900, or 22/II/1920. Always use the original formatting and order of the elements (day, month, year).\n"
-             . "   - Date and range dates (year, month, and day) should be extracted from the letter to the various fields, and represented in numeric format only. All values must be a string. If the date has no day, month or year, set them as empty strings. When month is represented in roman numerals, convert them to numbers. For example, II should be 2.\n"
-             . "   - If the year is represented with only two digits, try to infer the correct century, using the date and the content of the letter as a reference. If not possible, return the last 4 digits of the current year.\n"
+            . "   - The 'date_marked' is a direct string representation of the date as it appears in the document, with the original formatting. For example: 22/1 84, or 11. November 1900, or 22/II/1920, or 2023-12-22. Always use the original formatting and order of the elements (day, month, year), when available. Extract the year from any place, if available.\n"
+            . "   - Date and range dates (year, month, and day) should be extracted from the document to the various fields, and represented in numeric format only. All values must be a string. If the date has no day, month or year, set them as empty strings. When month is represented in roman numerals, convert them to numbers. For example, II should be 2.\n"
+             . "   - If the year is represented with only two digits, try to infer the correct century, using the date and the content of the document as a reference. If not possible, return the last 4 digits of the current year. If only one digit is present, use the last digit as is.\n"
             . "   - 'keywords' and 'mentioned' fields should be arrays of strings. If there are no values found, use an empty array [].\n"
-            . "   - 'incipit' and 'explicit' are the first and last meaningful sentences of the letter. Return them as a string, without modifications, spaces, or any changes. Do not include words that are not in the original document. If there is no explicit or incipit, return an empty string ''.\n"
+           . "   - 'incipit' and 'explicit' are the first and last meaningful sentences of the document. Return them as a string, without modifications, spaces, or any changes. Do not include words that are not in the original document. If there is no explicit or incipit, return an empty string ''.\n"
             . "   - Other text-based fields should be returned as strings. If not found, it should be an empty string ('').\n"
-             . "   - Fields like 'date_uncertain', or 'author_inferred' should be set as `false` if they are not explicitly stated in the letter or if they can't be reliably determined.\n"
+            . "   - Fields like 'date_uncertain', or 'author_inferred' should be set as `false` if they are not explicitly stated in the document or if they can't be reliably determined.\n"
              . "   - 'date_note', 'author_note', 'recipient_note', 'origin_note', 'destination_note', and 'people_mentioned_note' are notes about the respective fields. If these notes are not found, use empty strings ''.\n"
-            . "   Metadata Fields (Output exactly as shown):\n"
-            . "   {\n"
+             . "   Metadata Fields (Output exactly as shown):\n"
+             . "   {\n"
             . "     \"date_year\": string,  \n"
-            . "     \"date_month\": string,  \n"
-             . "     \"date_day\": string,  \n"
+             . "     \"date_month\": string,  \n"
+            . "     \"date_day\": string,  \n"
             . "     \"date_marked\": string, \n"
-             . "     \"date_uncertain\": boolean, \n"
+            . "     \"date_uncertain\": boolean, \n"
             . "     \"date_approximate\": boolean, \n"
-             . "     \"date_inferred\": boolean, \n"
-           . "     \"date_is_range\": boolean, \n"
-            . "     \"range_year\": string, \n"
+            . "     \"date_inferred\": boolean, \n"
+            . "     \"date_is_range\": boolean, \n"
+             . "     \"range_year\": string, \n"
             . "     \"range_month\": string, \n"
             . "     \"range_day\": string, \n"
-            . "     \"date_note\": string, \n"
+             . "     \"date_note\": string, \n"
             . "     \"author_inferred\": boolean, \n"
              . "     \"author_uncertain\": boolean, \n"
-           . "     \"author_note\": string, \n"
+            . "     \"author_note\": string, \n"
             . "     \"recipient_inferred\": boolean, \n"
-           . "     \"recipient_uncertain\": boolean,  \n"
+            . "     \"recipient_uncertain\": boolean,  \n"
             . "     \"recipient_note\": string, \n"
             . "     \"origin_inferred\": boolean, \n"
             . "     \"origin_uncertain\": boolean, \n"
-           . "     \"origin_note\": string, \n"
+             . "     \"origin_note\": string, \n"
             . "     \"destination_inferred\": boolean, \n"
              . "     \"destination_uncertain\": boolean, \n"
             . "     \"destination_note\": string, \n"
              . "     \"languages\": array,  \n"
             . "     \"keywords\": array, \n"
             . "     \"abstract_cs\": string, \n"
-             . "     \"abstract_en\": string, \n"
+           . "     \"abstract_en\": string, \n"
             . "     \"incipit\": string, \n"
-            . "     \"explicit\": string, \n"
-            . "     \"mentioned\": array, \n"
-            . "     \"people_mentioned_note\": string,\n"
+             . "     \"explicit\": string, \n"
+           . "     \"mentioned\": array, \n"
+             . "     \"people_mentioned_note\": string,\n"
             . "     \"notes_private\": string, \n"
-             . "     \"notes_public\": string, \n"
-            . "     \"copyright\": string, \n"
+            . "     \"notes_public\": string, \n"
+             . "     \"copyright\": string, \n"
             . "     \"status\": string \n"
-           . "   }\n\n"
-           . "   Output should be a valid JSON object with keys 'recognized_text' and 'metadata'. The JSON must be valid and include all the keys, and follow all the instructions.\n";
+            . "   }\n\n"
+            . "   Output should be a valid JSON object with keys 'recognized_text' and 'metadata'. The JSON must be valid and include all the keys, and follow all the instructions.\n";
     }
 
     /**
@@ -193,22 +193,21 @@ class DocumentService
             'notes_public', 'copyright', 'status'
         ];
 
-         // Ensure all metadata fields are present
-         if (!isset($decoded['metadata'])) {
-             $decoded['metadata'] = [];
-         }
- 
-         foreach ($metadataFields as $field) {
-             if (!array_key_exists($field, $decoded['metadata'])) {
-                $decoded['metadata'][$field] = is_array($decoded['metadata'][$field] ?? '') ? [] : '';
-             }
-         }
+        // Ensure all metadata fields are present
+        if (!isset($decoded['metadata'])) {
+            $decoded['metadata'] = [];
+        }
+
+        foreach ($metadataFields as $field) {
+            if (!array_key_exists($field, $decoded['metadata'])) {
+                $decoded['metadata'][$field] = is_array($decoded[$field] ?? '') ? [] : '';
+            }
+        }
 
         // Trim recognized_text
         if (isset($decoded['recognized_text'])) {
             $decoded['recognized_text'] = trim($decoded['recognized_text']);
         }
-
 
         // Add language information to metadata based on 'languages' array
         if (isset($decoded['metadata']['languages']) && is_array($decoded['metadata']['languages'])) {
@@ -227,7 +226,6 @@ class DocumentService
         // Post-processing corrections
         if (isset($decoded['recognized_text'])) {
             $decoded['recognized_text'] = self::correctMisrecognitions($decoded['recognized_text']);
-            $decoded['recognized_text'] = self::correctDateMisinterpretations($decoded['recognized_text']);
             $decoded['recognized_text'] = self::validateMetadata($decoded['metadata'], $decoded['recognized_text']);
         }
 
