@@ -34,7 +34,7 @@
                     id="photo"
                     type="file"
                     class="hidden"
-                    wire:model.live="photo"
+                    wire:model="photo"
                     accept="image/*,application/pdf"
                     x-ref="fileInput"
                     @change="fileName = $event.target.files[0].name"
@@ -105,7 +105,7 @@
     </form>
 
     <!-- Processing Results -->
-    @if ($metadata)
+    @if (!empty($ocrText) || count(array_filter($metadata)) > 0)
         <div class="mt-6 space-y-6">
             <!-- Recognized Text -->
             <div>
@@ -124,8 +124,8 @@
 
             <!-- Extracted Metadata -->
             <div>
-                <h2 class="mb-2 text-lg font-bold">{{ __('hiko.metadata_default_locale') }}</h2>
-                @if (!empty($metadata))
+                <h2 class="mb-2 text-lg font-bold">{{ __('hiko.metadata') }}</h2>
+                @if (count(array_filter($metadata)) > 0)
                     <div class="p-4 bg-gray-50 rounded shadow">
                         <ul class="space-y-2">
                             @foreach ($metadata as $key => $value)

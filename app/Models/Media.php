@@ -6,15 +6,13 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
 
 class Media extends BaseMedia
 {
-    protected $connection = 'tenant';
-
-    public function getTable()
+    public function __construct(array $attributes = [])
     {
-        if (tenancy()->initialized) {
-            return tenancy()->tenant->table_prefix . '__media';
-        }
+        parent::__construct($attributes);
 
-        // Если тенант не инициализирован, можно вернуть глобальную таблицу или бросить исключение
-        return 'global_media';
+        if (function_exists('tenancy') && tenancy()->initialized && tenancy()->tenant) {
+            $tenantPrefix = tenancy()->tenant->table_prefix;
+            $this->setTable("{$tenantPrefix}__media");
+        }
     }
 }

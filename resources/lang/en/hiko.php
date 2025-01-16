@@ -312,4 +312,5 @@ return [
     'approved' => 'Approved',
     'not_approved' => 'Not Approved',
     'metadata_default_locale' => 'Metadata',
+    'metadata' => 'Metadata',
 ];

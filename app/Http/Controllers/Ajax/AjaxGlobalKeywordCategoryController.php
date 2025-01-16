@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Ajax;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\GlobalKeywordCategory;
+use Illuminate\Support\Str;
 
 class AjaxGlobalKeywordCategoryController extends Controller
 {

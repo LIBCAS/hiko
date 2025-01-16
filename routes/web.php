@@ -52,7 +52,7 @@ use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 |
 */
 
-Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () {
+Route::middleware([InitializeTenancyByDomain::class])->group(function () {
     Route::get('/', function () {
         return redirect()->route('letters');
     });

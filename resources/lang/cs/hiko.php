@@ -309,4 +309,5 @@ return [
     'approved' => 'Schváleno',
     'not_approved' => 'Neschváleno',
     'metadata_default_locale' => 'Metadata',
+    'metadata' => 'Metadata',
 ];
