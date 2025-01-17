@@ -3,16 +3,21 @@
 namespace App\Models;
 
 use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
+use Stancl\Tenancy\Facades\Tenancy;
 
 class Media extends BaseMedia
 {
+    protected $connection = 'tenant';
+
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
 
-        if (function_exists('tenancy') && tenancy()->initialized && tenancy()->tenant) {
+        if (tenancy()->initialized) {
             $tenantPrefix = tenancy()->tenant->table_prefix;
-            $this->setTable("{$tenantPrefix}__media");
+            $this->table = $tenantPrefix . '__media';
+        } else {
+            throw new \Exception('Tenant not initialized. Cannot set table name for Media.');
         }
     }
 }

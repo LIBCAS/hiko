@@ -14,6 +14,8 @@ use Spatie\Translatable\HasTranslations;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Image\Manipulations;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\FileNotFoundException;
+use TeamTNT\TNTSearch\Indexer\TNTIndexer;
 
 class Letter extends Model implements HasMedia
 {
@@ -81,21 +83,17 @@ class Letter extends Model implements HasMedia
         }
     } 
 
-    public function registerMediaConversions(Media $media = null): void
+    public function registerMediaConversions(?\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
     {
         $this->addMediaConversion('thumb')
-            ->width(180)
-            ->sharpen(10)
-            ->nonQueued();
-
-        if (Storage::disk('public')->exists('watermark/logo.png')) {
+             ->width(180);
+    
+        if (Storage::disk('local')->exists('public/watermark/logo.png')) {
             $this->addMediaConversion('watermark')
-                ->watermark(storage_path('app/public/watermark/logo.png'))
-                ->watermarkPosition(Manipulations::POSITION_CENTER)
-                ->watermarkOpacity(50)
-                ->nonQueued();
+                 ->watermark(storage_path('app/public/watermark/logo.png'))
+                 ->watermarkPosition(Manipulations::POSITION_CENTER);
         }
-    }
+    }    
 
     public function identities(): BelongsToMany
     {
