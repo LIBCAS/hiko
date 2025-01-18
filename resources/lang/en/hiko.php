@@ -98,7 +98,7 @@ return [
     'global_keywords' => 'Global keywords',
     'global_keyword' => 'Global keyword',
     'new_global_keyword' => 'New global keyword',
-    'global_keyword_categories' => 'Global keyword categories',
+    'global_keyword_categories' => 'Global keyword category',
     'new_global_keywords_category' => 'New global keyword category',
     'no_attached_keywords' => 'No attached global keywords',
     'category' => 'Category',

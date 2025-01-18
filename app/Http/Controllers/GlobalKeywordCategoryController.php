@@ -30,7 +30,7 @@ class GlobalKeywordCategoryController extends Controller
     public function create(): View
     {
         return view('pages.global-keywords-categories.form', [
-            'title' => __('hiko.new_global_keywords_category'),
+            'title' => __('hiko.global_keyword_categories'),
             'keywordCategory' => new GlobalKeywordCategory(),
             'action' => route('global.keywords.category.store'),
             'label' => __('hiko.create'),
@@ -73,7 +73,7 @@ class GlobalKeywordCategoryController extends Controller
         $globalKeywordCategory->load('keywords');
 
         return view('pages.global-keywords-categories.form', [
-            'title' => __('hiko.edit_global_keyword_category'),
+            'title' => __('hiko.global_keyword_categories'),
             'keywordCategory' => $globalKeywordCategory,
             'action' => route('global.keywords.category.update', $globalKeywordCategory->id),
             'method' => 'PUT',
