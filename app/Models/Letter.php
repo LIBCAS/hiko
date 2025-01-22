@@ -47,15 +47,6 @@ class Letter extends Model implements HasMedia
     protected $guarded = ['id', 'uuid'];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'approval' => 'integer',
-    ];
-
-    /**
      * The table associated with the model.
      *
      * @var string

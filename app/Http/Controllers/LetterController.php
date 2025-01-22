@@ -20,34 +20,27 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Stancl\Tenancy\Facades\Tenancy;
 
-
 class LetterController extends Controller
 {
     public function index(): View
     {
-        // Retrieve tenant-specific letters (tenant-specific table is handled dynamically by tenancy)
-        $letters = Letter::all(); 
-
-        // Fetch the main character based on config
-        $mainCharacter = config('hiko.main_character')
-            ? Identity::where('id', '=', config('hiko.main_character'))->select('surname')->first()
-            : null;
-        
-        // Return the letters page view with the necessary data
         return view('pages.letters.index', [
             'title' => __('hiko.letters'),
-            'mainCharacter' => $mainCharacter ? $mainCharacter->surname : null,
-            'letters' => $letters, // Tenant-specific letters
+            'mainCharacter' => config('hiko.main_character')
+                ? Identity::find(config('hiko.main_character'))->value('surname')
+                : null,
         ]);
     }
-    
+
     public function create(): View
     {
-        return view('pages.letters.form', array_merge([
+        return view('pages.letters.form', [
             'title' => __('hiko.new_letter'),
             'action' => route('letters.store'),
             'label' => __('hiko.create'),
-        ], $this->viewData(new Letter)));
+            'letter' => new Letter(),
+            'viewData' => $this->prepareViewData(new Letter()),
+        ]);
     }
 
     public function store(LetterRequest $request): RedirectResponse
@@ -76,26 +69,36 @@ class LetterController extends Controller
 
     public function edit(Letter $letter): View
     {
-        return view('pages.letters.form', array_merge([
-            'title' => __('hiko.letter') . ': ' .  $letter->id,
+        Log::info("Editing letter with ID: {$letter->id}");
+
+        $viewData = $this->prepareViewData($letter);
+
+        return view('pages.letters.form', [
+            'title' => __('hiko.letter') . ': ' . $letter->id,
             'method' => 'PUT',
             'action' => route('letters.update', $letter),
             'label' => __('hiko.edit'),
-        ], $this->viewData($letter)));
+            'letter' => $letter,
+            'viewData' => $viewData,
+        ] + $viewData);
     }
 
     public function update(LetterRequest $request, Letter $letter): RedirectResponse
     {
-        $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';
         $letter->update($request->validated());
+        Log::info("Updated letter with ID: {$letter->id}");
 
         $this->attachRelated($request, $letter);
+
         LetterSaved::dispatch($letter);
         RegenerateNames::dispatch($letter->authors()->get());
         RegenerateNames::dispatch($letter->recipients()->get());
 
-        return redirect()->route($redirectRoute, $letter->id)->with('success', __('hiko.saved'));
+        return redirect()
+            ->route('letters.edit', $letter->id)
+            ->with('success', __('hiko.saved'));
     }
+
 
     public function destroy(Letter $letter): RedirectResponse
     {
@@ -111,10 +114,12 @@ class LetterController extends Controller
         RegenerateNames::dispatch($authors);
         RegenerateNames::dispatch($recipients);
 
-        return redirect()->route('letters.index')->with('success', __('hiko.removed'));
+        return redirect()
+            ->route('letters')
+            ->with('success', 'hiko.removed');
     }
 
-    public function images(Letter $letter): View
+    public function images(Letter $letter)
     {
         return view('pages.letters.images', [
             'title' => __('hiko.letter') . ': ' .  $letter->id,
@@ -122,7 +127,7 @@ class LetterController extends Controller
         ]);
     }
 
-    public function text(Letter $letter): View
+    public function text(Letter $letter)
     {
         return view('pages.letters.text', [
             'title' => __('hiko.full_text') . ' – ' . __('hiko.letter') . ': ' .  $letter->id,
@@ -131,13 +136,11 @@ class LetterController extends Controller
         ]);
     }
 
-
-
     public function export(): BinaryFileResponse
     {
         return Excel::download(new LettersExport, 'letters.xlsx');
     }
-    
+
     public function exportPalladioCharacter(Request $request): BinaryFileResponse
     {
         $role = $request->input('role');
@@ -149,7 +152,7 @@ class LetterController extends Controller
     
         return Excel::download(new PalladioCharacterExport($role), $this->getPalladioFileName($role));
     }
-    
+
     /**
      * Generate a filename for Palladio Character Export.
      *
@@ -165,114 +168,101 @@ class LetterController extends Controller
         $surnameSlug = $mainCharacter ? Str::slug($mainCharacter->surname) : 'unknown';
     
         return "palladio-{$surnameSlug}-{$role}.csv";
-    }    
+    }  
 
-    protected function viewData(Letter $letter): array
+    protected function prepareViewData(Letter $letter): array
     {
+        Log::debug("Preparing view data for letter ID: {$letter->id}");
+
         return [
-            'letter' => $letter,
             'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
             'selectedRecipients' => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
             'selectedOrigins' => $this->getSelectedMetaFields($letter, 'origins', ['marked']),
             'selectedDestinations' => $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
             'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
             'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
-            'languages' => Language::all()->pluck('name'),
-            'selectedLanguages' => request()->old('languages')
-                ? (array) request()->old('languages')
-                : explode(';', $letter->languages),
+            'languages' => Language::pluck('name')->toArray(),
+            'selectedLanguages' => $letter->languages ? explode(';', $letter->languages) : [],
         ];
     }
 
     protected function attachRelated(Request $request, Letter $letter)
     {
+        Log::debug("Attaching related data for letter ID: {$letter->id}");
+
         $letter->keywords()->sync($request->keywords);
         $letter->identities()->detach();
         $letter->places()->detach();
+
         $letter->identities()->attach($this->prepareAttachmentData($request, 'authors', 'author'));
         $letter->identities()->attach($this->prepareAttachmentData($request, 'recipients', 'recipient', ['salutation']));
         $letter->places()->attach($this->prepareAttachmentData($request, 'origins', 'origin'));
         $letter->places()->attach($this->prepareAttachmentData($request, 'destinations', 'destination'));
-
-        $mentioned = [];
-        foreach ((array) $request->mentioned as $key => $id) {
-            $mentioned[$id] = [
-                'position' => $key,
-                'role' => 'mentioned',
-            ];
-        }
-
-        $letter->identities()->attach($mentioned);
     }
 
     protected function prepareAttachmentData(Request $request, string $fieldKey, string $role, array $pivotFields = []): array
     {
         if (!isset($request->{$fieldKey})) {
+            Log::debug("No data found for {$fieldKey}");
             return [];
         }
-
+    
         $items = [];
         foreach ((array) $request->{$fieldKey} as $key => $item) {
-            if (isset($item['value']) && $item['value']) {
-                $result = [
+            // Extract numeric ID from the input
+            $id = isset($item['value']) ? preg_replace('/\D/', '', $item['value']) : null;
+    
+            if ($id && is_numeric($id)) {
+                // Check if the place exists in the tenant's places table
+                $placeExists = \DB::table('blekastad__places')->where('id', $id)->exists();
+    
+                if (!$placeExists) {
+                    Log::warning("Place ID {$id} does not exist in blekastad__places table.");
+                    continue; // Skip non-existent places
+                }
+    
+                $data = [
                     'position' => $key,
                     'role' => $role,
-                    'marked' => $item['marked'],
+                    'marked' => $item['marked'] ?? null,
                 ];
-
+    
                 foreach ($pivotFields as $field) {
-                    $result[$field] = $item[$field];
+                    $data[$field] = $item[$field] ?? null;
                 }
-
-                $items[$item['value']] = $result;
+    
+                $items[$id] = $data;
+            } else {
+                Log::warning("Invalid data for {$fieldKey}: ", $item);
             }
         }
-
+    
+        Log::debug("Processed data for {$fieldKey}: ", $items);
         return $items;
-    }
+    }    
 
     protected function getSelectedMetaFields(Letter $letter, string $fieldKey, array $pivotFields): array
     {
-        if (request()->old($fieldKey)) {
-            return is_array(request()->old($fieldKey))
-                ? request()->old($fieldKey)
-                : json_decode(request()->old($fieldKey), true);
-        }
+        return $letter->{$fieldKey}->map(function ($item) use ($pivotFields) {
+            $result = [
+                'value' => $item->id,
+                'label' => $item->name,
+            ];
 
-        return $letter->{$fieldKey}
-            ->map(function ($item) use ($pivotFields) {
-                $result = [
-                    'value' => $item->id,
-                    'label' => $item->name,
-                ];
+            foreach ($pivotFields as $field) {
+                $result[$field] = $item->pivot->{$field};
+            }
 
-                foreach ($pivotFields as $field) {
-                    $result[$field] = $item->pivot->{$field};
-                }
-
-                return $result;
-            })
-            ->toArray();
+            return $result;
+        })->toArray();
     }
 
     protected function getSelectedMeta(Letter $letter, string $model, string $fieldKey): array
     {
-        if (!request()->old($fieldKey) && !$letter->{$fieldKey}) {
-            return [];
-        }
-
-        $items = request()->old($fieldKey)
-            ? app("App\Models\\{$model}")::whereIn('id', request()->old($fieldKey))
-                ->orderByRaw('FIELD(id, ' . implode(',', request()->old($fieldKey)) . ')')
-                ->get()
-            : $letter->{$fieldKey};
-
-        return $items->map(function ($item) {
+        return $letter->{$fieldKey}->map(function ($item) {
             return [
                 'value' => $item->id,
-                'label' => is_array($item->name)
-                    ? $item->getTranslation('name', config('hiko.metadata_default_locale'))
-                    : $item->name,
+                'label' => $item->name,
             ];
         })->toArray();
     }

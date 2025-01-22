@@ -22,35 +22,27 @@ class LetterMetaField extends Component
         }
 
         $this->items[] = $newItem;
-
-        $this->dispatch('itemChanged');
     }
 
-    public function removeItem(int $index)
+    public function removeItem($index)
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
-        $this->dispatch('itemChanged');
     }
 
-    public function changeItemValue(int $index, array $data)
+    public function changeItemValue($index, $data)
     {
-        $this->items[$index]['label'] = $data['label'] ?? '';
-        $this->items[$index]['value'] = !empty($data['label']) ? $data['value'] : '';
-    }
-
-    public function mount()
-    {
-        $this->items = $this->items ?? [];
+        if (isset($this->items[$index])) {
+            $this->items[$index]['value'] = $data['value'];
+            $this->items[$index]['label'] = $data['label'];
+        }
     }
 
     public function render()
     {
-        return view('livewire.letter-meta-field');
-    }
-
-    public function updatedItems()
-    {
-        $this->dispatch('itemChanged');
+        return view('livewire.letter-meta-field', [
+            'items' => $this->items,
+            'fields' => $this->fields,
+        ]);
     }
 }
