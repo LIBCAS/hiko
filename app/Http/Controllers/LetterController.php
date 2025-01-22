@@ -32,15 +32,31 @@ class LetterController extends Controller
         ]);
     }
 
+    public function edit(Letter $letter): View
+    {
+        Log::info("Editing letter with ID: {$letter->id}");
+    
+        $viewData = $this->prepareViewData($letter);
+    
+        return view('pages.letters.form', array_merge([
+            'title' => __('hiko.letter') . ': ' . $letter->id,
+            'method' => 'PUT',
+            'action' => route('letters.update', $letter),
+            'label' => __('hiko.edit'),
+            'letter' => $letter,
+        ], $viewData));
+    }
+    
     public function create(): View
     {
-        return view('pages.letters.form', [
+        $viewData = $this->prepareViewData(new Letter);
+    
+        return view('pages.letters.form', array_merge([
             'title' => __('hiko.new_letter'),
             'action' => route('letters.store'),
             'label' => __('hiko.create'),
             'letter' => new Letter(),
-            'viewData' => $this->prepareViewData(new Letter()),
-        ]);
+        ], $viewData));
     }
 
     public function store(LetterRequest $request): RedirectResponse
@@ -65,22 +81,6 @@ class LetterController extends Controller
             'identities' => $letter->identities->groupBy('pivot.role')->toArray(),
             'places' => $letter->places->groupBy('pivot.role')->toArray(),
         ]);
-    }
-
-    public function edit(Letter $letter): View
-    {
-        Log::info("Editing letter with ID: {$letter->id}");
-
-        $viewData = $this->prepareViewData($letter);
-
-        return view('pages.letters.form', [
-            'title' => __('hiko.letter') . ': ' . $letter->id,
-            'method' => 'PUT',
-            'action' => route('letters.update', $letter),
-            'label' => __('hiko.edit'),
-            'letter' => $letter,
-            'viewData' => $viewData,
-        ] + $viewData);
     }
 
     public function update(LetterRequest $request, Letter $letter): RedirectResponse
@@ -116,7 +116,7 @@ class LetterController extends Controller
 
         return redirect()
             ->route('letters')
-            ->with('success', 'hiko.removed');
+            ->with('success', __('hiko.removed'));
     }
 
     public function images(Letter $letter)
