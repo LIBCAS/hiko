@@ -1,4 +1,4 @@
-<div class="p-6 bg-white rounded-lg shadow-lg" x-data="dropzoneComponent()">
+<div class="p-6 bg-white rounded-lg shadow-lg" x-data="dropzoneComponent()" x-init="showButtons = false">
     <!-- Success and Error Messages -->
     @if (session()->has('message'))
         <div
@@ -16,13 +16,19 @@
     <!-- File Upload Form -->
     <form wire:submit.prevent="uploadAndProcess" class="space-y-6" enctype="multipart/form-data">
         <!-- Dropzone -->
-        <div class="flex flex-col space-y-1">
+        <div class="flex flex-col space-y-3">
             <label for="photos" class="text-lg font-semibold text-gray-700">
                 {{ __('hiko.upload_document') }}
             </label>
             <div
-                class="flex justify-center items-center px-4 py-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer 
-                transition-all duration-300 ease-in-out"
+                class="flex justify-center items-center px-4 py-6
+                bg-gray-100 
+                hover:bg-gray-200 
+                rounded-lg 
+                cursor-pointer 
+                transition-all 
+                duration-300 
+                ease-in-out" 
                 @dragover.prevent="isDragging = true"
                 @dragleave.prevent="isDragging = false"
                 @drop.prevent="isDragging = false; handleFiles($event)"
@@ -85,33 +91,26 @@
             @enderror
         </div>
 
-        <!-- Submit and Reset Buttons -->
-        <div class="flex space-x-4">
+        <!-- Submit Button -->
+        <div class="flex space-x-4" x-show="showButtons">
             <!-- Submit Button + Loader -->
             <button type="submit"
                 class="flex-1 relative flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-primary rounded hover:bg-black disabled:opacity-50 transition-all duration-300 ease-in-out"
                 wire:loading.attr="disabled" wire:target="uploadAndProcess" aria-busy="{{ $isProcessing ? 'true' : 'false' }}">
                 <!-- Button text when not processing -->
                 <h2 wire:loading.remove wire:target="uploadAndProcess">
-                    {{ __('hiko.upload_document') }}
+                    {{ __('hiko.recognize_text') }}
                         </h2>
 
                 <!-- Loader when processing -->
-                <span wire:loading wire:target="uploadAndProcess" class="flex items-center">
+                <span wire:loading wire:target="uploadAndProcess" class="flex justify-center items-center">
                     <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
                         viewBox="0 0 24 24" aria-hidden="true">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                             stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                     </svg>
-                    {{ __('hiko.loading') }}
                 </span>
-            </button>
-
-            <!-- Reset Button -->
-            <button type="button" wire:click="resetForm"
-                class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded hover:bg-gray-300 transition-all duration-300 ease-in-out">
-                {{ __('hiko.reset') }}
             </button>
         </div>
     </form>
@@ -124,7 +123,7 @@
                 <h2 class="mb-2 text-lg font-bold">{{ __('hiko.full_text') }}</h2>
                 @if (!empty($ocrText))
                     <textarea class="w-full p-3 border border-gray-300 rounded focus:ring focus:ring-blue-200 transition-all duration-300 ease-in-out"
-                        rows="8" readonly>{{ $ocrText }}</textarea>
+                        rows="12" readonly>{{ $ocrText }}</textarea>
                 @else
                     <p class="text-red-500">N/A</p>
                 @endif
@@ -134,7 +133,7 @@
             <div>
                 <h2 class="mb-2 text-lg font-bold">{{ __('hiko.metadata') }}</h2>
                 @if (count(array_filter($metadata)) > 0)
-                    <div class="p-4 bg-gray-50 rounded shadow transition-all duration-300 ease-in-out">
+                    <div class="py-4">
                         <ul class="space-y-2">
                             @foreach ($metadata as $key => $value)
                                 @php
@@ -206,12 +205,14 @@
 <!-- Alpine.js Component -->
 <script>
     function dropzoneComponent() {
+         console.log("Initial files:", this.files);
         return {
             isDragging: false,
             draggedFile: false,
             files: [],
             draggedIndex: null,
             dataTransfer: new DataTransfer(), // Initialize data transfer
+            showButtons: false,
             handleFiles(event) {
                 const selectedFiles = Array.from(event.dataTransfer ? event.dataTransfer.files : event.target.files);
                 if (selectedFiles.length + this.files.length > 100) {
@@ -252,6 +253,7 @@
 
                 // Inform Livewire about the change
                 this.$wire.set('photos', this.dataTransfer.files);
+                this.showButtons = this.files.length > 0;
 
                 },
                 removeFile(index) {
@@ -263,6 +265,7 @@
 
                      // Inform Livewire about the change
                     this.$wire.set('photos', this.dataTransfer.files);
+                    this.showButtons = this.files.length > 0;
                 },
                 dragStart(event, index) {
                     this.draggedIndex = index;
