@@ -296,7 +296,7 @@ return [
     'compare_date_computed' => 'Porovnat vypočítané datum',
     'loading' => 'Načítání...',
     'similarity' => 'Podobnost',
-    'upload_document' => 'Nahrát dokument',
+    'upload_document' => 'Nahrát dokument(-y)',
     'supported_formats' => 'Podporované formáty: JPEG, PNG, PDF. Maximální velikost: 10 MB.',
     'upload_and_process' => 'Nahrát a zpracovat',
     'reset' => 'Resetovat',

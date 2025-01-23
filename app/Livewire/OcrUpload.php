@@ -15,11 +15,11 @@ class OcrUpload extends Component
     use WithFileUploads;
 
     /**
-     * Uploaded photo or document.
+     * Uploaded photos or documents.
      *
-     * @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null
+     * @var array
      */
-    public $photo;
+    public $photos = [];
 
     /**
      * Indicates if the upload is being processed.
@@ -48,7 +48,7 @@ class OcrUpload extends Component
      * @var array
      */
     protected $rules = [
-        'photo' => 'required|file|mimes:jpeg,jpg,png,pdf|max:20480', // Max 20MB
+        'photos.*' => 'file|mimes:jpeg,jpg,png,doc,docx,pdf|max:20480', // Max 20MB per file
     ];
 
     /**
@@ -66,15 +66,14 @@ class OcrUpload extends Component
     public function mount()
     {
         $this->messages = [
-            'photo.required' => __('hiko.photo_required'),
-            'photo.file'   => __('hiko.photo_file'),
-            'photo.mimes'  => __('hiko.photo_mimes'),
-            'photo.max'    => __('hiko.photo_max'),
+            'photos.*.file' => __('hiko.photo_file'),
+            'photos.*.mimes' => __('hiko.photo_mimes'),
+            'photos.*.max' => __('hiko.photo_max'),
         ];
     }
 
     /**
-     * Upload and process the document using Gemini 2.0 Flash.
+     * Upload and process the documents using Gemini 2.0 API.
      *
      * @param DocumentService $documentService
      * @return void
@@ -82,42 +81,77 @@ class OcrUpload extends Component
     public function uploadAndProcess(DocumentService $documentService)
     {
         $this->validate();
+
+        if (count($this->photos) === 0) {
+            $this->addError('photos', __('hiko.no_files_selected'));
+            return;
+        }
+
+        if (count($this->photos) > 100) {
+            $this->addError('photos', __('hiko.max_files_exceeded'));
+            return;
+        }
+
         $this->isProcessing = true;
-        $filePath = null;
+        $filePaths = [];
+        $aggregatedOcrText = '';
+        $aggregatedMetadata = [];
 
         try {
-            // 1. Save the uploaded file to temporary storage
-            $filePath = $this->saveUploadedFile();
+            foreach ($this->photos as $photo) {
+                // Save the uploaded file to temporary storage
+                $filePath = $this->saveUploadedFile($photo);
+                $filePaths[] = $filePath;
 
-            // 2. Process the document using the new processDocument method
-            $result = $documentService->processDocument($filePath);
+                // Process the document using the DocumentService
+                $result = $documentService->processDocument($filePath);
 
-            // 3. Assign recognized text
-            $this->ocrText = $result['recognized_text'] ?? __('hiko.no_text_found');
+                // Aggregate recognized text
+                $aggregatedOcrText .= ($result['recognized_text'] ?? '') . "\n";
 
-            // 4. Assign metadata
-            $this->metadata = $result['metadata'] ?? [];
+                // Aggregate metadata
+                if (isset($result['metadata']) && is_array($result['metadata'])) {
+                    foreach ($result['metadata'] as $key => $value) {
+                        if (!isset($aggregatedMetadata[$key])) {
+                            $aggregatedMetadata[$key] = $value;
+                        } else {
+                            // Handle aggregation based on value type
+                            if (is_array($aggregatedMetadata[$key]) && is_array($value)) {
+                                $aggregatedMetadata[$key] = array_merge($aggregatedMetadata[$key], $value);
+                            } else {
+                                $aggregatedMetadata[$key] = $value;
+                            }
+                        }
+                    }
+                }
+            }
 
-            // 5. Flash success message
+            // Assign aggregated recognized text and metadata
+            $this->ocrText = trim($aggregatedOcrText);
+            $this->metadata = $aggregatedMetadata;
+
+            // Flash success message
             session()->flash('message', __('hiko.ocr_processing_completed_successfully'));
 
-            // 6. Reset only the photo after processing
-            $this->reset(['photo']);
+            // Reset the form after processing
+            $this->reset(['photos']);
             $this->resetValidation();
         } catch (Exception $e) {
             // Log the error with detailed information
-            Log::error('Gemini 2.0 Flash OCR Processing Error: ' . $e->getMessage(), [
+            Log::error('Gemini 2.0 API OCR Processing Error: ' . $e->getMessage(), [
                 'exception' => $e,
             ]);
 
             // Flash error message to the user
-            session()->flash('error', __('hiko.error_processing_document') . ' ' . $e->getMessage());
+            session()->flash('error', __('hiko.error_processing_documents') . ' ' . $e->getMessage());
         } finally {
             // Ensure that processing state is reset
             $this->isProcessing = false;
 
-            // Clean up the uploaded file from temporary storage
-            $this->cleanupUploadedFile($filePath ?? null);
+            // Clean up the uploaded files from temporary storage
+            foreach ($filePaths as $path) {
+                $this->cleanupUploadedFile($path);
+            }
 
             DocumentService::cleanupTempFiles();
         }
@@ -126,12 +160,12 @@ class OcrUpload extends Component
     /**
      * Save the uploaded file to temporary storage.
      *
+     * @param \Illuminate\Http\UploadedFile $file
      * @return string
      * @throws Exception
      */
-    private function saveUploadedFile(): string
+    private function saveUploadedFile($file): string
     {
-        $file = $this->photo;
         $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
         $filePath = "temp/ocr/{$fileName}";
 
@@ -163,7 +197,7 @@ class OcrUpload extends Component
      */
     public function resetForm()
     {
-        $this->reset(['photo', 'ocrText', 'metadata']);
+        $this->reset(['photos', 'ocrText', 'metadata']);
         $this->resetValidation();
     }
 
