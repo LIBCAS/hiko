@@ -296,7 +296,7 @@ return [
     'compare_date_computed' => 'Compare computed date',
     'loading' => 'Loading...',
     'similarity' => 'Similarity',
-    'upload_document' => 'Upload document(-s)',
+    'upload_document' => 'Upload attachments + OCR',
     'supported_formats' => 'Supported formats: JPEG, PNG, PDF. Max size: 10MB.',
     'upload_and_process' => 'Upload and process',
     'reset' => 'Reset',
