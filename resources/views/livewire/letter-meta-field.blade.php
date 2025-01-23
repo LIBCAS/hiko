@@ -3,30 +3,29 @@
         @foreach ($items as $item)
             <div wire:key="{{ $loop->index }}" class="p-3 space-y-6 bg-gray-200 shadow">
                 <div class="required">
-                    <x-label :for="$fieldKey . '-' . $loop->index" :value="$item['label'] ?? 'No Label'" />
-                    <div 
+                    <x-label :for="$fieldKey . '-' . $loop->index" :value="$item['label']['label'] ?? 'No Label'" />
+                    <div
                         x-data="ajaxChoices({
                             url: '{{ route($route) }}',
                             element: document.getElementById('{{ $fieldKey . '-' . $loop->index }}'),
-                            change: (data) => { $wire.changeItemValue({{ $loop->index }}, data) }
-                        })" 
-                        x-init="initSelect()" 
-                        wire:ignore
-                        wire:key="select-{{ $loop->index }}">
-                        
-                        <x-select 
-                            wire:model.live="items.{{ $loop->index }}.value" 
+                            change: (data) => { $dispatch('item-value-changed', { index: {{ $loop->index }}, data: data }); }
+                        })"
+                        x-init="initSelect()"
+                        wire:ignore>
+
+                        <x-select
+                            wire:model.live.debounce.300ms="items.{{ $loop->index }}.value"
                             class="block w-full mt-1"
-                            name="{{ $fieldKey }}[{{ $loop->index }}][value]" 
+                            name="{{ $fieldKey }}[{{ $loop->index }}][value]"
                             :id="$fieldKey . '-' . $loop->index">
                             @if (!empty($item['value']))
-                                <option value="{{ $item['value'] }}">{{ $item['label'] ?? 'No Label' }}</option>
+                                <option value="{{ $item['value'] }}">{{ $item['label'] }}</option>
                             @endif
                         </x-select>
-                        
-                        @if (strpos(route($route), 'identity') !== false)
-                            <livewire:create-new-item-modal 
-                                :route="route('identities.create')" 
+
+                        @if (str_contains(route($route), '/identity/'))
+                            <livewire:create-new-item-modal
+                                :route="route('identities.create')"
                                 :text="__('hiko.modal_new_identity')" />
                         @endif
                     </div>
@@ -34,14 +33,14 @@
                 <div>
                     @foreach ($fields as $field)
                         <div>
-                            <x-label 
-                                for="{{ $fieldKey }}-{{ $field['key'] . '-' . $loop->parent->index }}" 
+                            <x-label
+                                for="{{ $fieldKey }}-{{ $field['key'] . '-' . $loop->parent->index }}"
                                 value="{{ $field['label'] }}" />
-                            <x-input 
+                            <x-input
                                 wire:model.live="items.{{ $loop->parent->index }}.{{ $field['key'] }}"
                                 name="{{ $fieldKey }}[{{ $loop->parent->index }}][{{ $field['key'] }}]"
                                 id="{{ $fieldKey }}-{{ $field['key'] . '-' . $loop->parent->index }}"
-                                class="block w-full mt-1" 
+                                class="block w-full mt-1"
                                 type="text" />
                         </div>
                     @endforeach
@@ -49,10 +48,13 @@
                 <x-button-trash wire:click="removeItem({{ $loop->index }})" />
             </div>
         @endforeach
-        <button 
-            wire:click="addItem" 
-            type="button" 
-            class="mb-3 text-sm font-bold text-primary hover:underline">
+        <button
+            wire:click="addItem"
+            type="button"
+            class="mb-3 text-sm font-bold text-primary hover:underline"
+            wire:loading.attr="disabled"
+            wire:target="addItem"
+        >
             {{ __('hiko.add_new_item') }}
         </button>
     </fieldset>
@@ -64,7 +66,7 @@
             return {
                 initSelect() {
                     const select = this.$el;
-                    
+
                     // Prevent multiple initializations
                     if (select.dataset.choicesInitialized) return;
                     select.dataset.choicesInitialized = true;
@@ -75,7 +77,7 @@
                             .then(response => response.json())
                             .then(data => {
                                 select.innerHTML = ''; // Clear current options
-                                
+
                                 // Populate new options
                                 data.forEach(option => {
                                     const optionElement = document.createElement('option');

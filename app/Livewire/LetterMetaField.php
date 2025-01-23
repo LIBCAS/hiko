@@ -30,13 +30,18 @@ class LetterMetaField extends Component
         $this->items = array_values($this->items);
     }
 
-    public function changeItemValue($index, $data)
+   public function changeItemValue($index, $data)
     {
         if (isset($this->items[$index])) {
             $this->items[$index]['value'] = $data['value'];
             $this->items[$index]['label'] = $data['label'];
         }
     }
+
+
+    protected $listeners = [
+        'item-value-changed' => 'changeItemValue'
+    ];
 
     public function render()
     {
