@@ -18,7 +18,7 @@
             </li>
         </ul>
     @endif
-    <div class="md:flex md:space-x-16">
+    <div class="md:flex md:space-x-6">
         <div class="hidden md:block">
             <ul class="sticky text-gray-700 bg-white rounded-md shadow-lg top-16">
                 <li class="border-b border-primary-light">
@@ -80,7 +80,7 @@
                 @endcan
             </ul>
         </div>
-        <div>
+        <div class="p-6 bg-white rounded-lg shadow-lg">
             @if (session()->has('success') || $errors->any())
                 <div class="pb-3">
                     <x-success-alert />
@@ -92,7 +92,7 @@
                 @isset($method)
                     @method($method)
                 @endisset
-                <fieldset id="a-dates" class="p-3 space-y-6 shadow">
+                <fieldset id="a-dates" class="space-y-6">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.date') }}
                     </legend>
@@ -185,7 +185,7 @@
                     </div>
                 </fieldset>
                 <div class="h-1"></div>
-                <fieldset id="a-author" class="p-3 space-y-6 shadow">
+                <fieldset id="a-author" class="space-y-6">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.author') }}
                     </legend>
@@ -213,7 +213,7 @@
                     </div>
                 </fieldset>
                 <div class="h-1"></div>
-                <fieldset id="a-recipient" class="p-3 space-y-6 shadow">
+                <fieldset id="a-recipient" class="space-y-6">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.recipient') }}
                     </legend>
@@ -244,7 +244,7 @@
                     </div>
                 </fieldset>
                 <div class="h-1"></div>
-                <fieldset id="a-origin" class="p-3 space-y-6 shadow">
+                <fieldset id="a-origin" class="space-y-6">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.origin') }}
                     </legend>
@@ -273,7 +273,7 @@
                     </div>
                 </fieldset>
                 <div class="h-1"></div>
-                <fieldset id="a-destination" class="p-3 space-y-6 shadow">
+                <fieldset id="a-destination" class="space-y-6">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.destination') }}
                     </legend>
@@ -302,7 +302,7 @@
                     </div>
                 </fieldset>
                 <div class="h-1"></div>
-                <fieldset id="a-content" class="p-3 space-y-6 shadow">
+                <fieldset id="a-content" class="space-y-6">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.content_description') }}
                     </legend>
@@ -420,7 +420,7 @@
                 <div class="h-1"></div>
                 <livewire:letter-copies :copies="$letter->copies" />
                 <div class="h-1"></div>
-                <fieldset id="a-copyright" class="p-3 space-y-6 shadow">
+                <fieldset id="a-copyright" class="space-y-6">
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.copyright') }}
                     </legend>

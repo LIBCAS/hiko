@@ -1,5 +1,5 @@
 <div>
-    <fieldset id="a-copies" class="p-3 space-y-6 shadow" wire:loading.attr="disabled">
+    <fieldset id="a-copies" class="space-y-6" wire:loading.attr="disabled">
         <legend class="text-lg font-semibold">
             {{ __('hiko.manifestation_location') }}
         </legend>
