@@ -4,7 +4,7 @@
             {{ __('hiko.manifestation_location') }}
         </legend>
 
-        @if (is_iterable($copies) && count($copies) > 0)
+        @if (count($copies) > 0)
             @foreach ($copies as $index => $item)
                 <div class="p-3 space-y-6 bg-gray-200 shadow">
                     <div>

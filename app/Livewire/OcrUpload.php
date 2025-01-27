@@ -41,6 +41,13 @@ class OcrUpload extends Component
      * @var array
      */
     public $metadata = [];
+    
+     /**
+     * Stored file paths to pass to the main form.
+     *
+     * @var array
+     */
+    public $uploadedFiles = [];
 
     /**
      * Validation rules for the component.
@@ -58,6 +65,7 @@ class OcrUpload extends Component
      */
     protected $messages = [];
 
+
     /**
      * Life cycle method to initialize component properties.
      *
@@ -72,7 +80,7 @@ class OcrUpload extends Component
         ];
     }
 
-    /**
+      /**
      * Upload and process the documents using Gemini 2.0 API.
      *
      * @param DocumentService $documentService
@@ -96,12 +104,14 @@ class OcrUpload extends Component
         $filePaths = [];
         $aggregatedOcrText = '';
         $aggregatedMetadata = [];
+         $this->uploadedFiles = []; // Reset the uploaded files array
 
         try {
-            foreach ($this->photos as $photo) {
-                // Save the uploaded file to temporary storage
+             foreach ($this->photos as $photo) {
+                // Save the uploaded file to public storage
                 $filePath = $this->saveUploadedFile($photo);
                 $filePaths[] = $filePath;
+                $this->uploadedFiles[] = $filePath;
 
                 // Process the document using the DocumentService
                 $result = $documentService->processDocument($filePath);
@@ -110,7 +120,7 @@ class OcrUpload extends Component
                 $aggregatedOcrText .= ($result['recognized_text'] ?? '') . "\n";
 
                 // Aggregate metadata
-                if (isset($result['metadata']) && is_array($result['metadata'])) {
+                 if (isset($result['metadata']) && is_array($result['metadata'])) {
                     foreach ($result['metadata'] as $key => $value) {
                         if (!isset($aggregatedMetadata[$key])) {
                             $aggregatedMetadata[$key] = $value;
@@ -126,7 +136,7 @@ class OcrUpload extends Component
                 }
             }
 
-            // Assign aggregated recognized text and metadata
+           // Assign aggregated recognized text and metadata
             $this->ocrText = trim($aggregatedOcrText);
             $this->metadata = $aggregatedMetadata;
 
@@ -134,8 +144,10 @@ class OcrUpload extends Component
             session()->flash('message', __('hiko.ocr_processing_completed_successfully'));
 
             // Reset the form after processing
-            $this->reset(['photos']);
+             $this->reset(['photos']);
             $this->resetValidation();
+
+
         } catch (Exception $e) {
             // Log the error with detailed information
             Log::error('Gemini 2.0 API OCR Processing Error: ' . $e->getMessage(), [
@@ -145,19 +157,19 @@ class OcrUpload extends Component
             // Flash error message to the user
             session()->flash('error', __('hiko.error_processing_documents') . ' ' . $e->getMessage());
         } finally {
-            // Ensure that processing state is reset
+           // Ensure that processing state is reset
             $this->isProcessing = false;
 
-            // Clean up the uploaded files from temporary storage
-            foreach ($filePaths as $path) {
-                $this->cleanupUploadedFile($path);
-            }
+             // Clean up the uploaded files from temporary storage
+             foreach ($filePaths as $path) {
+                 $this->cleanupUploadedFile($path);
+             }
 
-            DocumentService::cleanupTempFiles();
+             DocumentService::cleanupTempFiles();
         }
     }
 
-    /**
+   /**
      * Save the uploaded file to temporary storage.
      *
      * @param \Illuminate\Http\UploadedFile $file
@@ -167,14 +179,16 @@ class OcrUpload extends Component
     private function saveUploadedFile($file): string
     {
         $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $filePath = "temp/ocr/{$fileName}";
+        $filePath =  "media/{$fileName}";
 
-        // Store the file in the local disk's temp directory
-        if (!Storage::disk('local')->putFileAs('temp/ocr', $file, $fileName)) {
-            throw new Exception(__('hiko.failed_to_save_the_uploaded_file'));
-        }
 
-        return Storage::disk('local')->path("temp/ocr/{$fileName}");
+         // Store the file in the local disk's temp directory
+         if (!Storage::disk('public')->putFileAs('media', $file, $fileName)) {
+             throw new Exception(__('hiko.failed_to_save_the_uploaded_file'));
+         }
+
+          return Storage::disk('public')->path("media/{$fileName}");
+
     }
 
     /**
@@ -183,12 +197,13 @@ class OcrUpload extends Component
      * @param string|null $filePath
      * @return void
      */
-    private function cleanupUploadedFile(?string $filePath): void
+     private function cleanupUploadedFile(?string $filePath): void
     {
-        if ($filePath && Storage::disk('local')->exists($filePath)) {
-            Storage::disk('local')->delete($filePath);
+        if ($filePath && Storage::disk('public')->exists($filePath)) {
+            Storage::disk('public')->delete($filePath);
         }
     }
+
 
     /**
      * Reset the form to its initial state.
@@ -197,7 +212,7 @@ class OcrUpload extends Component
      */
     public function resetForm()
     {
-        $this->reset(['photos', 'ocrText', 'metadata']);
+        $this->reset(['photos', 'ocrText', 'metadata', 'uploadedFiles']);
         $this->resetValidation();
     }
 
@@ -208,7 +223,7 @@ class OcrUpload extends Component
      */
     public function render()
     {
-        return view('livewire.ocr-upload', [
+       return view('livewire.ocr-upload', [
             'ocrText' => $this->ocrText,
             'metadata' => $this->metadata,
         ]);

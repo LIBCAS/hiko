@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use App\Models\Letter;
 
 class RelatedResources extends Component
 {
@@ -33,17 +34,18 @@ class RelatedResources extends Component
     /**
      * Resources initialization.
      */
-    public function mount()
+    public function mount(Letter $letter = null)
     {
-        // Initialize from old request data if available
-        $this->resources = request()->old('related_resources', []);
-
-        // It's always an array
+        if ($letter) {
+            $this->resources = $letter->related_resources ?? [];
+        } else {
+            $this->resources = request()->old('related_resources', []);
+        }
+    
         if (!is_array($this->resources)) {
             $this->resources = [];
         }
-    }
-
+    }    
     /**
      * Component rendering.
      *

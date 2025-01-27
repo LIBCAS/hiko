@@ -75,7 +75,7 @@ class LetterFactory extends Factory
             'explicit' => $this->faker->sentence(),
             'incipit' => $this->faker->sentence(),
             'copyright' => $this->faker->sentence(),
-            'status' => $this->faker->randomElement(['draft', 'publish',]),
+            'status' => $this->faker->randomElement(['draft', 'publish']),
             'abstract' => [
                 'cs' => $this->faker->paragraph(),
                 'en' => $this->faker->paragraph(),

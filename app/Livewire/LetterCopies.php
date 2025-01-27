@@ -4,64 +4,76 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Location;
+use App\Models\Letter;
 
+/**
+ * A Livewire component that manages the "copies" array within a Letter record.
+ * This component can be used in the Blade form to display existing copies and
+ * allow adding/removing them dynamically.
+ */
 class LetterCopies extends Component
 {
-    public $copies = []; // Always initialize as an array
-    public $copyValues = [];
-    public $locations = [];
+    public $copies = [];     // We'll store the copies array here.
+    public $copyValues = []; // Predefined select options, e.g., ms_manifestation, type
+    public $locations = [];  // Loading relevant locations.
 
     /**
-     * Add a new copy item to the list.
+     * Initialize the component.
+     * If a Letter is provided, we load the "copies" field from it (already cast to array).
      */
-    public function addItem()
+    public function mount(Letter $letter = null)
     {
-        $this->copies[] = [
-            'archive' => '',
-            'collection' => '',
-            'copy' => '',
-            'l_number' => '',
-            'location_note' => '',
-            'manifestation_notes' => '',
-            'ms_manifestation' => '',
-            'preservation' => '',
-            'repository' => '',
-            'signature' => '',
-            'type' => '',
-        ];
-    }
-
-    /**
-     * Remove a copy item by index.
-     *
-     * @param int $index
-     */
-    public function removeItem($index)
-    {
-        unset($this->copies[$index]);
-        $this->copies = array_values($this->copies); // Re-index the array
-    }
-
-    /**
-     * Mount the component and initialize data.
-     */
-    public function mount()
-    {
+        // Retrieve predefined sets of data (select lists, etc.)
         $this->copyValues = $this->getCopyValues();
         $this->locations = $this->getLocations();
 
-        // Retrieve old input or initialize as an empty array
-        $this->copies = request()->old('copies', []);
+        // If a Letter was passed in, we assign $this->copies to whatever is stored in the DB.
+        // Because in the Letter model we cast "copies" => "array", it should already be an array.
+        if ($letter) {
+            $this->copies = $letter->copies ?? [];
+        }
+        // If no letter was passed (create scenario), try old() or default to empty array.
+        else {
+            $this->copies = request()->old('copies', []);
+        }
 
+        // Ensure it's always an array
         if (!is_array($this->copies)) {
-            $this->copies = []; // Ensure it's always an array
+            $this->copies = [];
         }
     }
 
     /**
-     * Render the Livewire component.
-     *
-     * @return \Illuminate\View\View
+     * Add a new item to the copies array with default empty values.
+     */
+    public function addItem()
+    {
+        $this->copies[] = [
+            'archive'             => '',
+            'collection'          => '',
+            'copy'                => '',
+            'l_number'            => '',
+            'location_note'       => '',
+            'manifestation_notes' => '',
+            'ms_manifestation'    => '',
+            'preservation'        => '',
+            'repository'          => '',
+            'signature'           => '',
+            'type'                => '',
+        ];
+    }
+
+    /**
+     * Remove an item from the copies array by index.
+     */
+    public function removeItem($index)
+    {
+        unset($this->copies[$index]);
+        $this->copies = array_values($this->copies); // reindex
+    }
+
+    /**
+     * Render the Livewire component, returning the "letter-copies" Blade view.
      */
     public function render()
     {
@@ -69,9 +81,8 @@ class LetterCopies extends Component
     }
 
     /**
-     * Get predefined copy values.
-     *
-     * @return array
+     * Provide a set of possible values for "copies" fields
+     * (like ms_manifestation, type, preservation, etc.).
      */
     protected function getCopyValues()
     {
@@ -94,21 +105,22 @@ class LetterCopies extends Component
                 'original',
                 'photocopy',
             ],
-            'copy' => ['handwritten', 'typewritten'],
+            'copy' => [
+                'handwritten',
+                'typewritten',
+            ],
         ];
     }
 
     /**
-     * Fetch locations grouped by type.
-     *
-     * @return array
+     * Method to retrieve locations grouped by type, if needed.
      */
     protected function getLocations()
     {
         return Location::select(['name', 'type'])
             ->get()
             ->groupBy('type')
-            ->map(fn($items) => $items->pluck('name')->toArray())
+            ->map(fn ($items) => $items->pluck('name')->toArray())
             ->toArray();
     }
 }

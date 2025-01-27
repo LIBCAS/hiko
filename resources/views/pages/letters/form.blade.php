@@ -416,9 +416,9 @@
                     </div>
                 </fieldset>
                 <div class="h-1"></div>
-                <livewire:related-resources :resources="$letter->related_resources" />
+                <livewire:related-resources :letter="$letter" />
                 <div class="h-1"></div>
-                <livewire:letter-copies :copies="$letter->copies" />
+                <livewire:letter-copies :letter="$letter" />
                 <div class="h-1"></div>
                 <fieldset id="a-copyright" class="space-y-6">
                     <legend class="text-lg font-semibold">

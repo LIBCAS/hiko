@@ -4,7 +4,7 @@
             {{ __('hiko.related_resources') }}
         </legend>
 
-        @if (is_iterable($resources) && count($resources) > 0)
+        @if (count($resources) > 0)
             @foreach ($resources as $index => $resource)
                 <div wire:key="resource-{{ $index }}" class="p-3 space-y-6 bg-gray-200 shadow">
                     <div class="required">
