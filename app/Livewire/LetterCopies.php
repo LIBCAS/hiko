@@ -13,9 +13,25 @@ use App\Models\Letter;
  */
 class LetterCopies extends Component
 {
-    public $copies = [];     // We'll store the copies array here.
-    public $copyValues = []; // Predefined select options, e.g., ms_manifestation, type
-    public $locations = [];  // Loading relevant locations.
+    public $copies;
+    public $copyValues;
+    public $locations;
+
+    public function addItem()
+    {
+        $this->copies[] = [
+            'archive' => '',
+            'collection' => '',
+            'copy' => '',
+            'l_number' => '',
+            'location_note' => '',
+            'manifestation_notes' => '',
+            'preservation' => '',
+            'repository' => '',
+            'signature' => '',
+            'type' => '',
+        ];
+    }
 
     /**
      * Initialize the component.
@@ -44,26 +60,6 @@ class LetterCopies extends Component
     }
 
     /**
-     * Add a new item to the copies array with default empty values.
-     */
-    public function addItem()
-    {
-        $this->copies[] = [
-            'archive'             => '',
-            'collection'          => '',
-            'copy'                => '',
-            'l_number'            => '',
-            'location_note'       => '',
-            'manifestation_notes' => '',
-            'ms_manifestation'    => '',
-            'preservation'        => '',
-            'repository'          => '',
-            'signature'           => '',
-            'type'                => '',
-        ];
-    }
-
-    /**
      * Remove an item from the copies array by index.
      */
     public function removeItem($index)
@@ -80,23 +76,18 @@ class LetterCopies extends Component
         return view('livewire.letter-copies');
     }
 
-    /**
-     * Provide a set of possible values for "copies" fields
-     * (like ms_manifestation, type, preservation, etc.).
-     */
     protected function getCopyValues()
     {
         return [
-            'ms_manifestation' => ['E', 'S', 'D', 'ALS', 'O', 'P'],
             'type' => [
-                'calling card',
+                'vccard',
                 'greeting card',
                 'invitation card',
                 'letter',
                 'picture postcard',
                 'postcard',
                 'telegram',
-                'visiting card',
+                'type_other'
             ],
             'preservation' => [
                 'carbon copy',
@@ -104,23 +95,25 @@ class LetterCopies extends Component
                 'draft',
                 'original',
                 'photocopy',
+                'digitalcopy',
+                'extract',
+                'printed',
+                'other',
             ],
             'copy' => [
                 'handwritten',
                 'typewritten',
+                'mode_printed',
+                'mode_other'
             ],
         ];
     }
 
-    /**
-     * Method to retrieve locations grouped by type, if needed.
-     */
     protected function getLocations()
     {
         return Location::select(['name', 'type'])
             ->get()
             ->groupBy('type')
-            ->map(fn ($items) => $items->pluck('name')->toArray())
             ->toArray();
     }
 }

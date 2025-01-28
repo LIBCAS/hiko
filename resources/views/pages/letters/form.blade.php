@@ -80,14 +80,14 @@
                 @endcan
             </ul>
         </div>
-        <div class="p-6 bg-white rounded-lg shadow-lg">
+        <div class="p-6 bg-white rounded-lg shadow-lg md:w-1/2">
             @if (session()->has('success') || $errors->any())
                 <div class="pb-3">
                     <x-success-alert />
                     <x-form-errors />
                 </div>
             @endif
-            <form action="{{ $action }}" method="post" class="max-w-sm space-y-6 md:-mt-6" autocomplete="off">
+            <form action="{{ $action }}" method="post" class="space-y-6 md:-mt-6" autocomplete="off">
                 @csrf
                 @isset($method)
                     @method($method)
@@ -322,17 +322,16 @@
                     </div>
                     <div>
                     <x-select name="keywords[]" class="block w-full mt-1" id="keywords"
-                            x-data="ajaxChoices({ url: '{{ route('ajax.keywords') }}', element: $el })"
-                            x-init="initSelect()" multiple>
+                        x-data="ajaxChoices({ url: '{{ route('ajax.keywords') }}', element: $el })"
+                        x-init="initSelect()" 
+                        multiple>
                         @foreach ($selectedKeywords as $kw)
                             <option value="{{ $kw['value'] }}" selected>{{ $kw['label'] }}</option>
                         @endforeach
                     </x-select>
-
                     @error('keywords')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
-
                     <livewire:create-new-item-modal :route="route('global.keywords.create')" :text="__('hiko.modal_new_keyword')" />
                     </div>
                     <div>

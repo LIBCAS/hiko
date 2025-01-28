@@ -378,7 +378,7 @@
                     @endif
                     @if ($c['preservation'])
                         <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">{{ __('hiko.preservation') }}</td>
+                            <td class="w-1/5 py-2">{{ __('hiko.ms_manifestation') }}</td>
                             <td class="py-2">
                                 {{ $c['preservation'] }}
                             </td>

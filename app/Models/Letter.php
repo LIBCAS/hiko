@@ -81,7 +81,6 @@ class Letter extends Model implements HasMedia
         // JSON array fields
         'copies'            => 'array',
         'related_resources' => 'array',
-        // 'abstract' => 'array' // Not needed if using Spatie\Translatable (it will handle JSON)
 
         // Strings
         'date_marked'           => 'string',
@@ -143,8 +142,12 @@ class Letter extends Model implements HasMedia
             ? tenancy()->tenant->table_prefix . '__identity_letter'
             : 'default_identity_letter';
 
-        return $this->belongsToMany(Identity::class, $pivot, 'letter_id', 'identity_id')
-                    ->withPivot(['role', 'position', 'marked', 'salutation']);
+        return $this->belongsToMany(
+            Identity::class,
+            $pivot,
+            'letter_id',
+            'identity_id'
+        )->withPivot(['role', 'position', 'marked', 'salutation']);
     }
 
     /**
@@ -156,8 +159,12 @@ class Letter extends Model implements HasMedia
             ? tenancy()->tenant->table_prefix . '__letter_place'
             : 'global_letter_place';
 
-        return $this->belongsToMany(Place::class, $pivot, 'letter_id', 'place_id')
-                    ->withPivot(['role', 'position', 'marked']);
+        return $this->belongsToMany(
+            Place::class,
+            $pivot,
+            'letter_id',
+            'place_id'
+        )->withPivot(['role', 'position', 'marked']);
     }
 
     /**
@@ -184,9 +191,9 @@ class Letter extends Model implements HasMedia
         $pivot = function_exists('tenancy') && tenancy()->initialized
             ? tenancy()->tenant->table_prefix . '__keyword_letter'
             : 'global_keyword_letter';
-
+    
         return $this->belongsToMany(GlobalKeyword::class, $pivot, 'letter_id', 'keyword_id');
-    }
+    }    
 
     /**
      * Polymorphic relationship to Media model, restricting model_type = Letter class.
@@ -230,8 +237,12 @@ class Letter extends Model implements HasMedia
             ? tenancy()->tenant->table_prefix . '__letter_user'
             : 'global_letter_user';
 
-        return $this->belongsToMany(User::class, $pivot, 'letter_id', 'user_id')
-                    ->withPivot(['letter_id', 'user_id']);
+        return $this->belongsToMany(
+            User::class,
+            $pivot,
+            'letter_id',
+            'user_id'
+        )->withPivot(['letter_id', 'user_id']);
     }
 
     /**

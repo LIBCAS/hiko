@@ -146,7 +146,6 @@ class PalladioCharacterExport implements FromQuery, WithMapping, WithHeadings, W
 
         $copy = $copiesData[0] ?? [];
         return [
-            $copy['ms_manifestation'] ?? 'N/A',
             $copy['type'] ?? 'N/A',
             $copy['preservation'] ?? 'N/A',
             $copy['repository'] ?? 'N/A',

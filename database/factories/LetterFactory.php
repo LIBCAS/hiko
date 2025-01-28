@@ -59,7 +59,6 @@ class LetterFactory extends Factory
                     'l_number' => $this->faker->randomNumber(),
                     'location_note' => $this->faker->sentence(),
                     'manifestation_notes' => $this->faker->sentence(),
-                    'ms_manifestation' => 'ALS',
                     'preservation' => 'original',
                     'repository' => $this->faker->words(3, true),
                     'signature' => $this->faker->word() . ' ' . $this->faker->randomNumber(),

@@ -20,8 +20,8 @@ use App\Exports\PalladioCharacterExport;
 
 /**
  * LetterController handles all CRUD operations for the "letters" table,
- * including storing 'copies' as JSON (via model casting) and attaching
- * pivot data (authors, recipients, origins, destinations, etc.).
+ * including storing 'copies' as JSON and attaching pivot data
+ * (authors, recipients, keywords, etc.).
  */
 class LetterController extends Controller
 {
@@ -43,50 +43,50 @@ class LetterController extends Controller
      */
     public function create(): View
     {
-        // Prepare any data needed for the form
+        // Prepare data for an empty/new Letter
         $viewData = $this->prepareViewData(new Letter);
 
         return view('pages.letters.form', array_merge([
             'title'  => __('hiko.new_letter'),
             'action' => route('letters.store'),
             'label'  => __('hiko.create'),
-            'letter' => new Letter(),  // a fresh Letter model
+            'letter' => new Letter(),  // fresh instance
         ], $viewData));
     }
 
     /**
      * Store a newly created Letter in the database.
-     * 'copies' is automatically cast to JSON by the Letter model.
      */
     public function store(LetterRequest $request): RedirectResponse
     {
-        // Decide which route to redirect to afterwards
+        // Decide where to redirect after saving
         $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';
 
-        // Validate incoming data. 'copies' and others are included here.
+        // Validate and retrieve data (copies, keywords, etc. are included)
         $validatedData = $request->validated();
 
-        // Remove pivot fields (authors, recipients, etc.) that belong to pivot tables,
-        // so we do not store them in the letters table directly.
+        // Remove pivot data (authors, recipients, etc.) from the main letter fields,
+        // so we don't try to store them as columns in letters
         unset($validatedData['authors'], $validatedData['recipients'], $validatedData['destinations'], $validatedData['origins']);
+        // Do NOT remove 'keywords' so it remains in $validatedData (if we want to handle it directly).
+        // But we will handle it in attachRelated() below, anyway.
 
-        // Create a new Letter. Because $casts['copies'] = 'array' in the model,
-        // any array assigned to "copies" will be serialized to JSON automatically.
+        // Create the Letter model
         $letter = Letter::create($validatedData);
 
-        // Attach pivot relationships (authors, recipients, places, etc.)
+        // Attach pivot relationships for authors, recipients, places, etc.
         $this->attachRelated($request, $letter);
 
-        // If file uploads exist, attach them as media if needed
+        // If we have file uploads, attach them as media
         $this->attachMedia($request, $letter);
 
-        // If there is an array of related_resources, store it
+        // If 'related_resources' is present
         if ($request->has('related_resources')) {
             $letter->related_resources = $request->input('related_resources');
             $letter->save();
         }
 
-        // Dispatch jobs to regenerate name fields if necessary
+        // Dispatch background jobs if needed
         RegenerateNames::dispatch($letter->authors()->get());
         RegenerateNames::dispatch($letter->recipients()->get());
 
@@ -96,7 +96,7 @@ class LetterController extends Controller
     }
 
     /**
-     * Show a Letter in a read-only view.
+     * Show a single Letter in a read-only view.
      */
     public function show(Letter $letter): View
     {
@@ -130,33 +130,33 @@ class LetterController extends Controller
     }
 
     /**
-     * Update an existing Letter in the database.
+     * Update an existing Letter record in the database.
      */
     public function update(LetterRequest $request, Letter $letter): RedirectResponse
     {
         // Validate input
         $validatedData = $request->validated();
 
-        // Remove pivot data, as they are stored separately
+        // Remove pivot data
         unset($validatedData['authors'], $validatedData['recipients'], $validatedData['destinations'], $validatedData['origins']);
 
-        // Update the Letter with non-pivot fields
+        // Update the main letter fields
         $letter->update($validatedData);
         Log::info("Updated letter with ID: {$letter->id}");
 
-        // Re-attach pivot data (authors, recipients, etc.)
+        // Re-attach pivot data (authors, recipients, places, etc.)
         $this->attachRelated($request, $letter);
 
-        // Optionally attach media uploads
+        // If there are file uploads, attach them
         $this->attachMedia($request, $letter);
 
-        // If related resources are updated, store them
+        // If related_resources is present, store it
         if ($request->has('related_resources')) {
             $letter->related_resources = $request->input('related_resources');
             $letter->save();
         }
 
-        // Dispatch any relevant background jobs
+        // Dispatch background jobs if needed
         LetterSaved::dispatch($letter);
         RegenerateNames::dispatch($letter->authors()->get());
         RegenerateNames::dispatch($letter->recipients()->get());
@@ -171,7 +171,6 @@ class LetterController extends Controller
      */
     public function destroy(Letter $letter): RedirectResponse
     {
-        // Gather authors and recipients for regeneration
         $authors    = $letter->authors()->get();
         $recipients = $letter->recipients()->get();
 
@@ -180,10 +179,10 @@ class LetterController extends Controller
             $media->delete();
         }
 
-        // Delete the Letter itself
+        // Delete the letter itself
         $letter->delete();
 
-        // Possibly re-generate names that were associated with it
+        // Possibly re-generate names for any authors/recipients
         RegenerateNames::dispatch($authors);
         RegenerateNames::dispatch($recipients);
 
@@ -191,7 +190,7 @@ class LetterController extends Controller
     }
 
     /**
-     * Show the images related to a given Letter.
+     * Show images related to this Letter.
      */
     public function images(Letter $letter): View
     {
@@ -202,7 +201,7 @@ class LetterController extends Controller
     }
 
     /**
-     * Show the full text of a Letter, optionally including images.
+     * Show the full text of a Letter, possibly with images.
      */
     public function text(Letter $letter): View
     {
@@ -235,7 +234,7 @@ class LetterController extends Controller
     }
 
     /**
-     * Generate a CSV filename for the Palladio tool, based on the role and main character.
+     * Generate a CSV filename for the Palladio tool, based on main character (if any).
      */
     protected function getPalladioFileName(string $role): string
     {
@@ -254,12 +253,13 @@ class LetterController extends Controller
     {
         Log::debug("Attaching related data for letter ID: {$letter->id}");
 
-        // Example of many-to-many with 'keywords'
+        // Many-to-many with 'keywords'
+        // if present, do a sync
         if ($request->has('keywords')) {
             $letter->keywords()->sync($request->keywords);
         }
 
-        // Detach existing pivot data to avoid duplication
+        // Detach existing pivot data for identities & places to avoid duplication
         $letter->identities()->detach();
         $letter->places()->detach();
 
@@ -268,7 +268,7 @@ class LetterController extends Controller
             $this->prepareAttachmentData($request->input('authors'), 'author')
         );
 
-        // recipients (with an optional 'salutation')
+        // recipients
         $letter->identities()->attach(
             $this->prepareAttachmentData($request->input('recipients'), 'recipient', ['salutation'])
         );
@@ -286,7 +286,7 @@ class LetterController extends Controller
 
     /**
      * Convert an array of items from the request into pivot data for attach().
-     * Each item has at least a 'value' => ID, possibly plus fields like 'marked', etc.
+     * Each item includes a 'value' => numeric ID, plus optional fields like 'marked'.
      */
     protected function prepareAttachmentData(?array $items, string $role, array $pivotFields = []): array
     {
@@ -296,7 +296,7 @@ class LetterController extends Controller
 
         $results = [];
         foreach ($items as $position => $item) {
-            // For instance, "local-5" => "5"
+            // e.g. "local-5" => "5"
             $id = isset($item['value']) ? preg_replace('/\D/', '', $item['value']) : null;
 
             if ($id && is_numeric($id)) {
@@ -306,7 +306,7 @@ class LetterController extends Controller
                     'marked'   => $item['marked'] ?? null,
                 ];
 
-                // If we have extra pivot fields, copy them
+                // If we have extra pivot fields
                 foreach ($pivotFields as $field) {
                     $data[$field] = $item[$field] ?? null;
                 }
@@ -347,32 +347,33 @@ class LetterController extends Controller
     }
 
     /**
-     * Prepare data for the create/edit view, such as selected authors, places, etc.
+     * Prepare data for create/edit view (used by create() or edit() methods).
      */
     protected function prepareViewData(Letter $letter): array
     {
         Log::debug("Preparing view data for letter ID: {$letter->id}");
 
         return [
-            // For example, grouping authors by 'marked'
+            // Pre-selected authors, recipients, etc. to pass into Livewire components
             'selectedAuthors'      => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
             'selectedRecipients'   => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
             'selectedOrigins'      => $this->getSelectedMetaFields($letter, 'origins', ['marked']),
             'selectedDestinations' => $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
 
-            'selectedKeywords'   => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
-            'selectedMentioned'  => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
+            // Pre-selected keywords => array of [ 'value' => id, 'label' => name ]
+            'selectedKeywords'     => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
+            // Example: "mentioned" is authors pivot with role= 'mentioned' 
+            'selectedMentioned'    => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
 
-            // Provide a list of languages from the DB. If letter->languages is "Czech;Latin",
-            // we split it into an array for multi-select usage in the form.
-            'languages'         => Language::pluck('name')->toArray(),
-            'selectedLanguages' => $letter->languages ? explode(';', $letter->languages) : [],
+            // Provide languages from a table, or just a static array
+            'languages'            => Language::pluck('name')->toArray(),
+            'selectedLanguages'    => $letter->languages ? explode(';', $letter->languages) : [],
         ];
     }
 
     /**
-     * Convert a belongsToMany pivot (like authors) into an array of
-     * ['value' => <id>, 'label' => <name>, 'marked' => ..., etc.].
+     * Convert a belongsToMany pivot (like authors) into arrays of
+     * [ 'value' => <id>, 'label' => <name>, 'marked' => pivot.marked, etc. ].
      */
     protected function getSelectedMetaFields(Letter $letter, string $fieldKey, array $pivotFields): array
     {
@@ -389,8 +390,8 @@ class LetterController extends Controller
     }
 
     /**
-     * Convert a belongsToMany pivot (like 'keywords') into simple arrays
-     * of ['value' => <id>, 'label' => <name>].
+     * Convert a belongsToMany pivot (like 'keywords') to simpler arrays
+     * [ 'value' => <id>, 'label' => <name> ].
      */
     protected function getSelectedMeta(Letter $letter, string $model, string $fieldKey): array
     {
@@ -403,11 +404,11 @@ class LetterController extends Controller
     }
 
     /**
-     * Duplicate an existing Letter record, including pivot data (authors, recipients, etc.).
+     * Duplicate an existing Letter, copying pivot relationships as well.
      */
     public function duplicate(Request $request, Letter $letter): RedirectResponse
     {
-        // Create a copy of the main letter fields
+        // Copy main letter fields
         $duplicate = $letter->replicate();
         $duplicate->save();
 
@@ -421,49 +422,40 @@ class LetterController extends Controller
     }
 
     /**
-     * Copy pivot relationships (identities, places, etc.) from one Letter to another.
+     * Copy pivot data from one letter to another (authors, recipients, places, keywords, etc.).
      */
     protected function duplicateRelatedEntities(Letter $source, Letter $duplicate): void
     {
-        // Copy any many-to-many pivot data for keywords
+        // Copy keywords pivot
         $duplicate->keywords()->sync($source->keywords);
 
-        // Clear existing pivot relationships on the new record
+        // Clear existing pivot relationships
         $duplicate->identities()->detach();
         $duplicate->places()->detach();
 
-        // Manually attach pivot data from the source letter
+        // Manually attach pivot data
         $this->attachRelatedEntities('authors', 'author', $source, $duplicate);
         $this->attachRelatedEntities('recipients', 'recipient', $source, $duplicate);
         $this->attachRelatedEntities('origins', 'origin', $source, $duplicate);
         $this->attachRelatedEntities('destinations', 'destination', $source, $duplicate);
         $this->attachRelatedEntities('mentioned', 'mentioned', $source, $duplicate);
 
-        // Copy any other relevant fields, like languages
+        // Copy languages if needed
         $duplicate->languages = $source->languages;
         $duplicate->save();
     }
 
-    /**
-     * Helper to attach pivot data for a specific role (author, recipient, origin, destination).
-     */
     protected function attachRelatedEntities(string $fieldKey, string $role, Letter $src, Letter $dup): void
     {
         $items = $this->prepareAttachmentDataForEntities($fieldKey, $role, $src);
 
-        // If it's identity-based data
         if (in_array($role, ['author', 'recipient', 'mentioned'])) {
             $dup->identities()->attach($items);
-        }
-        // If it's place-based data
-        elseif (in_array($role, ['origin', 'destination'])) {
+        } elseif (in_array($role, ['origin', 'destination'])) {
             $dup->places()->attach($items);
         }
     }
 
-    /**
-     * Convert each pivot record from the source letter into attachable array data.
-     */
     protected function prepareAttachmentDataForEntities(string $fieldKey, string $role, Letter $source): array
     {
         $results = [];
@@ -471,9 +463,8 @@ class LetterController extends Controller
             $data = [
                 'position' => $index,
                 'role'     => $role,
-                'marked'   => $model->pivot->marked,
+                'marked'   => $model->pivot->marked ?? null,
             ];
-            // For 'recipient' role, add 'salutation'
             if ($role === 'recipient') {
                 $data['salutation'] = $model->pivot->salutation ?? null;
             }

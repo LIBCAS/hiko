@@ -180,7 +180,7 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, W
                     'Related Resource Titles', 'Related Resource Links',
 
                     // Copies
-                    'MS Manifestation (EMLO)', 'Document Type', 'Preservation', 'Type', 'Manifestation Note', 'Letter Number', 'Repository', 'Archive', 'Collection', 'Shelfmark', 'Preservation Location Note',
+                    'Dochování', 'Document Type', 'Dochování', 'Mode of Production', 'Manifestation Note', 'Letter Number', 'Repository', 'Archive', 'Collection', 'Shelfmark', 'Preservation Location Note',
 
                     // Content and Notes
                     'Explicit', 'Incipit', 'Content (Summary)', 'Abstract CS', 'Abstract EN', 'Languages', 'Notes Private', 'Notes Public', 'Status', 'Approval', 'History' // **Added 'Approval'**
@@ -269,10 +269,9 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, W
         $copy = $copies[0] ?? []; // Take the first copy for export
 
         return [
-            $copy['ms_manifestation'] ?? '',
             $copy['document_type'] ?? '',
             $copy['preservation'] ?? '',
-            $copy['type'] ?? '',
+            $copy['doc_mode'] ?? '',
             $copy['manifestation_notes'] ?? '',
             $copy['l_number'] ?? '',
             $copy['repository'] ?? '',
