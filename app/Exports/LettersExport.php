@@ -180,10 +180,10 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, W
                     'Related Resource Titles', 'Related Resource Links',
 
                     // Copies
-                    'Dochování', 'Document Type', 'Dochování', 'Mode of Production', 'Manifestation Note', 'Letter Number', 'Repository', 'Archive', 'Collection', 'Shelfmark', 'Preservation Location Note',
+                    'Manifestation', 'Document Type', 'Mode of Production', 'Manifestation Note', 'Letter Number', 'Repository', 'Archive', 'Collection', 'Shelfmark', 'Preservation Location Note',
 
                     // Content and Notes
-                    'Explicit', 'Incipit', 'Content (Summary)', 'Abstract CS', 'Abstract EN', 'Languages', 'Notes Private', 'Notes Public', 'Status', 'Approval', 'History' // **Added 'Approval'**
+                    'Explicit', 'Incipit', 'Content (Summary)', 'Abstract CS', 'Abstract EN', 'Languages', 'Notes Private', 'Notes Public', 'Status', 'Approval', 'History'
                 ];
 
                 // Populate sub-headers in the second row

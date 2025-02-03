@@ -2,9 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\TenantMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Stancl\Tenancy\Events\TenantInitialized;
 use App\Services\LetterComparisonService;
 use App\Services\GoogleDocumentAIService;
@@ -32,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->app->bind(Media::class, TenantMedia::class);
+        
         // If you have tenant-specific migrations:
         $this->loadMigrationsFrom(database_path('migrations/tenant'));
 

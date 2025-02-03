@@ -3,14 +3,13 @@
 namespace App\Livewire;
 
 use Livewire\Component;
-use App\Models\Media;
+use Illuminate\Support\Facades\Log;
 
 class ImageMetadataForm extends Component
 {
     public $letter;
     public $attachedImages = [];
     public $loading = false;
-
     protected $listeners = [
         'imageAdded' => 'getMedia',
         'imageRemoved' => 'getMedia',
@@ -20,40 +19,29 @@ class ImageMetadataForm extends Component
     public function getMedia()
     {
         $this->loading = true;
-
-        $this->attachedImages = Media::where('model_id', $this->letter->id)
-            ->where('model_type', \App\Models\Letter::class)
-            ->get()
-            ->map(function ($media) {
-                return array_merge($media->toArray(), [
-                    'thumb_url' => $media->hasGeneratedConversion('thumb') ? $media->getUrl('thumb') : null,
-                    'original_url' => $media->getUrl(),
-                ]);
-            })
-            ->toArray();
-
+        Log::info('Tenant Table:', [
+            'table' => \App\Models\TenantMedia::query()->toSql(),
+        ]);
+    
+        // ✅ **Fetch media using the correct relationship**
+        $this->attachedImages = $this->letter->media()->get();
         $this->loading = false;
     }
 
     public function edit($id, $formData)
     {
-        $image = Media::where('id', $id)->first();
-
-        if ($image) {
-            $image->setCustomProperty('description', $formData['description']);
-            $image->setCustomProperty('status', $formData['status'] === 'publish' ? 'publish' : 'private');
-            $image->save();
-        }
+        $image = collect($this->attachedImages)->where('id', '=', $id)->first();
+        $image->setCustomProperty('description', $formData['description']);
+        $image->setCustomProperty('status', $formData['status'] === 'publish' ? 'publish' : 'private');
+        $image->save();
     }
 
     public function reorder($orderedIds)
     {
         collect($orderedIds)->each(function ($id, $index) {
-            $image = Media::where('id', $id)->first();
-            if ($image) {
-                $image->order_column = $index;
-                $image->save();
-            }
+            $image = collect($this->attachedImages)->where('id', '=', $id)->first();
+            $image->order_column = $index;
+            $image->save();
         });
 
         $this->dispatch('imageChanged');
@@ -61,13 +49,19 @@ class ImageMetadataForm extends Component
 
     public function remove($id)
     {
-        Media::where('id', $id)->delete();
+        collect($this->attachedImages)->where('id', '=', $id)->first()->delete();
+
         $this->dispatch('imageRemoved');
     }
 
     public function mount()
     {
-        $this->getMedia();
+        Log::info('Tenant Table:', [
+            'table' => \App\Models\TenantMedia::query()->toSql(),
+        ]);
+    
+        // ✅ **Fetch media using the correct relationship**
+        $this->attachedImages = $this->letter->media()->get();
     }
 
     public function render()

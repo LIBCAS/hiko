@@ -29,28 +29,16 @@ class ImageForm extends Component
         ]);
 
         collect($this->images)->each(function ($image) {
-           if (function_exists('tenancy') && tenancy()->initialized && tenancy()->tenant) {
-                 try {
-                    \Log::info('Starting media upload', ['file' => $image->getRealPath()]);
-                    $media =  $this->letter->addMedia($image->getRealPath())
-                           ->usingFileName(Str::uuid() . '.' . pathinfo($image->getFilename())['extension'])
-                           ->withCustomProperties(['status' => 'private'])
-                            ->toMediaCollection('default');
-                    \Log::info('Media uploaded', ['media_id' => $media->id, 'file_name' =>  $media->file_name]);
-                   } catch (\Exception $e) {
-                      \Log::error('Error processing media:', ['exception' => $e]);
-                        session()->flash('error', 'Error processing the media upload: ' . $e->getMessage());
-                  }
-            } else {
-                \Log::error('Tenancy not initialized for media upload');
-                session()->flash('error', 'Tenancy is not initialized for media upload.');
-            }
-         });
-
+            $this->letter->addMedia($image->getRealPath())
+                ->usingFileName(Str::uuid() . '.' . pathinfo($image->getFilename())['extension'])
+                ->withCustomProperties(['status' => 'private'])
+                ->toMediaCollection();
+        });
 
         $this->images = [];
 
         $this->dispatch('remove-images');
+
         $this->dispatch('imageAdded');
     }
 

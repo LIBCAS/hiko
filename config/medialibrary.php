@@ -17,11 +17,6 @@ return [
     'queue_name' => '',
 
     /**
-     * Custom Media model class that handles tenant table prefixes.
-     */
-    'media_model' => App\Models\Media::class,
-
-    /**
      * Configuration for S3 (if used).
      */
     's3' => [
@@ -58,7 +53,7 @@ return [
     /**
      * (Optional) Custom path generator class.
      */
-    'path_generator' => null,
+    'path_generator' => App\MediaLibrary\TenancyPathGenerator::class,
 
     /**
      * Image optimizers (for performance).
