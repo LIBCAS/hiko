@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
+use Spatie\MediaLibrary\UrlGenerator\LocalUrlGenerator;
 use Stancl\Tenancy\Facades\Tenancy;
 use Illuminate\Support\Str;
 
@@ -85,4 +86,21 @@ class TenantMedia extends BaseMedia
             ->where('model_id', $this->model_id)
             ->max('order_column') ?? 0;
     }
+
+    public function getUrl(string $conversionName = ''): string
+    {
+        if (function_exists('tenancy') && tenancy()->initialized) {
+            $tenantPrefix = tenancy()->tenant->table_prefix;
+    
+            // ✅ Check if a conversion exists and return its URL
+            if ($conversionName && isset($this->generated_conversions[$conversionName]) && $this->generated_conversions[$conversionName] === true) {
+                return asset("storage/{$tenantPrefix}/{$this->id}/conversions/{$this->uuid}-{$conversionName}.{$this->extension}");
+            }
+    
+            // ✅ Fallback to original image
+            return asset("storage/{$tenantPrefix}/{$this->id}/{$this->file_name}");
+        }
+    
+        return parent::getUrl($conversionName);
+    }            
 }
