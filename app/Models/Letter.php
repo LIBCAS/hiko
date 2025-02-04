@@ -53,19 +53,32 @@ class Letter extends Model implements HasMedia
         'related_resources' => 'array',
     ];
 
-    /**
-     * Spatie Media Library conversions registration.
-     * Allows defining image manipulations (like thumbnails/watermarks).
-     */
-    public function registerMediaConversions(Media $media = null) : void
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('default')
+            ->useDisk('public')  // Define the disk for the collection
+            ->storeConversionsOnDisk('public');
+            //->withResponsiveImages();
+    }
+    
+    public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumb')
-            ->width(180);
-
-        if (Storage::disk('local')->exists('public/watermark/logo.png')) {
+            ->performOnCollections('default')
+            ->width(180)
+            ->keepOriginalImageFormat()
+            ->nonQueued();
+    
+        // ✅ Ensure watermark conversion
+        if (Storage::disk('public')->exists('watermark/logo.png')) {
             $this->addMediaConversion('watermark')
                 ->watermark(storage_path('app/public/watermark/logo.png'))
-                ->watermarkPosition(Manipulations::POSITION_CENTER);
+                ->watermarkPosition(Manipulations::POSITION_CENTER)
+                ->watermarkOpacity(50)
+                ->performOnCollections('default')
+                ->keepOriginalImageFormat()
+                ->storeConversionsOnDisk('public')  // Store watermark conversions on 'public'
+                ->nonQueued();
         }
     }
 
