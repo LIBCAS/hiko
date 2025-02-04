@@ -21,18 +21,22 @@ class LettersTable extends Component
         'direction' => 'desc',
     ];
 
+    protected $listeners = ['filtersChanged', 'removeFilter', 'resetLettersTablePage'];
+
     public function search()
     {
-        $this->resetPage();
-        $this->dispatch('filtersChanged', filters: $this->filters);
-
         session()->put('lettersTableFilters', $this->filters);
+        $this->dispatch('filtersChanged', filters: $this->filters);
     }
 
     public function mount()
     {
         if (session()->has('lettersTableFilters')) {
             $this->filters = session()->get('lettersTableFilters');
+        } else {
+            // Ensure default values are set if no filters are in the session
+            $this->filters['order'] = 'updated_at';
+            $this->filters['direction'] = 'desc';
         }
     }
 
@@ -49,6 +53,23 @@ class LettersTable extends Component
     {
         $this->reset('filters');
         $this->search();
+    }
+
+    public function filtersChanged(array $filters)
+    {
+        $this->filters = $filters;
+        $this->resetPage();
+    }
+
+    public function removeFilter(string $filterKey)
+    {
+        unset($this->filters[$filterKey]);
+        $this->resetPage();
+    }
+
+    public function resetLettersTablePage()
+    {
+        $this->resetPage();
     }
 
     protected function findLetters(): LengthAwarePaginator
@@ -74,12 +95,15 @@ class LettersTable extends Component
                 $subquery->select('users.id', 'name');
             },
         ])
-        ->select('id', 'uuid', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status', 'approval');
+            ->select('id', 'uuid', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status', 'approval');
 
         $query->filter($this->filters);
 
+        $order = $this->filters['order'] ?? 'updated_at';
+        $direction = $this->filters['direction'] ?? 'desc';
+
         return $query
-            ->orderBy($this->filters['order'], $this->filters['direction'])
+            ->orderBy($order, $direction)
             ->paginate(25);
     }
 
@@ -137,8 +161,8 @@ class LettersTable extends Component
                         'external' => $showPublicUrl,
                     ],
                     [
-                        'label' => $letter->approval === Letter::APPROVED 
-                            ? '<span class="text-green-600">'. __('hiko.approved') .'</span>' 
+                        'label' => $letter->approval === Letter::APPROVED
+                            ? '<span class="text-green-600">'. __('hiko.approved') .'</span>'
                             : '<span class="text-red-600">'. __('hiko.not_approved') .'</span>',
                         'link' => '',
                         'external' => false,

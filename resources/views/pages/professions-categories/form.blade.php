@@ -66,7 +66,7 @@
                         x-data="{ form: $el }" 
                         action="{{ route('professions.category.destroy', $professionCategory->id) }}" 
                         method="POST" 
-                        class="max-w-sm mt-8"
+                        class="w-full mt-8"
                     >
                         @csrf
                         @method('DELETE')

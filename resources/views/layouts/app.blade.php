@@ -15,7 +15,7 @@
 </head>
 
 <body class="flex flex-col min-h-screen font-sans antialiased bg-gray-100">
-    <header class="w-full px-6 bg-white shadow">
+    <header class="w-full px-6">
         @include('layouts.navigation')
     </header>
     <main class="px-6 py-12">

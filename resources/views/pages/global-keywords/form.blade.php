@@ -104,7 +104,7 @@
                         x-data="{ form: $el }" 
                         action="{{ route('global.keywords.destroy', ['globalKeyword' => $keyword->id]) }}" 
                         method="POST"
-                        class="max-w-sm mt-8"
+                        class="w-full mt-8"
                     >
                         @csrf
                         @method('DELETE')

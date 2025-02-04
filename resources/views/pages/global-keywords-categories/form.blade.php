@@ -72,7 +72,7 @@
                         x-data="{ form: $el }" 
                         action="{{ route('global.keywords.category.destroy', $keywordCategory->id) }}" 
                         method="POST" 
-                        class="max-w-sm mt-8"
+                        class="w-full mt-8"
                     >
                         @csrf
                         @method('DELETE')

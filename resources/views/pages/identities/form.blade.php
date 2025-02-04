@@ -62,7 +62,7 @@
                 x-data="{ form: $el }" 
                 action="{{ route('identities.destroy', $identity->id) }}" 
                 method="post" 
-                class="max-w-sm mt-8"
+                class="w-full mt-8"
             >
                 @csrf
                 @method('DELETE')

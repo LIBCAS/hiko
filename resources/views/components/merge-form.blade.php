@@ -1,4 +1,4 @@
-<div x-data="{ open: false }" class="max-w-sm mt-8 bg-gray-200 border rounded-md shadow">
+<div x-data="{ open: false }" class="w-full mt-8 bg-gray-200 border rounded-md shadow">
     <button type="button" @click="open = !open"
         class="inline-flex items-center p-3 text-sm font-semibold text-primary hover:underline">
         <x-icons.inbox-in class="h-4 mr-2" /><span>{{ __('hiko.merge') }}</span>

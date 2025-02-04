@@ -497,7 +497,7 @@
             @if ($letter->id)
                 @can('delete-metadata')
                     <form x-data="{ form: $el }" action="{{ route('letters.destroy', $letter->id) }}" method="post"
-                        class="max-w-sm mt-8">
+                        class="w-full mt-8">
                         @csrf
                         @method('DELETE')
                         <x-button-danger class="w-full" onclick="preventLeaving = false"
