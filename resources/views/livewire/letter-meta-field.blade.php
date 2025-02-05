@@ -19,7 +19,9 @@
                             name="{{ $fieldKey }}[{{ $loop->index }}][value]"
                             :id="$fieldKey . '-' . $loop->index">
                             @if (!empty($item['value']))
-                                <option value="{{ $item['value'] }}">{{ $item['label'] }}</option>
+                                <option value="{{ is_array($item['value']) ? json_encode($item['value']) : $item['value'] }}">
+                                    {{ is_array($item['label']) ? implode(', ', $item['label']) : $item['label'] }}
+                                </option>
                             @endif
                         </x-select>
 
