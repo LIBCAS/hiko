@@ -1,9 +1,12 @@
 <x-app-layout :title="$title">
     <x-success-alert />
     <div class="flex items-center justify-between gap-4 flex-wrap mb-6">
-        @can('manage-metadata')
-            <x-create-link label="{{ __('hiko.new_letter') }}" link="{{ route('letters.create') }}" />
-        @endcan
+        <div clas="flex items-center justify-items-center gap-4">
+            @can('manage-metadata')
+                <x-create-link label="{{ __('hiko.new_letter') }}" link="{{ route('letters.create') }}" />
+            @endcan
+            <livewire:filters-button />
+        </div>
         <x-dropdown label="{{ __('hiko.export') }}" class="font-semibold" :alignRight="false">
             <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
                 <a href="{{ route('letters.export') }}" id="export-url"
@@ -23,6 +26,5 @@
             </div>
         </x-dropdown>
     </div>
-    <livewire:filters-button />
     <livewire:letters-table />
 </x-app-layout>

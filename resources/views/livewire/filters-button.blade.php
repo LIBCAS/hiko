@@ -1,16 +1,14 @@
-<div class="relative inline-block w-full" x-data="{ open: false, activeFilters: @entangle('activeFilters') }" @keydown.escape.window="open = false; document.body.classList.remove('overflow-hidden');">
+<div class="relative inline-block" x-data="{ open: false, activeFilters: @entangle('activeFilters') }" @keydown.escape.window="open = false; document.body.classList.remove('overflow-hidden');">
     <!-- Filters Button & Applied Filters (Inline Display) -->
-    <div class="flex justify-between gap-2 flex-wrap mb-6">
+    <div class="flex items-center gap-4">
         <!-- Toggle Button -->
         <button 
             @click="open = !open; if (open) { document.body.classList.add('overflow-hidden'); } else { document.body.classList.remove('overflow-hidden'); }" 
             type="button" 
-            class="inline-flex items-center px-4 py-2 bg-primary bg-opacity-15 border border-transparent rounded-full font-semibold text-xs text-primary hover:text-white uppercase tracking-widest hover:bg-opacity-100 active:bg-primary transition ease-in-out duration-150"
+            class="flex items-center text-black px-6 py-3 text-sm font-semibold border border-black rounded-full bg-transparent hover:text-white hover:bg-black active:bg-black active:text-white focus:text-black transition ease-in-out duration-150"
         >
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V14l4 4a1 1 0 01-1.707 1.707l-4-4H5.707a1 1 0 00-.707.293L3 12.293V4z"></path>
-            </svg>
-            Filters
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-filter h-5 mr-1"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z" /></svg>
+            {{ __('hiko.filters') }}
         </button>
 
         <!-- Applied Filters (Inline Display) -->
@@ -22,7 +20,7 @@
                     x-transition:leave="transition ease-in duration-200"
                     x-transition:leave-start="opacity-100 scale-100"
                     x-transition:leave-end="opacity-0 scale-95"
-                    class="inline-flex items-center rounded-full bg-gray-200 text-gray-700 text-sm py-0.5 pl-2.5 pr-1 leading-relaxed"
+                    class="inline-flex items-center rounded-full bg-white text-gray-700 text-sm py-0.5 pl-2.5 pr-1 leading-relaxed"
                 >
                     <span class="mr-1" x-text="filter.label"></span>
                     <span class="font-medium" x-text="filter.value"></span>
@@ -71,7 +69,7 @@
         <!-- Sidebar Content -->
         <div class="sidebar-content">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold">Filters</h2>
+                <h2 class="text-lg font-semibold">{{ __('hiko.filters') }}</h2>
                 <button @click="open = false; document.body.classList.remove('overflow-hidden');" class="text-gray-500 hover:text-gray-700 focus:outline-none">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>

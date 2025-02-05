@@ -14,15 +14,12 @@
     @stack('styles')
 </head>
 
-<body class="flex flex-col min-h-screen font-sans antialiased bg-gray-100">
+<body class="flex flex-col min-h-screen font-sans antialiased bg-gray-200">
     <header class="w-full px-6">
         @include('layouts.navigation')
     </header>
     <main class="px-6 py-12">
         <div class="container mx-auto">
-            <h1 class="mb-6 text-xl font-semibold">
-                {{ $title }}
-            </h1>
             {{ $slot }}
         </div>
     </main>

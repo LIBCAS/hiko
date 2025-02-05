@@ -2,7 +2,9 @@
     <div class="flex flex-wrap justify-between py-6">
         <div class="flex items-center">
             <a href="{{ route('letters') }}" class="font-semibold">
-                {{ __('hiko.correspondence') }} {{ config('app.name') }}
+                <h1 class="text-xl">
+                    {{ $title }} | {{ __('hiko.correspondence') }} {{ config('app.name') }}
+                </h1>
             </a>
         </div>
         <div class="hidden space-x-6 sm:flex sm:items-center sm:ml-6">
@@ -51,8 +53,8 @@
         @foreach ($menuItems as $item)
             @can($item['ability'])
                 <a href="{{ route($item['route']) }}"
-                    class="inline-flex items-center text-sm px-4 py-2 mb-2 rounded-full focus:border-transparent @if ($item['active']) bg-black hover:bg-black text-white hover:text-white @else
-                    text-black hover:text-black bg-transparent hover:bg-black hover:bg-opacity-15 @endif">
+                    class="inline-flex items-center text-sm border-b focus:border-black hover:border-black py-2 px-2 @if ($item['active']) border-black @else
+                    border-transparent @endif">
                     <x-dynamic-component :component="$item['icon']" class="w-4 h-4 mr-2" />
                     <span>
                         {{ $item['name'] }}

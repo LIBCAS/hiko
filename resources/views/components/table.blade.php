@@ -3,11 +3,11 @@
         <div class="inline-block min-w-full align-middle">
             <div class="overflow-hidden ">
                 <table class="min-w-full divide-y divide-gray-200 table-fixed">
-                    <thead class="bg-gray-200">
+                    <thead class="bg-white bg-opacity-80">
                         <tr>
                             @foreach ($tableData['header'] as $header)
                                 <th scope="col"
-                                    class="p-3 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                    class="p-3 text-xs font-medium tracking-wider text-left text-black uppercase">
                                     {{ $header }}
                                 </th>
                             @endforeach

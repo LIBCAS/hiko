@@ -1,5 +1,5 @@
-<div>
-    <a href="{{ $link }}" {!! $attributes->merge(['class' => 'flex items-center font-bold focus:border-black px-6 py-4 mb-4 rounded-full bg-primary hover:bg-black text-white hover:text-white']) !!}>
+<div class="relative inline-block"F>
+    <a href="{{ $link }}" {!! $attributes->merge(['class' => 'flex items-center text-white px-6 py-3 mr-4 text-sm font-semibold border border-black rounded-full bg-black hover:text-white hover:bg-primary active:bg-primary focus:text-white transition ease-in-out duration-150']) !!}>
         <x-icons.plus class="h-5 mr-1" /> {{ $label }}
     </a>
 </div>

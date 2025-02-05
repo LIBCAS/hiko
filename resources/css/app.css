@@ -128,3 +128,12 @@ html {
 [x-cloak] {
     display: none !important;
 }
+
+.bg-mesh {
+    background-color: white;
+    background-image: radial-gradient(at 53% 49%, hsla(229,98%,62%,1) 0px, transparent 50%),
+        radial-gradient(at 14% 44%, hsla(151,88%,74%,0.85) 0px, transparent 50%),
+        radial-gradient(at 91% 47%, hsla(262,96%,68%,0.69) 0px, transparent 50%),
+        radial-gradient(at 51% 43%, hsla(185,100%,47%,1) 0px, transparent 50%),
+        radial-gradient(at 56% 58%, hsla(312,66%,77%,1) 0px, transparent 50%);
+}
