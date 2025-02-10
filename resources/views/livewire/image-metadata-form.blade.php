@@ -30,7 +30,11 @@
                         <x-icons.hand class="h-8 text-primary " />
                     </button>
                     <a href="{{ $image->getUrl() }}" target="_blank" class="block border" aria-label="{{ __('hiko.show_attachment') }}">
-                        <img src="{{ $image->getUrl() }}" alt="{{ __('hiko.attachment') }}" loading="lazy" class="w-48">
+                        @if($image->getUrl('thumb'))
+                            <img src="{{ $image->getUrl('thumb') }}" alt="{{ __('hiko.attachment') }}" loading="lazy" class="w-48">
+                        @else
+                            <img src="{{ $image->getUrl() }}" alt="{{ __('hiko.attachment') }}" loading="lazy" class="w-48">
+                        @endif
                     </a>
                     <div class="w-full max-w-sm">
                         <form class="w-full max-w-sm space-y-1"

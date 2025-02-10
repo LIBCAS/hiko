@@ -33,15 +33,35 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0755,  // all directories (including "conversions/") have correct permissions
+                    'private' => 0755,  // override Flysystem’s default 0700 for private directories
+                ],
+            ],
         ],
-
+    
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0755,  
+                    'private' => 0755,  
+                ],
+            ],
         ],
-
+    
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
@@ -52,8 +72,8 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
         ],
-
-    ],
+    
+    ],    
 
     /*
     |--------------------------------------------------------------------------
