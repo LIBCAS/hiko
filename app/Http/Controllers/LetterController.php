@@ -43,15 +43,11 @@ class LetterController extends Controller
      */
     public function create(): View
     {
-        // Prepare data for an empty/new Letter
-        $viewData = $this->prepareViewData(new Letter);
-
         return view('pages.letters.form', array_merge([
-            'title'  => __('hiko.new_letter'),
+            'title' => __('hiko.new_letter'),
             'action' => route('letters.store'),
-            'label'  => __('hiko.create'),
-            'letter' => new Letter(),  // fresh instance
-        ], $viewData));
+            'label' => __('hiko.create'),
+        ], $this->viewData(new Letter)));
     }
 
     /**
@@ -59,34 +55,12 @@ class LetterController extends Controller
      */
     public function store(LetterRequest $request): RedirectResponse
     {
-        // Decide where to redirect after saving
         $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';
 
-        // Validate and retrieve data (copies, keywords, etc. are included)
-        $validatedData = $request->validated();
+        $letter = Letter::create($request->validated());
 
-        // Remove pivot data (authors, recipients, etc.) from the main letter fields,
-        // so we don't try to store them as columns in letters
-        unset($validatedData['authors'], $validatedData['recipients'], $validatedData['destinations'], $validatedData['origins']);
-        // Do NOT remove 'keywords' so it remains in $validatedData (if we want to handle it directly).
-        // But we will handle it in attachRelated() below, anyway.
-
-        // Create the Letter model
-        $letter = Letter::create($validatedData);
-
-        // Attach pivot relationships for authors, recipients, places, etc.
         $this->attachRelated($request, $letter);
 
-        // If we have file uploads, attach them as media
-        $this->attachMedia($request, $letter);
-
-        // If 'related_resources' is present
-        if ($request->has('related_resources')) {
-            $letter->related_resources = $request->input('related_resources');
-            $letter->save();
-        }
-
-        // Dispatch background jobs if needed
         RegenerateNames::dispatch($letter->authors()->get());
         RegenerateNames::dispatch($letter->recipients()->get());
 
@@ -95,98 +69,62 @@ class LetterController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    /**
-     * Show a single Letter in a read-only view.
-     */
-    public function show(Letter $letter): View
+    public function show(Letter $letter)
     {
-        // Eager-load pivot relationships
         $letter->load('identities', 'places', 'keywords');
 
         return view('pages.letters.show', [
-            'title'      => $letter->name,
-            'letter'     => $letter,
+            'title' => $letter->name,
+            'letter' => $letter,
             'identities' => $letter->identities->groupBy('pivot.role')->toArray(),
-            'places'     => $letter->places->groupBy('pivot.role')->toArray(),
+            'places' => $letter->places->groupBy('pivot.role')->toArray(),
         ]);
     }
 
-    /**
-     * Show the form to edit an existing Letter.
-     */
-    public function edit(Letter $letter): View
+    public function edit(Letter $letter)
     {
-        Log::info("Editing letter with ID: {$letter->id}");
-
-        $viewData = $this->prepareViewData($letter);
-
         return view('pages.letters.form', array_merge([
-            'title'  => __('hiko.letter') . ': ' . $letter->id,
+            'title' => __('hiko.letter') . ': ' .  $letter->id,
             'method' => 'PUT',
             'action' => route('letters.update', $letter),
-            'label'  => __('hiko.edit'),
-            'letter' => $letter,
-        ], $viewData));
+            'label' => __('hiko.edit'),
+        ], $this->viewData($letter)));
     }
 
-    /**
-     * Update an existing Letter record in the database.
-     */
-    public function update(LetterRequest $request, Letter $letter): RedirectResponse
+    public function update(LetterRequest $request, Letter $letter)
     {
-        // Validate input
-        $validatedData = $request->validated();
+        $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';
 
-        // Remove pivot data
-        unset($validatedData['authors'], $validatedData['recipients'], $validatedData['destinations'], $validatedData['origins']);
+        $letter->update($request->validated());
 
-        // Update the main letter fields
-        $letter->update($validatedData);
-        Log::info("Updated letter with ID: {$letter->id}");
-
-        // Re-attach pivot data (authors, recipients, places, etc.)
         $this->attachRelated($request, $letter);
 
-        // If there are file uploads, attach them
-        $this->attachMedia($request, $letter);
-
-        // If related_resources is present, store it
-        if ($request->has('related_resources')) {
-            $letter->related_resources = $request->input('related_resources');
-            $letter->save();
-        }
-
-        // Dispatch background jobs if needed
         LetterSaved::dispatch($letter);
         RegenerateNames::dispatch($letter->authors()->get());
         RegenerateNames::dispatch($letter->recipients()->get());
 
         return redirect()
-            ->route('letters.edit', $letter->id)
+            ->route($redirectRoute, $letter->id)
             ->with('success', __('hiko.saved'));
     }
 
-    /**
-     * Remove an existing Letter from the database.
-     */
-    public function destroy(Letter $letter): RedirectResponse
+    public function destroy(Letter $letter)
     {
-        $authors    = $letter->authors()->get();
+        $authors = $letter->authors()->get();
         $recipients = $letter->recipients()->get();
 
-        // Remove attached media
         foreach ($letter->getMedia() as $media) {
             $media->delete();
         }
 
-        // Delete the letter itself
         $letter->delete();
 
-        // Possibly re-generate names for any authors/recipients
         RegenerateNames::dispatch($authors);
         RegenerateNames::dispatch($recipients);
 
-        return redirect()->route('letters')->with('success', __('hiko.removed'));
+        return redirect()
+            ->route('letters')
+            ->with('success', 'hiko.removed');
     }
 
     /**
@@ -231,6 +169,23 @@ class LetterController extends Controller
         }
 
         return Excel::download(new PalladioCharacterExport($role), $this->getPalladioFileName($role));
+    }
+
+    protected function viewData(Letter $letter)
+    {
+        return [
+            'letter' => $letter,
+            'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
+            'selectedRecipients' => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
+            'selectedOrigins' => $this->getSelectedMetaFields($letter, 'origins', ['marked']),
+            'selectedDestinations' => $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
+            'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
+            'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
+            'languages' => collect(Language::all())->pluck('name'),
+            'selectedLanguages' => request()->old('languages')
+                ? (array) request()->old('languages')
+                : explode(';', $letter->languages),
+        ];
     }
 
     /**
