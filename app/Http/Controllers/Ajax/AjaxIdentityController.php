@@ -16,11 +16,12 @@ class AjaxIdentityController extends Controller
             return [];
         }
 
-        // Initialize SearchIdentity with provided filters
-        $searchFilters = ['name' => $request->input('search')];
-        $search = new SearchIdentity;
+        $searchFilters = [
+            'name' => $request->input('search'),
+            'type' => $request->input('type', 'person'),
+        ];
 
-        // Retrieve and format local results
+        $search = new SearchIdentity;
         $results = $search($searchFilters)
             ->map(function ($identity) {
                 return [
@@ -31,22 +32,24 @@ class AjaxIdentityController extends Controller
             })
             ->toArray();
 
-        // Retrieve and format global results within central context
-        Tenancy::central(function () use (&$results, $request) {
-            $globalResults = GlobalProfession::query()
-                ->where('name', 'like', '%' . $request->input('search') . '%')
-                ->get()
-                ->map(function ($globalProfession) {
-                    return [
-                        'id' => 'global-' . $globalProfession->id,
-                        'value' => 'global-' . $globalProfession->id,
-                        'label' => $globalProfession->name ? "{$globalProfession->name} (Global)" : 'No Name (Global)',
-                    ];
-                })
-                ->toArray();
+        // If explicitly requesting professions, fetch global professions
+        if ($request->input('type') === 'profession') {
+            Tenancy::central(function () use (&$results, $request) {
+                $globalResults = GlobalProfession::query()
+                    ->where('name', 'like', '%' . $request->input('search') . '%')
+                    ->get()
+                    ->map(function ($globalProfession) {
+                        return [
+                            'id' => 'global-' . $globalProfession->id,
+                            'value' => 'global-' . $globalProfession->id,
+                            'label' => $globalProfession->name ? "{$globalProfession->name} (Global)" : 'No Name (Global)',
+                        ];
+                    })
+                    ->toArray();
 
-            $results = array_merge($results, $globalResults);
-        });
+                $results = array_merge($results, $globalResults);
+            });
+        }
 
         return $results;
     }
