@@ -3,7 +3,7 @@
         @foreach ($items as $item)
             <div wire:key="{{ $loop->index }}" class="p-3 space-y-6 bg-gray-200 shadow">
                 <div class="required">
-                    <x-label :for="$fieldKey . '-' . $loop->index" :value="$item['label']['label'] ?? 'No Label'" />
+                    <x-label :for="$fieldKey . '-' . $loop->index" :value="$label" />
                     <div
                         x-data="ajaxChoices({
                             url: '{{ route($route) }}',
