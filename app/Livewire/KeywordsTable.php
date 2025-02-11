@@ -58,8 +58,8 @@ class KeywordsTable extends Component
     
         // Proper sorting
         if (in_array($filters['order'], ['cs', 'en'])) {
-            $orderColumn = "JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) COLLATE utf8mb4_unicode_ci";
-            $query->orderByRaw($orderColumn);
+            $orderColumn = "CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci";
+            $query->orderByRaw($orderColumn);            
         }
     
         return $query->paginate($perPage);
@@ -84,7 +84,9 @@ class KeywordsTable extends Component
     
         // Create the final query with sorting
         $query = DB::table(DB::raw("(
-            SELECT *, ROW_NUMBER() OVER (ORDER BY JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) COLLATE utf8mb4_unicode_ci) as sort_index
+            SELECT *, ROW_NUMBER() OVER (
+                ORDER BY CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci
+            ) as sort_index
             FROM ({$unionQuery->toSql()}) as sorted_keywords
         ) as final_keywords"))
         ->mergeBindings($unionQuery)
@@ -94,10 +96,11 @@ class KeywordsTable extends Component
             'name',
             'source'
         ])
-        ->orderBy('sort_index'); // ✅ This ensures correct ASC order across all results
+        ->orderBy('sort_index'); // ✅ Ensures proper sorting
     
+        // ✅ Convert the result into an Eloquent Builder
         return Keyword::query()->from(DB::raw("({$query->toSql()}) as fully_sorted_keywords"));
-    }      
+    }     
 
     protected function getTenantKeywordsQuery()
     {

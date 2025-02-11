@@ -61,11 +61,11 @@ class KeywordCategoriesTable extends Component
     protected function mergeQueries($tenantCategoriesQuery, $globalCategoriesQuery): Builder
     {
         $filters = $this->filters;
-
+    
         // Get base queries
         $tenantBase = $tenantCategoriesQuery->toBase();
         $globalBase = $globalCategoriesQuery->toBase();
-
+    
         // Merge both queries with a ROW_NUMBER index for proper sorting
         $unionQuery = DB::table(DB::raw("(
             SELECT id, name, 'local' AS source FROM ({$tenantBase->toSql()}) as local_categories
@@ -74,10 +74,12 @@ class KeywordCategoriesTable extends Component
         ) as combined_categories"))
         ->mergeBindings($tenantBase)
         ->mergeBindings($globalBase);
-
+    
         // Create the final query with sorting
         $query = DB::table(DB::raw("(
-            SELECT *, ROW_NUMBER() OVER (ORDER BY JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) COLLATE utf8mb4_unicode_ci) as sort_index
+            SELECT *, ROW_NUMBER() OVER (
+                ORDER BY CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci
+            ) as sort_index
             FROM ({$unionQuery->toSql()}) as sorted_categories
         ) as final_categories"))
         ->mergeBindings($unionQuery)
@@ -86,10 +88,11 @@ class KeywordCategoriesTable extends Component
             'name',
             'source',
         ])
-        ->orderBy('sort_index'); // ✅ Ensures correct ASC sorting across all results
-
+        ->orderBy('sort_index'); // ✅ Ensures correct sorting
+    
+        // ✅ Ensures the method returns `Eloquent\Builder`
         return KeywordCategory::query()->from(DB::raw("({$query->toSql()}) as fully_sorted_categories"));
-    }
+    }    
 
     protected function getTenantCategoriesQuery()
     {
