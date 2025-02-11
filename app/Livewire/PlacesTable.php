@@ -46,16 +46,23 @@ class PlacesTable extends Component
     protected function findPlaces()
     {
         $query = Place::select('id', 'name', 'division', 'latitude', 'longitude', 'country');
-
+    
         if (tenancy()->initialized) {
             $tenantPrefix = tenancy()->tenant->table_prefix;
             $query->from("{$tenantPrefix}__places");
         }
-
-        return $query->search($this->filters)
-            ->orderBy($this->filters['order'])
-            ->paginate(25);
-    }
+    
+        if (!empty($this->filters['name'])) {
+            $query->where(function ($queryBuilder) {
+                $queryBuilder->where('name', 'like', '%' . $this->filters['name'] . '%')
+                    ->orWhere('division', 'like', '%' . $this->filters['name'] . '%')
+                    ->orWhere('country', 'like', '%' . $this->filters['name'] . '%')
+                    ->orWhereRaw("JSON_SEARCH(alternative_names, 'one', ?)", ["%{$this->filters['name']}%"]);
+            });
+        }
+    
+        return $query->orderBy($this->filters['order'])->paginate(25);
+    }    
 
     protected function formatTableData($data): array
     {
