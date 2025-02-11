@@ -46,48 +46,52 @@ class ProfessionCategoriesTable extends Component
     {
         $filters = $this->filters;
         $perPage = 10;
-
+    
         $tenantCategoriesQuery = $this->getTenantCategoriesQuery();
         $globalCategoriesQuery = $this->getGlobalCategoriesQuery();
-
-
-         $query = match($filters['source']){
+    
+        $query = match($filters['source']){
             'local' => $tenantCategoriesQuery,
             'global' => $globalCategoriesQuery,
-             default => $this->mergeQueries($tenantCategoriesQuery, $globalCategoriesQuery),
+            default => $this->mergeQueries($tenantCategoriesQuery, $globalCategoriesQuery),
         };
-
-
-       if ($filters['order'] === 'cs' || $filters['order'] === 'en') {
-         $orderColumn = "name->{$filters['order']}";
-           $query->orderBy($orderColumn);
-        }
-
+    
         return $query->paginate($perPage);
     }
-
-     protected function mergeQueries($tenantCategoriesQuery, $globalCategoriesQuery): Builder
+    
+    protected function mergeQueries($tenantCategoriesQuery, $globalCategoriesQuery): Builder
     {
-          // get the underlying query
-          $unionQuery = $tenantCategoriesQuery->toBase();
-          $unionQuery->unionAll($globalCategoriesQuery->toBase());
+        $filters = $this->filters;
+    
+        // Get base queries
+        $tenantBase = $tenantCategoriesQuery->toBase();
+        $globalBase = $globalCategoriesQuery->toBase();
+    
+        // Merge both queries with a ROW_NUMBER index for proper sorting
+        $unionQuery = DB::table(DB::raw("(
+            SELECT id, name, 'local' AS source FROM ({$tenantBase->toSql()}) as local_categories
+            UNION ALL
+            SELECT id, name, 'global' AS source FROM ({$globalBase->toSql()}) as global_categories
+        ) as combined_categories"))
+        ->mergeBindings($tenantBase)
+        ->mergeBindings($globalBase);
+    
+        $query = DB::table(DB::raw("(
+            SELECT *, ROW_NUMBER() OVER (
+                ORDER BY CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci
+            ) as sort_index
+            FROM ({$unionQuery->toSql()}) as sorted_categories
+        ) as final_categories"))
+        ->mergeBindings($unionQuery)
+        ->select([
+            'id',
+            'name',
+            'source',
+        ])
+        ->orderBy('sort_index');
 
-
-           // create a base query to work with
-           $query =  ProfessionCategory::query()->from(DB::raw('('.$unionQuery->toSql().') as profession_categories'));
-           // need to set the source manually, so we can map results later to the right model
-           $query->select(
-               'id',
-               'name',
-               'source',
-           );
-
-            foreach ($unionQuery->getBindings() as $binding) {
-              $query->addBinding($binding);
-            }
-
-           return $query;
-    }
+        return ProfessionCategory::query()->from(DB::raw("({$query->toSql()}) as fully_sorted_profession_categories"));
+    }     
 
     protected function getTenantCategoriesQuery()
     {

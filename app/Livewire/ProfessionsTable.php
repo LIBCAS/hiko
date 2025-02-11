@@ -42,52 +42,63 @@ class ProfessionsTable extends Component
         ]);
     }
 
-     protected function findProfessions(): LengthAwarePaginator
+    protected function findProfessions(): LengthAwarePaginator
     {
         $filters = $this->filters;
         $perPage = 10;
-
+    
         $tenantProfessionsQuery = $this->getTenantProfessionsQuery();
         $globalProfessionsQuery = $this->getGlobalProfessionsQuery();
-
+    
         $query = match($filters['source']){
             'local' => $tenantProfessionsQuery,
             'global' => $globalProfessionsQuery,
             default => $this->mergeQueries($tenantProfessionsQuery, $globalProfessionsQuery),
-         };
-
-       if ($filters['order'] === 'cs' || $filters['order'] === 'en') {
-         $orderColumn = "name->{$filters['order']}";
-           $query->orderBy($orderColumn);
+        };
+    
+        // Proper sorting
+        if (in_array($filters['order'], ['cs', 'en'])) {
+            $orderColumn = "CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci";
+            $query->orderByRaw($orderColumn);
         }
+    
         return $query->paginate($perPage);
     }
-
+    
     protected function mergeQueries($tenantProfessionsQuery, $globalProfessionsQuery): Builder
     {
-           // get the underlying query
-          $unionQuery = $tenantProfessionsQuery->toBase();
-          $unionQuery->unionAll($globalProfessionsQuery->toBase());
-
-
-           // create a base query to work with
-           $query =  Profession::query()->from(DB::raw('('.$unionQuery->toSql().') as professions'));
-           // need to set the source manually, so we can map results later to the right model
-           $query->select(
-               'id',
-                'profession_category_id',
-               'name',
-               'source',
-           );
-
-            foreach ($unionQuery->getBindings() as $binding) {
-              $query->addBinding($binding);
-            }
-
-           return $query;
-
+        $filters = $this->filters;
+    
+        // Get base queries
+        $tenantBase = $tenantProfessionsQuery->toBase();
+        $globalBase = $globalProfessionsQuery->toBase();
+    
+        // Merge both queries with a ROW_NUMBER index for proper sorting
+        $unionQuery = DB::table(DB::raw("(
+            SELECT id, profession_category_id, name, 'local' AS source FROM ({$tenantBase->toSql()}) as local_professions
+            UNION ALL
+            SELECT id, profession_category_id, name, 'global' AS source FROM ({$globalBase->toSql()}) as global_professions
+        ) as combined_professions"))
+        ->mergeBindings($tenantBase)
+        ->mergeBindings($globalBase);
+    
+        $query = DB::table(DB::raw("(
+            SELECT *, ROW_NUMBER() OVER (
+                ORDER BY CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci
+            ) as sort_index
+            FROM ({$unionQuery->toSql()}) as sorted_professions
+        ) as final_professions"))
+        ->mergeBindings($unionQuery)
+        ->select([
+            'id',
+            'profession_category_id',
+            'name',
+            'source',
+        ])
+        ->orderBy('sort_index');
+    
+        return Profession::query()->from(DB::raw("({$query->toSql()}) as fully_sorted_professions"));
     }
-
 
     protected function getTenantProfessionsQuery()
     {
