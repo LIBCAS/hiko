@@ -46,50 +46,58 @@ class KeywordsTable extends Component
     {
         $filters = $this->filters;
         $perPage = 10;
-
+    
         $tenantKeywordsQuery = $this->getTenantKeywordsQuery();
         $globalKeywordsQuery = $this->getGlobalKeywordsQuery();
-
-         $query = match($filters['source']){
+    
+        $query = match($filters['source']){
             'local' => $tenantKeywordsQuery,
             'global' => $globalKeywordsQuery,
-             default => $this->mergeQueries($tenantKeywordsQuery, $globalKeywordsQuery),
+            default => $this->mergeQueries($tenantKeywordsQuery, $globalKeywordsQuery),
         };
-
-        if ($filters['order'] === 'cs' || $filters['order'] === 'en') {
-            $orderColumn = "name->{$filters['order']}";
-             $query->orderBy($orderColumn);
-       }
-
+    
+        // Proper sorting
+        if (in_array($filters['order'], ['cs', 'en'])) {
+            $orderColumn = "JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) COLLATE utf8mb4_unicode_ci";
+            $query->orderByRaw($orderColumn);
+        }
+    
         return $query->paginate($perPage);
-    }
+    }    
 
     protected function mergeQueries($tenantKeywordsQuery, $globalKeywordsQuery): Builder
     {
-           // get the underlying query
-          $unionQuery = $tenantKeywordsQuery->toBase();
-          $unionQuery->unionAll($globalKeywordsQuery->toBase());
-
-
-           // create a base query to work with
-           $query =  Keyword::query()->from(DB::raw('('.$unionQuery->toSql().') as keywords'));
-           // need to set the source manually, so we can map results later to the right model
-           $query->select(
-               'id',
-               'keyword_category_id',
-               'name',
-               'source',
-           );
-
-            foreach ($unionQuery->getBindings() as $binding) {
-              $query->addBinding($binding);
-            }
-
-
-           return $query;
-
-    }
-
+        $filters = $this->filters;
+    
+        // Get base queries
+        $tenantBase = $tenantKeywordsQuery->toBase();
+        $globalBase = $globalKeywordsQuery->toBase();
+    
+        // Merge both queries with a ROW_NUMBER index for proper sorting
+        $unionQuery = DB::table(DB::raw("(
+            SELECT id, keyword_category_id, name, 'local' AS source FROM ({$tenantBase->toSql()}) as local_keywords
+            UNION ALL
+            SELECT id, keyword_category_id, name, 'global' AS source FROM ({$globalBase->toSql()}) as global_keywords
+        ) as combined_keywords"))
+        ->mergeBindings($tenantBase)
+        ->mergeBindings($globalBase);
+    
+        // Create the final query with sorting
+        $query = DB::table(DB::raw("(
+            SELECT *, ROW_NUMBER() OVER (ORDER BY JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) COLLATE utf8mb4_unicode_ci) as sort_index
+            FROM ({$unionQuery->toSql()}) as sorted_keywords
+        ) as final_keywords"))
+        ->mergeBindings($unionQuery)
+        ->select([
+            'id',
+            'keyword_category_id',
+            'name',
+            'source'
+        ])
+        ->orderBy('sort_index'); // ✅ This ensures correct ASC order across all results
+    
+        return Keyword::query()->from(DB::raw("({$query->toSql()}) as fully_sorted_keywords"));
+    }      
 
     protected function getTenantKeywordsQuery()
     {
