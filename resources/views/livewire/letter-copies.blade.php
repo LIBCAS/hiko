@@ -122,9 +122,9 @@
                 <x-button-trash wire:click="removeItem({{ $loop->index }})" />
             </div>
         @endforeach
-        <livewire:create-new-item-modal :route="route('locations.create')" :text="__('hiko.modal_new_location')" />
         <button wire:click="addItem" type="button" class="mb-3 text-sm font-bold text-primary hover:underline">
             {{ __('hiko.add_new_item') }}
         </button>
+        <livewire:create-new-item-modal :route="route('locations.create')" :text="__('hiko.modal_new_location')" />
     </fieldset>
 </div>
