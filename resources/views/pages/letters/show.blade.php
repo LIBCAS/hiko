@@ -316,92 +316,92 @@
         </tbody>
     </table>
     @if (!empty($letter->copies) && is_array($letter->copies))
-        <h2 class="text-lg font-bold">{{ __('hiko.repositories_and_versions') }}</h2>
-        @foreach ($letter->copies as $c)
-            <table class="w-full mb-10 text-sm">
-                <tbody>
-                    @if ($c['l_number'])
-                        <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">{{ __('hiko.l_number')}}</td>
-                            <td class="py-2">
-                                {{ $c['l_number'] }}
-                            </td>
-                        </tr>
-                    @endif
-                    @if ($c['repository'])
-                        <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">{{ __('hiko.repository') }}</td>
-                            <td class="py-2">
-                                {{ $c['repository'] }}
-                            </td>
-                        </tr>
-                    @endif
-                    @if ($c['archive'])
-                        <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">{{ __('hiko.archive') }}</td>
-                            <td class="py-2">
-                                {{ $c['archive'] }}
-                            </td>
-                        </tr>
-                    @endif
-                    @if ($c['collection'])
-                        <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">{{ __('hiko.collection') }}</td>
-                            <td class="py-2">
-                                {{ $c['collection'] }}
-                            </td>
-                        </tr>
-                    @endif
-                    @if ($c['signature'])
-                        <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">Signature</td>
-                            <td class="py-2">
-                                {{ $c['signature'] }}
-                            </td>
-                        </tr>
-                    @endif
-                    @if ($c['location_note'])
-                        <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">{{ __('hiko.note_location') }}</td>
-                            <td class="py-2">
-                                {{ $c['location_note'] }}
-                            </td>
-                        </tr>
-                    @endif
-                    @if ($c['type'])
-                        <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">{{ __('hiko.doc_type') }}</td>
-                            <td class="py-2">
-                                {{ $c['type'] }}
-                            </td>
-                        </tr>
-                    @endif
-                    @if ($c['preservation'])
-                        <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">{{ __('hiko.ms_manifestation') }}</td>
-                            <td class="py-2">
-                                {{ $c['preservation'] }}
-                            </td>
-                        </tr>
-                    @endif
-                    @if ($c['copy'])
-                        <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">{{ __('hiko.copy_type') }}</td>
-                            <td class="py-2">
-                                {{ $c['copy'] }}
-                            </td>
-                        </tr>
-                    @endif
-                    @if (!empty($c['manifestation_notes']))
-                        <tr class="align-baseline border-t border-b border-gray-200">
-                            <td class="w-1/5 py-2">{{ __('hiko.manifestation_notes') }}</td>
-                            <td class="py-2">{{ $c['manifestation_notes'] }}</td>
-                        </tr>
-                    @endif
-                </tbody>
-            </table>
-        @endforeach
-    @endif
+    <h2 class="text-lg font-bold">{{ __('hiko.repositories_and_versions') }}</h2>
+    @foreach ($letter->copies as $c)
+        <table class="w-full mb-10 text-sm">
+            <tbody>
+                @if ($c['l_number'])
+                    <tr class="align-baseline border-t border-b border-gray-200">
+                        <td class="w-1/5 py-2">{{ __('hiko.l_number') }}</td>
+                        <td class="py-2">
+                            {{ $c['l_number'] }}
+                        </td>
+                    </tr>
+                @endif
+                @if ($c['repository'])
+                    <tr class="align-baseline border-t border-b border-gray-200">
+                        <td class="w-1/5 py-2">{{ __('hiko.repository') }}</td>
+                        <td class="py-2">
+                            {{ $c['repository'] }}
+                        </td>
+                    </tr>
+                @endif
+                @if ($c['archive'])
+                    <tr class="align-baseline border-t border-b border-gray-200">
+                        <td class="w-1/5 py-2">{{ __('hiko.archive') }}</td>
+                        <td class="py-2">
+                            {{ $c['archive'] }}
+                        </td>
+                    </tr>
+                @endif
+                @if ($c['collection'])
+                    <tr class="align-baseline border-t border-b border-gray-200">
+                        <td class="w-1/5 py-2">{{ __('hiko.collection') }}</td>
+                        <td class="py-2">
+                            {{ $c['collection'] }}
+                        </td>
+                    </tr>
+                @endif
+                @if ($c['signature'])
+                    <tr class="align-baseline border-t border-b border-gray-200">
+                        <td class="w-1/5 py-2">{{ __('hiko.signature') }}</td>
+                        <td class="py-2">
+                            {{ $c['signature'] }}
+                        </td>
+                    </tr>
+                @endif
+                @if ($c['location_note'])
+                    <tr class="align-baseline border-t border-b border-gray-200">
+                        <td class="w-1/5 py-2">{{ __('hiko.note_location') }}</td>
+                        <td class="py-2">
+                            {{ $c['location_note'] }}
+                        </td>
+                    </tr>
+                @endif
+                @if ($c['type'])
+                    <tr class="align-baseline border-t border-b border-gray-200">
+                        <td class="w-1/5 py-2">{{ __('hiko.doc_type') }}</td>
+                        <td class="py-2">
+                            {{ __('hiko.' . $c['type']) }}
+                        </td>
+                    </tr>
+                @endif
+                @if ($c['preservation'])
+                    <tr class="align-baseline border-t border-b border-gray-200">
+                        <td class="w-1/5 py-2">{{ __('hiko.preservation') }}</td>
+                        <td class="py-2">
+                            {{ __('hiko.preservation_' . str_replace(' ', '_', $c['preservation'])) }}
+                        </td>
+                    </tr>
+                @endif
+                @if ($c['copy'])
+                    <tr class="align-baseline border-t border-b border-gray-200">
+                        <td class="w-1/5 py-2">{{ __('hiko.copy_type') }}</td>
+                        <td class="py-2">
+                            {{ __('hiko.' . $c['copy']) }}
+                        </td>
+                    </tr>
+                @endif
+                @if (!empty($c['manifestation_notes']))
+                    <tr class="align-baseline border-t border-b border-gray-200">
+                        <td class="w-1/5 py-2">{{ __('hiko.manifestation_notes') }}</td>
+                        <td class="py-2">{{ $c['manifestation_notes'] }}</td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
+    @endforeach
+@endif
     @if ($letter->copyright)
         <h2 class="text-lg font-bold">Copyright</h2>
         <table class="w-full mb-10 text-sm">

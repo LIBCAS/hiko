@@ -188,6 +188,66 @@ class LetterController extends Controller
         ];
     }
 
+    protected function attachRelated(Request $request, Letter $letter)
+    {
+        $letter->keywords()->sync($request->keywords);
+        $letter->identities()->detach();
+        $letter->places()->detach();
+    
+        $letter->identities()->attach($this->prepareAttachmentData($request->authors, 'author'));
+        $letter->identities()->attach($this->prepareAttachmentData($request->recipients, 'recipient', ['salutation']));
+        $letter->places()->attach($this->prepareAttachmentData($request->origins, 'origin'));
+        $letter->places()->attach($this->prepareAttachmentData($request->destinations, 'destination'));
+    
+        // Ensure mentioned is an array
+        $mentioned = [];
+        if (is_array($request->mentioned)) {
+            foreach ($request->mentioned as $key => $id) {
+                // Extract numeric part from the ID (e.g., 'local-7' -> 7)
+                $numericId = preg_replace('/\D/', '', $id);
+                if (is_numeric($numericId)) {
+                    $mentioned[$numericId] = [
+                        'position' => $key,
+                        'role' => 'mentioned',
+                    ];
+                } else {
+                    Log::warning("Invalid mentioned ID: {$id}");
+                }
+            }
+        }
+    
+        $letter->identities()->attach($mentioned);
+    }
+
+    protected function duplicateRelatedEntities(Letter $sourceLetter, Letter $duplicatedLetter)
+    {
+        $duplicatedLetter->keywords()->sync($sourceLetter->keywords);
+        $duplicatedLetter->identities()->detach();
+        $duplicatedLetter->places()->detach();
+
+        $this->attachRelatedEntities('authors', 'author', $sourceLetter, $duplicatedLetter);
+        $this->attachRelatedEntities('recipients', 'recipient', $sourceLetter, $duplicatedLetter);
+        $this->attachRelatedEntities('origins', 'origin', $sourceLetter, $duplicatedLetter);
+        $this->attachRelatedEntities('destinations', 'destination', $sourceLetter, $duplicatedLetter);
+        $this->attachRelatedEntities('mentioned', 'mentioned', $sourceLetter, $duplicatedLetter);
+
+        $duplicatedLetter->languages = $sourceLetter->languages;
+        $duplicatedLetter->save();
+    }
+
+    protected function attachRelatedEntities(string $fieldKey, string $role, Letter $sourceLetter, Letter $duplicatedLetter)
+    {
+        $items = $this->prepareAttachmentDataForEntities($fieldKey, $role, $sourceLetter);
+
+        foreach ($items as $id => $attributes) {
+            if (in_array($role, ['author', 'recipient', 'mentioned'])) {
+                $duplicatedLetter->identities()->attach($id, $attributes);
+            } elseif (in_array($role, ['origin', 'destination'])) {
+                $duplicatedLetter->places()->attach($id, $attributes);
+            }
+        }
+    }
+
     /**
      * Generate a CSV filename for the Palladio tool, based on main character (if any).
      */
@@ -199,44 +259,6 @@ class LetterController extends Controller
 
         $surnameSlug = $mainCharacter ? Str::slug($mainCharacter->surname) : 'unknown';
         return "palladio-{$surnameSlug}-{$role}.csv";
-    }
-
-    /**
-     * Attach pivot data for authors, recipients, origins, destinations, etc.
-     */
-    protected function attachRelated(Request $request, Letter $letter): void
-    {
-        Log::debug("Attaching related data for letter ID: {$letter->id}");
-
-        // Many-to-many with 'keywords'
-        // if present, do a sync
-        if ($request->has('keywords')) {
-            $letter->keywords()->sync($request->keywords);
-        }
-
-        // Detach existing pivot data for identities & places to avoid duplication
-        $letter->identities()->detach();
-        $letter->places()->detach();
-
-        // authors
-        $letter->identities()->attach(
-            $this->prepareAttachmentData($request->input('authors'), 'author')
-        );
-
-        // recipients
-        $letter->identities()->attach(
-            $this->prepareAttachmentData($request->input('recipients'), 'recipient', ['salutation'])
-        );
-
-        // origins
-        $letter->places()->attach(
-            $this->prepareAttachmentData($request->input('origins'), 'origin')
-        );
-
-        // destinations
-        $letter->places()->attach(
-            $this->prepareAttachmentData($request->input('destinations'), 'destination')
-        );
     }
 
     /**
@@ -374,41 +396,6 @@ class LetterController extends Controller
 
         return redirect()->route('letters.edit', $duplicate->id)
                          ->with('success', __('hiko.duplicated'));
-    }
-
-    /**
-     * Copy pivot data from one letter to another (authors, recipients, places, keywords, etc.).
-     */
-    protected function duplicateRelatedEntities(Letter $source, Letter $duplicate): void
-    {
-        // Copy keywords pivot
-        $duplicate->keywords()->sync($source->keywords);
-
-        // Clear existing pivot relationships
-        $duplicate->identities()->detach();
-        $duplicate->places()->detach();
-
-        // Manually attach pivot data
-        $this->attachRelatedEntities('authors', 'author', $source, $duplicate);
-        $this->attachRelatedEntities('recipients', 'recipient', $source, $duplicate);
-        $this->attachRelatedEntities('origins', 'origin', $source, $duplicate);
-        $this->attachRelatedEntities('destinations', 'destination', $source, $duplicate);
-        $this->attachRelatedEntities('mentioned', 'mentioned', $source, $duplicate);
-
-        // Copy languages if needed
-        $duplicate->languages = $source->languages;
-        $duplicate->save();
-    }
-
-    protected function attachRelatedEntities(string $fieldKey, string $role, Letter $src, Letter $dup): void
-    {
-        $items = $this->prepareAttachmentDataForEntities($fieldKey, $role, $src);
-
-        if (in_array($role, ['author', 'recipient', 'mentioned'])) {
-            $dup->identities()->attach($items);
-        } elseif (in_array($role, ['origin', 'destination'])) {
-            $dup->places()->attach($items);
-        }
     }
 
     protected function prepareAttachmentDataForEntities(string $fieldKey, string $role, Letter $source): array
