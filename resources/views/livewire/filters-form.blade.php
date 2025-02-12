@@ -17,7 +17,7 @@
         <h3 class="font-semibold text-black">{{ __('hiko.metadata') }}</h3>
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label class="block text-sm">
-                <span class="block text-black">ID</span>
+                <span class="block text-black">{{ __('hiko.id') }}</span>
                 <x-input wire:model.live="filters.id" class="w-full px-2 text-sm" type="text" />
             </label>
             <label class="block text-sm">

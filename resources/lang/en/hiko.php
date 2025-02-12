@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'id' => 'ID',
     'admin' => 'Admin',
     'editor' => 'Editor',
     'guest' => 'Guest',

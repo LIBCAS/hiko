@@ -20,7 +20,7 @@
                     x-transition:leave="transition ease-in duration-200"
                     x-transition:leave-start="opacity-100 scale-100"
                     x-transition:leave-end="opacity-0 scale-95"
-                    class="inline-flex items-center rounded-full bg-white text-gray-700 text-sm py-0.5 pl-2.5 pr-1 leading-relaxed"
+                    class="inline-flex items-center rounded-full text-gray-700 text-sm py-2 px-3 leading-relaxed"
                 >
                     <span class="mr-1" x-text="filter.label"></span>
                     <span class="font-medium" x-text="filter.value"></span>
