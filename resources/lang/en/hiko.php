@@ -291,7 +291,7 @@ return [
     'merge_field_required' => 'Select record to merge',
     'merge' => 'Merge',
     'confirm_merge' => 'Are you sure you want to merge this items?',
-    'merged' => 'Records were merged, you can now remove this item',
+    'merged' => 'Records were merged',
     'and_create_new' => 'And create new',
     'clear_filters' => 'Clear filters',
     'filters' => 'Filters',

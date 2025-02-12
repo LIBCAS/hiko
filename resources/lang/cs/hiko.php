@@ -291,7 +291,7 @@ return [
     'merge_field_required' => 'Nejprve vyberte záznam, do kterého má být sloučeno',
     'merge' => 'Sloučit',
     'confirm_merge' => 'Opravdu chcete sloučit vybrané záznamy?',
-    'merged' => 'Záznamy byly sloučeny, můžete pokračovat smazáním této položky',
+    'merged' => 'Záznamy byly sloučeny',
     'and_create_new' => 'a vytvořit další',
     'filters' => 'Filtry',
     'clear_filters' => 'Vymazat filtry',

@@ -77,8 +77,10 @@ class LettersTable extends Component
         $query = Letter::with([
             'identities' => function ($subquery) {
                 $subquery->select('name', 'related_names')
-                    ->where('role', '=', 'author')
-                    ->orWhere('role', '=', 'recipient')
+                    ->where(function ($q) {
+                        $q->where('role', '=', 'author')
+                          ->orWhere('role', '=', 'recipient');
+                    })
                     ->orderBy('position');
             },
             'places' => function ($subquery) {
