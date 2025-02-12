@@ -35,9 +35,11 @@ class Letter extends Model implements HasMedia
 
         if (function_exists('tenancy') && tenancy()->initialized) {
             $this->setTable(tenancy()->tenant->table_prefix . '__letters');
+        } else {
+            //$this->setTable('blekastad__letters');
+            //throw new \Exception("Tenancy not initialized – cannot set tenant table for Letter.");
         }
     }
-
     /**
      * Constants for approval status
      */

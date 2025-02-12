@@ -162,8 +162,8 @@ class LettersTable extends Component
                     ],
                     [
                         'label' => $letter->approval === Letter::APPROVED
-                            ? '<span class="text-green-600">'. __('hiko.approved') .'</span>'
-                            : '<span class="text-red-600">'. __('hiko.not_approved') .'</span>',
+                            ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">'. __('hiko.approved') .'</span>'
+                            : '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">'. __('hiko.not_approved') .'</span>',
                         'link' => '',
                         'external' => false,
                     ],

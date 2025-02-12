@@ -32,39 +32,42 @@ class TenantMedia extends BaseMedia
     public static function boot()
     {
         parent::boot();
-
+    
         static::creating(function ($media) {
             if (function_exists('tenancy') && tenancy()->initialized) {
                 $media->setTable(tenancy()->tenant->table_prefix . '__media');
             }
-
+    
             // Ensure unique filename
             if (!$media->file_name) {
-                $media->file_name = Str::uuid() . '.' . pathinfo($media->name, PATHINFO_EXTENSION);
+                $media->file_name = \Illuminate\Support\Str::uuid() . '.' . pathinfo($media->name, PATHINFO_EXTENSION);
             }
-
+    
             // Remove 'conversions_disk' column to avoid SQL errors
             unset($media->attributes['conversions_disk']);
-
-            // Move `generated_conversions` from `custom_properties` to its own JSON column
-            if (isset($media->custom_properties['generated_conversions'])) {
-                $media->generated_conversions = json_encode($media->custom_properties['generated_conversions']);
-                unset($media->custom_properties['generated_conversions']);
+    
+            // Move generated_conversions from custom_properties to its own JSON column
+            $custom = $media->custom_properties;
+            if (isset($custom['generated_conversions'])) {
+                $media->generated_conversions = json_encode($custom['generated_conversions']);
+                unset($custom['generated_conversions']);
+                $media->custom_properties = $custom;
             }
         });
-
+    
         static::updating(function ($media) {
             // Remove 'conversions_disk' to prevent update errors
             unset($media->attributes['conversions_disk']);
-
-            // Move `generated_conversions` to its correct column on update
-            if (isset($media->custom_properties['generated_conversions'])) {
-                $media->generated_conversions = json_encode($media->custom_properties['generated_conversions']);
-                unset($media->custom_properties['generated_conversions']);
+    
+            $custom = $media->custom_properties;
+            if (isset($custom['generated_conversions'])) {
+                $media->generated_conversions = json_encode($custom['generated_conversions']);
+                unset($custom['generated_conversions']);
+                $media->custom_properties = $custom;
             }
         });
     }
-
+    
     /**
      * ✅ Fix UUID issues by ensuring correct filename structure.
      */

@@ -1,9 +1,10 @@
 <x-app-layout :title="$title">
     <x-success-alert />
     <div class="flex items-center justify-between gap-4 flex-wrap mb-6">
-        <div clas="flex items-center justify-items-center gap-4">
+        <div class="flex items-center gap-4">
             @can('manage-metadata')
                 <x-create-link label="{{ __('hiko.new_letter') }}" link="{{ route('letters.create') }}" />
+                <x-create-link label="{{ __('hiko.merge') }}" link="{{ route('letters.merge.form') }}" />
             @endcan
             <livewire:filters-button />
         </div>
@@ -27,4 +28,12 @@
         </x-dropdown>
     </div>
     <livewire:letters-table />
+    
+    @push('scripts')
+        <script>
+            Livewire.on('filtersChanged', filters => {
+                updateExportUrl(filters, document.getElementById('export-url'));
+            });
+        </script>
+    @endpush
 </x-app-layout>

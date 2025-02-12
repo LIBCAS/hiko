@@ -26,6 +26,7 @@ use App\Http\Controllers\GlobalKeywordCategoryController;
 use App\Http\Controllers\LetterComparisonController;
 use App\Http\Controllers\TenantStorageController;
 use App\Http\Controllers\OAIPMHController;
+use App\Http\Controllers\MergeLetterController;
 use App\Http\Controllers\Ajax\AjaxPlaceController;
 use App\Http\Controllers\Ajax\AjaxKeywordController;
 use App\Http\Controllers\Ajax\AjaxIdentityController;
@@ -40,7 +41,6 @@ use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxGlobalProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxLetterComparisonController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -406,6 +406,14 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
     });
 
     Route::prefix('letters')->group(function () {
+        Route::get('/merge', [MergeLetterController::class, 'mergeForm'])
+            ->name('letters.merge.form')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::post('/merge', [MergeLetterController::class, 'merge'])
+            ->name('letters.merge')
+            ->middleware(['auth', 'can:manage-metadata']);
+
         Route::get('/', [LetterController::class, 'index'])
             ->name('letters')
             ->middleware(['auth', 'can:view-metadata']);
