@@ -49,11 +49,18 @@ class KeywordCategoriesTable extends Component
         $tenantCategoriesQuery = $this->getTenantCategoriesQuery();
         $globalCategoriesQuery = $this->getGlobalCategoriesQuery();
 
-        $query = match($filters['source']) {
+        $query = match ($filters['source']) {
             'local' => $tenantCategoriesQuery,
             'global' => $globalCategoriesQuery,
             default => $this->mergeQueries($tenantCategoriesQuery, $globalCategoriesQuery),
         };
+
+        // Ensure Sorting Works Properly
+        if (in_array($filters['order'], ['cs', 'en'])) {
+            $query->orderByRaw(
+                "CAST(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) AS CHAR) COLLATE utf8mb4_unicode_ci"
+            );
+        }
 
         return $query->paginate($perPage);
     }
@@ -61,38 +68,49 @@ class KeywordCategoriesTable extends Component
     protected function mergeQueries($tenantCategoriesQuery, $globalCategoriesQuery): Builder
     {
         $filters = $this->filters;
-    
-        // Get base queries
+
+        // Get base queries and bindings
         $tenantBase = $tenantCategoriesQuery->toBase();
         $globalBase = $globalCategoriesQuery->toBase();
-    
-        // Merge both queries with a ROW_NUMBER index for proper sorting
-        $unionQuery = DB::table(DB::raw("(
-            SELECT id, name, 'local' AS source FROM ({$tenantBase->toSql()}) as local_categories
+
+        $tenantSql = $tenantBase->toSql();
+        $tenantBindings = $tenantBase->getBindings();
+
+        $globalSql = $globalBase->toSql();
+        $globalBindings = $globalBase->getBindings();
+
+        // Merge both queries while correctly binding parameters
+        $unionSql = "
+            SELECT id, name, 'local' AS source FROM ({$tenantSql}) AS local_categories
             UNION ALL
-            SELECT id, name, 'global' AS source FROM ({$globalBase->toSql()}) as global_categories
-        ) as combined_categories"))
-        ->mergeBindings($tenantBase)
-        ->mergeBindings($globalBase);
-    
-        // Create the final query with sorting
-        $query = DB::table(DB::raw("(
+            SELECT id, name, 'global' AS source FROM ({$globalSql}) AS global_categories
+        ";
+
+        $unionQuery = DB::table(DB::raw("({$unionSql}) AS combined_categories"))
+            ->mergeBindings($tenantBase)
+            ->mergeBindings($globalBase);
+
+        // Sort the merged query properly
+        $sortedSql = "
             SELECT *, ROW_NUMBER() OVER (
-                ORDER BY CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci
-            ) as sort_index
-            FROM ({$unionQuery->toSql()}) as sorted_categories
-        ) as final_categories"))
-        ->mergeBindings($unionQuery)
-        ->select([
-            'id',
-            'name',
-            'source',
-        ])
-        ->orderBy('sort_index'); // ✅ Ensures correct sorting
-    
-        // ✅ Ensures the method returns `Eloquent\Builder`
-        return KeywordCategory::query()->from(DB::raw("({$query->toSql()}) as fully_sorted_categories"));
-    }    
+                ORDER BY CAST(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) AS CHAR) COLLATE utf8mb4_unicode_ci
+            ) AS sort_index FROM ({$unionQuery->toSql()}) AS sorted_categories
+        ";
+
+        $sortedQuery = DB::table(DB::raw("({$sortedSql}) AS final_categories"))
+            ->mergeBindings($unionQuery)
+            ->select([
+                'id',
+                'name',
+                'source'
+            ])
+            ->orderBy('sort_index');
+
+        // Wrap in an Eloquent Builder with correct parameter bindings
+        return KeywordCategory::query()
+            ->from(DB::raw("({$sortedQuery->toSql()}) AS fully_sorted_categories"))
+            ->mergeBindings($sortedQuery);
+    }
 
     protected function getTenantCategoriesQuery()
     {
@@ -107,12 +125,12 @@ class KeywordCategoriesTable extends Component
         // Apply search filters
         if (!empty($filters['cs'])) {
             $csFilter = strtolower($filters['cs']);
-            $tenantCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) LIKE ?", ["%{$csFilter}%"]);
+            $tenantCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"cs\"'))) LIKE ?", ["%{$csFilter}%"]);
         }
 
         if (!empty($filters['en'])) {
             $enFilter = strtolower($filters['en']);
-            $tenantCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$enFilter}%"]);
+            $tenantCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"en\"'))) LIKE ?", ["%{$enFilter}%"]);
         }
 
         return $tenantCategories;

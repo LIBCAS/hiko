@@ -23,7 +23,7 @@ class ImageMetadataForm extends Component
             'table' => \App\Models\TenantMedia::query()->toSql(),
         ]);
     
-        // ✅ **Fetch media using the correct relationship**
+        // **Fetch media using the correct relationship**
         $this->attachedImages = $this->letter->media()->get();
         $this->loading = false;
     }
@@ -60,7 +60,7 @@ class ImageMetadataForm extends Component
             'table' => \App\Models\TenantMedia::query()->toSql(),
         ]);
     
-        // ✅ **Fetch media using the correct relationship**
+        // **Fetch media using the correct relationship**
         $this->attachedImages = $this->letter->media()->get();
     }
 

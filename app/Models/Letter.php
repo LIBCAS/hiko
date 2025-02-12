@@ -69,7 +69,7 @@ class Letter extends Model implements HasMedia
             ->keepOriginalImageFormat()
             ->nonQueued();
     
-        // ✅ Ensure watermark conversion
+        // Ensure watermark conversion
         if (Storage::disk('public')->exists('watermark/logo.png')) {
             $this->addMediaConversion('watermark')
                 ->watermark(storage_path('app/public/watermark/logo.png'))

@@ -38,15 +38,15 @@ class TenantMedia extends BaseMedia
                 $media->setTable(tenancy()->tenant->table_prefix . '__media');
             }
 
-            // ✅ Ensure unique filename
+            // Ensure unique filename
             if (!$media->file_name) {
                 $media->file_name = Str::uuid() . '.' . pathinfo($media->name, PATHINFO_EXTENSION);
             }
 
-            // ✅ Remove 'conversions_disk' column to avoid SQL errors
+            // Remove 'conversions_disk' column to avoid SQL errors
             unset($media->attributes['conversions_disk']);
 
-            // ✅ Move `generated_conversions` from `custom_properties` to its own JSON column
+            // Move `generated_conversions` from `custom_properties` to its own JSON column
             if (isset($media->custom_properties['generated_conversions'])) {
                 $media->generated_conversions = json_encode($media->custom_properties['generated_conversions']);
                 unset($media->custom_properties['generated_conversions']);
@@ -54,10 +54,10 @@ class TenantMedia extends BaseMedia
         });
 
         static::updating(function ($media) {
-            // ✅ Remove 'conversions_disk' to prevent update errors
+            // Remove 'conversions_disk' to prevent update errors
             unset($media->attributes['conversions_disk']);
 
-            // ✅ Move `generated_conversions` to its correct column on update
+            // Move `generated_conversions` to its correct column on update
             if (isset($media->custom_properties['generated_conversions'])) {
                 $media->generated_conversions = json_encode($media->custom_properties['generated_conversions']);
                 unset($media->custom_properties['generated_conversions']);
@@ -92,12 +92,12 @@ class TenantMedia extends BaseMedia
         if (function_exists('tenancy') && tenancy()->initialized) {
             $tenantPrefix = tenancy()->tenant->table_prefix;
     
-            // ✅ Check if a conversion exists and return its URL
+            // Check if a conversion exists and return its URL
             if ($conversionName && isset($this->generated_conversions[$conversionName]) && $this->generated_conversions[$conversionName] === true) {
                 return asset("storage/{$tenantPrefix}/{$this->id}/conversions/{$this->uuid}-{$conversionName}.{$this->extension}");
             }
     
-            // ✅ Fallback to original image
+            // Fallback to original image
             return asset("storage/{$tenantPrefix}/{$this->id}/{$this->file_name}");
         }
     

@@ -50,57 +50,71 @@ class KeywordsTable extends Component
         $tenantKeywordsQuery = $this->getTenantKeywordsQuery();
         $globalKeywordsQuery = $this->getGlobalKeywordsQuery();
     
-        $query = match($filters['source']){
+        // Merge queries correctly
+        $query = match ($filters['source']) {
             'local' => $tenantKeywordsQuery,
             'global' => $globalKeywordsQuery,
             default => $this->mergeQueries($tenantKeywordsQuery, $globalKeywordsQuery),
         };
     
-        // Proper sorting
+        // Ensure Sorting Works Properly
         if (in_array($filters['order'], ['cs', 'en'])) {
-            $orderColumn = "CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci";
-            $query->orderByRaw($orderColumn);            
+            $query->orderByRaw(
+                "CAST(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) AS CHAR) COLLATE utf8mb4_unicode_ci"
+            );
         }
     
+        // Apply Proper Pagination
         return $query->paginate($perPage);
-    }    
+    }      
 
     protected function mergeQueries($tenantKeywordsQuery, $globalKeywordsQuery): Builder
     {
         $filters = $this->filters;
     
-        // Get base queries
+        // Get SQL & Bindings separately
         $tenantBase = $tenantKeywordsQuery->toBase();
         $globalBase = $globalKeywordsQuery->toBase();
     
-        // Merge both queries with a ROW_NUMBER index for proper sorting
-        $unionQuery = DB::table(DB::raw("(
-            SELECT id, keyword_category_id, name, 'local' AS source FROM ({$tenantBase->toSql()}) as local_keywords
+        $tenantSql = $tenantBase->toSql();
+        $tenantBindings = $tenantBase->getBindings();
+    
+        $globalSql = $globalBase->toSql();
+        $globalBindings = $globalBase->getBindings();
+    
+        // Manually merge queries while binding parameters correctly
+        $unionSql = "
+            SELECT id, keyword_category_id, name, 'local' AS source FROM ({$tenantSql}) AS local_keywords
             UNION ALL
-            SELECT id, keyword_category_id, name, 'global' AS source FROM ({$globalBase->toSql()}) as global_keywords
-        ) as combined_keywords"))
-        ->mergeBindings($tenantBase)
-        ->mergeBindings($globalBase);
+            SELECT id, keyword_category_id, name, 'global' AS source FROM ({$globalSql}) AS global_keywords
+        ";
     
-        // Create the final query with sorting
-        $query = DB::table(DB::raw("(
+        $unionQuery = DB::table(DB::raw("({$unionSql}) AS combined_keywords"))
+            ->mergeBindings($tenantBase)
+            ->mergeBindings($globalBase);
+    
+        // Sort the merged query properly
+        $sortedSql = "
             SELECT *, ROW_NUMBER() OVER (
-                ORDER BY CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci
-            ) as sort_index
-            FROM ({$unionQuery->toSql()}) as sorted_keywords
-        ) as final_keywords"))
-        ->mergeBindings($unionQuery)
-        ->select([
-            'id',
-            'keyword_category_id',
-            'name',
-            'source'
-        ])
-        ->orderBy('sort_index'); // ✅ Ensures proper sorting
+                ORDER BY CAST(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) AS CHAR) COLLATE utf8mb4_unicode_ci
+            ) AS sort_index FROM ({$unionQuery->toSql()}) AS sorted_keywords
+        ";
     
-        // ✅ Convert the result into an Eloquent Builder
-        return Keyword::query()->from(DB::raw("({$query->toSql()}) as fully_sorted_keywords"));
-    }     
+        $sortedQuery = DB::table(DB::raw("({$sortedSql}) AS final_keywords"))
+            ->mergeBindings($unionQuery)
+            ->select([
+                'id',
+                'keyword_category_id',
+                'name',
+                'source'
+            ])
+            ->orderBy('sort_index');
+    
+        // Wrap the final query in an Eloquent Builder and merge bindings correctly
+        return Keyword::query()
+            ->from(DB::raw("({$sortedQuery->toSql()}) AS fully_sorted_keywords"))
+            ->mergeBindings($sortedQuery);
+    }    
 
     protected function getTenantKeywordsQuery()
     {
