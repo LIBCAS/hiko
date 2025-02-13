@@ -15,31 +15,5 @@
     </x-button-simple>
     <button type="button" wire:click="resetFilters" class="flex justify-center p-2 mt-4 lg:justify-start text-red-700 focus:border-red-700" title="{{__('hiko.clear_filters')}}">
         <x-icons.x-circle class="w-6 h-6" />
-    </button>    <button wire:click="mergeAll"
-    wire:loading.attr="disabled"
-    wire:target="mergeAll"
-    class="bg-blue-500 text-white px-4 py-2 rounded">
-    Merge All Professions
-</button>
-
-<!-- Loading Animation -->
-<div wire:loading wire:target="mergeAll" class="text-blue-500 font-bold">
-    Merging in progress...
-</div>
-
-<!-- Success Message -->
-@if (session()->has('success'))
-    <div class="bg-green-100 text-green-700 p-2 rounded mt-2">
-        {{ session('success') }}
-    </div>
-@endif
-
-<!-- Error Message -->
-@if (session()->has('error'))
-    <div class="bg-red-100 text-red-700 p-2 rounded mt-2">
-        {{ session('error') }}
-    </div>
-@endif
-
-
+    </button> 
 </form>
