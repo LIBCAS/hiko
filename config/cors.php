@@ -15,7 +15,7 @@
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'livewire/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
@@ -29,6 +29,5 @@
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
-
+    'supports_credentials' => true,
 ];
