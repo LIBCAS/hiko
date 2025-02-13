@@ -1,7 +1,7 @@
 <div>
     <fieldset class="space-y-3" wire:loading.attr="disabled">
         @foreach ($items as $item)
-            <div wire:key="{{ $loop->index }}" class="p-3 space-y-6 bg-gray-200 shadow">
+            <div wire:key="item-{{ $item['id'] }}" class="p-3 space-y-6 bg-gray-200 shadow">
                 <div class="required">
                     <x-label :for="$fieldKey . '-' . $loop->index" :value="$label" />
                     <div
@@ -11,23 +11,20 @@
                             change: (data) => { $dispatch('item-value-changed', { index: {{ $loop->index }}, data: data }); }
                         })"
                         x-init="initSelect()"
-                        wire:ignore>
-
+                        wire:ignore
+                    >
                         <x-select
                             wire:model.live.debounce.300ms="items.{{ $loop->index }}.value"
                             class="block w-full mt-1"
                             name="{{ $fieldKey }}[{{ $loop->index }}][value]"
-                            :id="$fieldKey . '-' . $loop->index">
+                            :id="$fieldKey . '-' . $loop->index"
+                        >
                             @if (!empty($item['value']))
                                 <option value="{{ is_array($item['value']) ? json_encode($item['value']) : $item['value'] }}">
                                     {{ is_array($item['label']) ? implode(', ', $item['label']) : $item['label'] }}
                                 </option>
                             @endif
                         </x-select>
-
-                        @if (strpos(route($route), 'identity') !== false)
-                            <livewire:create-new-item-modal :route="route('identities.create')" :text="__('hiko.modal_new_identity')" />
-                        @endif
                     </div>
                 </div>
                 <div>
@@ -35,13 +32,15 @@
                         <div>
                             <x-label
                                 for="{{ $fieldKey }}-{{ $field['key'] . '-' . $loop->parent->index }}"
-                                value="{{ $field['label'] }}" />
+                                value="{{ $field['label'] }}"
+                            />
                             <x-input
                                 wire:model.live="items.{{ $loop->parent->index }}.{{ $field['key'] }}"
                                 name="{{ $fieldKey }}[{{ $loop->parent->index }}][{{ $field['key'] }}]"
                                 id="{{ $fieldKey }}-{{ $field['key'] . '-' . $loop->parent->index }}"
                                 class="block w-full mt-1"
-                                type="text" />
+                                type="text"
+                            />
                         </div>
                     @endforeach
                 </div>
@@ -61,61 +60,60 @@
 </div>
 
 @push('scripts')
-    <script>
-        function ajaxChoices({ url, element, change }) {
-            return {
-                initSelect() {
-                    const select = this.$el;
+<script>
+    function ajaxChoices({ url, element, change }) {
+        return {
+            initSelect() {
+                const select = this.$el;
+                if (select.dataset.choicesInitialized) return;
+                select.dataset.choicesInitialized = true;
 
-                    // Prevent multiple initializations
-                    if (select.dataset.choicesInitialized) return;
-                    select.dataset.choicesInitialized = true;
-
-                    // Load options initially or on search
-                    const loadOptions = (query = '') => {
-                        fetch(`${url}?search=${query}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                select.innerHTML = ''; // Clear current options
-
-                                // Populate new options
-                                data.forEach(option => {
-                                    const optionElement = document.createElement('option');
-                                    optionElement.value = option.value;
-                                    optionElement.textContent = option.label;
-                                    select.appendChild(optionElement);
-                                });
+                const loadOptions = (query = '') => {
+                    fetch(`${url}?search=${query}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            select.innerHTML = '';
+                            data.forEach(option => {
+                                const optionElement = document.createElement('option');
+                                optionElement.value = option.value;
+                                optionElement.textContent = option.label;
+                                select.appendChild(optionElement);
                             });
-                    };
-
-                    // Initialize options on load
-                    loadOptions();
-
-                    // Debounce function for search filtering
-                    const debounce = (func, delay) => {
-                        let timeout;
-                        return function(...args) {
-                            clearTimeout(timeout);
-                            timeout = setTimeout(() => func.apply(this, args), delay);
-                        };
-                    };
-
-                    // Event listener for input to filter dynamically
-                    select.addEventListener('input', debounce((event) => {
-                        const query = event.target.value;
-                        loadOptions(query);
-                    }, 300));
-
-                    // Add change listener
-                    select.addEventListener('change', (event) => {
-                        const selectedOption = event.target.options[event.target.selectedIndex];
-                        change({
-                            value: selectedOption.value,
-                            label: selectedOption.text
                         });
+                };
+
+                loadOptions();
+
+                const debounce = (func, delay) => {
+                    let timeout;
+                    return function(...args) {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => func.apply(this, args), delay);
+                    };
+                };
+
+                select.addEventListener('input', debounce((event) => {
+                    loadOptions(event.target.value);
+                }, 300));
+
+                select.addEventListener('change', (event) => {
+                    const selectedOption = event.target.options[event.target.selectedIndex];
+                    change({
+                        value: selectedOption.value,
+                        label: selectedOption.text
                     });
-                }
+                });
             }
-        }
-    </script>
+        };
+    }
+
+    document.addEventListener('livewire:load', () => {
+        window.addEventListener('reinitialize-ajax-choices', () => {
+            const elements = document.querySelectorAll('[x-data="ajaxChoices"]');
+            elements.forEach(el => {
+                Alpine.initTree(el);
+            });
+        });
+    });
+</script>
 @endpush
