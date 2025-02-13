@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class GlobalProfession extends Model
 {
@@ -28,9 +29,15 @@ class GlobalProfession extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function identities()
+    public function identities(): BelongsToMany
     {
-        return $this->belongsToMany(Identity::class, 'global_identity_profession', 'profession_id', 'identity_id');
-    }  
+        $tenantPrefix = tenancy()->initialized ? tenancy()->tenant->table_prefix . '__' : '';
     
+        return $this->belongsToMany(
+            Identity::class,
+            "{$tenantPrefix}identity_profession", // Pivot table
+            'global_profession_id',
+            'identity_id'
+        );
+    }
 }

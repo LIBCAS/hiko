@@ -8,6 +8,7 @@ use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 
 class ProfessionsTable extends Component
 {
@@ -69,36 +70,45 @@ class ProfessionsTable extends Component
     {
         $filters = $this->filters;
     
-        // Get base queries
+        // Get base queries and bindings
         $tenantBase = $tenantProfessionsQuery->toBase();
         $globalBase = $globalProfessionsQuery->toBase();
     
-        // Merge both queries with a ROW_NUMBER index for proper sorting
-        $unionQuery = DB::table(DB::raw("(
-            SELECT id, profession_category_id, name, 'local' AS source FROM ({$tenantBase->toSql()}) as local_professions
-            UNION ALL
-            SELECT id, profession_category_id, name, 'global' AS source FROM ({$globalBase->toSql()}) as global_professions
-        ) as combined_professions"))
-        ->mergeBindings($tenantBase)
-        ->mergeBindings($globalBase);
+        $tenantSql = $tenantBase->toSql();
+        $globalSql = $globalBase->toSql();
     
-        $query = DB::table(DB::raw("(
+        // Merge both queries using raw SQL with bindings
+        $unionSql = "(
+            SELECT id, profession_category_id, name, 'local' AS source FROM ({$tenantSql}) AS local_professions
+            UNION ALL
+            SELECT id, profession_category_id, name, 'global' AS source FROM ({$globalSql}) AS global_professions
+        ) AS combined_professions";
+    
+        $unionQuery = DB::table(DB::raw($unionSql))
+            ->mergeBindings($tenantBase)
+            ->mergeBindings($globalBase);
+    
+        // Add sorting and row_number()
+        $sortedSql = "(
             SELECT *, ROW_NUMBER() OVER (
                 ORDER BY CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci
-            ) as sort_index
-            FROM ({$unionQuery->toSql()}) as sorted_professions
-        ) as final_professions"))
-        ->mergeBindings($unionQuery)
-        ->select([
-            'id',
-            'profession_category_id',
-            'name',
-            'source',
-        ])
-        ->orderBy('sort_index');
+            ) AS sort_index
+            FROM ({$unionQuery->toSql()}) AS sorted_professions
+        ) AS final_professions";
     
-        return Profession::query()->from(DB::raw("({$query->toSql()}) as fully_sorted_professions"));
-    }
+        $sortedQuery = DB::table(DB::raw($sortedSql))
+            ->mergeBindings($unionQuery)
+            ->select([
+                'id',
+                'profession_category_id',
+                'name',
+                'source',
+            ])
+            ->orderBy('sort_index');
+    
+        return Profession::query()->from(DB::raw("({$sortedQuery->toSql()}) AS fully_sorted_professions"))
+            ->mergeBindings($sortedQuery);
+    }    
 
     protected function getTenantProfessionsQuery()
     {
@@ -138,36 +148,37 @@ class ProfessionsTable extends Component
     protected function getGlobalProfessionsQuery()
     {
         $filters = $this->filters;
-
-         $globalProfessions = \App\Models\GlobalProfession::with('profession_category')
+    
+        $globalProfessions = \App\Models\GlobalProfession::with('profession_category')
             ->select(
                 'id',
                 'name',
                 'profession_category_id',
                 DB::raw("'global' AS source")
             );
-
-        // Apply search filters
+    
         if (!empty($filters['cs'])) {
-            $csFilter = strtolower($filters['cs']);
-            $globalProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"cs\"'))) LIKE ?", ["%{$csFilter}%"]);
+            $globalProfessions->whereRaw(
+                "LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"cs\"'))) LIKE ?",
+                ["%{$filters['cs']}%"]
+            );
         }
-
+    
         if (!empty($filters['en'])) {
-            $enFilter = strtolower($filters['en']);
-            $globalProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"en\"'))) LIKE ?", ["%{$enFilter}%"]);
+            $globalProfessions->whereRaw(
+                "LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"en\"'))) LIKE ?",
+                ["%{$filters['en']}%"]
+            );
         }
-
-        // Apply category filter
+    
         if (!empty($filters['category'])) {
-            $categoryFilter = strtolower($filters['category']);
-           $globalProfessions->whereHas('profession_category', function ($query) use ($categoryFilter) {
-                $query->searchByName($categoryFilter);
+            $globalProfessions->whereHas('profession_category', function ($query) use ($filters) {
+                $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) LIKE ?", ["%{$filters['category']}%"]);
             });
         }
-
+    
         return $globalProfessions;
-    }
+    }    
 
     protected function formatTableData($data)
     {
@@ -221,5 +232,111 @@ class ProfessionsTable extends Component
                 return $row;
             })->toArray(),
         ];
+    }
+    
+    public function mergeAll()
+    {
+        Log::info('[mergeAll] Button clicked! Fetching tenant prefix...');
+    
+        // Get the tenant's table prefix dynamically
+        $tenant = DB::table('tenants')->where('id', tenancy()->tenant->id)->first();
+        if (!$tenant || empty($tenant->table_prefix)) {
+            Log::error("[mergeAll] Failed to get tenant prefix!");
+            session()->flash('error', 'Tenant prefix not found.');
+            return;
+        }
+    
+        $tenantPrefix = $tenant->table_prefix . '__';
+        Log::info("[mergeAll] Using Tenant Prefix: $tenantPrefix");
+    
+        // Retrieve all local professions
+        $localProfessions = DB::table("{$tenantPrefix}professions")->get();
+    
+        if ($localProfessions->isEmpty()) {
+            Log::warning("[mergeAll] No local professions found.");
+            session()->flash('error', 'No local professions to merge.');
+            return;
+        }
+    
+        // Get all global professions for matching
+        $globalProfessions = DB::table("global_professions")->get();
+        $merged = 0;
+    
+        foreach ($localProfessions as $local) {
+            $localNameJson = json_decode($local->name, true);
+            $csName = strtolower(trim($localNameJson['cs'] ?? ''));
+            $enName = strtolower(trim($localNameJson['en'] ?? ''));
+    
+            Log::info("[mergeAll] Checking Local Profession: CS='$csName', EN='$enName'");
+    
+            // Find exact match first
+            $globalMatch = null;
+            foreach ($globalProfessions as $global) {
+                $globalNameJson = json_decode($global->name, true);
+                $globalCsName = strtolower(trim($globalNameJson['cs'] ?? ''));
+                $globalEnName = strtolower(trim($globalNameJson['en'] ?? ''));
+    
+                // Remove 'GLOBAL' prefixes
+                $globalCsStripped = preg_replace('/^global/i', '', $globalCsName);
+                $globalEnStripped = preg_replace('/^global/i', '', $globalEnName);
+    
+                // Exact match check
+                if ($csName === $globalCsStripped || $enName === $globalEnStripped) {
+                    $globalMatch = $global;
+                    break;
+                }
+            }
+    
+            if ($globalMatch) {
+                Log::info("[mergeAll] Merging Local Profession '{$csName}' -> Global Profession ID {$globalMatch->id}");
+    
+                // **STEP 1: Find identities linked to the local profession**
+                $linkedIdentities = DB::table("{$tenantPrefix}identity_profession")
+                    ->where('profession_id', $local->id)
+                    ->get();
+    
+                foreach ($linkedIdentities as $identity) {
+                    // **STEP 2: Check if this identity already has a global_profession_id**
+                    $existingGlobal = DB::table("{$tenantPrefix}identity_profession")
+                        ->where('identity_id', $identity->identity_id)
+                        ->whereNotNull('global_profession_id')
+                        ->first();
+    
+                    if ($existingGlobal) {
+                        Log::info("[mergeAll] Identity {$identity->identity_id} already has global_profession_id: {$existingGlobal->global_profession_id}");
+                    } else {
+                        // **STEP 3: Reassign the global_profession_id to the identity_id of local profession**
+                        DB::table("{$tenantPrefix}identity_profession")
+                            ->where('identity_id', $identity->identity_id)
+                            ->update(['global_profession_id' => $globalMatch->id]);
+    
+                        Log::info("[mergeAll] Reassigned global_profession_id {$globalMatch->id} to identity_id {$identity->identity_id}");
+                    }
+                }
+    
+                // **STEP 4: Delete local profession reference**
+                DB::table("{$tenantPrefix}identity_profession")
+                    ->where('profession_id', $local->id)
+                    ->update(['profession_id' => null]);
+    
+                // **STEP 5: Delete the local profession itself**
+                DB::table("{$tenantPrefix}professions")->where('id', $local->id)->delete();
+    
+                $merged++;
+            } else {
+                Log::warning("[mergeAll] No global match found for '{$csName}' ({$enName}). Skipping.");
+            }
+        }
+    
+        Log::info("[mergeAll] Merge completed. Total merged: $merged");
+        session()->flash('success', "$merged professions merged successfully!");
+    
+        $this->dispatch('refreshTable'); // Ensure UI refresh
+    }
+    
+    
+    protected function getListeners()
+    {
+        return ['refreshTable' => '$refresh', 'mergeAll' => 'mergeAll'];
     }    
 }

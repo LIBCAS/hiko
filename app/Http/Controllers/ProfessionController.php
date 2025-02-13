@@ -13,6 +13,7 @@ use App\Models\GlobalProfessionCategory;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Support\Facades\Log;
 
 class ProfessionController extends Controller
 {
@@ -168,5 +169,5 @@ class ProfessionController extends Controller
     {
         // Export the professions to an Excel file
         return Excel::download(new ProfessionsExport, 'professions.xlsx');
-    }
+    } 
 }

@@ -86,7 +86,7 @@
                 @if ($profession->identities->count() > 0)
                     <h2 class="text-l font-semibold">{{ __('hiko.attached_persons_count') }}: {{ $profession->identities->count() }}</h2>
                     <ul class="list-disc px-3 py-3">
-                        @foreach ($profession->identities->sortBy('name') as $identity)
+                        @foreach ($profession->identities as $identity)
                             <li>
                                 <a href="{{ route('identities.edit', $identity->id) }}" class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">{{ $identity->name }}</a>
                             </li>
