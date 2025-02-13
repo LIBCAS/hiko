@@ -91,7 +91,7 @@
                 @if ($keywordCategory->keywords->count() > 0)
                     <h2 class="text-l font-semibold">{{ __('hiko.keywords') }}: {{ $keywordCategory->keywords->count() }}</h2>
                     <ul class="list-disc p-3">
-                        @foreach ($keywordCategory->keywords as $keyword)
+                        @foreach ($keywordCategory->keywords->sortBy('name') as $keyword)
                             <li>
                                 <a href="{{ route('global.keywords.edit', $keyword->id) }}" class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">
                                     {{ $keyword->name }}
