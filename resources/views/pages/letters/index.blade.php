@@ -4,7 +4,7 @@
         <div class="flex items-center gap-4">
             @can('manage-metadata')
                 <x-create-link label="{{ __('hiko.new_letter') }}" link="{{ route('letters.create') }}" />
-                <x-create-link label="{{ __('hiko.merge') }}" link="{{ route('letters.merge.form') }}" />
+                <!-- <x-create-link label="{{ __('hiko.merge') }}" link="{{ route('letters.merge.form') }}" /> --> <!-- Uncomment this line for better time -->
             @endcan
             <livewire:filters-button />
         </div>
