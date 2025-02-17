@@ -8,6 +8,7 @@ use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 
 class KeywordsTable extends Component
 {
@@ -183,6 +184,7 @@ class KeywordsTable extends Component
 
         return $globalKeywords;
     }
+
     protected function formatTableData($data): array
     {
         return [
@@ -239,5 +241,105 @@ class KeywordsTable extends Component
                 return $row;
             })->toArray(),
         ];
+    }
+    
+    public function mergeAll()
+    {
+        Log::info('[mergeAll] Button clicked! Fetching tenant prefix...');
+    
+        // Get the tenant's table prefix dynamically
+        $tenant = DB::table('tenants')->where('id', tenancy()->tenant->id)->first();
+        if (!$tenant || empty($tenant->table_prefix)) {
+            Log::error("[mergeAll] Failed to get tenant prefix!");
+            session()->flash('error', 'Tenant prefix not found.');
+            return;
+        }
+    
+        $tenantPrefix = $tenant->table_prefix . '__';
+        Log::info("[mergeAll] Using Tenant Prefix: $tenantPrefix");
+    
+        // Retrieve all local keywords
+        $localKeywords = DB::table("{$tenantPrefix}keywords")->get();
+    
+        if ($localKeywords->isEmpty()) {
+            Log::warning("[mergeAll] No local keywords found.");
+            session()->flash('warning', 'No local keywords to merge.');
+            return;
+        }
+    
+        // Get all global keywords for matching
+        $globalKeywords = DB::table("global_keywords")->get();
+        $merged = 0;
+    
+        foreach ($localKeywords as $local) {
+            $localNameJson = json_decode($local->name, true);
+            $csName = strtolower(trim($localNameJson['cs'] ?? ''));
+            $enName = strtolower(trim($localNameJson['en'] ?? ''));
+    
+            Log::info("[mergeAll] Checking Local Keyword: CS='$csName', EN='$enName'");
+    
+            // Find exact match first
+            $globalMatch = null;
+            foreach ($globalKeywords as $global) {
+                $globalNameJson = json_decode($global->name, true);
+                $globalCsName = strtolower(trim($globalNameJson['cs'] ?? ''));
+                $globalEnName = strtolower(trim($globalNameJson['en'] ?? ''));
+    
+                // Remove 'GLOBAL' prefixes
+                $globalCsStripped = preg_replace('/^global/i', '', $globalCsName);
+                $globalEnStripped = preg_replace('/^global/i', '', $globalEnName);
+    
+                // Exact match check
+                if ($csName === $globalCsStripped || $enName === $globalEnStripped) {
+                    $globalMatch = $global;
+                    break;
+                }
+            }
+    
+            if ($globalMatch) {
+                Log::info("[mergeAll] Merging Local Keyword '{$csName}' -> Global Keyword ID {$globalMatch->id}");
+    
+                // **STEP 1: Find letters linked to the local keyword**
+                $linkedLetters = DB::table("{$tenantPrefix}letter_keyword")
+                    ->where('keyword_id', $local->id)
+                    ->get();
+    
+                foreach ($linkedLetters as $letter) {
+                    // **STEP 2: Check if this letter already has a global_keyword_id**
+                    $existingGlobal = DB::table("{$tenantPrefix}letter_keyword")
+                        ->where('letter_id', $letter->letter_id)
+                        ->whereNotNull('global_keyword_id')
+                        ->first();
+    
+                    if ($existingGlobal) {
+                        Log::info("[mergeAll] Letter {$letter->letter_id} already has global_keyword_id: {$existingGlobal->global_keyword_id}");
+                    } else {
+                        // **STEP 3: Reassign the global_keyword_id to the letter_id of local keyword**
+                        DB::table("{$tenantPrefix}letter_keyword")
+                            ->where('letter_id', $letter->letter_id)
+                            ->update(['global_keyword_id' => $globalMatch->id]);
+    
+                        Log::info("[mergeAll] Reassigned global_keyword_id {$globalMatch->id} to letter_id {$letter->letter_id}");
+                    }
+                }
+    
+                // **STEP 4: Delete local keyword reference**
+                DB::table("{$tenantPrefix}letter_keyword")
+                    ->where('keyword_id', $local->id)
+                    ->update(['keyword_id' => null]);
+    
+                // **STEP 5: Delete the local keyword itself**
+                DB::table("{$tenantPrefix}keywords")->where('id', $local->id)->delete();
+    
+                $merged++;
+            } else {
+                Log::warning("[mergeAll] No global match found for '{$csName}' ({$enName}). Skipping.");
+            }
+        }
+    
+        Log::info("[mergeAll] Merge completed. Total merged: $merged");
+        session()->flash('success', "$merged keywords merged successfully!");
+    
+        $this->dispatch('refreshTable'); // Ensure UI refresh
     }    
 }

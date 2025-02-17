@@ -29,11 +29,6 @@ class KeywordCategory extends Model
         $this->table = tenancy()->initialized
             ? tenancy()->tenant->table_prefix . '__keyword_categories'
             : 'keyword_categories';
-
-        Log::info('KeywordCategory table initialized', [
-            'table' => $this->table,
-            'tenant_id' => tenancy()->initialized ? tenancy()->tenant->id : null,
-        ]);
     }
 
     public function searchableAs(): string

@@ -177,42 +177,20 @@
         </div>
     </div>
 
-    <div class="space-y-2">
-        <h3 class="font-semibold text-black">Ordering</h3>
-        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <label class="block text-sm">
-                <span class="block text-black">
-                    {{ __('hiko.order_by') }}
-                </span>
-                <x-select wire:model.live="filters.order" class="w-full px-2 text-sm">
-                    <option value='updated_at'>
-                        {{ __('hiko.by_update') }}
-                    </option>
-                    <option value='date_computed'>
-                        {{ __('hiko.by_letter_date') }}
-                    </option>
-                    <option value='id'>
-                        {{ __('hiko.by_letter_id') }}
-                    </option>
-                </x-select>
-            </label>
-            <div class="block text-sm">
-                <span class="block text-black">
-                    {{ __('hiko.order_direction') }}
-                </span>
-                <div class="flex items-center space-x-2">
-                    <label class="inline-flex items-center">
-                        <x-radio name="direction" wire:model.live="filters.direction" value="asc" />
-                        <span class="ml-2 text-black">{{ __('hiko.ascending') }}</span>
-                    </label>
-                    <label class="inline-flex items-center">
-                        <x-radio name="direction" wire:model.live="filters.direction" value="desc" />
-                        <span class="ml-2 text-black">{{ __('hiko.descending') }}</span>
-                    </label>
-                </div>
-            </div>
-        </div>
-    </div>
+    <livewire:sorting-form :sortingOptions="[
+        'id' => __('hiko.id'),
+        'date_computed' => __('hiko.by_letter_date'),
+        'updated_at' => __('hiko.by_update'),
+        'author' => __('hiko.by_author'),
+        'recipient' => __('hiko.by_recipient'),
+        'origin' => __('hiko.by_origin'),
+        'destination' => __('hiko.by_destination'),
+        'repository' => __('hiko.by_repository'),
+        'keyword' => __('hiko.by_keywords'),
+        'mentioned' => __('hiko.by_mentioned'),
+        'abstract' => __('hiko.by_abstract'),
+        'media' => __('hiko.by_media'),
+    ]" />
 
     <div class="flex justify-between">
         <button type="button" wire:click="resetFilters" class="px-4 py-2 border rounded-md font-semibold text-xs text-red-700 uppercase tracking-widest disabled:opacity-25 transition ease-in-out duration-150 w-full border-red-700 hover:bg-red-700 hover:text-white w-full">

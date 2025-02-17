@@ -38,7 +38,7 @@
                     class="fixed inset-0 z-50 p-4 bg-black bg-opacity-75">
                     <div class="flex items-center justify-center w-full h-full" x-on:click.away="open = false">
                         <div class="p-3 overflow-y-auto text-gray-700 bg-white h-96 w-96">
-                            {!! nl2br($args['history']) !!}
+                            {!! nl2br($args['history'] ?? '') !!}
                         </div>
                     </div>
                 </div>
