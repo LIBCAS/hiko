@@ -137,6 +137,10 @@ class LettersTable extends Component
         }
     
         // 🔹 **Filtering**
+        if (!empty($this->filters['id'])) {
+            $query->where('letters.id', 'like', '%' . $this->filters['id'] . '%');
+        }
+        
         if (!empty($this->filters['date_from'])) {
             $query->where('letters.date_computed', '>=', $this->filters['date_from']);
         }

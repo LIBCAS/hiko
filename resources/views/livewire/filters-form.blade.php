@@ -177,21 +177,6 @@
         </div>
     </div>
 
-    <livewire:sorting-form :sortingOptions="[
-        'id' => __('hiko.id'),
-        'date_computed' => __('hiko.by_letter_date'),
-        'updated_at' => __('hiko.by_update'),
-        'author' => __('hiko.by_author'),
-        'recipient' => __('hiko.by_recipient'),
-        'origin' => __('hiko.by_origin'),
-        'destination' => __('hiko.by_destination'),
-        'repository' => __('hiko.by_repository'),
-        'keyword' => __('hiko.by_keywords'),
-        'mentioned' => __('hiko.by_mentioned'),
-        'abstract' => __('hiko.by_abstract'),
-        'media' => __('hiko.by_media'),
-    ]" />
-
     <div class="flex justify-between">
         <button type="button" wire:click="resetFilters" class="px-4 py-2 border rounded-md font-semibold text-xs text-red-700 uppercase tracking-widest disabled:opacity-25 transition ease-in-out duration-150 w-full border-red-700 hover:bg-red-700 hover:text-white w-full">
             {{ __('hiko.reset') }}
