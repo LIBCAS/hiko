@@ -6,7 +6,7 @@
                     <span class="block text-black">
                         {{ __('hiko.order_by') }}
                     </span>
-                    <x-select wire:model.live="sorting.order" class="w-full px-2 text-sm">
+                    <x-select wire:model.live="sorting.order" class="text-sm">
                         @foreach ($sortingOptions as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach

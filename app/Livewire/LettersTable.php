@@ -7,6 +7,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Stancl\Tenancy\Middleware\InitializeTenancyByRequestData;
+use Illuminate\Support\Facades\DB;
 
 class LettersTable extends Component
 {
@@ -78,162 +79,112 @@ class LettersTable extends Component
     protected function findLetters(): LengthAwarePaginator
     {
         $tenantPrefix = tenancy()->initialized ? tenancy()->tenant->table_prefix . '__' : '';
-    
         $lettersTable = "{$tenantPrefix}letters";
         $identityLetterTable = "{$tenantPrefix}identity_letter";
         $identitiesTable = "{$tenantPrefix}identities";
         $letterPlaceTable = "{$tenantPrefix}letter_place";
         $placesTable = "{$tenantPrefix}places";
-        $keywordLetterTable = "{$tenantPrefix}keyword_letter";
-        $keywordsTable = "{$tenantPrefix}keywords";
-        $mediaTable = "{$tenantPrefix}media";
     
-        // Check if media table exists
-        $mediaTableExists = \DB::connection('tenant')->getSchemaBuilder()->hasTable($mediaTable);
+        $query = Letter::with([
+            'identities' => function ($subquery) {
+                $subquery->select('name', 'related_names')
+                    ->where('role', '=', 'author')
+                    ->orWhere('role', '=', 'recipient')
+                    ->orderBy('position');
+            },
+            'places' => function ($subquery) {
+                $subquery->select('name')->orderBy('position');
+            },
+            'keywords' => function ($subquery) {
+                $subquery->select('name');
+            },
+            'media' => function ($subquery) {
+                $subquery->select('id', 'model_id', 'model_type')
+                    ->where('model_type', Letter::class);
+            },
+            'users' => function ($subquery) {
+                $subquery->select('users.id', 'name');
+            },
+        ])
+        ->select('id', 'uuid', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status', 'approval');
     
-        // Base Query
-        $query = Letter::from("{$lettersTable} as letters")
-            ->select([
-                'letters.id', 'letters.uuid', 'letters.history', 'letters.date_computed',
-                'letters.updated_at', 'letters.status', 'letters.approval',
-                \DB::raw("MIN(authors.name) as author_name"),
-                \DB::raw("MIN(recipients.name) as recipient_name"),
-                \DB::raw("MIN(origins.name) as origin_name"),
-                \DB::raw("MIN(destinations.name) as destination_name"),
-                \DB::raw("MIN(keywords.name) as keyword_name"),
-            ])
-            ->leftJoin("{$identityLetterTable} as authors_pivot", function ($join) {
-                $join->on('letters.id', '=', 'authors_pivot.letter_id')
-                    ->where('authors_pivot.role', '=', 'author');
-            })
-            ->leftJoin("{$identitiesTable} as authors", 'authors_pivot.identity_id', '=', 'authors.id')
+        $query->filter($this->filters);
     
-            ->leftJoin("{$identityLetterTable} as recipients_pivot", function ($join) {
-                $join->on('letters.id', '=', 'recipients_pivot.letter_id')
-                    ->where('recipients_pivot.role', '=', 'recipient');
-            })
-            ->leftJoin("{$identitiesTable} as recipients", 'recipients_pivot.identity_id', '=', 'recipients.id')
-    
-            ->leftJoin("{$letterPlaceTable} as origins_pivot", function ($join) {
-                $join->on('letters.id', '=', 'origins_pivot.letter_id')
-                    ->where('origins_pivot.role', '=', 'origin');
-            })
-            ->leftJoin("{$placesTable} as origins", 'origins_pivot.place_id', '=', 'origins.id')
-    
-            ->leftJoin("{$letterPlaceTable} as destinations_pivot", function ($join) {
-                $join->on('letters.id', '=', 'destinations_pivot.letter_id')
-                    ->where('destinations_pivot.role', '=', 'destination');
-            })
-            ->leftJoin("{$placesTable} as destinations", 'destinations_pivot.place_id', '=', 'destinations.id')
-    
-            ->leftJoin("{$keywordLetterTable} as keyword_pivot", 'letters.id', '=', 'keyword_pivot.letter_id')
-            ->leftJoin("{$keywordsTable} as keywords", 'keyword_pivot.keyword_id', '=', 'keywords.id');
-    
-        // Include media count only if media table exists
-        if ($mediaTableExists) {
-            $query->addSelect([
-                \DB::raw("(SELECT COUNT(*) FROM {$mediaTable} as media WHERE media.model_id = letters.id AND media.model_type = '" . addslashes(Letter::class) . "') AS media_count")
-            ]);
-        }
-    
-        // 🔹 **Filtering**
-        if (!empty($this->filters['id'])) {
-            $query->where('letters.id', 'like', '%' . $this->filters['id'] . '%');
-        }
-        
-        if (!empty($this->filters['date_from'])) {
-            $query->where('letters.date_computed', '>=', $this->filters['date_from']);
-        }
-    
-        if (!empty($this->filters['date_to'])) {
-            $query->where('letters.date_computed', '<=', $this->filters['date_to']);
-        }
-    
-        if (!empty($this->filters['author'])) {
-            $query->where('authors.name', 'like', '%' . $this->filters['author'] . '%');
-        }
-    
-        if (!empty($this->filters['recipient'])) {
-            $query->where('recipients.name', 'like', '%' . $this->filters['recipient'] . '%');
-        }
-    
-        if (!empty($this->filters['origin'])) {
-            $query->where('origins.name', 'like', '%' . $this->filters['origin'] . '%');
-        }
-    
-        if (!empty($this->filters['destination'])) {
-            $query->where('destinations.name', 'like', '%' . $this->filters['destination'] . '%');
-        }
-    
-        if (!empty($this->filters['repository'])) {
-            $query->where('repositories.name', 'like', '%' . $this->filters['repository'] . '%');
-        }
-    
-        if (!empty($this->filters['archive'])) {
-            $query->where('archives.name', 'like', '%' . $this->filters['archive'] . '%');
-        }
-    
-        if (!empty($this->filters['collection'])) {
-            $query->where('collections.name', 'like', '%' . $this->filters['collection'] . '%');
-        }
-    
-        if (!empty($this->filters['keyword'])) {
-            $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(keywords.name, '$.cs'))) LIKE ?", ['%' . strtolower($this->filters['keyword']) . '%'])
-                ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(keywords.name, '$.en'))) LIKE ?", ['%' . strtolower($this->filters['keyword']) . '%']);
-        }
-    
-        if (!empty($this->filters['status'])) {
-            $query->where('letters.status', '=', $this->filters['status']);
-        }
-    
-        if (!empty($this->filters['approval'])) {
-            $query->where('letters.approval', '=', $this->filters['approval']);
-        }
-    
-        if (!empty($this->filters['editor'])) {
-            $query->where('editors.name', 'like', '%' . $this->filters['editor'] . '%');
-        }
-    
-        if (!empty($this->filters['full_text'])) {
-            $query->where('letters.full_text', 'like', '%' . $this->filters['full_text'] . '%');
-        }
-    
-        // 🔹 **Apply Grouping**
-        $query->groupBy('letters.id');
-    
-        // 🔹 **Sorting**
-        $order = $this->sorting['order'] ?? 'updated_at';
-        $direction = $this->sorting['direction'] ?? 'desc';
+        $order = $this->sorting['order'] ?? 'updated_at'; // Default order
+        $direction = $this->sorting['direction'] ?? 'desc'; // Default direction
     
         switch ($order) {
             case 'author':
-                $query->orderBy('author_name', $direction);
+                $query->orderBy(
+                    DB::table("{$identityLetterTable}")
+                        ->select('name')
+                        ->join("{$identitiesTable}",
+                            "{$identityLetterTable}.identity_id", '=',
+                            "{$identitiesTable}.id"
+                        )
+                        ->where("{$identityLetterTable}.role", '=', 'author')
+                        ->whereColumn("{$identityLetterTable}.letter_id", "{$lettersTable}.id")
+                        ->limit(1),
+                    $direction
+                );
                 break;
             case 'recipient':
-                $query->orderBy('recipient_name', $direction);
+                $query->orderBy(
+                    DB::table("{$identityLetterTable}")
+                        ->select('name')
+                        ->join("{$identitiesTable}",
+                            "{$identityLetterTable}.identity_id", '=',
+                            "{$identitiesTable}.id"
+                        )
+                        ->where("{$identityLetterTable}.role", '=', 'recipient')
+                        ->whereColumn("{$identityLetterTable}.letter_id", "{$lettersTable}.id")
+                        ->limit(1),
+                    $direction
+                );
                 break;
             case 'origin':
-                $query->orderBy('origin_name', $direction);
+                $query->orderBy(
+                    DB::table("{$letterPlaceTable}")
+                        ->select('name')
+                        ->join("{$placesTable}",
+                            "{$letterPlaceTable}.place_id", '=',
+                            "{$placesTable}.id"
+                        )
+                        ->where("{$letterPlaceTable}.role", '=', 'origin')
+                        ->whereColumn("{$letterPlaceTable}.letter_id", "{$lettersTable}.id")
+                        ->limit(1),
+                    $direction
+                );
                 break;
             case 'destination':
-                $query->orderBy('destination_name', $direction);
-                break;
-            
-            case 'keyword':
-                $query->orderBy('keyword_name', $direction);
-                break;
+                $query->orderBy(
+                    DB::table("{$letterPlaceTable}")
+                        ->select('name')
+                        ->join("{$placesTable}",
+                            "{$letterPlaceTable}.place_id", '=',
+                            "{$placesTable}.id"
+                        )
+                        ->where("{$letterPlaceTable}.role", '=', 'destination')
+                        ->whereColumn("{$letterPlaceTable}.letter_id", "{$lettersTable}.id")
+                        ->limit(1),
+                    $direction
+                );
             case 'media':
-                if ($mediaTableExists) {
-                    $query->orderBy('media_count', $direction);
-                }
+                $query->orderBy(
+                    DB::table("{$tenantPrefix}media")
+                        ->selectRaw('count(*)')
+                        ->whereColumn("{$tenantPrefix}media.model_id", "{$lettersTable}.id")
+                        ->where("{$tenantPrefix}media.model_type", Letter::class),
+                    $direction
+                );
                 break;
             default:
-                $query->orderBy("letters.{$order}", $direction);
+                $query->orderBy($order, $direction); // Order by direct column
                 break;
         }
     
         return $query->paginate(25);
-    }    
+    }
 
     protected function formatTableData($data): array
     {
