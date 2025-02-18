@@ -36,7 +36,6 @@
                 'recipient' => __('hiko.by_recipient'),
                 'origin' => __('hiko.by_origin'),
                 'destination' => __('hiko.by_destination'),
-                'keyword' => __('hiko.by_keywords'),
                 'abstract' => __('hiko.by_abstract'),
                 'media' => __('hiko.by_media'),
             ]" />       
