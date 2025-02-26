@@ -111,6 +111,18 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('export', [LocationController::class, 'export'])
             ->name('locations.export')
             ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('/repository/search', [LocationController::class, 'searchRepository'])
+            ->name('locations.repository.search')
+            ->middleware(['auth', 'can:view-metadata']);
+
+        Route::get('/archive/search', [LocationController::class, 'searchArchive'])
+            ->name('locations.archive.search')
+            ->middleware(['auth', 'can:view-metadata']);
+            
+        Route::get('/collection/search', [LocationController::class, 'searchCollection'])
+            ->name('locations.collection.search')
+        ->middleware(['auth', 'can:view-metadata']);
     });
 
     Route::prefix('professions')->group(function () {

@@ -82,4 +82,43 @@ class LocationController extends Controller
     {
         return Excel::download(new LocationsExport, 'locations.xlsx');
     }
+
+    public function searchRepository(Request $request)
+    {
+        $search = $request->input('search');
+
+        $locations = Location::where('type', 'repository')
+                             ->where('name', 'like', '%' . $search . '%')
+                             ->orderBy('name')
+                             ->limit(10)
+                             ->get(['id', 'name as label', 'name as value']);
+
+        return response()->json($locations);
+    }
+
+    public function searchArchive(Request $request)
+    {
+        $search = $request->input('search');
+
+        $locations = Location::where('type', 'archive')
+                             ->where('name', 'like', '%' . $search . '%')
+                             ->orderBy('name')
+                             ->limit(10)
+                             ->get(['id', 'name as label', 'name as value']);
+
+        return response()->json($locations);
+    }
+
+    public function searchCollection(Request $request)
+    {
+        $search = $request->input('search');
+
+        $locations = Location::where('type', 'collection')
+                             ->where('name', 'like', '%' . $search . '%')
+                             ->orderBy('name')
+                             ->limit(10)
+                             ->get(['id', 'name as label', 'name as value']);
+
+        return response()->json($locations);
+    }
 }
