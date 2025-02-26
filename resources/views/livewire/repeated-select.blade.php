@@ -6,7 +6,8 @@
             <div class="text-red-600 text-sm rounded-md bg-red-50 p-2">{{ $message }}</div>
         @enderror
 
-        <div class="space-y-3">
+        @if (!empty($items))
+        <div>
             @foreach ($items as $index => $item)
                 <div wire:key="item-{{ $index }}" class="relative">
                     <div 
@@ -126,6 +127,7 @@
                 </div>
             @endforeach
         </div>
+        @endif
 
         <button 
             wire:click="addItem" 
