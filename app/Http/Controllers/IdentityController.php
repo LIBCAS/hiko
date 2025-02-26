@@ -14,6 +14,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Stancl\Tenancy\Facades\Tenancy;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class IdentityController extends Controller
 {
@@ -46,7 +47,7 @@ class IdentityController extends Controller
     {
         $identity = new Identity();
         $identity->related_names = [];
-    
+
         return view('pages.identities.form', [
             'title' => __('hiko.new_identity'),
             'method' => 'POST',
@@ -63,25 +64,25 @@ class IdentityController extends Controller
             'categoriesList' => $this->getCategoriesList(),
         ]);
     }
-    
+
     public function edit(Identity $identity)
     {
         // Log raw values before processing
         Log::info('Raw related_names:', ['related_names' => $identity->related_names]);
         Log::info('Raw related_identity_resources:', ['related_identity_resources' => $identity->related_identity_resources]);
-    
+
         // Ensure related_names is an array
         $identity->related_names = $this->ensureArray($identity->related_names, 'related_names');
-    
+
         // Ensure related_identity_resources is an array
         $identity->related_identity_resources = $this->ensureArray($identity->related_identity_resources, 'related_identity_resources');
-    
+
         // Log processed values
         Log::info('Processed related_names:', ['related_names' => $identity->related_names]);
         Log::info('Processed related_identity_resources:', ['related_identity_resources' => $identity->related_identity_resources]);
-    
+
         $hasLetters = $identity->letters()->exists();
-    
+
         return view('pages.identities.form', [
             'title' => __('hiko.identity') . ': ' . $identity->id,
             'method' => 'PUT',
@@ -100,7 +101,7 @@ class IdentityController extends Controller
             'relatedNames' => $identity->related_names,
         ]);
     }
-    
+
     /**
      * Helper method to ensure data is always returned as an array.
      */
@@ -108,28 +109,34 @@ class IdentityController extends Controller
     {
         if (is_string($data)) {
             $decodedData = json_decode($data, true);
-    
+
             if (isset($decodedData[$key]) && is_string($decodedData[$key])) {
                 return json_decode($decodedData[$key], true) ?? [];
             }
-    
+
             return is_array($decodedData) ? $decodedData : [];
         }
-    
+
         return is_array($data) ? $data : [];
     }
-    
+
     public function update(IdentityRequest $request, Identity $identity): RedirectResponse
     {
         $validated = $request->validated();
         $validated['related_names'] = json_encode($validated['related_names'] ?? []);
-    
+
         $identity->update($validated);
         $this->syncRelations($identity, $validated);
-    
-        return redirect()
-            ->route('identities.edit', $identity->id)
-            ->with('success', __('hiko.saved'));
+
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('identities.create')
+                ->with('success', __('hiko.saved_and_new'));
+        } else {
+            return redirect()
+                ->route('identities.edit', $identity->id)
+                ->with('success', __('hiko.saved'));
+        }
     }
 
     public function store(IdentityRequest $request): RedirectResponse
@@ -156,9 +163,15 @@ class IdentityController extends Controller
         // Sync professions and categories if provided
         $this->syncRelations($identity, $request->validated());
 
-        return redirect()
-            ->route('identities.edit', $identity->id)
-            ->with('success', __('hiko.saved'));
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('identities.create')
+                ->with('success', __('hiko.saved_and_new'));
+        } else {
+            return redirect()
+                ->route('identities.edit', $identity->id)
+                ->with('success', __('hiko.saved'));
+        }
     }
 
     public function destroy(Identity $identity): RedirectResponse
@@ -189,26 +202,26 @@ class IdentityController extends Controller
     {
         $localIds = [];
         $globalIds = [];
-    
+
         foreach ($professions as $professionId) {
             $isGlobal = str_starts_with($professionId, 'global-');
             $cleanProfessionId = (int) str_replace(['global-', 'local-'], '', $professionId);
-    
+
             if ($isGlobal) {
                 $globalIds[] = $cleanProfessionId;
             } else {
                 $localIds[] = $cleanProfessionId;
             }
         }
-    
+
         $tenantPivotTable = tenancy()->tenant->table_prefix . '__identity_profession';
-    
+
         DB::transaction(function () use ($identity, $localIds, $globalIds, $tenantPivotTable) {
             // Detach all local and global professions for this identity.
             DB::table($tenantPivotTable)
                 ->where('identity_id', $identity->id)
                 ->delete();
-    
+
             // Attach Local Professions
             $localProfessionData = collect($localIds)->map(function ($professionId) {
                 return [
@@ -217,12 +230,12 @@ class IdentityController extends Controller
                     'position' => null,
                 ];
             })->keyBy(fn($item) => $item['profession_id'])->toArray(); // Key by profession_id
-    
+
             if (!empty($localProfessionData)) {
                 // Attach using the keyed array
                 $identity->professions()->attach($localProfessionData);
             }
-    
+
             // Attach Global Professions
             $globalProfessionData = collect($globalIds)->map(function ($globalId) {
                 return [
@@ -231,13 +244,13 @@ class IdentityController extends Controller
                     'position' => null,
                 ];
             })->toArray();
-    
+
             if (!empty($globalProfessionData)) {
                 // Use insert for global professions
                 $insertData = collect($globalProfessionData)->map(function ($data) use ($identity) {
                     return array_merge(['identity_id' => $identity->id], $data);
                 })->toArray();
-    
+
                 DB::table($tenantPivotTable)->insert($insertData);
             }
         });
@@ -277,7 +290,7 @@ class IdentityController extends Controller
 
         return $selectedProfessions;
     }
-    
+
     protected function getProfessionsList(): array
     {
         $professions = [];
@@ -310,7 +323,7 @@ class IdentityController extends Controller
     protected function getCategoriesList(): array
     {
         $categories = [];
-    
+
         if (tenancy()->initialized && tenancy()->tenant) {
             $tenantTable = tenancy()->tenant->table_prefix . '__profession_categories';
             $categories = DB::table($tenantTable)->select('id', 'name')
@@ -332,12 +345,12 @@ class IdentityController extends Controller
 
         return $categories;
     }
-    
+
     protected function getSelectedCategories(Identity $identity): array
     {
         $selectedIds = old('profession_category', $identity->profession_categories->pluck('id')->toArray());
         $categories = [];
-    
+
         if (tenancy()->initialized && tenancy()->tenant) {
             $tenantTable = tenancy()->tenant->table_prefix . '__profession_categories';
             $categories = DB::table($tenantTable)->whereIn('id', $selectedIds)->get()->map(fn($category) => [
@@ -350,7 +363,7 @@ class IdentityController extends Controller
                 'label' => $category->getTranslation('name', config('app.locale')),
             ])->toArray();
         }
-    
+
         return $categories;
-    }    
+    }
 }
