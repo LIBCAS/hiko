@@ -94,7 +94,7 @@
                         {{ __('hiko.attached_persons_count') }}: {{ $professionCategory->identities->count() }}
                     </h2>
                     <ul class="list-disc px-3 py-3">
-                        @foreach ($professionCategory->identities as $identity)
+                        @foreach ($professionCategory->identities->sortBy('name') as $identity)
                             <li>
                                 <a href="{{ route('identities.edit', $identity->id) }}" class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">
                                     {{ $identity->name }}
@@ -113,7 +113,7 @@
                     {{ __('hiko.professions') }}: {{ $professionCategory->professions?->count() ?? 0 }}
                 </h2>
                 <ul class="list-disc p-3">
-                    @foreach ($professions as $profession)
+                    @foreach ($professionCategory->professions->sortBy('name') as $profession)
                         @if ($profession->identities->count() > 0)
                             <li>
                                 <a href="{{ route('global.professions.edit', $profession->id) }}" class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">

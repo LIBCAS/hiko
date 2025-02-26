@@ -189,36 +189,58 @@ class IdentityController extends Controller
     {
         $localIds = [];
         $globalIds = [];
-
+    
         foreach ($professions as $professionId) {
             $isGlobal = str_starts_with($professionId, 'global-');
             $cleanProfessionId = (int) str_replace(['global-', 'local-'], '', $professionId);
-
+    
             if ($isGlobal) {
-                Tenancy::central(function () use (&$globalIds, $cleanProfessionId) {
-                    if (GlobalProfession::find($cleanProfessionId)) {
-                        $globalIds[] = $cleanProfessionId;
-                    }
-                });
+                $globalIds[] = $cleanProfessionId;
             } else {
-                if (Profession::find($cleanProfessionId)) {
-                    $localIds[] = $cleanProfessionId;
-                }
+                $localIds[] = $cleanProfessionId;
             }
         }
-
+    
         $tenantPivotTable = tenancy()->tenant->table_prefix . '__identity_profession';
-        $identity->professions()->syncWithoutDetaching($localIds);
-        $identity->professions()->wherePivot('global_profession_id', '!=', null)->detach();
-
-        foreach ($globalIds as $globalId) {
-            DB::table($tenantPivotTable)->insertOrIgnore([
-                'identity_id' => $identity->id,
-                'profession_id' => null,
-                'global_profession_id' => $globalId,
-                'position' => null,
-            ]);
-        }
+    
+        DB::transaction(function () use ($identity, $localIds, $globalIds, $tenantPivotTable) {
+            // Detach all local and global professions for this identity.
+            DB::table($tenantPivotTable)
+                ->where('identity_id', $identity->id)
+                ->delete();
+    
+            // Attach Local Professions
+            $localProfessionData = collect($localIds)->map(function ($professionId) {
+                return [
+                    'profession_id' => $professionId,
+                    'global_profession_id' => null,  // Explicitly set to null
+                    'position' => null,
+                ];
+            })->keyBy(fn($item) => $item['profession_id'])->toArray(); // Key by profession_id
+    
+            if (!empty($localProfessionData)) {
+                // Attach using the keyed array
+                $identity->professions()->attach($localProfessionData);
+            }
+    
+            // Attach Global Professions
+            $globalProfessionData = collect($globalIds)->map(function ($globalId) {
+                return [
+                    'profession_id' => null, // Explicitly set to null
+                    'global_profession_id' => $globalId,
+                    'position' => null,
+                ];
+            })->toArray();
+    
+            if (!empty($globalProfessionData)) {
+                // Use insert for global professions
+                $insertData = collect($globalProfessionData)->map(function ($data) use ($identity) {
+                    return array_merge(['identity_id' => $identity->id], $data);
+                })->toArray();
+    
+                DB::table($tenantPivotTable)->insert($insertData);
+            }
+        });
     }
 
     protected function getTypes(): array

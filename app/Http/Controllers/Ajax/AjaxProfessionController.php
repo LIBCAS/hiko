@@ -22,14 +22,14 @@ class AjaxProfessionController extends Controller
         $search = Str::lower($request->query('search'));
         $results = [];
 
-        // Fetch local professions
-        $localProfessions = Profession::whereRaw('LOWER(name) like ?', ['%' . $search . '%'])
+        // Use accent-insensitive collation to match diacritics-insensitively
+        $localProfessions = Profession::whereRaw("LOWER(name) COLLATE utf8mb4_general_ci like ?", ['%' . $search . '%'])
             ->select('id', 'name')
             ->take(25)
             ->get()
             ->map(function ($profession) {
                 return [
-                    'id' => 'local-' . $profession->id,
+                    'id'    => 'local-' . $profession->id,
                     'value' => 'local-' . $profession->id,
                     'label' => "{$profession->name} (Local)",
                 ];
@@ -44,10 +44,10 @@ class AjaxProfessionController extends Controller
                 $dbVersion = DB::select("SELECT VERSION() AS version")[0]->version;
                 $isMariaDB = Str::contains(strtolower($dbVersion), 'mariadb');
 
-                // Use JSON_VALUE() for MariaDB, otherwise use MySQL's JSON path syntax
+                // Use COLLATE on the extracted JSON value
                 $jsonQuery = $isMariaDB
-                    ? "LOWER(JSON_VALUE(name, '$.en')) like ?"
-                    : "LOWER(JSON_UNQUOTE(name->'$.en')) like ?";
+                    ? "LOWER(JSON_VALUE(name, '$.en')) COLLATE utf8mb4_general_ci like ?"
+                    : "LOWER(JSON_UNQUOTE(name->'$.en')) COLLATE utf8mb4_general_ci like ?";
 
                 $globalProfessions = GlobalProfession::whereRaw($jsonQuery, ['%' . $search . '%'])
                     ->select('id', 'name')
@@ -55,7 +55,7 @@ class AjaxProfessionController extends Controller
                     ->get()
                     ->map(function ($profession) {
                         return [
-                            'id' => 'global-' . $profession->id,
+                            'id'    => 'global-' . $profession->id,
                             'value' => 'global-' . $profession->id,
                             'label' => "{$profession->name} (Global)",
                         ];

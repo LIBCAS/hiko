@@ -2,18 +2,18 @@
     <x-success-alert />
     <x-form-errors />
 
-    <form 
-        x-data="identityForm({ 
-            type: '{{ $identity->type ? $identity->type : 'person' }}', 
-            similarNamesUrl: '{{ route('ajax.identities.similar') }}', 
-            id: '{{ $identity->id }}', 
-            surname: '{{ $identity->surname }}', 
-            name: '{{ $identity->name }}', 
-            forename: '{{ $identity->forename }}' 
-        })" 
-        x-init="$watch('fullName', () => findSimilarNames($data))" 
-        action="{{ $action }}" 
-        method="post" 
+    <form
+        x-data="identityForm({
+            type: '{{ $identity->type ? $identity->type : 'person' }}',
+            similarNamesUrl: '{{ route('ajax.identities.similar') }}',
+            id: '{{ $identity->id }}',
+            surname: '{{ $identity->surname }}',
+            name: '{{ $identity->name }}',
+            forename: '{{ $identity->forename }}'
+        })"
+        x-init="$watch('fullName', () => findSimilarNames($data))"
+        action="{{ $action }}"
+        method="post"
         class="max-w-sm space-y-6"
     >
         @csrf
@@ -21,21 +21,21 @@
             @method($method)
         @endisset
 
-        <livewire:identity-form-switcher 
-            :types="$types" 
-            :identityType="$selectedType" 
-            :identity="$identity" 
+        <livewire:identity-form-switcher
+            :types="$types"
+            :identityType="$selectedType"
+            :identity="$identity"
             :selectedProfessions="$selectedProfessions"
-            :selectedCategories="$selectedCategories" 
+            :selectedCategories="$selectedCategories"
         />
 
         <livewire:related-identity-resources :resources="$identity->related_identity_resources" />
 
         <div>
             <x-label for="note" :value="__('hiko.note')" />
-            <x-textarea 
-                name="note" 
-                id="note" 
+            <x-textarea
+                name="note"
+                id="note"
                 class="block w-full mt-1"
             >{{ old('note', $identity->note) }}</x-textarea>
             @error('note')
@@ -58,11 +58,11 @@
 
     @can('delete-metadata')
         @if ($canRemove)
-            <form 
-                x-data="{ form: $el }" 
-                action="{{ route('identities.destroy', $identity->id) }}" 
-                method="post" 
-                class="w-full mt-8"
+            <form
+                x-data="{ form: $el }"
+                action="{{ route('identities.destroy', $identity->id) }}"
+                method="post"
+                class="max-w-sm space-y-6"
             >
                 @csrf
                 @method('DELETE')

@@ -1,10 +1,10 @@
 <div>
-    <fieldset id="a-related-name" class="p-3 space-y-3 rounded-md shadow" wire:loading.attr="disabled">
+    <fieldset id="a-related-name" class="p-4 space-y-3 bg-white rounded-lg shadow-md border border-gray-200" wire:loading.attr="disabled">
         <p class="text-lg font-semibold">
             {{ __('hiko.related_names') }}
         </p>
         @foreach ($related_names as $related_name)
-            <div wire:key="{{ $loop->index }}" class="p-3 space-y-6 bg-gray-200 shadow">
+            <div class="space-y-3" wire:key="{{ $loop->index }}">
                 <div>
                     <x-label for="related_name_surname-{{ $loop->index }}" :value="__('hiko.surname')" />
                     <x-input wire:model.live="related_names.{{ $loop->index }}.surname"
@@ -26,7 +26,10 @@
                 <x-button-trash wire:click="removeItem({{ $loop->index }})" />
             </div>
         @endforeach
-        <button wire:click="addItem" type="button" class="mb-3 text-sm font-bold text-primary hover:underline">
+        <button wire:click="addItem" type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full shadow-sm text-white bg-primary hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+            <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+            </svg>
             {{ __('hiko.add_new_item') }}
         </button>
     </fieldset>
