@@ -28,10 +28,20 @@ class AjaxPlaceController extends Controller
 
             // Format results for dropdown
             $formattedResults = $results->map(function ($place) {
+                $labelParts = [$place->name];
+
+                if (!empty($place->division)) {
+                    $labelParts[] = $place->division;
+                }
+
+                $labelParts[] = $place->country;
+
+                $label = implode(', ', array_filter($labelParts)); // Use array_filter to remove empty strings
+
                 return [
                     'id' => $place->id,
                     'value' => $place->id,
-                    'label' => "{$place->name}, {$place->division}, {$place->country}",
+                    'label' => $label,
                 ];
             });
 
