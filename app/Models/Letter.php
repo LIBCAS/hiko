@@ -210,30 +210,9 @@ class Letter extends Model implements HasMedia
         return $title;
     }
 
-    /**
-     * Определяет, какую модель медиа использовать.
-     * Если аренда активна, используется TenantMedia.
-     *
-     * @return string
-     */
     public function getMediaModel(): string
     {
         return TenantMedia::class;
-    }
-
-    public function scopeFilter($query, $filters)
-    {
-        $query->when(isset($filters['media']) && $filters['media'] !== '', function ($query) use ($filters) {
-            if ($filters['media'] === '1') {
-                $query->whereHas('media');
-            } else {
-                $query->whereDoesntHave('media');
-            }
-        });
-    
-        $query->when(isset($filters['id']) && $filters['id'] !== '', function ($query, $id) {
-            $query->where('letters.id', 'LIKE', "%{$id}%");
-        });
     }
     
     protected function formatDate($day, $month, $year): string
