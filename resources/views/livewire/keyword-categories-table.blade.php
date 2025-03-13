@@ -4,19 +4,19 @@
             <span class="block text-sm">
                 CS
             </span>
-            <x-input wire:model.live="filters.cs" class="block w-full px-2 text-sm lg:w-64" type="text" />
+            <x-input wire:model.defer="filters.cs" class="block w-full px-2 text-sm lg:w-64" type="text" />
         </label>
         <label>
             <span class="block text-sm">
                 EN
             </span>
-            <x-input wire:model.live="filters.en" class="block w-full px-2 text-sm lg:w-64" type="text" />
+            <x-input wire:model.defer="filters.en" class="block w-full px-2 text-sm lg:w-64" type="text" />
         </label>
         <label>
             <span class="block text-sm">
                 {{__('hiko.source')}}
             </span>
-            <x-select wire:model.live="filters.source" class="block w-full px-2 text-sm lg:w-36">
+            <x-select wire:model.defer="filters.source" class="block w-full px-2 text-sm lg:w-36">
                 <option value="all">*</option>
                 <option value="local">{{__('hiko.local')}}</option>
                 <option value="global">{{__('hiko.global')}}</option>
@@ -26,7 +26,7 @@
             <span class="block text-sm">
                 {{ __('hiko.order_by') }}
             </span>
-            <x-select wire:model.live="filters.order" class="w-full px-2 text-sm lg:w-24">
+            <x-select wire:model.defer="filters.order" class="w-full px-2 text-sm lg:w-24">
                 <option value="cs">CS</option>
                 <option value="en">EN</option>
             </x-select>

@@ -2,7 +2,7 @@
     <div class="space-y-6">
         <div>
             <x-label for="type" :value="__('hiko.type')" />
-            <x-select wire:model.live="identityType" id="type" class="block w-full mt-1" name="type" required>
+            <x-select wire:model.defer="identityType" id="type" class="block w-full mt-1" name="type" required>
                 @foreach ($types as $type)
                     <option value="{{ $type }}">
                         {{ __("hiko.{$type}") }}

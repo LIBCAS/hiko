@@ -6,7 +6,7 @@
                     <span class="block text-black">
                         {{ __('hiko.order_by') }}
                     </span>
-                    <x-select wire:model.live="sorting.order" class="text-sm">
+                    <x-select wire:model.defer="sorting.order" class="text-sm">
                         @foreach ($sortingOptions as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
@@ -18,11 +18,11 @@
                     </span>
                     <div class="flex flex-col">
                         <label class="inline-flex items-center">
-                            <x-radio name="direction" wire:model.live="sorting.direction" value="asc" />
+                            <x-radio name="direction" wire:model.defer="sorting.direction" value="asc" />
                             <span class="ml-2 text-black">{{ __('hiko.ascending') }}</span>
                         </label>
                         <label class="inline-flex items-center">
-                            <x-radio name="direction" wire:model.live="sorting.direction" value="desc" />
+                            <x-radio name="direction" wire:model.defer="sorting.direction" value="desc" />
                             <span class="ml-2 text-black">{{ __('hiko.descending') }}</span>
                         </label>
                     </div>

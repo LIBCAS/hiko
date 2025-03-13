@@ -7,19 +7,19 @@
             <div class="space-y-3" wire:key="{{ $loop->index }}">
                 <div>
                     <x-label for="related_name_surname-{{ $loop->index }}" :value="__('hiko.surname')" />
-                    <x-input wire:model.live="related_names.{{ $loop->index }}.surname"
+                    <x-input wire:model.defer="related_names.{{ $loop->index }}.surname"
                              name="related_names[{{ $loop->index }}][surname]" id="related_name_surname-{{ $loop->index }}"
                              :value="$related_name['surname'] ?? ''" class="block w-full mt-1" type="text" />
                 </div>
                 <div>
                     <x-label for="related_name_forename-{{ $loop->index }}" :value="__('hiko.forename')" />
-                    <x-input wire:model.live="related_names.{{ $loop->index }}.forename"
+                    <x-input wire:model.defer="related_names.{{ $loop->index }}.forename"
                              name="related_names[{{ $loop->index }}][forename]" id="related_name_forename-{{ $loop->index }}"
                              :value="$related_name['forename'] ?? ''" class="block w-full mt-1" type="text" />
                 </div>
                 <div>
                     <x-label for="related_name_general_name_modifier-{{ $loop->index }}" :value="__('hiko.general_name_modifier')" />
-                    <x-input wire:model.live="related_names.{{ $loop->index }}.general_name_modifier"
+                    <x-input wire:model.defer="related_names.{{ $loop->index }}.general_name_modifier"
                              name="related_names[{{ $loop->index }}][general_name_modifier]" id="related_name_general_name_modifier-{{ $loop->index }}"
                              :value="$related_name['general_name_modifier'] ?? ''" class="block w-full mt-1" type="text" />
                 </div>

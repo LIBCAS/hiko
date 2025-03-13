@@ -1,6 +1,6 @@
 <div>
     <div class="relative">
-        <x-input wire:model.live="search" class="block w-full mt-1" type="search" id="search-input" />
+        <x-input wire:model.defer="search" class="block w-full mt-1" type="search" id="search-input" />
         <x-icons.refresh wire:loading
             class="absolute top-0 right-0 h-5 mt-3 mr-4 text-primary-light motion-safe:animate-spin" />
         @if (strlen($search) >= 2)
