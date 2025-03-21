@@ -1,6 +1,7 @@
 <form wire:submit="search" wire:keydown.enter="search"
     class="flex flex-col flex-wrap w-full gap-4 p-3 my-8 rounded-lg bg-gray-200 shadow-sm items-center lg:flex-row">
     {{ $slot }}
+    <!--
     <x-button-simple type="button" wire:click="search" class="flex justify-center py-3 lg:justify-start">
         {{ __('hiko.search') }}
         <div wire:loading="search">
@@ -12,8 +13,8 @@
                 </path>
             </svg>
         </div>
-    </x-button-simple>
-    <button type="button" wire:click="resetFilters" class="flex justify-center p-2 mt-4 lg:justify-start text-red-700 focus:border-red-700" title="{{__('hiko.clear_filters')}}">
+    </x-button-simple>-->
+    <button type="button" wire:click="resetFilters" class="flex justify-center items-center p-2 mt-4 lg:justify-start text-red-700 focus:border-red-700" title="{{__('hiko.clear_filters')}}">
         <x-icons.x-circle class="w-6 h-6" />
     </button> 
 </form>

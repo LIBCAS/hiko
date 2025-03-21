@@ -26,7 +26,9 @@
     @endcan
 
     <!-- Table for displaying professions -->
-    <livewire:professions-table />
+    <div id="professions-wrapper">
+        <livewire:professions-table />
+    </div>
 
     <!-- Profession Categories Section -->
     @can('manage-metadata')
@@ -47,5 +49,7 @@
         </p>
     @endcannot
 
-    <livewire:profession-categories-table />
+    <div id="categories-wrapper">
+        <livewire:profession-categories-table />
+    </div>
 </x-app-layout>

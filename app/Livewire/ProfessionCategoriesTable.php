@@ -20,6 +20,33 @@ class ProfessionCategoriesTable extends Component
         'en' => '',
     ];
 
+    // Lets handle filter updates automatically
+    public function updatedFilters()
+    {
+        $this->resetPage();
+    }
+
+    // Specific methods for each filter (if needed)
+    public function updatedFiltersCs()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFiltersEn()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFiltersSource()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFiltersOrder()
+    {
+        $this->resetPage();
+    }
+
     public function search()
     {
         $this->resetPage();
@@ -108,11 +135,13 @@ class ProfessionCategoriesTable extends Component
         );
 
         if (!empty($filters['cs'])) {
-            $tenantCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"cs\"'))) LIKE ?", ["%{$filters['cs']}%"]);
+            $csFilter = strtolower($filters['cs']);
+            $tenantCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"cs\"'))) LIKE ?", ["%{$csFilter}%"]);
         }
 
         if (!empty($filters['en'])) {
-            $tenantCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"en\"'))) LIKE ?", ["%{$filters['en']}%"]);
+            $enFilter = strtolower($filters['en']);
+            $tenantCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"en\"'))) LIKE ?", ["%{$enFilter}%"]);
         }
 
         return $tenantCategories;
@@ -129,11 +158,13 @@ class ProfessionCategoriesTable extends Component
         );
 
         if (!empty($filters['cs'])) {
-            $globalCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"cs\"'))) LIKE ?", ["%{$filters['cs']}%"]);
+            $csFilter = strtolower($filters['cs']);
+            $globalCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"cs\"'))) LIKE ?", ["%{$csFilter}%"]);
         }
 
         if (!empty($filters['en'])) {
-            $globalCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"en\"'))) LIKE ?", ["%{$filters['en']}%"]);
+            $enFilter = strtolower($filters['en']);
+            $globalCategories->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"en\"'))) LIKE ?", ["%{$enFilter}%"]);
         }
 
         return $globalCategories;

@@ -4,17 +4,17 @@
         <legend class="font-semibold">{{ __('hiko.change_password') }}</legend>
         <div class="">
             <x-label for="current-password" value="{{ __('hiko.current_password') }}" />
-            <x-input wire:model.defer="currentPassword" id="current-password" class="block w-full mt-1" type="password"
+            <x-input wire:model.live="currentPassword" id="current-password" class="block w-full mt-1" type="password"
                 autocomplete="current-password" />
         </div>
         <div class="">
             <x-label for="new-password" value="{{ __('hiko.new_password') }}" />
-            <x-input wire:model.defer="newPassword" id="new-password" class="block w-full mt-1" type="password"
+            <x-input wire:model.live="newPassword" id="new-password" class="block w-full mt-1" type="password"
                 autocomplete="new-password" />
         </div>
         <div class="">
             <x-label for="new-password-confirm" value="{{ __('hiko.confirm_new_password') }}" />
-            <x-input wire:model.defer="newPasswordConfirm" id="new-password-confirm" class="block w-full mt-1" type="password"
+            <x-input wire:model.live="newPasswordConfirm" id="new-password-confirm" class="block w-full mt-1" type="password"
                 autocomplete="new-password" />
         </div>
         <x-button-simple class="w-full">

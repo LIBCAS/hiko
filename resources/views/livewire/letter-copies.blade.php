@@ -7,7 +7,7 @@
             <div class="p-3 space-y-6 bg-gray-200 shadow" wire:key="copy-item-{{ $index }}">
                 <div>
                     <x-label for="preservation_{{ $index }}" :value="__('hiko.preservation')" />
-                    <x-select wire:model.defer="copies.{{ $index }}.preservation"
+                    <x-select wire:model.live="copies.{{ $index }}.preservation"
                         name="copies[{{ $index }}][preservation]" id="preservation_{{ $index }}"
                         class="block w-full mt-1">
                         <option value="">
@@ -22,7 +22,7 @@
                 </div>
                 <div>
                     <x-label for="type_{{ $index }}" :value="__('hiko.doc_type')" />
-                    <x-select wire:model.defer="copies.{{ $index }}.type" id="type_{{ $index }}"
+                    <x-select wire:model.live="copies.{{ $index }}.type" id="type_{{ $index }}"
                         name="copies[{{ $index }}][type]" class="block w-full mt-1">
                         <option value="">
                             ---
@@ -36,7 +36,7 @@
                 </div>
                 <div>
                     <x-label for="copy_{{ $index }}" :value="__('hiko.doc_mode')" />
-                    <x-select wire:model.defer="copies.{{ $index }}.copy" id="doc_mode_{{ $index }}"
+                    <x-select wire:model.live="copies.{{ $index }}.copy" id="doc_mode_{{ $index }}"
                         name="copies[{{ $index }}][copy]" class="block w-full mt-1">
                         <option value="">
                             ---
@@ -50,14 +50,14 @@
                 </div>
                 <div>
                     <x-label for="manifestation_notes_{{ $index }}" :value="__('hiko.manifestation_notes')" />
-                    <x-textarea wire:model.defer="copies.{{ $index }}.manifestation_notes"
+                    <x-textarea wire:model.live="copies.{{ $index }}.manifestation_notes"
                         name="copies[{{ $index }}][manifestation_notes]"
                         id="manifestation_notes_{{ $index }}" class="block w-full mt-1">
                     </x-textarea>
                 </div>
                 <div>
                     <x-label for="l_number_{{ $index }}" :value="__('hiko.l_number')" />
-                    <x-input wire:model.defer="copies.{{ $index }}.l_number"
+                    <x-input wire:model.live="copies.{{ $index }}.l_number"
                         name="copies[{{ $index }}][l_number]" id="l_number_{{ $index }}"
                         class="block w-full mt-1" type="text" />
                 </div>
@@ -334,13 +334,13 @@
 
                 <div>
                     <x-label for="signature_{{ $index }}" :value="__('hiko.signature')" />
-                    <x-input wire:model.defer="copies.{{ $index }}.signature"
+                    <x-input wire:model.live="copies.{{ $index }}.signature"
                         name="copies[{{ $index }}][signature]" id="signature_{{ $index }}"
                         class="block w-full mt-1" type="text" />
                 </div>
                 <div>
                     <x-label for="location_note_{{ $index }}" :value="__('hiko.location_note')" />
-                    <x-textarea wire:model.defer="copies.{{ $index }}.location_note"
+                    <x-textarea wire:model.live="copies.{{ $index }}.location_note"
                         name="copies[{{ $index }}][location_note]" id="location_note_{{ $index }}"
                         class="block w-full mt-1">
                     </x-textarea>
