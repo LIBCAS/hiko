@@ -7,7 +7,7 @@
             <form 
                 x-data="similarItems({ 
                     similarNamesUrl: '{{ route('ajax.items.similar', ['model' => 'GlobalProfessionCategory']) }}', 
-                    id: '{{ $professionCategory->id }}' 
+                    id: '{{ $professionCategory->id ?? null }}' 
                 })" 
                 x-init="$watch('search', () => findSimilarNames($data))" 
                 action="{{ $action }}" 
@@ -66,7 +66,7 @@
             </form>
 
             <!-- Delete Button -->
-            @if ($professionCategory->id)
+            @if (isset($professionCategory) && $professionCategory->id)
                 @can('delete-metadata')
                     <form 
                         x-data="{ form: $el }" 
@@ -87,42 +87,108 @@
         </div>
 
         <!-- Related Identities Section -->
-        @if ($professionCategory->id)
+        @if (isset($professionCategory) && $professionCategory->id)
             <div class="max-w-sm bg-white p-6 shadow rounded-md">
-                @if ($professionCategory->identities?->count() > 0)
-                    <h2 class="text-l font-semibold">
-                        {{ __('hiko.attached_persons_count') }}: {{ $professionCategory->identities->count() }}
-                    </h2>
+                @php
+                    // Find all identities related to professions in this category across all tenants
+                    $relatedIdentities = collect();
+                    
+                    // First get all global professions in this category
+                    $globalProfessionIds = isset($professionCategory->professions) ? 
+                        $professionCategory->professions->pluck('id')->toArray() : [];
+                        
+                    if (!empty($globalProfessionIds)) {
+                        // Get all tenants with their domains
+                        $tenants = DB::table('tenants')
+                            ->leftJoin('domains', 'tenants.id', '=', 'domains.tenant_id')
+                            ->select('tenants.*', 'domains.domain')
+                            ->get();
+                        
+                        foreach ($tenants as $tenant) {
+                            $prefix = $tenant->table_prefix . '__';
+                            
+                            // Check if the table exists before querying
+                            $tableExists = DB::select("SHOW TABLES LIKE '{$prefix}identity_profession'");
+                            
+                            if (!empty($tableExists)) {
+                                // Check if global_profession_id column exists in this tenant's table
+                                $columnsQuery = DB::select("SHOW COLUMNS FROM `{$prefix}identity_profession` LIKE 'global_profession_id'");
+                                $hasGlobalProfessionId = !empty($columnsQuery);
+                                
+                                if ($hasGlobalProfessionId) {
+                                    // Get identities from this tenant related to our global professions
+                                    try {
+                                        $tenantIdentities = DB::table("{$prefix}identity_profession")
+                                            ->whereIn('global_profession_id', $globalProfessionIds)
+                                            ->join("{$prefix}identities", 'identity_id', '=', "{$prefix}identities.id")
+                                            ->select([
+                                                "{$prefix}identities.id",
+                                                "{$prefix}identities.name",
+                                                DB::raw("'{$tenant->name}' as tenant_name"),
+                                                DB::raw("'{$tenant->domain}' as tenant_domain")
+                                            ])
+                                            ->get();
+                                        
+                                        foreach ($tenantIdentities as $identity) {
+                                            $relatedIdentities->push($identity);
+                                        }
+                                    } catch (\Exception $e) {
+                                        // Log error but continue with other tenants
+                                        Log::error("Error querying tenant {$tenant->name}: " . $e->getMessage());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Sort identities by name
+                    $relatedIdentities = $relatedIdentities->sortBy('name');
+                @endphp
+                
+                <h2 class="text-l font-semibold">
+                    {{ __('hiko.attached_persons_count') }}: {{ $relatedIdentities->count() }}
+                </h2>
+                
+                @if($relatedIdentities->count() > 0)
                     <ul class="list-disc px-3 py-3">
-                        @foreach ($professionCategory->identities->sortBy('name') as $identity)
+                        @foreach ($relatedIdentities as $identity)
                             <li>
-                                <a href="{{ route('identities.edit', $identity->id) }}" class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">
+                                <a href="{{ isset($identity->tenant_domain) ? 'https://' . $identity->tenant_domain . '/identities/' . $identity->id . '/edit' : '#' }}" 
+                                   class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">
                                     {{ $identity->name }}
                                 </a>
                             </li>
                         @endforeach
                     </ul>
                 @else
-                    <h2 class="text-l font-semibold">{{ __('hiko.no_attached_persons') }}</h2>
+                    <p class="text-sm text-gray-500 mt-2">{{ __('hiko.no_attached_persons') }}</p>
                 @endif
             </div>
 
             <!-- Related Professions Section -->
             <div class="max-w-sm bg-white p-6 shadow rounded-md">
                 <h2 class="text-l font-semibold">
-                    {{ __('hiko.professions') }}: {{ $professionCategory->professions?->count() ?? 0 }}
+                    {{ __('hiko.professions') }}: {{ $professionCategory->professions ? $professionCategory->professions->count() : 0 }}
                 </h2>
-                <ul class="list-disc p-3">
-                    @foreach ($professionCategory->professions->sortBy('name') as $profession)
-                        @if ($profession->identities->count() > 0)
+                
+                @if(isset($professionCategory->professions) && $professionCategory->professions->count() > 0)
+                    <ul class="list-disc px-3 py-3">
+                        @foreach ($professionCategory->professions->sortBy(function($profession) {
+                            return $profession->getTranslation('name', 'cs', false) ?? 
+                                   $profession->getTranslation('name', 'en', false) ?? '';
+                        }) as $profession)
                             <li>
-                                <a href="{{ route('global.professions.edit', $profession->id) }}" class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">
-                                    {{ $profession->name }}
+                                <a href="{{ route('global.professions.edit', $profession->id) }}" 
+                                   class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">
+                                    {{ $profession->getTranslation('name', 'cs', false) ?? 
+                                       $profession->getTranslation('name', 'en', false) ?? __('hiko.no_name') }}
                                 </a>
                             </li>
-                        @endif
-                    @endforeach
-                </ul>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text-sm text-gray-500 mt-2">{{ __('hiko.no_attached_professions') }}</p>
+                @endif
             </div>
         @endif
     </div>

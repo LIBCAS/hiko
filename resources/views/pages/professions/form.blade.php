@@ -16,7 +16,7 @@
                 @endisset
                 <div>
                     <x-label for="cs" value="CS" />
-                    <x-input id="cs" class="block w-full mt-1" type="text" name="cs" :value="old('cs', $profession->translations['name']['cs'] ?? null)"
+                    <x-input id="cs" class="block w-full mt-1" type="text" name="cs" :value="old('cs', isset($profession) ? ($profession->translations['name']['cs'] ?? null) : null)"
                         x-on:change="search = $el.value" />
                     @error('cs')
                         <div class="text-red-600">{{ $message }}</div>
@@ -24,7 +24,7 @@
                 </div>
                 <div>
                     <x-label for="en" value="EN" />
-                    <x-input id="en" class="block w-full mt-1" type="text" name="en" :value="old('en', $profession->translations['name']['en'] ?? null)"
+                    <x-input id="en" class="block w-full mt-1" type="text" name="en" :value="old('en', isset($profession) ? ($profession->translations['name']['en'] ?? null) : null)"
                         x-on:change="search = $el.value" />
                     @error('en')
                         <div class="text-red-600">{{ $message }}</div>
@@ -44,7 +44,7 @@
                             @if ((tenancy()->initialized && $availableCategory instanceof \App\Models\ProfessionCategory) ||
                                 (!tenancy()->initialized && $availableCategory instanceof \App\Models\GlobalProfessionCategory))
                                 <option value="{{ $availableCategory->id }}" 
-                                    {{ old('category', $profession->profession_category_id ?? null) == $availableCategory->id ? 'selected' : '' }}>
+                                    {{ old('category', isset($profession) ? ($profession->profession_category_id ?? null) : null) == $availableCategory->id ? 'selected' : '' }}>
                                     {{ $availableCategory->getTranslation('name', app()->getLocale()) }}
                                 </option>
                             @endif
@@ -64,7 +64,7 @@
                 </x-button-inverted>
             </form>
 
-            @if ($profession->id)
+            @if (isset($profession) && $profession->id)
                 @can('delete-metadata')
                     <form x-data="{ form: $el }" action="{{ route('professions.destroy', $profession->id) }}" method="post"
                         class="w-full mt-8">
@@ -80,10 +80,10 @@
         </div>
 
         <!-- Right Side Panels -->
-        @if ($profession->id)
+        @if (isset($profession) && $profession->id)
             <!-- Identities Section -->
             <div class="max-w-sm bg-white p-6 shadow rounded-md">
-                @if ($profession->identities->count() > 0)
+                @if (isset($profession->identities) && $profession->identities->count() > 0)
                     <h2 class="text-l font-semibold">{{ __('hiko.attached_persons_count') }}: {{ $profession->identities->count() }}</h2>
                     <ul class="list-disc px-3 py-3">
                         @foreach ($profession->identities as $identity)
@@ -99,7 +99,7 @@
 
             <!-- Category Section -->
             <div class="max-w-sm bg-white p-6 shadow rounded-md">
-            @if ($profession->profession_category)
+            @if (isset($profession->profession_category) && $profession->profession_category)
                 <h2 class="text-l font-semibold">{{ __('hiko.attached_category') }}: 
                     <a href="{{ route('professions.category.edit', $profession->profession_category->id) }}" class="border-b-2 text-primary-dark border-primary-light hover:border-primary-dark">
                         {{ $profession->profession_category->getTranslation('name', app()->getLocale()) }}
@@ -109,6 +109,36 @@
                 <h2 class="text-l font-semibold">{{ __('hiko.no_attached_category') }}</h2>
             @endif
             </div>
+            
+            <!-- Global Profession Link (if exists) -->
+            @if (isset($profession->global_profession_id) && $profession->global_profession_id)
+                <div class="max-w-sm bg-white p-6 shadow rounded-md">
+                    <h2 class="text-l font-semibold">{{ __('hiko.global_profession') }}:</h2>
+                    @php
+                        $globalProfession = DB::table('global_professions')
+                            ->where('id', $profession->global_profession_id)
+                            ->first();
+                            
+                        if ($globalProfession) {
+                            $globalNameData = json_decode($globalProfession->name, true);
+                            $globalName = $globalNameData['cs'] ?? $globalNameData['en'] ?? __('hiko.unknown');
+                        }
+                    @endphp
+                    
+                    @if(isset($globalProfession))
+                        <div class="mt-2">
+                            <a href="{{ route('global.professions.edit', $profession->global_profession_id) }}" 
+                               class="text-sm border-b text-blue-600 border-blue-300 hover:border-blue-600">
+                                {{ $globalName }}
+                            </a>
+                        </div>
+                    @else
+                        <div class="mt-2 text-sm text-red-600">
+                            {{ __('hiko.invalid_global_link', ['id' => $profession->global_profession_id]) }}
+                        </div>
+                    @endif
+                </div>
+            @endif
         @endif
     </div>
 
