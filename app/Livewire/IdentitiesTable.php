@@ -155,7 +155,7 @@ class IdentitiesTable extends Component
     protected function formatTableData($data): array
     {
         return [
-            'header' => [__('hiko.name'), __('hiko.type'), __('hiko.dates'), __('hiko.related_names'), __('hiko.professions') . ' | ' . __('hiko.attached_category'), __('hiko.merge')],
+            'header' => [__('hiko.name'), __('hiko.type'), __('hiko.dates'), __('hiko.related_names'), __('hiko.professions') . ' | ' . __('hiko.attached_category')],
             'rows' => $data->map(function ($identity) {
                 // Format professions with their attached categories
                 $allProfessions = collect($identity->professions ?? [])
@@ -209,7 +209,6 @@ class IdentitiesTable extends Component
                     ['label' => $this->formatDates($identity)],
                     ['label' => $this->formatRelatedNames($identity->related_names)],
                     ['label' => $professionsHtml, 'isHtml' => true],
-                    ['label' => $identity->alternative_names ?? ''],
                 ];
             })->toArray(),
         ];

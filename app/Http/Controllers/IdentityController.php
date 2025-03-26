@@ -123,7 +123,7 @@ class IdentityController extends Controller
     public function update(IdentityRequest $request, Identity $identity): RedirectResponse
     {
         $validated = $request->validated();
-        $validated['related_names'] = json_encode($validated['related_names'] ?? []);
+        $validated['related_names'] = json_encode($validated['related_names'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         $identity->update($validated);
         $this->syncRelations($identity, $validated);
@@ -144,8 +144,8 @@ class IdentityController extends Controller
         $validated = $request->validated();
 
         // Convert array fields to JSON strings if necessary
-        $validated['related_names'] = json_encode($validated['related_names'] ?? []);
-        $validated['related_identity_resources'] = json_encode($validated['related_identity_resources'] ?? []);
+        $validated['related_names'] = json_encode($validated['related_names'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $validated['related_identity_resources'] = json_encode($validated['related_identity_resources'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         // Remove non-existent columns in the identities table
         unset($validated['category'], $validated['profession']);
@@ -202,59 +202,54 @@ class IdentityController extends Controller
     {
         $localIds = [];
         $globalIds = [];
-
+    
         foreach ($professions as $professionId) {
             $isGlobal = str_starts_with($professionId, 'global-');
-            $cleanProfessionId = (int) str_replace(['global-', 'local-'], '', $professionId);
-
+            $cleanId = (int) str_replace(['global-', 'local-'], '', $professionId);
+    
             if ($isGlobal) {
-                $globalIds[] = $cleanProfessionId;
+                $globalIds[] = $cleanId;
             } else {
-                $localIds[] = $cleanProfessionId;
+                $localIds[] = $cleanId;
             }
         }
-
+    
         $tenantPivotTable = tenancy()->tenant->table_prefix . '__identity_profession';
-
+    
         DB::transaction(function () use ($identity, $localIds, $globalIds, $tenantPivotTable) {
-            // Detach all local and global professions for this identity.
+            // 🧹 Remove all existing local & global professions
             DB::table($tenantPivotTable)
                 ->where('identity_id', $identity->id)
                 ->delete();
-
-            // Attach Local Professions
-            $localProfessionData = collect($localIds)->map(function ($professionId) {
-                return [
-                    'profession_id' => $professionId,
-                    'global_profession_id' => null,  // Explicitly set to null
-                    'position' => null,
-                ];
-            })->keyBy(fn($item) => $item['profession_id'])->toArray(); // Key by profession_id
-
-            if (!empty($localProfessionData)) {
-                // Attach using the keyed array
-                $identity->professions()->attach($localProfessionData);
-            }
-
-            // Attach Global Professions
-            $globalProfessionData = collect($globalIds)->map(function ($globalId) {
-                return [
-                    'profession_id' => null, // Explicitly set to null
-                    'global_profession_id' => $globalId,
-                    'position' => null,
-                ];
-            })->toArray();
-
-            if (!empty($globalProfessionData)) {
-                // Use insert for global professions
-                $insertData = collect($globalProfessionData)->map(function ($data) use ($identity) {
-                    return array_merge(['identity_id' => $identity->id], $data);
+    
+            // 🔗 Attach Local Professions
+            if (!empty($localIds)) {
+                $localData = collect($localIds)->mapWithKeys(function ($id) {
+                    return [$id => [
+                        'profession_id' => $id,
+                        'global_profession_id' => null,
+                        'position' => null,
+                    ]];
                 })->toArray();
-
-                DB::table($tenantPivotTable)->insert($insertData);
+    
+                $identity->professions()->attach($localData);
+            }
+    
+            // 🔗 Attach Global Professions (profession_id = null is now valid)
+            if (!empty($globalIds)) {
+                $globalData = collect($globalIds)->map(function ($id) use ($identity) {
+                    return [
+                        'identity_id' => $identity->id,
+                        'profession_id' => null,
+                        'global_profession_id' => $id,
+                        'position' => null,
+                    ];
+                })->toArray();
+    
+                DB::table($tenantPivotTable)->insert($globalData);
             }
         });
-    }
+    }    
 
     protected function getTypes(): array
     {
@@ -331,7 +326,7 @@ class IdentityController extends Controller
                 ->paginate(25)
                 ->map(fn($category) => [
                     'value' => $category->id,
-                    'label' => json_decode($category->name)->{config('app.locale')},
+                    'label' => json_decode($category->name, true)[config('app.locale')] ?? '—',
                 ])->toArray();
         } else {
             $categories = ProfessionCategory::select('id', 'name')

@@ -12,7 +12,10 @@ class PlacesTable extends Component
 
     public array $filters = [
         'order' => 'name',
-    ];
+        'name' => '',
+        'country' => '',
+        'note' => '',
+    ];    
 
     public function search()
     {
@@ -46,27 +49,34 @@ class PlacesTable extends Component
     protected function findPlaces()
     {
         $query = Place::select('id', 'name', 'division', 'latitude', 'longitude', 'country');
-
+    
         if (tenancy()->initialized) {
             $tenantPrefix = tenancy()->tenant->table_prefix;
             $query->from("{$tenantPrefix}__places");
         }
-
+    
         if (!empty($this->filters['name'])) {
             $query->where(function ($queryBuilder) {
                 $queryBuilder->where('name', 'like', '%' . $this->filters['name'] . '%')
                     ->orWhere('division', 'like', '%' . $this->filters['name'] . '%')
                     ->orWhere('country', 'like', '%' . $this->filters['name'] . '%');
-
-                // Dynamic JSON search
-                for ($i = 0; $i < 50; $i++) { // Limit to 50 alt. names
+    
+                for ($i = 0; $i < 50; $i++) {
                     $queryBuilder->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(alternative_names, '$[$i]')) LIKE ?", ["%{$this->filters['name']}%"]);
                 }
             });
         }
 
+        if (!empty($this->filters['country'])) {
+            $query->where('country', 'like', '%' . $this->filters['country'] . '%');
+        }
+    
+        if (!empty($this->filters['note'])) {
+            $query->where('note', 'like', '%' . $this->filters['note'] . '%');
+        }
+    
         return $query->orderBy($this->filters['order'])->paginate(25);
-    }
+    }    
 
     protected function formatTableData($data): array
     {
@@ -99,4 +109,4 @@ class PlacesTable extends Component
             })->toArray(),
         ];
     }
-}
+} 

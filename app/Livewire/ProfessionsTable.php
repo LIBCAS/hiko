@@ -49,7 +49,8 @@ class ProfessionsTable extends Component
         'mergeIdentities' => true,
         'preferGlobalCategories' => true, // Prefer global categories by default when merging
     ];
-    
+
+    public $categoryProfessions = [];
     public $availableGlobalProfessions = [];
     public $selectedProfessionOneDetails = null;
     public $selectedProfessionTwoDetails = null;
@@ -148,11 +149,23 @@ class ProfessionsTable extends Component
         // Filter global professions by search term if specified (for modal only)
         if ($this->globalProfessionSearch && !empty($globalProfessionsToDisplay)) {
             $search = strtolower($this->globalProfessionSearch);
+            
             $globalProfessionsToDisplay = array_filter($globalProfessionsToDisplay, function($p) use ($search) {
-                return strpos(strtolower($p['cs']), $search) !== false 
-                    || strpos(strtolower($p['en']), $search) !== false;
+                $cs = strtolower($p['cs']);
+                $en = strtolower($p['en']);
+                return Str::startsWith($cs, $search) || Str::startsWith($en, $search)
+                    || str_contains($cs, $search) || str_contains($en, $search);
             });
-        }
+        
+            // Re-sort after filtering
+            usort($globalProfessionsToDisplay, function($a, $b) use ($search) {
+                $aScore = (Str::startsWith(strtolower($a['cs']), $search) ? 2 : (str_contains(strtolower($a['cs']), $search) ? 1 : 0))
+                        + ($a['avgSimilarity'] ?? 0);
+                $bScore = (Str::startsWith(strtolower($b['cs']), $search) ? 2 : (str_contains(strtolower($b['cs']), $search) ? 1 : 0))
+                        + ($b['avgSimilarity'] ?? 0);
+                return $bScore <=> $aScore;
+            });
+        }        
     
         return view('livewire.professions-table', [
             'tableData'  => $this->formatTableData($professions),
@@ -430,6 +443,19 @@ class ProfessionsTable extends Component
         
         $this->isProcessing = true;
         
+        // Get the tenant's table prefix dynamically.
+        $tenant = DB::table('tenants')->where('id', tenancy()->tenant->id)->first();
+        if (!$tenant || empty($tenant->table_prefix)) {
+            $this->dispatch('alert', [
+                'type' => 'error',
+                'message' => __('Tenant prefix not found.')
+            ]);
+            $this->isProcessing = false;
+            return;
+        }
+
+        $tenantPrefix = $tenant->table_prefix . '__';
+        
         // Filter preview data to only include selected professions
         $selectedIds = [];
         foreach ($this->selectedProfessions as $jsonProf) {
@@ -463,6 +489,9 @@ class ProfessionsTable extends Component
             
             return $bAvgSimilarity <=> $aAvgSimilarity;
         });
+        
+        // Load professions for each category to display in tooltips
+        $this->categoryProfessions = $this->loadCategoryProfessions($tenantPrefix);
         
         // Update merge stats for the filtered selection
         $this->mergeStats = [
@@ -554,171 +583,177 @@ class ProfessionsTable extends Component
         DB::beginTransaction();
         try {
             foreach ($localProfessions as $local) {
-                $localNameArr = json_decode($local->name, true);
-                $csName = strtolower(trim($localNameArr['cs'] ?? ''));
-                $enName = strtolower(trim($localNameArr['en'] ?? ''));
-                Log::info("[mergeAllSelected] Checking Local Profession: CS='$csName', EN='$enName'");
+                try {
+                    $localNameArr = json_decode($local->name, true);
+                    $csName = strtolower(trim($localNameArr['cs'] ?? ''));
+                    $enName = strtolower(trim($localNameArr['en'] ?? ''));
+                    Log::info("[mergeAllSelected] Checking Local Profession: CS='$csName', EN='$enName'");
     
-                // Normalize available names.
-                $csNameNormalized = $csName ? Str::slug($csName) : '';
-                $enNameNormalized = $enName ? Str::slug($enName) : '';
+                    // Normalize available names.
+                    $csNameNormalized = $csName ? Str::slug($csName) : '';
+                    $enNameNormalized = $enName ? Str::slug($enName) : '';
     
-                // Find best matching global profession.
-                $globalMatch = null;
-                $bestSimilarity = 0;
+                    // Find best matching global profession.
+                    $globalMatch = null;
+                    $bestSimilarity = 0;
     
-                foreach ($globalProfessions as $global) {
-                    $globalNameArr = json_decode($global->name, true);
-                    $globalCsName = strtolower(trim($globalNameArr['cs'] ?? ''));
-                    $globalEnName = strtolower(trim($globalNameArr['en'] ?? ''));
+                    foreach ($globalProfessions as $global) {
+                        $globalNameArr = json_decode($global->name, true);
+                        $globalCsName = strtolower(trim($globalNameArr['cs'] ?? ''));
+                        $globalEnName = strtolower(trim($globalNameArr['en'] ?? ''));
     
-                    // Remove any "global" prefix if present.
-                    $globalCsStripped = preg_replace('/^global\s+/i', '', $globalCsName);
-                    $globalEnStripped = preg_replace('/^global\s+/i', '', $globalEnName);
+                        // Remove any "global" prefix if present.
+                        $globalCsStripped = preg_replace('/^global\s+/i', '', $globalCsName);
+                        $globalEnStripped = preg_replace('/^global\s+/i', '', $globalEnName);
     
-                    $globalCsNormalized = $globalCsStripped ? Str::slug($globalCsStripped) : '';
-                    $globalEnNormalized = $globalEnStripped ? Str::slug($globalEnStripped) : '';
+                        $globalCsNormalized = $globalCsStripped ? Str::slug($globalCsStripped) : '';
+                        $globalEnNormalized = $globalEnStripped ? Str::slug($globalEnStripped) : '';
     
-                    $csSimilarity = 0;
-                    $enSimilarity = 0;
-                    similar_text($csNameNormalized, $globalCsNormalized, $csSimilarity);
-                    similar_text($enNameNormalized, $globalEnNormalized, $enSimilarity);
+                        $csSimilarity = 0;
+                        $enSimilarity = 0;
+                        similar_text($csNameNormalized, $globalCsNormalized, $csSimilarity);
+                        similar_text($enNameNormalized, $globalEnNormalized, $enSimilarity);
     
-                    // Check merge criteria with threshold
-                    $csMatch = $csSimilarity > $this->similarityThreshold;
-                    $enMatch = $enSimilarity > $this->similarityThreshold;
+                        // Check merge criteria with threshold
+                        $csMatch = $csSimilarity > $this->similarityThreshold;
+                        $enMatch = $enSimilarity > $this->similarityThreshold;
     
-                    $csEmpty = empty($csNameNormalized) || empty($globalCsNormalized);
-                    $enEmpty = empty($enNameNormalized) || empty($globalEnNormalized);
+                        $csEmpty = empty($csNameNormalized) || empty($globalCsNormalized);
+                        $enEmpty = empty($enNameNormalized) || empty($globalEnNormalized);
     
-                    // Calculate average similarity for ranking
-                    $avgSimilarity = ($csSimilarity + $enSimilarity) / 2;
+                        // Calculate average similarity for ranking
+                        $avgSimilarity = ($csSimilarity + $enSimilarity) / 2;
     
-                    // Only merge if either language meets the threshold and it's the best match so far
-                    if ((($csMatch && $enMatch) || 
-                        ($csMatch && $enEmpty) || 
-                        ($enMatch && $csEmpty) ||
-                        (($csMatch || $enMatch) && !$csEmpty && !$enEmpty)) && 
-                        $avgSimilarity > $bestSimilarity) {
-                        $globalMatch = $global;
-                        $bestSimilarity = $avgSimilarity;
+                        // Only merge if either language meets the threshold and it's the best match so far
+                        if ((($csMatch && $enMatch) || 
+                            ($csMatch && $enEmpty) || 
+                            ($enMatch && $csEmpty) ||
+                            (($csMatch || $enMatch) && !$csEmpty && !$enEmpty)) && 
+                            $avgSimilarity > $bestSimilarity) {
+                            $globalMatch = $global;
+                            $bestSimilarity = $avgSimilarity;
+                        }
                     }
-                }
     
-                if ($globalMatch) {
-                    Log::info("[mergeAllSelected] Merging Local Profession '{$csName}' -> Global Profession ID {$globalMatch->id}");
+                    if ($globalMatch) {
+                        Log::info("[mergeAllSelected] Merging Local Profession '{$csName}' -> Global Profession ID {$globalMatch->id}");
     
-                    // IMPROVED CATEGORY HANDLING
-                    $localCategoryId = $local->profession_category_id;
-                    $globalCategoryId = $globalMatch->profession_category_id;
-                    $finalCategoryId = $globalCategoryId; // Default to keeping the global category
-                    
-                    // Handle categories based on mergeOptions setting
-                    if ($this->mergeOptions['mergeCategories']) {
-                        // If merging categories AND global profession already has a category, use that
-                        if ($globalCategoryId) {
+                        // IMPROVED CATEGORY HANDLING
+                        $localCategoryId = $local->profession_category_id;
+                        $globalCategoryId = $globalMatch->profession_category_id;
+                        $finalCategoryId = $globalCategoryId; // Default to keeping the global category
+                        
+                        // Handle categories based on mergeOptions setting
+                        if ($this->mergeOptions['mergeCategories']) {
+                            // If merging categories AND global profession already has a category, use that
+                            if ($globalCategoryId) {
+                                $finalCategoryId = $globalCategoryId;
+                                Log::info("[mergeAllSelected] Using existing global category ID: {$finalCategoryId}");
+                            } 
+                            // FIXED: If global has no category but local does AND preferGlobalCategories is true, 
+                            // do NOT create a new global category
+                            else if ($localCategoryId && $this->mergeOptions['preferGlobalCategories']) {
+                                // Keep the global profession uncategorized
+                                $finalCategoryId = null;
+                                Log::info("[mergeAllSelected] No global category and preferGlobalCategories=true, keeping global profession uncategorized");
+                            }
+                        } else {
+                            // Not merging categories - keep the global category as is
+                            Log::info("[mergeAllSelected] Category merging disabled, keeping global category");
                             $finalCategoryId = $globalCategoryId;
-                            Log::info("[mergeAllSelected] Using existing global category ID: {$finalCategoryId}");
-                        } 
-                        // If global has no category but local does, find or create appropriate global category
-                        else if ($localCategoryId) {
-                            // Get local category details
-                            $localCategory = DB::table("{$tenantPrefix}profession_categories")
-                                ->where('id', $localCategoryId)
+                        }
+                        
+                        // If we have determined a category, update the global profession if needed
+                        if ($finalCategoryId && $finalCategoryId != $globalMatch->profession_category_id) {
+                            DB::table("global_professions")
+                                ->where('id', $globalMatch->id)
+                                ->update([
+                                    'profession_category_id' => $finalCategoryId
+                                ]);
+                            Log::info("[mergeAllSelected] Updated global profession {$globalMatch->id} with category ID {$finalCategoryId}");
+                        }
+    
+                        // FIXED: Check for duplicate identity links when updating
+                        // Get identities linked to this local profession
+                        $linkedIdentities = DB::table("{$tenantPrefix}identity_profession")
+                            ->where('profession_id', $local->id)
+                            ->get();
+    
+                        foreach ($linkedIdentities as $identity) {
+                            // Check if this identity already has the global profession
+                            $existingGlobalLink = DB::table("{$tenantPrefix}identity_profession")
+                                ->where('identity_id', $identity->identity_id)
+                                ->where('global_profession_id', $globalMatch->id)
                                 ->first();
                                 
-                            if ($localCategory) {
-                                $localCatNameArr = json_decode($localCategory->name, true);
-                                
-                                // Check if a matching global category exists by either Czech or English name
-                                $matchingGlobalCategory = DB::table("global_profession_categories")
-                                    ->where(function($query) use ($localCatNameArr) {
-                                        // Match by Czech name
-                                        if (!empty($localCatNameArr['cs'])) {
-                                            $query->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) = ?", 
-                                                [strtolower($localCatNameArr['cs'])]);
-                                        }
-                                        // Match by English name
-                                        if (!empty($localCatNameArr['en'])) {
-                                            $query->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) = ?", 
-                                                [strtolower($localCatNameArr['en'])]);
-                                        }
-                                    })
-                                    ->first();
+                            if ($existingGlobalLink) {
+                                // If already linked to global, simply delete the local link
+                                DB::table("{$tenantPrefix}identity_profession")
+                                    ->where('identity_id', $identity->identity_id)
+                                    ->where('profession_id', $local->id)
+                                    ->delete();
                                     
-                                if ($matchingGlobalCategory) {
-                                    // Use the matching global category
-                                    $finalCategoryId = $matchingGlobalCategory->id;
-                                    Log::info("[mergeAllSelected] Using matching global category ID: {$finalCategoryId}");
-                                } else {
-                                    // Create a new global category since no match exists
-                                    $newGlobalCatId = DB::table("global_profession_categories")->insertGetId([
-                                        'name' => json_encode($localCatNameArr),
-                                        'created_at' => now(),
-                                        'updated_at' => now(),
+                                Log::info("[mergeAllSelected] Deleted duplicate link for identity {$identity->identity_id} - already had global profession {$globalMatch->id}");
+                            } else {
+                                // Otherwise update the local link to point to global
+                                DB::table("{$tenantPrefix}identity_profession")
+                                    ->where('identity_id', $identity->identity_id)
+                                    ->where('profession_id', $local->id)
+                                    ->update([
+                                        'global_profession_id' => $globalMatch->id,
+                                        'profession_id' => null, // Nullify local profession ID
                                     ]);
                                     
-                                    $finalCategoryId = $newGlobalCatId;
-                                    Log::info("[mergeAllSelected] Created new global category: {$newGlobalCatId}");
-                                }
+                                Log::info("[mergeAllSelected] Updated identity {$identity->identity_id} with global_profession_id {$globalMatch->id}");
                             }
                         }
+    
+                        // Delete the local profession record.
+                        DB::table("{$tenantPrefix}professions")->where('id', $local->id)->delete();
+                        $merged++;
                     } else {
-                        // Not merging categories - keep the global category as is
-                        Log::info("[mergeAllSelected] Category merging disabled, keeping global category");
+                        Log::warning("[mergeAllSelected] No global match found for '{$csName}' ({$enName}). Skipping.");
+                        $skipped++;
                     }
-                    
-                    // If we have determined a category, update the global profession if needed
-                    if ($finalCategoryId && $finalCategoryId != $globalMatch->profession_category_id) {
-                        DB::table("global_professions")
-                            ->where('id', $globalMatch->id)
-                            ->update([
-                                'profession_category_id' => $finalCategoryId
-                            ]);
-                        Log::info("[mergeAllSelected] Updated global profession {$globalMatch->id} with category ID {$finalCategoryId}");
-                    }
-    
-                    // Update pivot records in identity_profession table - KEEP ALL IDENTITIES ATTACHED
-                    $linkedIdentities = DB::table("{$tenantPrefix}identity_profession")
-                        ->where('profession_id', $local->id)
-                        ->get();
-    
-                    foreach ($linkedIdentities as $identity) {
-                        DB::table("{$tenantPrefix}identity_profession")
-                            ->where('identity_id', $identity->identity_id)
-                            ->where('profession_id', $local->id)
-                            ->update([
-                                'global_profession_id' => $globalMatch->id,
-                                'profession_id' => null, // Nullify local profession ID
-                            ]);
-                        Log::info("[mergeAllSelected] Updated identity {$identity->identity_id} with global_profession_id {$globalMatch->id}");
-                    }
-    
-                    // Delete the local profession record.
-                    DB::table("{$tenantPrefix}professions")->where('id', $local->id)->delete();
-                    $merged++;
-                } else {
-                    Log::warning("[mergeAllSelected] No global match found for '{$csName}' ({$enName}). Skipping.");
+                } catch (\Exception $e) {
+                    // Catch individual profession merge errors but continue with others
+                    Log::error("[mergeAllSelected] Error merging profession {$local->id}: " . $e->getMessage());
                     $skipped++;
+                    // Don't rethrow - continue with next profession
                 }
             }
     
-            // Validate pivot records before committing
-            $allUpdatedPivots = DB::table("{$tenantPrefix}identity_profession")
-                ->whereNotNull('global_profession_id')
-                ->whereNull('profession_id')
-                ->get();
+            // Only validate pivot records if we successfully merged some professions
+            if ($merged > 0) {
+                // Validate pivot records before committing
+                $allUpdatedPivots = DB::table("{$tenantPrefix}identity_profession")
+                    ->whereNotNull('global_profession_id')
+                    ->whereNull('profession_id')
+                    ->get();
     
-            $this->validatePivotUpdates($tenantPrefix, $allUpdatedPivots);
+                // Only validate if we have any updated pivots
+                if ($allUpdatedPivots->count() > 0) {
+                    $this->validatePivotUpdates($tenantPrefix, $allUpdatedPivots);
+                }
     
-            // Clean up orphaned categories
-            $this->cleanUpOrphanedCategories($tenantPrefix);
+                // Clean up orphaned categories
+                $this->cleanUpOrphanedCategories($tenantPrefix);
+            }
     
             DB::commit();
+            
+            $message = "";
+            if ($merged > 0) {
+                $message = "$merged " . __('professions successfully merged!');
+            }
+            if ($skipped > 0) {
+                $message .= " $skipped " . __('professions skipped.');
+            }
+            
             Log::info("[mergeAllSelected] Merge completed. Total merged professions: $merged, skipped: $skipped");
             $this->dispatch('alert', [
                 'type' => 'success',
-                'message' => "$merged " . __('professions successfully merged!') . " $skipped " . __('professions skipped.')
+                'message' => $message
             ]);
             
             // Clear selected professions after successful merge
@@ -803,7 +838,8 @@ class ProfessionsTable extends Component
     {
         $this->similarityThreshold = intval($value);
         $this->previewData = $this->generatePreviewData(); 
-        
+        $this->sortPreviewByBestMatch();
+
         // Update merge stats after changing threshold
         $this->mergeStats = [
             'total' => count($this->previewData),
@@ -995,7 +1031,27 @@ class ProfessionsTable extends Component
     public function previewMerge()
     {
         $this->isProcessing = true;
+        
+        // Get the tenant's table prefix dynamically.
+        $tenant = DB::table('tenants')->where('id', tenancy()->tenant->id)->first();
+        if (!$tenant || empty($tenant->table_prefix)) {
+            $this->dispatch('alert', [
+                'type' => 'error',
+                'message' => __('Tenant prefix not found.')
+            ]);
+            $this->isProcessing = false;
+            return;
+        }
+        
+        $tenantPrefix = $tenant->table_prefix . '__';
+        
+        // Generate preview data
         $this->previewData = $this->generatePreviewData();
+        $this->sortPreviewByBestMatch();
+        
+        // Load professions for each category to display in tooltips
+        $this->categoryProfessions = $this->loadCategoryProfessions($tenantPrefix);
+        
         $this->showPreview = true;
         $this->isProcessing = false;
     }
@@ -1121,19 +1177,24 @@ class ProfessionsTable extends Component
                 $global['categoryMatch'] = $categoryMatch;
             }
             
-            // **Sort Global Professions by Similarity and Category Match**
+            // Sort Global Professions by Similarity and Category Match
             usort($this->availableGlobalProfessions, function($a, $b) {
-                // Prioritize category matches
-                if ($a['categoryMatch'] && !$b['categoryMatch']) {
-                    return -1; // a comes first
-                }
-                if (!$a['categoryMatch'] && $b['categoryMatch']) {
-                    return 1; // b comes first
-                }
-                
-                // Sort by similarity score (descending)
+                // 1. Prioritize starts-with matches over contains
+                $prefix = strtolower(Str::slug($this->unmergedProfessions[array_search($this->selectedLocalProfession, array_column($this->unmergedProfessions, 'id'))]['cs'] ?? ''));
+            
+                $aStarts = Str::startsWith(strtolower(Str::slug($a['cs'])), $prefix);
+                $bStarts = Str::startsWith(strtolower(Str::slug($b['cs'])), $prefix);
+            
+                if ($aStarts && !$bStarts) return -1;
+                if (!$aStarts && $bStarts) return 1;
+            
+                // 2. Prioritize category match
+                if ($a['categoryMatch'] && !$b['categoryMatch']) return -1;
+                if (!$a['categoryMatch'] && $b['categoryMatch']) return 1;
+            
+                // 3. Fallback to similarity
                 return $b['avgSimilarity'] <=> $a['avgSimilarity'];
-            });
+            });            
         }
         
         $this->isProcessing = false;
@@ -1492,17 +1553,6 @@ class ProfessionsTable extends Component
                }
            }
    
-           // Update or transfer identities
-           $identityIds = array_column($targetProf['identities'], 'id');
-   
-           if ($this->mergeOptions['mergeIdentities']) {
-               foreach ($sourceProf['identities'] as $identity) {
-                   if (!in_array($identity['id'], $identityIds)) {
-                       $identityIds[] = $identity['id'];
-                   }
-               }
-           }
-   
            // Handle different merging scenarios
            if ($isTargetGlobal) {
                // Target is a global profession
@@ -1517,29 +1567,74 @@ class ProfessionsTable extends Component
                    ->where('id', $targetProf['id'])
                    ->update($updateData);
    
-               if ($sourceProf['source'] === 'local') {
-                   // Transfer all identity links from local to global
-                   DB::table("{$tenantPrefix}identity_profession")
-                       ->where('profession_id', $sourceProf['id'])
-                       ->update([
-                           'global_profession_id' => $targetProf['id'],
-                           'profession_id' => null,
-                       ]);
-   
-                   // Delete the local profession
-                   DB::table("{$tenantPrefix}professions")->where('id', $sourceProf['id'])->delete();
-                   
-                   // Check if the local category should be removed (if orphaned)
-                   if (!empty($sourceCategories) && $this->mergeOptions['mergeCategories']) {
-                       $this->cleanUpOrphanedCategories($tenantPrefix);
-                   }
+                // SOURCE IS LOCAL: Transfer identities from local to global
+                if ($sourceProf['source'] === 'local') {
+                    // FIXED: Check for duplicate identity links before transferring
+                    foreach ($sourceProf['identities'] as $identity) {
+                        // Check if this identity already has the target global profession
+                        $existingLink = DB::table("{$tenantPrefix}identity_profession")
+                            ->where('identity_id', $identity['id'])
+                            ->where('global_profession_id', $targetProf['id'])
+                            ->first();
+                        
+                        if ($existingLink) {
+                            // If already linked to global, simply delete the local link
+                            DB::table("{$tenantPrefix}identity_profession")
+                                ->where('identity_id', $identity['id'])
+                                ->where('profession_id', $sourceProf['id'])
+                                ->delete();
+                                
+                            Log::info("[mergeTwoProfessions] Deleted duplicate link for identity {$identity['id']} - already had global profession {$targetProf['id']}");
+                        } else {
+                            // Otherwise, update the local link to point to global
+                            DB::table("{$tenantPrefix}identity_profession")
+                                ->where('identity_id', $identity['id'])
+                                ->where('profession_id', $sourceProf['id'])
+                                ->update([
+                                    'global_profession_id' => $targetProf['id'],
+                                    'profession_id' => null,
+                                ]);
+                                
+                            Log::info("[mergeTwoProfessions] Updated identity {$identity['id']} link from local {$sourceProf['id']} to global {$targetProf['id']}");
+                        }
+                    }
+
+                    // Delete the local profession
+                    DB::table("{$tenantPrefix}professions")->where('id', $sourceProf['id'])->delete();
+                    
+                    // Check if the local category should be removed (if orphaned)
+                    if (!empty($sourceCategories) && $this->mergeOptions['mergeCategories']) {
+                        $this->cleanUpOrphanedCategories($tenantPrefix);
+                    }
                } else {
-                   // Both are global, merge identities
-                   DB::table("{$tenantPrefix}identity_profession")
-                       ->where('global_profession_id', $sourceProf['id'])
-                       ->update([
-                           'global_profession_id' => $targetProf['id'],
-                       ]);
+                   // BOTH ARE GLOBAL: merge identities
+                   foreach ($sourceProf['identities'] as $identity) {
+                       // Check if identity already has the target global profession
+                       $existingLink = DB::table("{$tenantPrefix}identity_profession")
+                           ->where('identity_id', $identity['id'])
+                           ->where('global_profession_id', $targetProf['id'])
+                           ->first();
+                           
+                       if (!$existingLink) {
+                           // Only update if not already linked to target
+                           DB::table("{$tenantPrefix}identity_profession")
+                               ->where('identity_id', $identity['id'])
+                               ->where('global_profession_id', $sourceProf['id'])
+                               ->update([
+                                   'global_profession_id' => $targetProf['id'],
+                               ]);
+                           
+                           Log::info("[mergeTwoProfessions] Updated identity {$identity['id']} from global {$sourceProf['id']} to global {$targetProf['id']}");
+                       } else {
+                           // Identity already has target global, remove link to source global
+                           DB::table("{$tenantPrefix}identity_profession")
+                               ->where('identity_id', $identity['id'])
+                               ->where('global_profession_id', $sourceProf['id'])
+                               ->delete();
+                               
+                           Log::info("[mergeTwoProfessions] Removed duplicate global profession {$sourceProf['id']} from identity {$identity['id']}");
+                       }
+                   }
    
                    // Mark source global profession as merged
                    DB::table("global_professions")
@@ -1562,12 +1657,34 @@ class ProfessionsTable extends Component
                        'profession_category_id' => $finalCategoryId,
                    ]);
    
-               // Update identity links
-               DB::table("{$tenantPrefix}identity_profession")
-                   ->where('profession_id', $sourceProf['id'])
-                   ->update([
-                       'profession_id' => $targetProf['id'],
-                   ]);
+               // FIXED: Handle identity merging with duplicate checks for local-to-local merges
+               foreach ($sourceProf['identities'] as $identity) {
+                   // Check if identity already has the target local profession
+                   $existingLink = DB::table("{$tenantPrefix}identity_profession")
+                       ->where('identity_id', $identity['id'])
+                       ->where('profession_id', $targetProf['id'])
+                       ->first();
+                       
+                   if (!$existingLink) {
+                       // If not already linked, update the link
+                       DB::table("{$tenantPrefix}identity_profession")
+                           ->where('identity_id', $identity['id'])
+                           ->where('profession_id', $sourceProf['id'])
+                           ->update([
+                               'profession_id' => $targetProf['id'],
+                           ]);
+                           
+                       Log::info("[mergeTwoProfessions] Updated identity {$identity['id']} from local {$sourceProf['id']} to local {$targetProf['id']}");
+                   } else {
+                       // If already linked, just delete the source link
+                       DB::table("{$tenantPrefix}identity_profession")
+                           ->where('identity_id', $identity['id'])
+                           ->where('profession_id', $sourceProf['id'])
+                           ->delete();
+                           
+                       Log::info("[mergeTwoProfessions] Removed duplicate local profession {$sourceProf['id']} from identity {$identity['id']}");
+                   }
+               }
    
                // Delete the source local profession
                DB::table("{$tenantPrefix}professions")->where('id', $sourceProf['id'])->delete();
@@ -1610,31 +1727,45 @@ class ProfessionsTable extends Component
 
    private function findOrCreateGlobalCategory($localCategoryId, $globalCategoryId, $tenantPrefix)
    {
+       // If preferGlobalCategories is true and a global category exists, keep it
        if ($this->mergeOptions['preferGlobalCategories'] && $globalCategoryId) {
            return $globalCategoryId;
+       }
+   
+       // FIXED: If preferGlobalCategories is true and no global category exists, 
+       // do NOT create a new one from local. Return null to keep global profession uncategorized
+       if ($this->mergeOptions['preferGlobalCategories'] && !$globalCategoryId) {
+           Log::info("[findOrCreateGlobalCategory] No global category exists and preferGlobalCategories=true, keeping global profession uncategorized");
+           return null;
        }
    
        if ($localCategoryId) {
            $localCategory = DB::table("{$tenantPrefix}profession_categories")->where('id', $localCategoryId)->first();
            if ($localCategory) {
-               $localCatName = json_decode($localCategory->name, true)['cs'] ?? '';
+               $localCatName = json_decode($localCategory->name, true);
    
+               // Check if a similar global category already exists
                $existingGlobalCategory = DB::table("global_profession_categories")
-                   ->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) = ?", [strtolower($localCatName)])
+                   ->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) = ?", [strtolower($localCatName['cs'] ?? '')])
                    ->first();
    
                if ($existingGlobalCategory) {
                    return $existingGlobalCategory->id;
                }
    
-               return DB::table("global_profession_categories")->insertGetId([
-                   'name' => json_encode($localCategory->name),
-                   'created_at' => now(),
-                   'updated_at' => now(),
-               ]);
+               // Only create if mergeCategories is true AND we're not preferring globals
+               if ($this->mergeOptions['mergeCategories'] && !$this->mergeOptions['preferGlobalCategories']) {
+                   // Create new global category based on local
+                   return DB::table("global_profession_categories")->insertGetId([
+                       'name' => json_encode($localCategory->name),
+                       'created_at' => now(),
+                       'updated_at' => now(),
+                   ]);
+               }
            }
        }
    
+       // Default to returning the original global category ID (which might be null)
        return $globalCategoryId;
    }
    
@@ -1937,44 +2068,22 @@ class ProfessionsTable extends Component
                         $finalCategoryId = null;
                         
                         if ($this->mergeOptions['preferGlobalCategories']) {
-                            // Prefer global category if available
+                            // FIXED: Prefer global category if available
                             if ($globalCategoryId) {
                                 $finalCategoryId = $globalCategoryId;
                                 Log::info("[mergeAll] Using global category ID: {$globalCategoryId}");
-                            } elseif ($localCategoryId) {
-                                // If no global category, try to find or create global equivalent
-                                $localCategory = DB::table("{$tenantPrefix}profession_categories")
-                                    ->where('id', $localCategoryId)
-                                    ->first();
-                                    
-                                if ($localCategory) {
-                                    $localCatNameArr = json_decode($localCategory->name, true);
-                                    
-                                    // Check if a similar global category exists
-                                    $similarGlobalCat = DB::table("global_profession_categories")
-                                        ->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) = ?", 
-                                            [strtolower($localCatNameArr['cs'] ?? '')])
-                                        ->first();
-                                        
-                                    if ($similarGlobalCat) {
-                                        // Use the similar global category
-                                        $finalCategoryId = $similarGlobalCat->id;
-                                        Log::info("[mergeAll] Found similar global category ID: {$finalCategoryId}");
-                                    } else {
-                                        // Create a new global category if none exists
-                                        $newGlobalCatId = DB::table("global_profession_categories")->insertGetId([
-                                            'name' => json_encode($localCatNameArr),
-                                            'created_at' => now(),
-                                            'updated_at' => now(),
-                                        ]);
-                                        
-                                        $finalCategoryId = $newGlobalCatId;
-                                        Log::info("[mergeAll] Created new global category ID: {$newGlobalCatId}");
-                                    }
-                                }
+                            } 
+                            // FIXED: If no global category and preferGlobalCategories=true, keep it uncategorized
+                            else {
+                                // Don't create a global category from the local one
+                                // Just keep it null (uncategorized)
+                                $finalCategoryId = null;
+                                Log::info("[mergeAll] No global category and preferGlobalCategories=true, keeping global profession uncategorized");
                             }
-                        } else if ($localCategoryId) {
-                            // Not preferring global but we still need a global category ID for global profession
+                        } 
+                        // Only if NOT preferring global categories
+                        else if ($localCategoryId) {
+                            // Not preferring global but we need a global category ID for global profession
                             // Try to find a matching global category or create one
                             $localCategory = DB::table("{$tenantPrefix}profession_categories")
                                 ->where('id', $localCategoryId)
@@ -2011,13 +2120,14 @@ class ProfessionsTable extends Component
                         }
                         
                         // Update the global profession's category if needed
-                        if ($finalCategoryId && $finalCategoryId != $globalMatch->profession_category_id) {
+                        if ($finalCategoryId != $globalMatch->profession_category_id) {
                             DB::table("global_professions")
                                 ->where('id', $globalMatch->id)
                                 ->update([
                                     'profession_category_id' => $finalCategoryId
                                 ]);
-                            Log::info("[mergeAll] Updated global profession {$globalMatch->id} with category ID {$finalCategoryId}");
+                            Log::info("[mergeAll] Updated global profession {$globalMatch->id} with category ID " . 
+                                ($finalCategoryId ? $finalCategoryId : "NULL (uncategorized)"));
                         }
                     }
     
@@ -2078,5 +2188,41 @@ class ProfessionsTable extends Component
     
         $this->isProcessing = false;
         $this->dispatch('refreshTable'); // Refresh the UI after merge.
+    }
+    
+    /**
+     * Load professions for each category to be displayed in tooltips
+     */
+    private function loadCategoryProfessions($tenantPrefix) 
+    {
+        // Get all local categories that are used in the preview
+        $categoryIds = array_unique(array_filter(array_column($this->previewData, 'localCategoryId')));
+        
+        if (empty($categoryIds)) {
+            return [];
+        }
+        
+        $result = [];
+        
+        // For each category, fetch up to 10 professions to display in the tooltip
+        foreach ($categoryIds as $categoryId) {
+            $professions = DB::table("{$tenantPrefix}professions")
+                ->where('profession_category_id', $categoryId)
+                ->limit(10) // Limit to prevent too many entries
+                ->get();
+                
+            $result[$categoryId] = [];
+            
+            foreach ($professions as $prof) {
+                $nameArr = json_decode($prof->name, true);
+                $result[$categoryId][] = [
+                    'id' => $prof->id,
+                    'cs' => $nameArr['cs'] ?? __('hiko.no_cs_name'),
+                    'en' => $nameArr['en'] ?? __('hiko.no_en_name'),
+                ];
+            }
+        }
+        
+        return $result;
     }
 }
