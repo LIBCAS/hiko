@@ -131,8 +131,7 @@
                         @enderror
                     </div>
                     <div>
-                        <x-checkbox name="date_uncertain" label="{{ __('hiko.date_uncertain') }}"
-                            :checked="boolval(old('date_uncertain', $letter->date_uncertain))" />
+                        <x-checkbox name="date_uncertain" label="{{ __('hiko.date_uncertain') }}" :checked="boolval(old('date_uncertain', $letter->date_uncertain))" />
                     </div>
                     <div>
                         <x-checkbox name="date_approximate" label="{{ __('hiko.date_approximate') }}"
@@ -158,8 +157,9 @@
                             </div>
                             <div x-show="isRange">
                                 <x-label for="range_month" :value="__('hiko.month') . ' 2'" />
-                                <x-input id="range_month" class="block w-full mt-1" type="text" name="range_month"
-                                    :value="old('range_month', $letter->range_month)" min="0" max="12" type="number" />
+                                <x-input id="range_month" class="block w-full mt-1" type="text"
+                                    name="range_month" :value="old('range_month', $letter->range_month)" min="0" max="12"
+                                    type="number" />
                                 @error('range_month')
                                     <div class="text-red-600">{{ $message }}</div>
                                 @enderror
@@ -322,10 +322,8 @@
                     </div>
                     <div>
                         <x-label for="keywords" :value="__('hiko.keywords')" />
-                        <x-select name="keywords[]" class="block w-full mt-1" id="keywords"
-                            x-data="ajaxChoices({ url: '{{ route('ajax.keywords') }}', element: $el })"
-                            x-init="initSelect()" 
-                            multiple>
+                        <x-select name="keywords[]" class="block w-full mt-1" id="keywords" x-data="ajaxChoices({ url: '{{ route('ajax.keywords') }}', element: $el })"
+                            x-init="initSelect()" multiple>
                             @foreach ($selectedKeywords as $kw)
                                 <option value="{{ $kw['value'] }}" selected>{{ $kw['label'] }}</option>
                             @endforeach
@@ -373,11 +371,8 @@
                     </div>
                     <div>
                         <x-label for="mentioned" :value="__('hiko.mentioned')" />
-                        <x-select name="mentioned[]" class="block w-full mt-1" id="mentioned" 
-                                x-data="ajaxChoices({ url: '{{ route('ajax.identities') }}', element: $el })"
-                                x-init="initSelect()" 
-                                multiple 
-                                @input.debounce.500ms="search">
+                        <x-select name="mentioned[]" class="block w-full mt-1" id="mentioned"
+                            x-data="ajaxChoices({ url: '{{ route('ajax.identities') }}', element: $el })" x-init="initSelect()" multiple @input.debounce.500ms="search">
                             @foreach ($selectedMentioned as $mention)
                                 <option value="{{ $mention['value'] }}" selected>{{ $mention['label'] }}</option>
                             @endforeach
@@ -389,7 +384,8 @@
                     </div>
                     <div>
                         <x-label for="people_mentioned_note" :value="__('hiko.people_mentioned_note')" />
-                        <x-textarea name="people_mentioned_note" id="people_mentioned_note" class="block w-full mt-1">
+                        <x-textarea name="people_mentioned_note" id="people_mentioned_note"
+                            class="block w-full mt-1">
                             {{ old('people_mentioned_note', $letter->people_mentioned_note) }}
                         </x-textarea>
                         @error('people_mentioned_note')
@@ -440,8 +436,8 @@
                         {{ __('hiko.status') }}
                     </legend>
                     <div>
-                        <x-radio name="status" label="{{ __('hiko.draft_letter') }}" value="draft" :checked="old('status', $letter->status) === 'draft'"
-                            name="status" required />
+                        <x-radio name="status" label="{{ __('hiko.draft_letter') }}" value="draft"
+                            :checked="old('status', $letter->status) === 'draft'" name="status" required />
                     </div>
                     <div>
                         <x-radio name="status" label="{{ __('hiko.published_letter') }}" value="publish"
@@ -452,46 +448,39 @@
                     @enderror
                 </fieldset>
                 @can('delete-metadata')
-                <fieldset id="a-approval" class="p-3 shadow mt-4">
-                    <legend class="text-lg font-semibold">
-                        Schválení
-                    </legend>
-                    <div>
-                        <label class="inline-flex items-center">
-                            <input 
-                                type="radio" 
-                                name="approval" 
-                                value="1" 
-                                {{ old('approval', $letter->approval) == 1 ? 'checked' : '' }} 
-                                class="border-gray-300 shadow-sm text-primary focus:border-primary-light focus:ring focus:ring-primary-light focus:ring-opacity-50" 
-                                required
-                            >
-                            <span class="ml-2 text-sm text-gray-600">Schváleno</span>
-                        </label>
-                    </div>
-                    <div>
-                        <label class="inline-flex items-center">
-                            <input 
-                                type="radio" 
-                                name="approval" 
-                                value="0" 
-                                {{ old('approval', $letter->approval) == 0 ? 'checked' : '' }} 
-                                class="border-gray-300 shadow-sm text-primary focus:border-primary-light focus:ring focus:ring-primary-light focus:ring-opacity-50" 
-                                required
-                            >
-                            <span class="ml-2 text-sm text-gray-600">Neschváleno</span>
-                        </label>
-                    </div>
-                    @error('approval')
-                        <div class="text-red-600">{{ $message }}</div>
-                    @enderror
-                </fieldset>
+                    <fieldset id="a-approval" class="p-3 shadow mt-4">
+                        <legend class="text-lg font-semibold">
+                            Schválení
+                        </legend>
+                        <div>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="approval" value="1"
+                                    {{ old('approval', $letter->approval) == 1 ? 'checked' : '' }}
+                                    class="border-gray-300 shadow-sm text-primary focus:border-primary-light focus:ring focus:ring-primary-light focus:ring-opacity-50"
+                                    required>
+                                <span class="ml-2 text-sm text-gray-600">Schváleno</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="approval" value="0"
+                                    {{ old('approval', $letter->approval) == 0 ? 'checked' : '' }}
+                                    class="border-gray-300 shadow-sm text-primary focus:border-primary-light focus:ring focus:ring-primary-light focus:ring-opacity-50"
+                                    required>
+                                <span class="ml-2 text-sm text-gray-600">Neschváleno</span>
+                            </label>
+                        </div>
+                        @error('approval')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </fieldset>
                 @endcan
                 <div class="h-1"></div>
                 <x-button-simple class="w-full" onclick="preventLeaving = false" name="action" value="edit">
                     {{ $label }}
                 </x-button-simple>
-                <x-button-inverted class="w-full text-black bg-white" onclick="preventLeaving = false" name="action" value="create">
+                <x-button-inverted class="w-full text-black bg-white" onclick="preventLeaving = false" name="action"
+                    value="create">
                     {{ $label }} {{ __('hiko.and_create_new') }}
                 </x-button-inverted>
             </form>
@@ -512,73 +501,205 @@
         <div class="md:w-1/2"> <livewire:ocr-upload /></div>
     </div>
     @push('scripts')
-        @production
-            <script>
-                var preventLeaving = true;
-                window.onbeforeunload = function(e) {
-                    if (preventLeaving) {
-                        return '{{ __('hiko.confirm_leave') }}'
-                    }
+        <script>
+            // Form changes tracker
+            document.addEventListener('DOMContentLoaded', function() {
+                // Define variables
+                var formChanged = false;
+                var confirmLeaveMessage = '{{ __('hiko.confirm_leave') }}';
+
+                // Function to mark form as changed
+                function markFormAsChanged() {
+                    formChanged = true;
                 }
 
-                // Add a debounce function
-                function debounce(func, wait, immediate) {
-                  var timeout;
-                  return function() {
-                    var context = this, args = arguments;
+                // Function to mark form as saved/unchanged
+                function markFormAsUnchanged() {
+                    formChanged = false;
+                }
+
+                // Get all forms on the page
+                const forms = document.querySelectorAll('form');
+                forms.forEach(form => {
+                    // Standard inputs, textareas, selects
+                    const formElements = form.querySelectorAll('input, textarea, select');
+                    formElements.forEach(element => {
+                        // Different event listeners based on element type
+                        if (element.type === 'text' || element.type === 'password' || element.type ===
+                            'email' ||
+                            element.type === 'number' || element.type === 'search' || element.type ===
+                            'tel' ||
+                            element.type === 'url' || element.tagName === 'TEXTAREA') {
+                            element.addEventListener('input', markFormAsChanged);
+                            element.addEventListener('change', markFormAsChanged);
+                        } else if (element.type === 'checkbox' || element.type === 'radio') {
+                            element.addEventListener('change', markFormAsChanged);
+                        } else if (element.tagName === 'SELECT') {
+                            element.addEventListener('change', markFormAsChanged);
+
+                            // For select elements that might be using Choices.js
+                            if (element.classList.contains('choices__input') ||
+                                element.parentElement?.classList.contains('choices')) {
+                                // Try to find related Choices container and listen for mutations
+                                const choicesContainer = element.closest('.choices');
+                                if (choicesContainer) {
+                                    const observer = new MutationObserver(markFormAsChanged);
+                                    observer.observe(choicesContainer, {
+                                        childList: true,
+                                        subtree: true
+                                    });
+                                }
+                            }
+                        }
+                    });
+
+                    // Add listener for form submission
+                    form.addEventListener('submit', markFormAsUnchanged);
+                });
+
+                // Handle buttons that should bypass the warning
+                // Save buttons
+                const saveButtons = document.querySelectorAll(
+                    'button[type="submit"], input[type="submit"], [name="action"]');
+                saveButtons.forEach(button => {
+                    button.addEventListener('click', markFormAsUnchanged);
+                });
+
+                // Delete/cancel buttons
+                const specialButtons = document.querySelectorAll(
+                    '.btn-danger, [x-on\\:click*="confirm"], [data-no-confirm]');
+                specialButtons.forEach(button => {
+                    button.addEventListener('click', markFormAsUnchanged);
+                });
+
+                // Alpine.js driven elements
+                document.addEventListener('change', function(e) {
+                    // Target is within a form and has x-model attribute
+                    if (e.target.closest('form') && (e.target.hasAttribute('x-model') ||
+                            e.target.hasAttribute(':value') ||
+                            e.target.hasAttribute('x-bind:value'))) {
+                        markFormAsChanged();
+                    }
+                });
+
+                // Listen for Alpine.js initialization
+                document.addEventListener('alpine:initialized', function() {
+                    // Find all Alpine-powered elements within forms
+                    const alpineElements = document.querySelectorAll(
+                        'form [x-data], form [x-model], form [x-bind], form [x-on\\:input]');
+                    alpineElements.forEach(el => {
+                        // For elements with x-model
+                        if (el.hasAttribute('x-model')) {
+                            el.addEventListener('input', markFormAsChanged);
+                            el.addEventListener('change', markFormAsChanged);
+                        }
+
+                        // For elements with x-data (might contain reactive elements)
+                        if (el.hasAttribute('x-data')) {
+                            const observer = new MutationObserver(function(mutations) {
+                                mutations.forEach(function(mutation) {
+                                    if (mutation.type === 'attributes' || mutation
+                                        .type === 'childList') {
+                                        markFormAsChanged();
+                                    }
+                                });
+                            });
+
+                            observer.observe(el, {
+                                attributes: true,
+                                childList: true,
+                                subtree: true
+                            });
+                        }
+                    });
+                });
+
+                // Set up the beforeunload event
+                window.onbeforeunload = function(e) {
+                    if (formChanged) {
+                        return confirmLeaveMessage;
+                    }
+                };
+
+                // Expose functions globally for programmatic control
+                window.formTracker = {
+                    markChanged: markFormAsChanged,
+                    markUnchanged: markFormAsUnchanged,
+                    isChanged: () => formChanged
+                };
+
+                // For iframes in modals (keeping this functionality)
+                var iframes = document.querySelectorAll('iframe');
+                iframes.forEach(function(iframe) {
+                    iframe.addEventListener('load', function() {
+                        try {
+                            var iframeContent = iframe.contentDocument || iframe.contentWindow.document;
+                            var header = iframeContent.querySelector('header');
+                            var footer = iframeContent.querySelector('footer');
+                            if (header) header.style.display = 'none';
+                            if (footer) footer.style.display = 'none';
+                        } catch (error) {
+                            console.warn('Unable to access iframe content:', error);
+                        }
+                    });
+                });
+            });
+
+            // Keep the debounce function
+            function debounce(func, wait, immediate) {
+                var timeout;
+                return function() {
+                    var context = this,
+                        args = arguments;
                     var later = function() {
-                      timeout = null;
-                      if (!immediate) func.apply(context, args);
+                        timeout = null;
+                        if (!immediate) func.apply(context, args);
                     };
                     var callNow = immediate && !timeout;
                     clearTimeout(timeout);
                     timeout = setTimeout(later, wait);
                     if (callNow) func.apply(context, args);
-                  };
-                }
+                };
+            }
+            // Use debounce with the AJAX request
+            var searchInput = document.getElementById('mentioned');
+            searchInput.addEventListener('input', debounce(function(e) {
+                // Make AJAX request here
+            }, 500));
 
-                // Use debounce with the AJAX request
-                var searchInput = document.getElementById('mentioned');
-                searchInput.addEventListener('input', debounce(function(e) {
-                  // Make AJAX request here
-                }, 500));
+            // Hide header and footer in modals
+            function hideHeaderFooterInIframe() {
+                var modals = document.querySelectorAll('.modal-window');
+                modals.forEach(function(modal) {
+                    var iframe = modal.querySelector('iframe');
+                    if (iframe) {
+                        var iframeContent = iframe.contentDocument || iframe.contentWindow.document;
+                        var header = iframeContent.querySelector('header');
+                        var footer = iframeContent.querySelector('footer');
 
-            </script>
-        @endproduction
-            <script>
-                // Hide header and footer in modals
-                function hideHeaderFooterInIframe() {
-                    var modals = document.querySelectorAll('.modal-window');
-                    modals.forEach(function(modal) {
-                        var iframe = modal.querySelector('iframe');
-                        if (iframe) {
-                            var iframeContent = iframe.contentDocument || iframe.contentWindow.document;
-                            var header = iframeContent.querySelector('header');
-                            var footer = iframeContent.querySelector('footer');
-
-                            if (header) {
-                                header.style.display = 'none';
-                            }
-
-                            if (footer) {
-                                footer.style.display = 'none';
-                            }
+                        if (header) {
+                            header.style.display = 'none';
                         }
-                    });
-                }
 
-                // Function to handle iframe content load
-                function handleIframeLoad() {
-                    hideHeaderFooterInIframe();
-                }
-
-                // Listen for iframe load event and handle it
-                document.addEventListener('DOMContentLoaded', function() {
-                    var iframes = document.querySelectorAll('iframe');
-                    iframes.forEach(function(iframe) {
-                        iframe.addEventListener('load', handleIframeLoad);
-                    });
+                        if (footer) {
+                            footer.style.display = 'none';
+                        }
+                    }
                 });
-            </script>
+            }
+
+            // Function to handle iframe content load
+            function handleIframeLoad() {
+                hideHeaderFooterInIframe();
+            }
+
+            // Listen for iframe load event and handle it
+            document.addEventListener('DOMContentLoaded', function() {
+                var iframes = document.querySelectorAll('iframe');
+                iframes.forEach(function(iframe) {
+                    iframe.addEventListener('load', handleIframeLoad);
+                });
+            });
+        </script>
     @endpush
 </x-app-layout>
