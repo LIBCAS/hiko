@@ -3,62 +3,74 @@
 namespace App\Livewire;
 
 use App\Models\Letter;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Stancl\Tenancy\Middleware\InitializeTenancyByRequestData;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class LettersTable extends Component
 {
     use WithPagination;
 
-    protected $middleware = [
-        InitializeTenancyByRequestData::class
-    ];
-
     public array $filters = [];
-    public array $sorting = [
-        'order' => 'updated_at',
-        'direction' => 'desc',
-    ];
+    public array $sorting = ['order' => 'updated_at', 'direction' => 'desc'];
 
     protected $listeners = ['filtersChanged', 'sortingChanged', 'removeFilter', 'resetLettersTablePage'];
 
+    protected array $allowedFilters = [
+        'id', 'signature', 'author', 'recipient',
+        'origin', 'destination', 'repository', 'archive', 'collection',
+        'keyword', 'mentioned', 'fulltext', 'abstract',
+        'languages', 'note', 'media', 'status', 'approval', 'editor',
+        'after', 'before'
+    ];
+
+    protected array $allowedSorting = [
+        'id', 'updated_at', 'author', 'recipient', 'origin', 'destination', 'media'
+    ];
+
     public function mount()
     {
-        $this->filters = session()->get('lettersTableFilters', []);
-        $this->sorting = session()->get('lettersTableSorting', [
-            'order' => 'updated_at',
-            'direction' => 'desc',
-        ]);
+        $this->filters = array_intersect_key(session()->get('lettersTableFilters', []), array_flip($this->allowedFilters));
+        $this->sorting = session()->get('lettersTableSorting', $this->sorting);
     }
 
     public function filtersChanged(array $filters)
     {
-        $this->filters = $filters;
+        $this->filters = array_intersect_key($filters, array_flip($this->allowedFilters));
         session()->put('lettersTableFilters', $this->filters);
         $this->resetPage();
     }
 
     public function sortingChanged(array $sorting)
     {
-        $this->sorting = $sorting;
-        session()->put('lettersTableSorting', $this->sorting);
+        $order = $sorting['order'] ?? 'updated_at';
+        $direction = strtolower($sorting['direction'] ?? 'desc');
+
+        if (in_array($order, $this->allowedSorting) && in_array($direction, ['asc', 'desc'])) {
+            $this->sorting = ['order' => $order, 'direction' => $direction];
+            session()->put('lettersTableSorting', $this->sorting);
+        }
+
         $this->resetPage();
     }
 
-    public function removeFilter(string $filterKey)
+    public function removeFilter($key)
     {
-        unset($this->filters[$filterKey]);
-        session()->put('lettersTableFilters', $this->filters);
+        if (is_array($key) && isset($key['filterKey'])) {
+            $key = $key['filterKey'];
+        }
+    
+        if (in_array($key, $this->allowedFilters)) {
+            unset($this->filters[$key]);
+            session()->put('lettersTableFilters', $this->filters);
+        }
+    
         $this->resetPage();
-    }
+    }       
 
-    public function resetLettersTablePage()
-    {
-        $this->resetPage();
-    }
+    public function resetLettersTablePage() { $this->resetPage(); }
 
     public function resetFilters()
     {
@@ -80,110 +92,163 @@ class LettersTable extends Component
     {
         $tenantPrefix = tenancy()->initialized ? tenancy()->tenant->table_prefix . '__' : '';
         $lettersTable = "{$tenantPrefix}letters";
-        $identityLetterTable = "{$tenantPrefix}identity_letter";
-        $identitiesTable = "{$tenantPrefix}identities";
-        $letterPlaceTable = "{$tenantPrefix}letter_place";
-        $placesTable = "{$tenantPrefix}places";
-    
-        $query = Letter::with([
-            'identities' => function ($subquery) {
-                $subquery->select('name', 'related_names')
-                    ->where('role', '=', 'author')
-                    ->orWhere('role', '=', 'recipient')
-                    ->orderBy('position');
-            },
-            'places' => function ($subquery) {
-                $subquery->select('name')->orderBy('position');
-            },
-            'keywords' => function ($subquery) {
-                $subquery->select('name');
-            },
-            'media' => function ($subquery) {
-                $subquery->select('id', 'model_id', 'model_type')
-                    ->where('model_type', Letter::class);
-            },
-            'users' => function ($subquery) {
-                $subquery->select('users.id', 'name');
-            },
-        ])
-        ->select('id', 'uuid', 'history', 'copies', 'date_year', 'date_month', 'date_day', 'date_computed', 'status', 'approval');
-    
-        $query->filter($this->filters);
-    
-        $order = $this->sorting['order'] ?? 'updated_at'; // Default order
-        $direction = $this->sorting['direction'] ?? 'desc'; // Default direction
-    
+
+        $query = Letter::query()
+            ->select("$lettersTable.*")
+            ->with([
+                'identities', 'places', 'keywords', 'media', 'users'
+            ])
+            ->from($lettersTable);
+
+        $this->applyFilters($query, $tenantPrefix);
+        $this->applySorting($query, $tenantPrefix);
+
+        return $query->paginate(25);
+    }
+
+    protected function applyFilters($query, $prefix)
+    {
+        $filters = $this->filters;
+
+        if (!empty($filters['id'])) {
+            $query->where("{$prefix}letters.id", $filters['id']);
+        }
+
+        if (!empty($filters['signature'])) {
+            $query->whereRaw("JSON_EXTRACT(copies, '$[*].signature') LIKE ?", ["%{$filters['signature']}%"]);
+        }
+
+        if (!empty($filters['author']) || !empty($filters['recipient'])) {
+            $query->whereExists(function ($sub) use ($filters, $prefix) {
+                $sub->select(DB::raw(1))
+                    ->from("{$prefix}identity_letter")
+                    ->join("{$prefix}identities", "{$prefix}identity_letter.identity_id", '=', "{$prefix}identities.id")
+                    ->whereColumn("{$prefix}identity_letter.letter_id", "{$prefix}letters.id")
+                    ->when(!empty($filters['author']), fn($q) => $q
+                        ->where('role', 'author')
+                        ->where('name', 'like', '%' . $filters['author'] . '%'))
+                    ->when(!empty($filters['recipient']), fn($q) => $q
+                        ->orWhere(fn($qq) => $qq
+                            ->where('role', 'recipient')
+                            ->where('name', 'like', '%' . $filters['recipient'] . '%')));
+            });
+        }
+
+        if (!empty($filters['origin']) || !empty($filters['destination'])) {
+            $query->whereExists(function ($sub) use ($filters, $prefix) {
+                $sub->select(DB::raw(1))
+                    ->from("{$prefix}letter_place")
+                    ->join("{$prefix}places", "{$prefix}letter_place.place_id", '=', "{$prefix}places.id")
+                    ->whereColumn("{$prefix}letter_place.letter_id", "{$prefix}letters.id")
+                    ->when(!empty($filters['origin']), fn($q) => $q
+                        ->where('role', 'origin')
+                        ->where(function ($qq) use ($filters) {
+                            $qq->where('name', 'like', '%' . $filters['origin'] . '%');
+                            for ($i = 0; $i < 50; $i++) {
+                                $qq->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(alternative_names, '$[$i]')) LIKE ?", ["%{$filters['origin']}%"]);
+                            }
+                        }))
+                    ->when(!empty($filters['destination']), fn($q) => $q
+                        ->orWhere(fn($qq) => $qq
+                            ->where('role', 'destination')
+                            ->where('name', 'like', '%' . $filters['destination'] . '%')));
+            });
+        }
+
+        foreach (['repository', 'archive', 'collection', 'mentioned', 'fulltext', 'abstract', 'note'] as $field) {
+            if (!empty($filters[$field])) {
+                $query->where("{$prefix}letters.$field", 'like', '%' . $filters[$field] . '%');
+            }
+        }
+
+        if (!empty($filters['keyword'])) {
+            $query->whereHas('keywords', function ($q) use ($filters) {
+                $q->where('name->cs', 'like', '%' . $filters['keyword'] . '%')
+                  ->orWhere('name->en', 'like', '%' . $filters['keyword'] . '%');
+            });
+        }
+
+        if (!empty($filters['languages'])) {
+            $query->whereJsonContains('languages', $filters['languages']);
+        }
+
+        if (!empty($filters['media'])) {
+            if ($filters['media'] === '1') {
+                $query->has('media');
+            } elseif ($filters['media'] === '0') {
+                $query->doesntHave('media');
+            }
+        }
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (isset($filters['approval']) && $filters['approval'] !== '') {
+            $query->where('approval', $filters['approval']);
+        }
+
+        if (!empty($filters['after'])) {
+            $query->whereDate('date_computed', '>=', $filters['after']);
+        }
+
+        if (!empty($filters['before'])) {
+            $query->whereDate('date_computed', '<=', $filters['before']);
+        }
+
+        if (!empty($filters['editor']) && $filters['editor'] === 'my' && auth()->check()) {
+            $query->where('user_id', auth()->id());
+        } elseif (!empty($filters['editor'])) {
+            $query->whereHas('users', fn($q) => $q->where('name', 'like', '%' . $filters['editor'] . '%'));
+        }
+    }
+
+    protected function applySorting($query, $prefix)
+    {
+        $order = $this->sorting['order'] ?? 'updated_at';
+        $direction = $this->sorting['direction'] ?? 'desc';
+
         switch ($order) {
             case 'author':
-                $query->orderBy(
-                    DB::table("{$identityLetterTable}")
-                        ->select('name')
-                        ->join("{$identitiesTable}",
-                            "{$identityLetterTable}.identity_id", '=',
-                            "{$identitiesTable}.id"
-                        )
-                        ->where("{$identityLetterTable}.role", '=', 'author')
-                        ->whereColumn("{$identityLetterTable}.letter_id", "{$lettersTable}.id")
-                        ->limit(1),
-                    $direction
-                );
-                break;
             case 'recipient':
                 $query->orderBy(
-                    DB::table("{$identityLetterTable}")
+                    DB::table("{$prefix}identity_letter")
                         ->select('name')
-                        ->join("{$identitiesTable}",
-                            "{$identityLetterTable}.identity_id", '=',
-                            "{$identitiesTable}.id"
-                        )
-                        ->where("{$identityLetterTable}.role", '=', 'recipient')
-                        ->whereColumn("{$identityLetterTable}.letter_id", "{$lettersTable}.id")
+                        ->join("{$prefix}identities", "{$prefix}identity_letter.identity_id", '=', "{$prefix}identities.id")
+                        ->where("{$prefix}identity_letter.role", '=', $order)
+                        ->whereColumn("{$prefix}identity_letter.letter_id", "{$prefix}letters.id")
                         ->limit(1),
                     $direction
                 );
                 break;
+
             case 'origin':
-                $query->orderBy(
-                    DB::table("{$letterPlaceTable}")
-                        ->select('name')
-                        ->join("{$placesTable}",
-                            "{$letterPlaceTable}.place_id", '=',
-                            "{$placesTable}.id"
-                        )
-                        ->where("{$letterPlaceTable}.role", '=', 'origin')
-                        ->whereColumn("{$letterPlaceTable}.letter_id", "{$lettersTable}.id")
-                        ->limit(1),
-                    $direction
-                );
-                break;
             case 'destination':
                 $query->orderBy(
-                    DB::table("{$letterPlaceTable}")
+                    DB::table("{$prefix}letter_place")
                         ->select('name')
-                        ->join("{$placesTable}",
-                            "{$letterPlaceTable}.place_id", '=',
-                            "{$placesTable}.id"
-                        )
-                        ->where("{$letterPlaceTable}.role", '=', 'destination')
-                        ->whereColumn("{$letterPlaceTable}.letter_id", "{$lettersTable}.id")
+                        ->join("{$prefix}places", "{$prefix}letter_place.place_id", '=', "{$prefix}places.id")
+                        ->where("{$prefix}letter_place.role", '=', $order)
+                        ->whereColumn("{$prefix}letter_place.letter_id", "{$prefix}letters.id")
                         ->limit(1),
                     $direction
                 );
+                break;
+
             case 'media':
                 $query->orderBy(
-                    DB::table("{$tenantPrefix}media")
+                    DB::table("{$prefix}media")
                         ->selectRaw('count(*)')
-                        ->whereColumn("{$tenantPrefix}media.model_id", "{$lettersTable}.id")
-                        ->where("{$tenantPrefix}media.model_type", Letter::class),
+                        ->whereColumn("{$prefix}media.model_id", "{$prefix}letters.id")
+                        ->where("{$prefix}media.model_type", Letter::class),
                     $direction
                 );
                 break;
+
             default:
-                $query->orderBy($order, $direction); // Order by direct column
+                $query->orderBy($order, $direction);
                 break;
         }
-    
-        return $query->paginate(25);
     }
 
     protected function formatTableData($data): array

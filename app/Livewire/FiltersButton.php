@@ -102,8 +102,7 @@ class FiltersButton extends Component
 
     public function removeFilter(string $filterKey)
     {
-        // Dispatch an event to LettersTable to reset specific filter
-        $this->dispatch('removeFilter', filterKey: $filterKey);
+        $this->dispatch('removeFilter', ['filterKey' => $filterKey]);
     }
 
     public function render()
