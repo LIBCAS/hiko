@@ -6,7 +6,6 @@ use App\Models\GlobalProfession;
 use App\Models\GlobalProfessionCategory;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
 
 class GlobalProfessionController extends Controller
 {
@@ -19,7 +18,7 @@ class GlobalProfessionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): View
+    public function index()
     {
         $professions = GlobalProfession::with('profession_category')->paginate(20);
         return view('pages.global-professions', compact('professions'))
@@ -29,7 +28,7 @@ class GlobalProfessionController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create()
     {
         $categories = GlobalProfessionCategory::all();
         return view('pages.global-professions.form', [
@@ -73,7 +72,7 @@ class GlobalProfessionController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(GlobalProfession $globalProfession): View
+    public function edit(GlobalProfession $globalProfession)
     {
         $categories = GlobalProfessionCategory::all();
         $globalProfession->load('profession_category');

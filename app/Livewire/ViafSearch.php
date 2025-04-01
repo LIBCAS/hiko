@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use App\Services\Viaf;
 use Illuminate\Support\Collection;
-use Illuminate\View\View;
 use Livewire\Component;
 
 class ViafSearch extends Component
@@ -22,7 +21,7 @@ class ViafSearch extends Component
         ]);
     }
 
-    public function render(): View
+    public function render()
     {
         $this->searchResults = collect([]);
         $this->error = '';

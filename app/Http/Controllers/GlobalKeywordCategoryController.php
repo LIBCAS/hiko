@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\GlobalKeywordCategory;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
 
 class GlobalKeywordCategoryController extends Controller
 {
@@ -17,7 +16,7 @@ class GlobalKeywordCategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): View
+    public function index()
     {
         $categories = GlobalKeywordCategory::with('keywords')->paginate(20);
         return view('pages.global-keywords-categories.index', compact('categories'))
@@ -27,7 +26,7 @@ class GlobalKeywordCategoryController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create()
     {
         return view('pages.global-keywords-categories.form', [
             'title' => __('hiko.global_keyword_categories'),
@@ -68,7 +67,7 @@ class GlobalKeywordCategoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(GlobalKeywordCategory $globalKeywordCategory): View
+    public function edit(GlobalKeywordCategory $globalKeywordCategory)
     {
         $globalKeywordCategory->load('keywords');
 

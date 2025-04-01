@@ -6,7 +6,6 @@ use App\Models\Location;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Exports\LocationsExport;
-use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -17,7 +16,7 @@ class LocationController extends Controller
         'type' => ['required', 'string'],
     ];
 
-    public function index(): View
+    public function index()
     {
         return view('pages.locations.index', [
             'title' => __('hiko.locations'),
@@ -25,7 +24,7 @@ class LocationController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create()
     {
         return view('pages.locations.form', [
             'title' => __('hiko.new_location'),
@@ -47,7 +46,7 @@ class LocationController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function edit(Location $location): View
+    public function edit(Location $location)
     {
         return view('pages.locations.form', [
             'title' => __('hiko.location') . ': '. $location->id,

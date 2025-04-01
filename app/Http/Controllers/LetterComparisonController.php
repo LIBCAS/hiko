@@ -7,7 +7,6 @@ use App\Models\Tenant;
 use Illuminate\Support\Facades\DB;
 use Stancl\Tenancy\Facades\Tenancy;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Illuminate\View\View;
 
 class LetterComparisonController extends Controller
 {

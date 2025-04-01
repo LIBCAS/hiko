@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Models\ProfessionCategory;
-use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProfessionCategoriesExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -19,7 +18,7 @@ class ProfessionCategoryController extends Controller
         'en' => ['max:255', 'required_without:cs'],
     ];
 
-    public function create(): View
+    public function create()
     {
         return view('pages.professions-categories.form', [
             'title' => __('hiko.new_professions_category'),
@@ -45,7 +44,7 @@ class ProfessionCategoryController extends Controller
             ->with('success', __('hiko.saved'));
     }    
 
-    public function edit(ProfessionCategory $professionCategory): View
+    public function edit(ProfessionCategory $professionCategory)
     {
         $professionCategory->load('identities', 'professions');
         $availableProfessions = tenancy()->initialized ? Profession::all() : GlobalProfession::all();

@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 use App\Exports\ProfessionsExport;
 use App\Models\ProfessionCategory;
 use App\Models\GlobalProfessionCategory;
-use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +21,7 @@ class ProfessionController extends Controller
         'en' => ['max:255', 'required_without:cs'],
     ];
 
-    public function index(): View
+    public function index()
     {
         // Fetch both tenant-specific and global professions
         $professions = tenancy()->initialized
@@ -35,7 +34,7 @@ class ProfessionController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create()
     {
         // Get available categories based on whether tenancy is initialized
         $availableCategories = tenancy()->initialized
@@ -135,7 +134,7 @@ class ProfessionController extends Controller
             ->with('success', __('hiko.saved'));
     }    
     
-    public function edit(Profession $profession): View
+    public function edit(Profession $profession)
     {
         // Load related identities
         $profession->load('identities');

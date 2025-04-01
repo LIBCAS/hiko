@@ -6,7 +6,6 @@ use App\Models\Keyword;
 use App\Models\KeywordCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
@@ -31,14 +30,14 @@ class KeywordController extends Controller
         ];
     }
 
-    public function index(): View
+    public function index()
     {
         return view('pages.keywords.index', [
             'title' => __('hiko.keywords'),
         ]);
     }
 
-    public function create(): View
+    public function create()
     {
         return view('pages.keywords.form', [
             'title' => __('hiko.new_keyword'),
@@ -83,7 +82,7 @@ class KeywordController extends Controller
         }
     }
 
-    public function edit(Keyword $keyword): View
+    public function edit(Keyword $keyword)
     {
         $keyword->load([
             'letters' => function ($query) {

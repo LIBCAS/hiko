@@ -6,7 +6,6 @@ use App\Models\GlobalKeyword;
 use App\Models\GlobalKeywordCategory;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
 
 class GlobalKeywordController extends Controller
 {
@@ -19,7 +18,7 @@ class GlobalKeywordController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): View
+    public function index()
     {
         $keywords = GlobalKeyword::with('keyword_category')->paginate(20);
         return view('pages.global-keywords', compact('keywords'))
@@ -29,7 +28,7 @@ class GlobalKeywordController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create()
     {
         $categories = GlobalKeywordCategory::all();
         return view('pages.global-keywords.form', [
@@ -73,7 +72,7 @@ class GlobalKeywordController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(GlobalKeyword $globalKeyword): View
+    public function edit(GlobalKeyword $globalKeyword)
     {
         $categories = GlobalKeywordCategory::all();
         $globalKeyword->load('keyword_category');
