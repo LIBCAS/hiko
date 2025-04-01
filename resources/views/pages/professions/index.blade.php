@@ -35,7 +35,7 @@
         <div class="flex items-center space-x-4 mt-8">
             <x-create-link label="{{ __('hiko.new_professions_category') }}" link="{{ route('professions.category.create') }}" />
             @can('manage-users')
-                <x-create-link label="{{ __('hiko.new_global_professions_category') }}" link="{{ route('global.professions.category.create') }}" />
+                <x-create-link label="{{ __('hiko.new_global_profession_category') }}" link="{{ route('global.professions.category.create') }}" />
             @endcan
         </div>
         <a href="{{ route('professions.category.export') }}" class="inline-block mt-3 text-sm font-semibold">

@@ -55,7 +55,7 @@ return [
     'new_profession' => 'Nová role/profese',
     'new_global_profession' => 'Nová globální role/profese',
     'new_professions_category' => 'Nová kategorie role/profese',
-    'new_global_profession_category' => 'Nová globální kategorie role/profese',    
+    'new_global_profession_category' => 'Nová globální kategorie role/profese',
     'professions' => 'Role/profese',
     'global_professions' => 'Globální role/profese',
     'profession' => 'Role/profese',
