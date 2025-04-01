@@ -196,7 +196,7 @@ class KeywordsTable extends Component
         };
     
         if (in_array($filters['order'], ['cs', 'en'])) {
-            $orderColumn = "CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_general_ci";
+            $orderColumn = "CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci";
             $query->orderByRaw($orderColumn);
         }
     
@@ -225,7 +225,7 @@ class KeywordsTable extends Component
     
         $sortedSql = "(
             SELECT *, ROW_NUMBER() OVER (
-                ORDER BY CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_general_ci
+                ORDER BY CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci
             ) AS sort_index
             FROM ({$unionQuery->toSql()}) AS sorted_keywords
         ) AS final_keywords";
@@ -257,20 +257,17 @@ class KeywordsTable extends Component
             );
     
         if (!empty($filters['cs'])) {
-            $csFilter = mb_strtolower(Str::ascii($filters['cs']));
-            $tenantKeywords->whereRaw(
-                "LOWER(CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs')) USING utf8mb4)) COLLATE utf8mb4_unicode_ci LIKE ?", 
-                ["%" . $csFilter . "%"]
-            );
+            $csFilter = strtolower($filters['cs']);
+            $tenantKeywords->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) LIKE ?", ["%{$csFilter}%"]);
         }
     
         if (!empty($filters['en'])) {
-            $enFilter = mb_strtolower(Str::ascii($filters['en']));
+            $enFilter = strtolower($filters['en']);
             $tenantKeywords->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$enFilter}%"]);
         }
     
         if (!empty($filters['category'])) {
-            $categoryFilter = mb_strtolower(Str::ascii($filters['category']));
+            $categoryFilter = strtolower($filters['category']);
             $tenantKeywords->whereHas('keyword_category', function ($query) use ($categoryFilter) {
                 $query->searchByName($categoryFilter);
             });
@@ -322,23 +319,23 @@ class KeywordsTable extends Component
                 : ['', __('hiko.source'), 'CS', 'EN', __('hiko.category')],
             'rows'   => $data->map(function ($kw) {
                 $keyword = $kw->source === 'local'
-                    ? Keyword::with('keyword_category')->find($kw->id)
-                    : GlobalKeyword::with('keyword_category')->find($kw->id);            
-            
+                ? Keyword::with('keyword_category')->find($kw->id)
+                : GlobalKeyword::with('keyword_category')->find($kw->id);            
+        
                 if (!$keyword) {
                     return null; // Skip if keyword not found
                 }
-            
+        
                 $csName = $keyword->getTranslation('name', 'cs') ?? 'No CS name';
                 $enName = $keyword->getTranslation('name', 'en') ?? 'No EN name';
                 $sourceLabel = $kw->source === 'local'
                     ? "<span class='inline-block text-blue-600 bg-blue-100 border border-blue-200 text-xs uppercase px-2 py-1 rounded-full font-medium'>" . __('hiko.local') . "</span>"
                     : "<span class='inline-block bg-red-100 text-red-600 border border-red-200 text-xs uppercase px-2 py-1 rounded-full font-medium'>" . __('hiko.global') . "</span>";
-            
+        
                 $categoryDisplay = $keyword->keyword_category
                     ? $keyword->keyword_category->getTranslation('name', 'cs') ?? ''
                     : "<span class='text-red-600'>" . __('hiko.no_attached_category') . "</span>";
-            
+        
                 $editLink = [
                     'label' => __('hiko.edit'),
                     'link'  => $kw->source === 'local'
@@ -350,7 +347,7 @@ class KeywordsTable extends Component
                     'id' => $kw->id,
                     'source' => $kw->source
                 ];
-            
+        
                 $row = auth()->user()->cannot('manage-metadata') ? [] : [$editLink];
                 $row[] = ['label' => $sourceLabel, 'source' => $kw->source];
                 $row = array_merge($row, [
@@ -358,7 +355,7 @@ class KeywordsTable extends Component
                     ['label' => $enName],
                     ['label' => $categoryDisplay],
                 ]);
-            
+        
                 return $row;
             })->filter()->toArray(),
         ];
@@ -554,7 +551,7 @@ class KeywordsTable extends Component
                     Log::info("[mergeAllSelected] Checking Local Keyword: CS='$csName', EN='$enName'");
     
                     // Normalize available names
-                    $csNameNormalized = $csName ? Str::ascii(mb_strtolower($csName)) : '';
+                    $csNameNormalized = $csName ? Str::slug($csName) : '';
                     $enNameNormalized = $enName ? Str::slug($enName) : '';
     
                     // Find best matching global keyword
@@ -666,6 +663,7 @@ class KeywordsTable extends Component
                                         'global_keyword_id' => $globalMatch->id,
                                         'keyword_id' => null, // Nullify local keyword ID
                                     ]);
+                                    
                                 Log::info("[mergeAllSelected] Updated letter {$letter->letter_id} with global_keyword_id {$globalMatch->id}");
                             }
                         }
@@ -729,19 +727,42 @@ class KeywordsTable extends Component
 
     private function cleanUpOrphanedCategories($tenantPrefix)
     {
-        $orphanedCategories = DB::table("{$tenantPrefix}keyword_categories as kc")
-            ->leftJoin("{$tenantPrefix}keywords as k", "kc.id", "=", "k.keyword_category_id")
-            ->whereNull("k.id")
-            ->select("kc.id")
-            ->get();
+        // First check if identity_keyword_category table exists (for direct identity-category relationships)
+        $hasIdentityCategoryTable = false;
+        try {
+            // Simple query to check if table exists
+            DB::select("SHOW TABLES LIKE '{$tenantPrefix}identity_keyword_category'");
+            $hasIdentityCategoryTable = true;
+            Log::info("[cleanUpOrphanedCategories] Found identity_keyword_category table");
+        } catch (\Exception $e) {
+            Log::info("[cleanUpOrphanedCategories] No direct identity-category relationship table found");
+        }
+        
+        if ($hasIdentityCategoryTable) {
+            // If there's a direct identity-category relationship, include that in our orphan check
+            $orphanedCategories = DB::table("{$tenantPrefix}keyword_categories as kc")
+                ->leftJoin("{$tenantPrefix}keywords as k", "kc.id", "=", "k.keyword_category_id")
+                ->leftJoin("{$tenantPrefix}identity_keyword_category as ikc", "kc.id", "=", "ikc.keyword_category_id") 
+                ->whereNull("k.id")
+                ->whereNull("ikc.identity_id") // Only delete if no identities are directly attached
+                ->select("kc.id")
+                ->get();
+        } else {
+            // Otherwise, just check for keywords
+            $orphanedCategories = DB::table("{$tenantPrefix}keyword_categories as kc")
+                ->leftJoin("{$tenantPrefix}keywords as k", "kc.id", "=", "k.keyword_category_id")
+                ->whereNull("k.id")
+                ->select("kc.id")
+                ->get();
+        }
     
         foreach ($orphanedCategories as $orphan) {
             DB::table("{$tenantPrefix}keyword_categories")->where('id', $orphan->id)->delete();
             Log::info("[cleanUpOrphanedCategories] Deleted orphaned category ID: {$orphan->id}");
         }
-    
+        
         Log::info("[cleanUpOrphanedCategories] Deleted " . count($orphanedCategories) . " orphaned categories");
-    }    
+    }
 
     public function updateSimilarityThreshold($value)
     {
@@ -773,7 +794,7 @@ class KeywordsTable extends Component
             $csName = strtolower(trim($localNameArr['cs'] ?? ''));
             $enName = strtolower(trim($localNameArr['en'] ?? ''));
             
-            $csNameNormalized = $csName ? Str::ascii(mb_strtolower($csName)) : '';
+            $csNameNormalized = $csName ? Str::slug($csName) : '';
             $enNameNormalized = $enName ? Str::slug($enName) : '';
             
             // Get the local category
@@ -834,8 +855,8 @@ class KeywordsTable extends Component
                     }
                     
                     // Merge criteria
-                    $csMatch = $bestCsSimilarity > $this->similarityThreshold;
-                    $enMatch = $bestEnSimilarity > $this->similarityThreshold;
+                    $csMatch = $csSimilarity > $this->similarityThreshold;
+                    $enMatch = $enSimilarity > $this->similarityThreshold;
 
                     $csEmpty = empty($csNameNormalized) || empty($globalCsNormalized);
                     $enEmpty = empty($enNameNormalized) || empty($globalEnNormalized);
@@ -957,6 +978,9 @@ class KeywordsTable extends Component
     public function openManualMerge()
     {
         $this->isProcessing = true;
+
+        // Threshold to 50% for manual merge
+        $this->similarityThreshold = 50;
         
         // Get the tenant's table prefix dynamically
         $tenant = DB::table('tenants')->where('id', tenancy()->tenant->id)->first();
@@ -1040,64 +1064,55 @@ class KeywordsTable extends Component
         $this->isProcessing = true;
         $this->selectedLocalKeyword = $id;
         $this->selectedGlobalKeyword = null;
-
+        
         // Find the selected local keyword
         $local = collect($this->unmergedKeywords)->firstWhere('id', $id);
-
+        
         if ($local) {
             $csNameNormalized = $local['cs'] ? Str::slug(strtolower($local['cs'])) : '';
             $enNameNormalized = $local['en'] ? Str::slug(strtolower($local['en'])) : '';
-
-            $filteredGlobals = [];
-
-            foreach ($this->availableGlobalKeywords as $global) {
+            
+            foreach ($this->availableGlobalKeywords as &$global) {
                 $globalCsNormalized = $global['cs'] ? Str::slug(strtolower($global['cs'])) : '';
                 $globalEnNormalized = $global['en'] ? Str::slug(strtolower($global['en'])) : '';
-
+                
                 $csSimilarity = 0;
                 $enSimilarity = 0;
                 similar_text($csNameNormalized, $globalCsNormalized, $csSimilarity);
                 similar_text($enNameNormalized, $globalEnNormalized, $enSimilarity);
-
-                $avgSimilarity = ($csSimilarity + $enSimilarity) / 2;
-
-                if ($avgSimilarity < 30) {
-                    continue; // Skip global keywords under 30% average similarity
-                }
-
+                
                 $global['csSimilarity'] = round($csSimilarity, 1);
                 $global['enSimilarity'] = round($enSimilarity, 1);
-                $global['avgSimilarity'] = round($avgSimilarity, 1);
-
+                $global['avgSimilarity'] = round(($csSimilarity + $enSimilarity) / 2, 1);
+                
                 // Check if categories match
                 $categoryMatch = ($local['category_id'] && $global['category_id']) ? 
                     ($local['category_name'] === $global['category_name']) : false;
                 $global['categoryMatch'] = $categoryMatch;
-
-                $filteredGlobals[] = $global;
             }
-
+            
             // Sort Global Keywords by Similarity and Category Match
-            usort($filteredGlobals, function($a, $b) use ($local) {
-                $prefix = strtolower(Str::slug($local['cs'] ?? ''));
-
+            usort($this->availableGlobalKeywords, function($a, $b) {
+                // 1. Prioritize starts-with matches over contains
+                $prefix = strtolower(Str::slug($this->unmergedKeywords[array_search($this->selectedLocalKeyword, array_column($this->unmergedKeywords, 'id'))]['cs'] ?? ''));
+            
                 $aStarts = Str::startsWith(strtolower(Str::slug($a['cs'])), $prefix);
                 $bStarts = Str::startsWith(strtolower(Str::slug($b['cs'])), $prefix);
-
+            
                 if ($aStarts && !$bStarts) return -1;
                 if (!$aStarts && $bStarts) return 1;
-
+            
+                // 2. Prioritize category match
                 if ($a['categoryMatch'] && !$b['categoryMatch']) return -1;
                 if (!$a['categoryMatch'] && $b['categoryMatch']) return 1;
-
+            
+                // 3. Fallback to similarity
                 return $b['avgSimilarity'] <=> $a['avgSimilarity'];
-            });
-
-            $this->availableGlobalKeywords = $filteredGlobals;
+            });            
         }
-
+        
         $this->isProcessing = false;
-    }
+    }    
 
     public function selectGlobalKeyword($id)
     {
@@ -1117,6 +1132,7 @@ class KeywordsTable extends Component
                     'id' => $id
                 ];
                 
+                $this->selectedKeywordOneDetails = null; // Explicitly set to null first
                 $this->loadKeywordDetails('one');
                 
                 if (!$this->selectedKeywordOneDetails) {
@@ -1136,6 +1152,7 @@ class KeywordsTable extends Component
                     'id' => $id
                 ];
                 
+                $this->selectedKeywordTwoDetails = null; // Explicitly set to null first
                 $this->loadKeywordDetails('two');
                 
                 if (!$this->selectedKeywordTwoDetails) {
@@ -1148,13 +1165,10 @@ class KeywordsTable extends Component
             session()->flash('error', $e->getMessage());
             
             // Reset if there was an error
-            if (!$this->selectedKeywordOneDetails) {
-                $this->selectedKeywordOne = null;
-            }
-            
-            if (!$this->selectedKeywordTwoDetails) {
-                $this->selectedKeywordTwo = null;
-            }
+            $this->selectedKeywordOne = null;
+            $this->selectedKeywordTwo = null;
+            $this->selectedKeywordOneDetails = null;
+            $this->selectedKeywordTwoDetails = null;
         } finally {
             $this->isProcessing = false;
         }
@@ -1287,6 +1301,7 @@ class KeywordsTable extends Component
         } catch (\Exception $e) {
             Log::error("[loadKeywordDetails] Error: " . $e->getMessage());
             
+            // Explicitly set to null
             if ($position === 'one') {
                 $this->selectedKeywordOneDetails = null;
             } else {
@@ -1477,6 +1492,7 @@ class KeywordsTable extends Component
                                     'global_keyword_id' => $targetKeyword['id'],
                                     'keyword_id' => null,
                                 ]);
+                                
                             Log::info("[mergeTwoKeywords] Updated letter {$letter['id']} link from local {$sourceKeyword['id']} to global {$targetKeyword['id']}");
                         }
                     }
@@ -1801,7 +1817,7 @@ class KeywordsTable extends Component
                 Log::info("[mergeAll] Checking Local Keyword: CS='$csName', EN='$enName'");
     
                 // Normalize available names.
-                $csNameNormalized = $csName ? Str::ascii(mb_strtolower($csName)) : '';
+                $csNameNormalized = $csName ? Str::slug($csName) : '';
                 $enNameNormalized = $enName ? Str::slug($enName) : '';
     
                 // Find best matching global keyword.
