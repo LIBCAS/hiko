@@ -3,7 +3,6 @@
 namespace App\Livewire;
 
 use App\Models\Location;
-use Illuminate\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -35,7 +34,7 @@ class LocationsTable extends Component
         }
     }
 
-    public function render(): View
+    public function render()
     {
         $locations = $this->findLocations();
 

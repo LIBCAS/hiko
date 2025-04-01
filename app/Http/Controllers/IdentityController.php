@@ -9,7 +9,6 @@ use App\Models\ProfessionCategory;
 use App\Http\Requests\IdentityRequest;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\IdentitiesExport;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Stancl\Tenancy\Facades\Tenancy;
@@ -18,7 +17,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class IdentityController extends Controller
 {
-    public function index(): View
+    public function index()
     {
         $labels = [
             'name' => __('hiko.name'),

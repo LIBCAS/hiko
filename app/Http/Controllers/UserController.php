@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class UserController extends Controller
 {
@@ -15,7 +14,7 @@ class UserController extends Controller
         'deactivated_at' => [],
     ];
 
-    public function index(): View
+    public function index()
     {
         return view('pages.users.index', [
             'title' => __('hiko.users'),
@@ -23,7 +22,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create()
     {
         return view('pages.users.form', [
             'title' => __('hiko.new_account'),
@@ -49,7 +48,7 @@ class UserController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function edit(User $user): View
+    public function edit(User $user)
     {
         return view('pages.users.form', [
             'title' => __('hiko.account') . ': ' . $user->name,

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\GlobalProfessionCategory;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
 
 class GlobalProfessionCategoryController extends Controller
 {
@@ -17,7 +16,7 @@ class GlobalProfessionCategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): View
+    public function index()
     {
         $categories = GlobalProfessionCategory::with('professions')->paginate(20);
         return view('pages.global-professions-categories', compact('categories'))
@@ -27,7 +26,7 @@ class GlobalProfessionCategoryController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create()
     {
         return view('pages.global-professions-categories.form', [
             'title' => __('hiko.new_global_profession_category'),
@@ -66,7 +65,7 @@ class GlobalProfessionCategoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(GlobalProfessionCategory $globalProfessionCategory): View
+    public function edit(GlobalProfessionCategory $globalProfessionCategory)
     {
         $globalProfessionCategory->load('professions');
 

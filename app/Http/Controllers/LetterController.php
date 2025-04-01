@@ -8,7 +8,6 @@ use App\Models\Identity;
 use App\Models\Language;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -28,7 +27,7 @@ class LetterController extends Controller
     /**
      * Display a list of letters in an index view.
      */
-    public function index(): View
+    public function index()
     {
         return view('pages.letters.index', [
             'title' => __('hiko.letters'),
@@ -41,7 +40,7 @@ class LetterController extends Controller
     /**
      * Show the form to create a new Letter record.
      */
-    public function create(): View
+    public function create()
     {
         return view('pages.letters.form', array_merge([
             'title' => __('hiko.new_letter'),
@@ -130,7 +129,7 @@ class LetterController extends Controller
     /**
      * Show images related to this Letter.
      */
-    public function images(Letter $letter): View
+    public function images(Letter $letter)
     {
         return view('pages.letters.images', [
             'title'  => __('hiko.letter') . ': ' . $letter->id,
@@ -141,7 +140,7 @@ class LetterController extends Controller
     /**
      * Show the full text of a Letter, possibly with images.
      */
-    public function text(Letter $letter): View
+    public function text(Letter $letter)
     {
         return view('pages.letters.text', [
             'title'  => __('hiko.full_text') . ' – ' . __('hiko.letter') . ': ' .  $letter->id,

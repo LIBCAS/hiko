@@ -10,7 +10,6 @@ use App\Exports\PlacesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class PlaceController extends Controller
@@ -32,14 +31,14 @@ class PlaceController extends Controller
         $this->geonames = $geonames;
     }
 
-    public function index(): View
+    public function index()
     {
         return view('pages.places.index', [
             'title' => __('hiko.places'),
         ]);
     }
 
-    public function create(): View
+    public function create()
     {
         return view('pages.places.form', [
             'title' => __('hiko.new_place'),
@@ -91,7 +90,7 @@ class PlaceController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function edit(Place $place): View
+    public function edit(Place $place)
     {
         return view('pages.places.form', [
             'title' => __('hiko.place') . ': ' . $place->id,
