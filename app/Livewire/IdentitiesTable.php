@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Stancl\Tenancy\Facades\Tenancy;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class IdentitiesTable extends Component
 {
@@ -90,67 +91,64 @@ class IdentitiesTable extends Component
         ));
     }    
 
-    protected function findIdentities()
+    protected function findIdentities(): LengthAwarePaginator
     {
-        $tenantPrefix = tenancy()->tenant ? tenancy()->tenant->table_prefix : null;
-
+        $filters = $this->filters;
+        $tenantPrefix = tenancy()->initialized ? tenancy()->tenant->table_prefix : null;
+    
         $query = Identity::with([
-            'professions.profession_category', // Local categories
-            'globalProfessions.profession_category', // Global categories
-        ])
-        ->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names');
-
-        // Apply each filter conditionally
-        $query->when($this->filters['name'], fn($q) => $q->where('name', 'like', '%' . $this->filters['name'] . '%'));
-        $query->when($this->filters['related_names'], fn($q) => $q->where('related_names', 'like', '%' . $this->filters['related_names'] . '%'));
-        $query->when($this->filters['type'], fn($q) => $q->where('type', $this->filters['type']));
-        $query->when($this->filters['profession'], fn($q) => 
-            $q->whereHas('professions', fn($subquery) => 
-                $subquery->where('name', 'like', '%' . $this->filters['profession'] . '%'))
+            'professions.profession_category',
+            'globalProfessions.profession_category',
+        ])->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names');
+    
+        $query->when($filters['name'], fn($q) => $q->where('name', 'like', "%{$filters['name']}%"));
+        $query->when($filters['related_names'], fn($q) => $q->where('related_names', 'like', "%{$filters['related_names']}%"));
+        $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
+        $query->when($filters['profession'], fn($q) =>
+            $q->whereHas('professions', fn($sq) =>
+                $sq->where('name', 'like', "%{$filters['profession']}%")
+            )
         );
-
-        // Refined category filter to ensure only matching local/global categories are included
-        $query->when($this->filters['category'], function ($q) use ($tenantPrefix) {
-            $q->where(function ($q) use ($tenantPrefix) {
-                $q->whereHas('professions.profession_category', fn($subquery) => 
-                        $subquery->where("{$tenantPrefix}__profession_categories.name", 'like', '%' . $this->filters['category'] . '%')
-                    )
-                  ->orWhereHas('globalProfessions.profession_category', fn($subquery) => 
-                        $subquery->where('name', 'like', '%' . $this->filters['category'] . '%')
-                    );
-            });
-        });
-
-        $query->when($this->filters['note'], fn($q) => $q->where('note', 'like', '%' . $this->filters['note'] . '%'));
-
-        $identities = $query->orderBy($this->filters['order'])->paginate(25);
-
+    
+        $query->when($filters['category'], fn($q) => $q->where(function ($sq) use ($filters, $tenantPrefix) {
+            $sq->whereHas('professions.profession_category', fn($qq) =>
+                $qq->where("{$tenantPrefix}__profession_categories.name", 'like', "%{$filters['category']}%")
+            )->orWhereHas('globalProfessions.profession_category', fn($qq) =>
+                $qq->where('name', 'like', "%{$filters['category']}%")
+            );
+        }));
+    
+        $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
+    
+        if (in_array($filters['order'], ['name', 'birth_year', 'death_year'])) {
+            $query->orderBy($filters['order']);
+        }
+    
+        $identities = $query->paginate(25, ['*'], 'identitiesPage');
+    
+        // Enrich with global professions from central DB
         if ($tenantPrefix) {
             Tenancy::central(function () use ($identities, $tenantPrefix) {
-                $identityIds = $identities->pluck('id');
-                $globalProfessionsMapping = DB::table("{$tenantPrefix}__identity_profession")
-                    ->whereIn('identity_id', $identityIds)
+                $ids = $identities->pluck('id');
+                $mapping = DB::table("{$tenantPrefix}__identity_profession")
+                    ->whereIn('identity_id', $ids)
                     ->whereNotNull('global_profession_id')
-                    ->pluck('global_profession_id', 'identity_id')
-                    ->toArray();
-
-                $globalProfessionIds = array_values($globalProfessionsMapping);
-                $globalProfessions = GlobalProfession::whereIn('id', $globalProfessionIds)
-                    ->with('profession_category') // Load global categories
-                    ->select('id', 'name', 'profession_category_id')
+                    ->pluck('global_profession_id', 'identity_id');
+    
+                $globalProfessions = GlobalProfession::whereIn('id', $mapping->values())
+                    ->with('profession_category')
                     ->get()
                     ->keyBy('id');
-
+    
                 foreach ($identities as $identity) {
-                    $globalProfessionId = $globalProfessionsMapping[$identity->id] ?? null;
-                    $globalProfession = $globalProfessionId ? $globalProfessions->get($globalProfessionId) : null;
-                    $identity->setRelation('globalProfessions', collect($globalProfession ? [$globalProfession] : []));
+                    $id = $mapping[$identity->id] ?? null;
+                    $identity->setRelation('globalProfessions', collect($id ? [$globalProfessions[$id]] : []));
                 }
             });
         }
-
+    
         return $identities;
-    }
+    }    
 
     protected function formatTableData($data): array
     {

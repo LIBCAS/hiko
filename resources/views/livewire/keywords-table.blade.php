@@ -124,21 +124,6 @@
 
     <!-- Keywords Table Section -->
     @if(!empty($tableData['rows']))
-        <div class="flex items-center mt-4 mb-2">
-            @can('manage-metadata')
-            <div class="flex items-center">
-                <input id="selectAll" type="checkbox" wire:model.live="selectAll" class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
-                <label for="selectAll" class="ml-2 text-sm font-medium text-gray-700">{{ __('hiko.select_all') }}</label>
-            </div>
-            @endcan
-            {{-- Pagination Info - Placed on the right --}}
-            <div class="ml-auto flex">
-                <span class="text-sm text-gray-600">
-                    {{ __('hiko.showing') }} {{ $pagination->firstItem() }} {{ __('hiko.to') }} {{ $pagination->lastItem() }} {{ __('hiko.of') }} {{ $pagination->total() }} {{ __('hiko.keywords') }}
-                </span>
-            </div>
-        </div>
-
         <div class="overflow-x-auto -mx-4 sm:mx-0">
              <x-table :tableData="$tableData" class="table-auto w-full mt-3" />
         </div>

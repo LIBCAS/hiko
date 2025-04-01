@@ -186,13 +186,13 @@ class KeywordsTable extends Component
         $filters = $this->filters;
         $perPage = 10;
     
-        $tenantKeywordsQuery = $this->getTenantKeywordsQuery();
-        $globalKeywordsQuery = $this->getGlobalKeywordsQuery();
+        $tenantQuery = $this->getTenantKeywordsQuery();
+        $globalQuery = $this->getGlobalKeywordsQuery();
     
         $query = match ($filters['source']) {
-            'local'  => $tenantKeywordsQuery,
-            'global' => $globalKeywordsQuery,
-            default  => $this->mergeQueries($tenantKeywordsQuery, $globalKeywordsQuery),
+            'local' => $tenantQuery,
+            'global' => $globalQuery,
+            default => $this->mergeQueries($tenantQuery, $globalQuery),
         };
     
         if (in_array($filters['order'], ['cs', 'en'])) {
@@ -200,8 +200,8 @@ class KeywordsTable extends Component
             $query->orderByRaw($orderColumn);
         }
     
-        return $query->paginate($perPage);
-    }
+        return $query->paginate($perPage, ['*'], 'keywordsPage');
+    }    
 
     protected function mergeQueries($tenantKeywordsQuery, $globalKeywordsQuery): Builder
     {

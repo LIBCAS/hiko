@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class NamesTable extends Component
 {
@@ -43,8 +44,10 @@ class NamesTable extends Component
         ]);
     }
 
-    protected function findItems()
+    protected function findItems(): LengthAwarePaginator
     {
+        $filters = $this->filters;
+    
         $query = app('App\Models\\' . $this->model)::select(
             'id',
             'name',
@@ -52,23 +55,20 @@ class NamesTable extends Component
             DB::raw("LOWER(JSON_EXTRACT(name, '$.en')) AS en")
         );
     
-        // Implement search filters
-        if (!empty($this->filters['cs'])) {
-            $csFilter = strtolower($this->filters['cs']);
-            $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) LIKE ?", ["%{$csFilter}%"]);
+        if (!empty($filters['cs'])) {
+            $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) LIKE ?", ["%{$filters['cs']}%"]);
         }
     
-        if (!empty($this->filters['en'])) {
-            $enFilter = strtolower($this->filters['en']);
-            $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$enFilter}%"]);
+        if (!empty($filters['en'])) {
+            $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$filters['en']}%"]);
         }
     
-        // Order by specified field
-        $query->orderBy($this->filters['order']);
+        if (in_array($filters['order'], ['cs', 'en'])) {
+            $query->orderByRaw("CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci");
+        }
     
-        // Paginate the results
         return $query->paginate(25, ['*'], "{$this->model}Page");
-    }    
+    }       
 
     protected function formatTableData($data): array
     {

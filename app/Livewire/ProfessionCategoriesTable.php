@@ -72,25 +72,24 @@ class ProfessionCategoriesTable extends Component
     {
         $filters = $this->filters;
         $perPage = 10;
-
-        $tenantCategoriesQuery = $this->getTenantCategoriesQuery();
-        $globalCategoriesQuery = $this->getGlobalCategoriesQuery();
-
+    
+        $tenantQuery = $this->getTenantCategoriesQuery();
+        $globalQuery = $this->getGlobalCategoriesQuery();
+    
         $query = match ($filters['source']) {
-            'local' => $tenantCategoriesQuery,
-            'global' => $globalCategoriesQuery,
-            default => $this->mergeQueries($tenantCategoriesQuery, $globalCategoriesQuery),
+            'local' => $tenantQuery,
+            'global' => $globalQuery,
+            default => $this->mergeQueries($tenantQuery, $globalQuery),
         };
-
+    
         if (in_array($filters['order'], ['cs', 'en'])) {
-            $query->orderByRaw(
-                "CAST(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) AS CHAR) COLLATE utf8mb4_unicode_ci"
-            );
+            $orderColumn = "CONVERT(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$filters['order']}\"')) USING utf8mb4) COLLATE utf8mb4_unicode_ci";
+            $query->orderByRaw($orderColumn);
         }
-
-        return $query->paginate($perPage);
+    
+        return $query->paginate($perPage, ['*'], 'categoriesPage');
     }
-
+    
     protected function mergeQueries($tenantCategoriesQuery, $globalCategoriesQuery): Builder
     {
         $filters = $this->filters;

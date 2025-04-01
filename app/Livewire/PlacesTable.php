@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Place;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class PlacesTable extends Component
 {
@@ -46,37 +47,40 @@ class PlacesTable extends Component
         ]);
     }
 
-    protected function findPlaces()
+    protected function findPlaces(): LengthAwarePaginator
     {
+        $filters = $this->filters;
+    
         $query = Place::select('id', 'name', 'division', 'latitude', 'longitude', 'country');
     
         if (tenancy()->initialized) {
-            $tenantPrefix = tenancy()->tenant->table_prefix;
-            $query->from("{$tenantPrefix}__places");
+            $prefix = tenancy()->tenant->table_prefix;
+            $query->from("{$prefix}__places");
         }
     
-        if (!empty($this->filters['name'])) {
-            $query->where(function ($queryBuilder) {
-                $queryBuilder->where('name', 'like', '%' . $this->filters['name'] . '%')
-                    ->orWhere('division', 'like', '%' . $this->filters['name'] . '%')
-                    ->orWhere('country', 'like', '%' . $this->filters['name'] . '%');
-    
+        if (!empty($filters['name'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('name', 'like', "%{$filters['name']}%")
+                  ->orWhere('division', 'like', "%{$filters['name']}%")
+                  ->orWhere('country', 'like', "%{$filters['name']}%");
                 for ($i = 0; $i < 50; $i++) {
-                    $queryBuilder->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(alternative_names, '$[$i]')) LIKE ?", ["%{$this->filters['name']}%"]);
+                    $q->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(alternative_names, '$[$i]')) LIKE ?", ["%{$filters['name']}%"]);
                 }
             });
         }
-
-        if (!empty($this->filters['country'])) {
-            $query->where('country', 'like', '%' . $this->filters['country'] . '%');
+    
+        if (!empty($filters['country'])) {
+            $query->where('country', 'like', "%{$filters['country']}%");
         }
     
-        if (!empty($this->filters['note'])) {
-            $query->where('note', 'like', '%' . $this->filters['note'] . '%');
+        if (!empty($filters['note'])) {
+            $query->where('note', 'like', "%{$filters['note']}%");
         }
     
-        return $query->orderBy($this->filters['order'])->paginate(25);
-    }    
+        $query->orderBy($filters['order']);
+    
+        return $query->paginate(25, ['*'], 'placesPage');
+    }      
 
     protected function formatTableData($data): array
     {
