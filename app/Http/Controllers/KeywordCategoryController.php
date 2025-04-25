@@ -45,7 +45,7 @@ class KeywordCategoryController extends Controller
     public function edit(KeywordCategory $keywordCategory)
     {
         return view('pages.keywords-categories.form', [
-            'title' => __('hiko.keyword_category') . ': ' . $keywordCategory->id,
+            'title' => __('hiko.keyword_category') . ': ' . $keywordCategory->getTranslation('name', app()->getLocale()),
             'keywordCategory' => $keywordCategory,
             'method' => 'PUT',
             'action' => route('keywords.category.update', $keywordCategory),

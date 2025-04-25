@@ -194,7 +194,7 @@ return new class extends Migration
                     $table->unsignedBigInteger('user_id');
                     $table->unique(['letter_id', 'user_id'], 'letter_user_letter_id_user_id_unique');
                     $table->foreign('letter_id')->references('id')->on($prefix . 'letters')->onDelete('cascade');
-                    $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+                    $table->foreign('user_id')->references('id')->on($prefix . 'users')->onDelete('cascade');
                 });
             }
 

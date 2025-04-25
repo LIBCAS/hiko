@@ -140,32 +140,32 @@ return new class extends Migration
     private function createEssentialTables(): void
     {
         // Users Table
-        if (!Schema::hasTable('users')) {
-            Schema::create('users', function (Blueprint $table) {
-                $table->id();
-                $table->string('name');
-                $table->string('email')->unique();
-                $table->string('password');
-                $table->string('role')->nullable();
-                $table->timestamp('email_verified_at')->nullable();
-                $table->rememberToken();
-                $table->unsignedBigInteger('tenant_id')->nullable();
-                $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('set null');
-                $table->timestamps();
-            });
+        // if (!Schema::hasTable('users')) {
+        //     Schema::create('users', function (Blueprint $table) {
+        //         $table->id();
+        //         $table->string('name');
+        //         $table->string('email')->unique();
+        //         $table->string('password');
+        //         $table->string('role')->nullable();
+        //         $table->timestamp('email_verified_at')->nullable();
+        //         $table->rememberToken();
+        //         $table->unsignedBigInteger('tenant_id')->nullable();
+        //         $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('set null');
+        //         $table->timestamps();
+        //     });
 
-            // Insert default admin user if no migrations have been run
-            if (DB::table('migrations')->count() === 0) {
-                DB::table('users')->insert([
-                    'name' => 'Admin User',
-                    'email' => 'admin@example.com',
-                    'password' => Hash::make('password'),
-                    'role' => 'admin',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-        }
+        //     // Insert default admin user if no migrations have been run
+        //     if (DB::table('migrations')->count() === 0) {
+        //         DB::table('users')->insert([
+        //             'name' => 'Admin User',
+        //             'email' => 'admin@example.com',
+        //             'password' => Hash::make('password'),
+        //             'role' => 'admin',
+        //             'created_at' => now(),
+        //             'updated_at' => now(),
+        //         ]);
+        //     }
+        // }
 
         // Tenants Table
         if (!Schema::hasTable('tenants')) {
@@ -303,7 +303,7 @@ return new class extends Migration
         Schema::dropIfExists('personal_access_tokens');
         Schema::dropIfExists('failed_jobs');
         Schema::dropIfExists('password_resets');
-        Schema::dropIfExists('users');
+        // Schema::dropIfExists('users');
         Schema::dropIfExists('tenants');
         Schema::dropIfExists('global_identities');
     }

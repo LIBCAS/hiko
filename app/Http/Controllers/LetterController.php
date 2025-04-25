@@ -32,7 +32,7 @@ class LetterController extends Controller
         return view('pages.letters.index', [
             'title' => __('hiko.letters'),
             'mainCharacter' => config('hiko.main_character')
-                ? Identity::find(config('hiko.main_character'))->value('surname')
+                ? optional(Identity::find(config('hiko.main_character')))->value('surname')
                 : null,
         ]);
     }
@@ -189,15 +189,34 @@ class LetterController extends Controller
 
     protected function attachRelated(Request $request, Letter $letter)
     {
-        $letter->keywords()->sync($request->keywords);
+        $keywords = $request->keywords ?? [];
+        if (!empty($keywords)) {
+            $localKeywords = [];
+            $globalKeywords = [];
+
+            foreach ($request->keywords as $kw) {
+                $isGlobalKw = str_starts_with($kw, 'global-');
+                $kwId = (int) str_replace(['global-', 'local-'], '', $kw);
+
+                if ($isGlobalKw) {
+                    $globalKeywords[] = $kwId;
+                } else {
+                    $localKeywords[] = $kwId;
+                }
+            }
+
+            $letter->localKeywords()->sync($localKeywords);
+            $letter->globalKeywords()->sync($globalKeywords);
+        }
+
         $letter->identities()->detach();
         $letter->places()->detach();
-    
+
         $letter->identities()->attach($this->prepareAttachmentData($request->authors, 'author'));
         $letter->identities()->attach($this->prepareAttachmentData($request->recipients, 'recipient', ['salutation']));
         $letter->places()->attach($this->prepareAttachmentData($request->origins, 'origin'));
         $letter->places()->attach($this->prepareAttachmentData($request->destinations, 'destination'));
-    
+
         // Ensure mentioned is an array
         $mentioned = [];
         if (is_array($request->mentioned)) {
@@ -214,13 +233,32 @@ class LetterController extends Controller
                 }
             }
         }
-    
+
         $letter->identities()->attach($mentioned);
     }
 
     protected function duplicateRelatedEntities(Letter $sourceLetter, Letter $duplicatedLetter)
     {
-        $duplicatedLetter->keywords()->sync($sourceLetter->keywords);
+        $keywords = $sourceLetter->keywords ?? [];
+        if (!empty($keywords)) {
+            $localKeywords = [];
+            $globalKeywords = [];
+
+            foreach ($keywords as $kw) {
+                $isGlobalKw = str_starts_with($kw, 'global-');
+                $kwId = (int) str_replace(['global-', 'local-'], '', $kw);
+
+                if ($isGlobalKw) {
+                    $globalKeywords[] = $kwId;
+                } else {
+                    $localKeywords[] = $kwId;
+                }
+            }
+
+            $duplicatedLetter->localKeywords()->sync($localKeywords);
+            $duplicatedLetter->globalKeywords()->sync($globalKeywords);
+        }
+
         $duplicatedLetter->identities()->detach();
         $duplicatedLetter->places()->detach();
 
@@ -338,7 +376,7 @@ class LetterController extends Controller
 
             // Pre-selected keywords => array of [ 'value' => id, 'label' => name ]
             'selectedKeywords'     => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
-            // Example: "mentioned" is authors pivot with role= 'mentioned' 
+            // Example: "mentioned" is authors pivot with role= 'mentioned'
             'selectedMentioned'    => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
 
             // Provide languages from a table, or just a static array
@@ -371,12 +409,39 @@ class LetterController extends Controller
      */
     protected function getSelectedMeta(Letter $letter, string $model, string $fieldKey): array
     {
-        return $letter->{$fieldKey}->map(function ($item) {
-            return [
-                'value' => $item->id,
-                'label' => $item->name,
-            ];
-        })->toArray();
+        switch ($fieldKey) {
+            case 'keywords':
+                $globalKws = collect($letter->globalKeywords)->map(function ($kw) {
+                    return [
+                        'id' => 'global-' . $kw->id,
+                        'value' => 'global-' . $kw->id,
+                        'label' => $kw->getTranslation('name', config('app.locale')) . ' (' . __('hiko.global') . ')',
+                        'type' => __('hiko.global')
+                    ];
+                });
+
+                $localKws = collect($letter->localKeywords)->map(function ($kw) {
+                    return [
+                        'id' => 'local-' . $kw->id,
+                        'value' => 'local-' . $kw->id,
+                        'label' => $kw->getTranslation('name', config('app.locale')) . ' (' . __('hiko.local') . ')',
+                        'type' => __('hiko.local')
+                    ];
+                });
+
+                $selectedMeta = $localKws->merge($globalKws);
+
+                break;
+            default:
+                $selectedMeta = $letter->{$fieldKey}->map(function ($item) {
+                    return [
+                        'value' => $item->id,
+                        'label' => $item->name,
+                    ];
+                });
+        }
+
+        return is_array($selectedMeta) ? $selectedMeta : $selectedMeta->toArray();
     }
 
     /**

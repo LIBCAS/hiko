@@ -331,7 +331,7 @@
                         @error('keywords')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
-                        <livewire:create-new-item-modal :route="route('global.keywords.create')" :text="__('hiko.modal_new_keyword')" />
+                        <livewire:create-new-item-modal :route="route('keywords.create')" :text="__('hiko.modal_new_keyword')" />
                     </div>
                     <div>
                         <x-label for="abstract_cs" :value="__('hiko.abstract') . ' CS'" />

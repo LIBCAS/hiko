@@ -4,7 +4,7 @@
         <!-- Top action buttons -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
             <!-- Bulk Merge -->
-            <button 
+            <button
                 wire:click="previewMerge"
                 wire:loading.attr="disabled"
                 wire:target="previewMerge"
@@ -20,7 +20,7 @@
             </button>
 
             <!-- Manual Merge -->
-            <button 
+            <button
                 wire:click="openManualMerge"
                 wire:loading.attr="disabled"
                 wire:target="openManualMerge"
@@ -44,8 +44,8 @@
                             <h3 class="text-sm font-medium text-indigo-800">{{ __('hiko.selected_for_merge') }}:</h3>
                             <div class="mt-1 text-indigo-700">
                                 <span class="px-2 py-1 bg-white rounded text-xs border border-indigo-300">
-                                    {{ $selectedKeywordOneDetails ? 
-                                        ($selectedKeywordOneDetails['cs'] . ' / ' . $selectedKeywordOneDetails['en']) : 
+                                    {{ $selectedKeywordOneDetails ?
+                                        ($selectedKeywordOneDetails['cs'] . ' / ' . $selectedKeywordOneDetails['en']) :
                                         __('hiko.loading_details') }}
                                 </span>
                             </div>
@@ -55,8 +55,8 @@
                             <h3 class="text-sm font-medium text-indigo-800">{{ __('hiko.will_merge_with') }}:</h3>
                             <div class="mt-1 text-indigo-700">
                                 <span class="px-2 py-1 bg-white rounded text-xs border border-indigo-300">
-                                    {{ $selectedKeywordTwoDetails ? 
-                                        ($selectedKeywordTwoDetails['cs'] . ' / ' . $selectedKeywordTwoDetails['en']) : 
+                                    {{ $selectedKeywordTwoDetails ?
+                                        ($selectedKeywordTwoDetails['cs'] . ' / ' . $selectedKeywordTwoDetails['en']) :
                                         __('hiko.loading_details') }}
                                 </span>
                             </div>
@@ -95,17 +95,17 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <label>
                 <span class="block text-sm">CS</span>
-                <x-input wire:model.live="filters.cs" class="block w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.cs" class="block w-full px-2 text-sm" type="text" />
             </label>
 
             <label>
                 <span class="block text-sm">EN</span>
-                <x-input wire:model.live="filters.en" class="block w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.en" class="block w-full px-2 text-sm" type="text" />
             </label>
 
             <label>
                 <span class="block text-sm">{{ __('hiko.source') }}</span>
-                <x-select wire:model.live="filters.source" class="block w-full px-2 text-sm">
+                <x-select wire:model.live.debounce.1000ms="filters.source" class="block w-full px-2 text-sm">
                     <option value="all">*</option>
                     <option value="local">{{ __('hiko.local') }}</option>
                     <option value="global">{{ __('hiko.global') }}</option>
@@ -114,7 +114,7 @@
 
             <label>
                 <span class="block text-sm">{{ __('hiko.order_by') }}</span>
-                <x-select wire:model.live="filters.order" class="block w-full px-2 text-sm">
+                <x-select wire:model.live.debounce.1000ms="filters.order" class="block w-full px-2 text-sm">
                     <option value="cs">CS</option>
                     <option value="en">EN</option>
                 </x-select>
@@ -138,7 +138,7 @@
     @endif
 
     <!-- Preview Modal - Styled like Professions -->
-    <div x-data="{ showModal: @entangle('showPreview') }" x-show="showModal" x-cloak class="fixed z-[999] inset-0 overflow-y-auto" aria-labelledby="preview-modal-title" role="dialog" aria-modal="true">
+    <div x-data="{ showModal: @entangle('showPreview') }" x-show="showModal" x-cloak class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="preview-modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0" x-transition:enter="ease-out duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
@@ -165,7 +165,7 @@
                      <div class="mt-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
                          <div class="flex items-center space-x-2">
                             <label for="previewSimilarityThreshold" class="text-sm font-medium text-gray-700 whitespace-nowrap">{{ __('hiko.similarity_threshold') }}:</label>
-                             <input id="previewSimilarityThreshold" type="range" min="50" max="100" step="1" wire:model.live="similarityThreshold" class="w-24 sm:w-32 flex-grow h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                             <input id="previewSimilarityThreshold" type="range" min="50" max="100" step="1" wire:model.live.debounce.1000ms="similarityThreshold" class="w-24 sm:w-32 flex-grow h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                              <span class="text-sm font-medium text-gray-700 whitespace-nowrap">{{ $similarityThreshold }}%</span>
                          </div>
                          {{-- No category/identity merge options in Keyword preview --}}
@@ -308,7 +308,7 @@
     </div>
 
     <!-- Manual Merge Modal - Styled like Professions -->
-    <div x-data="{ showModal: @entangle('showManualMerge') }" x-show="showModal" x-cloak class="fixed z-[999] inset-0 overflow-y-auto" aria-labelledby="manual-merge-modal-title" role="dialog" aria-modal="true">
+    <div x-data="{ showModal: @entangle('showManualMerge') }" x-show="showModal" x-cloak class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="manual-merge-modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0" x-transition:enter="ease-out duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
@@ -375,7 +375,7 @@
                             </h4>
                             <div class="mb-2">
                                 <input type="text"
-                                    wire:model.live.debounce.300ms="localKeywordSearch"
+                                    wire:model.live.debounce.1000ms="localKeywordSearch"
                                     placeholder="{{ __('hiko.search_local_keywords') }}"
                                     class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
                                     wire:loading.class="opacity-75" wire:target="localKeywordSearch">
@@ -413,7 +413,7 @@
                             </h4>
                             <div class="mb-2">
                                 <input type="text"
-                                    wire:model.live.debounce.300ms="globalKeywordSearch"
+                                    wire:model.live.debounce.1000ms="globalKeywordSearch"
                                     placeholder="{{ __('hiko.search_global_keywords') }}"
                                     class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500
                                         {{ !$selectedLocalKeyword ? 'opacity-50 cursor-not-allowed' : '' }}"
@@ -425,7 +425,7 @@
                                 <ul class="divide-y divide-gray-200">
                                     @if($selectedLocalKeyword)
                                         @forelse($globalKeywordsToDisplay as $keyword)
-                                        <li wire:click="selectGlobalKeyword({{ $keyword['id'] }})"
+                                        <li wire:key="global-keyword-{{ $keyword['id'] }}" wire:click="selectGlobalKeyword({{ $keyword['id'] }})"
                                             class="px-4 py-3 hover:bg-red-50 cursor-pointer transition-colors duration-150
                                             {{ $selectedGlobalKeyword == $keyword['id'] ? 'bg-red-50 border-l-4 border-red-700' : '' }}">
                                             <div class="font-medium text-gray-900">{{ $keyword['cs'] }}</div>
@@ -454,6 +454,17 @@
                                         @empty
                                         <li class="px-4 py-3 text-gray-500 text-center">{{ __('hiko.no_global_keywords_found') }}</li>
                                         @endforelse
+                                        @if(count($globalKeywordsToDisplay) < $availableGlobalKeywordsCount)
+                                            <li class="px-4 py-3 text-center">
+                                                <button
+                                                    wire:click="loadMoreGlobalKeywords"
+                                                    wire:loading.attr="disabled"
+                                                    class="text-sm text-indigo-600 hover:underline"
+                                                >
+                                                    {{ __('hiko.load_more') }}
+                                                </button>
+                                            </li>
+                                        @endif
                                     @else
                                     <li class="px-4 py-3 text-gray-500 text-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m-8 6H4m0 0l4 4m-4-4l4-4" /></svg>
@@ -488,7 +499,7 @@
 
 
     <!-- Direct Merge Two Keywords Modal - Styled like Professions Modals -->
-    <div x-data="{ showModal: @entangle('showMergeTwoKeywords') }" x-show="showModal" x-cloak class="fixed z-[999] inset-0 overflow-y-auto" aria-labelledby="direct-merge-modal-title" role="dialog" aria-modal="true">
+    <div x-data="{ showModal: @entangle('showMergeTwoKeywords') }" x-show="showModal" x-cloak class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="direct-merge-modal-title" role="dialog" aria-modal="true">
          <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0" x-transition:enter="ease-out duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
@@ -634,7 +645,7 @@
 
 
     <!-- Loading Overlay - Styled like Professions -->
-    <div x-data="{}" x-show="$wire.isProcessing" class="fixed inset-0 z-[1000] flex items-center justify-center bg-gray-500 bg-opacity-75" x-cloak>
+    <div x-data="{}" x-show="$wire.isProcessing" class="fixed inset-0 z-20 flex items-center justify-center bg-gray-500 bg-opacity-75" x-cloak>
          <div class="relative bg-white rounded-lg p-8 text-center shadow-xl">
             {{-- Black spinner --}}
             <svg class="w-16 h-16 mx-auto text-black animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -646,3 +657,13 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+    Livewire.on('alert', data => {
+        const { type, message } = data[0];
+        if (type && message) {
+            alert(`[${type.toUpperCase()}] ${message}`);
+        }
+    })
+</script>
+@endpush

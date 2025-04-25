@@ -14,7 +14,7 @@
                     </div>
                 </div>
             </label>
-            
+
             <!-- EN Input with Live Search -->
             <label>
                 <span class="block text-sm">EN</span>
@@ -28,28 +28,28 @@
                     </div>
                 </div>
             </label>
-            
+
             <!-- Source Select -->
             <label>
                 <span class="block text-sm">{{__('hiko.source')}}</span>
-                <x-select wire:model.live="filters.source" class="block w-full px-2 text-sm">
+                <x-select wire:model.live.debounce.1000ms="filters.source" class="block w-full px-2 text-sm">
                     <option value="all">*</option>
                     <option value="local">{{__('hiko.local')}}</option>
                     <option value="global">{{__('hiko.global')}}</option>
                 </x-select>
             </label>
-            
+
             <!-- Order By Select -->
             <label>
                 <span class="block text-sm">{{ __('hiko.order_by') }}</span>
-                <x-select wire:model.live="filters.order" class="w-full px-2 text-sm">
+                <x-select wire:model.live.debounce.1000ms="filters.order" class="w-full px-2 text-sm">
                     <option value="cs">CS</option>
                     <option value="en">EN</option>
                 </x-select>
             </label>
         </div>
     </x-filter-form>
-    
+
     <!-- Loading Indicator -->
     <div wire:loading.delay class="w-full text-center py-2">
         <div class="inline-flex items-center px-4 py-2 text-xs font-medium leading-4 text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm">
@@ -60,7 +60,7 @@
             {{ __('Searching...') }}
         </div>
     </div>
-    
+
     <!-- Results -->
     <div wire:loading.remove>
         @if(!empty($tableData['rows']))

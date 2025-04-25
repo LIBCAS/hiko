@@ -11,20 +11,44 @@ class AjaxKeywordController extends Controller
 {
     public function __invoke(Request $request): array
     {
-        $searchTerm = $request->query('search');
+        $searchTerm = mb_strtolower($request->query('search'));
         if (empty($searchTerm)) {
             return [];
         }
 
-        $tenantKeywords = Keyword::where('name', 'like', "%{$searchTerm}%")->get();
-        $globalKeywords = GlobalKeyword::where('name', 'like', "%{$searchTerm}%")->get();
+        $locale = config('app.locale');
 
-        $keywords = $tenantKeywords->merge($globalKeywords);
+        // Force into plain Collection
+        $tenantKeywords = collect(
+            Keyword::whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"'))) LIKE ?", ["%{$searchTerm}%"])
+                ->get()
+                ->map(fn($keyword) => [
+                    'id' => 'local-' . $keyword->id,
+                    'value' => 'local-' . $keyword->id,
+                    'label' => $keyword->getTranslation('name', $locale) . ' (' . __('hiko.local') . ')',
+                    'type' => __('hiko.local')
+                ])
+                ->values()
+                ->toArray()
+        );
 
-        return $keywords->map(fn($keyword) => [
-            'id' => $keyword->id,
-            'value' => $keyword->id,
-            'label' => $keyword->getTranslation('name', config('app.locale')),
-        ])->toArray();
+        $globalKeywords = collect(
+            GlobalKeyword::whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"'))) LIKE ?", ["%{$searchTerm}%"])
+                ->get()
+                ->map(fn($keyword) => [
+                    'id' => 'global-' . $keyword->id,
+                    'value' => 'global-' . $keyword->id,
+                    'label' => $keyword->getTranslation('name', $locale),
+                    'type' => __('hiko.global')
+                ])
+                ->values()
+                ->toArray()
+        );
+
+        return $tenantKeywords
+            ->merge($globalKeywords)
+            ->sortBy('label')
+            ->values()
+            ->toArray();
     }
 }

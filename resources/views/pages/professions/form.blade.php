@@ -47,7 +47,6 @@
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>
-
                 <livewire:create-new-item-modal :route="route('professions.category.create')" :text="__('hiko.modal_new_profession_category')" />
                 <x-button-simple class="w-full" name="action" value="edit">
                     {{ $label }}

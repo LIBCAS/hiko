@@ -113,7 +113,7 @@ class LetterRequest extends FormRequest
 
             // IMPORTANT: keywords => array of integer IDs
             'keywords'     => ['nullable', 'array'],
-            'keywords.*'   => ['integer'], 
+            'keywords.*'   => ['regex:/^(local|global)-\d+$/'],
         ];
     }
 

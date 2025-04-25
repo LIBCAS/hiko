@@ -37,14 +37,19 @@
                     <x-label for="category" :value="__('hiko.category')" />
                     <x-select name="category" id="category" class="block w-full mt-1" x-data="ajaxChoices({ url: '{{ route('ajax.keywords.category') }}', element: $el })"
                         x-init="initSelect()" required>
-                        @if ($category)
-                            <option value="{{ $category['id'] }}">{{ $category['label'] }}</option>
-                        @endif
+                        <option value="">{{ __('hiko.select_category') }}</option>
+                        @foreach ($categories as $availableCategory)
+                            <option value="{{ $availableCategory->id }}"
+                                {{ old('category', $keyword->keyword_category_id ?? '') == $availableCategory->id ? 'selected' : '' }}>
+                                {{ $availableCategory->getTranslation('name', app()->getLocale()) }}
+                            </option>
+                        @endforeach
                     </x-select>
                     @error('category')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>
+                <livewire:create-new-item-modal :route="route('keywords.category.create')" :text="__('hiko.modal_new_keyword_category')" />
                 <x-button-simple class="w-full" name="action" value="edit">
                     {{ $label }}
                 </x-button-simple>

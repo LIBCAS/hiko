@@ -23,8 +23,8 @@
 
         <div>
             <x-label for="note" :value="__('hiko.note')" />
-            <x-textarea name="note" id="note"
-                class="block w-full mt-1">{{ old('note', $identity->note) }}</x-textarea>
+            <x-textarea name="note" id="note" rows="3"
+                class="block w-full mt-1" style="min-height: 90px;">{{ old('note', $identity->note) }}</x-textarea>
             @error('note')
                 <div class="text-red-600">{{ $message }}</div>
             @enderror

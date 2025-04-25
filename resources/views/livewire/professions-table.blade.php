@@ -1,9 +1,9 @@
 <div>
     <x-filter-form>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
-            
+
             <!-- Bulk Merge -->
-            <button 
+            <button
                 wire:click="previewMerge"
                 wire:loading.attr="disabled"
                 wire:target="previewMerge"
@@ -17,9 +17,9 @@
                     </svg>
                 </span>
             </button>
-            
+
             <!-- Manual Merge Button -->
-            <button 
+            <button
                 wire:click="openManualMerge"
                 wire:loading.attr="disabled"
                 wire:target="openManualMerge"
@@ -34,7 +34,7 @@
                 </span>
             </button>
         </div>
-        
+
         <!-- Selected professions info -->
         @if($selectedProfessionOne)
         <div class="mt-2 px-4 py-2 bg-indigo-50 border border-indigo-200 rounded-md">
@@ -43,8 +43,8 @@
                     <h3 class="text-sm font-medium text-indigo-800">{{ __('hiko.selected_for_merge') }}:</h3>
                     <div class="mt-1 text-indigo-700">
                         <span class="px-2 py-1 bg-white rounded text-xs border border-indigo-300">
-                            {{ $selectedProfessionOneDetails ? 
-                                ($selectedProfessionOneDetails['cs'] . ' / ' . $selectedProfessionOneDetails['en']) : 
+                            {{ $selectedProfessionOneDetails ?
+                                ($selectedProfessionOneDetails['cs'] . ' / ' . $selectedProfessionOneDetails['en']) :
                                 __('hiko.loading_details') }}
                         </span>
                     </div>
@@ -54,8 +54,8 @@
                     <h3 class="text-sm font-medium text-indigo-800">{{ __('hiko.will_merge_with') }}:</h3>
                     <div class="mt-1 text-indigo-700">
                         <span class="px-2 py-1 bg-white rounded text-xs border border-indigo-300">
-                            {{ $selectedProfessionTwoDetails ? 
-                                ($selectedProfessionTwoDetails['cs'] . ' / ' . $selectedProfessionTwoDetails['en']) : 
+                            {{ $selectedProfessionTwoDetails ?
+                                ($selectedProfessionTwoDetails['cs'] . ' / ' . $selectedProfessionTwoDetails['en']) :
                                 __('hiko.loading_details') }}
                         </span>
                     </div>
@@ -68,7 +68,7 @@
             </div>
         </div>
         @endif
-        
+
         <!-- Message Notifications -->
         <div class="mt-2 space-y-2">
             <!-- Success Message -->
@@ -90,38 +90,38 @@
                 </div>
             @endif
         </div>
-        
+
         <!-- Filter Inputs -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <label>
                 <span class="block text-sm">CS</span>
-                <x-input wire:model.live="filters.cs" class="block w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.cs" class="block w-full px-2 text-sm" type="text" />
             </label>
-            
+
             <label>
                 <span class="block text-sm">EN</span>
-                <x-input wire:model.live="filters.en" class="block w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.en" class="block w-full px-2 text-sm" type="text" />
             </label>
-            
+
             <label>
                 <span class="block text-sm">{{__('hiko.source')}}</span>
-                <x-select wire:model.live="filters.source" class="block w-full px-2 text-sm">
+                <x-select wire:model.live.debounce.1000ms="filters.source" class="block w-full px-2 text-sm">
                     <option value="all">*</option>
                     <option value="local">{{__('hiko.local')}}</option>
                     <option value="global">{{__('hiko.global')}}</option>
                 </x-select>
             </label>
-            
+
             <label>
                 <span class="block text-sm">{{ __('hiko.order_by') }}</span>
-                <x-select wire:model.live="filters.order" class="block w-full px-2 text-sm">
+                <x-select wire:model.live.debounce.1000ms="filters.order" class="block w-full px-2 text-sm">
                     <option value="cs">CS</option>
                     <option value="en">EN</option>
                 </x-select>
             </label>
         </div>
     </x-filter-form>
-    
+
     <!-- Table Section -->
     @if(!empty($tableData['rows']))
         <div class="overflow-x-auto -mx-4 sm:mx-0">
@@ -135,26 +135,26 @@
             <p class="text-gray-700">{{ __('hiko.compare_no_results') }}</p>
         </div>
     @endif
-    
+
     <!-- Manual Merge Modal -->
-    <div x-data="{ showModal: @entangle('showManualMerge') }" x-show="showModal" x-cloak class="fixed z-[999] inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div x-data="{ showModal: @entangle('showManualMerge') }" x-show="showModal" x-cloak class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0" x-transition:enter="ease-out duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-            
+
             <!-- Background overlay -->
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
                 x-on:click="$wire.closeManualMerge()"></div>
-                
+
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            
+
             <!-- Modal panel -->
             <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all my-4 w-full mx-2 max-h-[85vh] md:max-h-[90vh] sm:my-6 md:my-8 sm:align-middle sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-6xl"
                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-                
+
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 max-h-[70vh] overflow-y-auto">
                     <!-- Header -->
                     <div class="flex justify-between items-center border-b pb-3">
@@ -167,7 +167,7 @@
                             </svg>
                         </button>
                     </div>
-                    
+
                     <!-- Progress indicator -->
                     <div class="mt-3 mb-4">
                         <div class="relative bg-gray-200 rounded-full h-2">
@@ -179,20 +179,20 @@
                             <span class="{{ $selectedLocalProfession && $selectedGlobalProfession ? 'text-indigo-600 font-medium' : '' }}">{{ __('hiko.select_global') }}</span>
                         </div>
                     </div>
-                    
+
                     <!-- Merge Options -->
                     <div class="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
                         <h4 class="font-medium text-gray-700 mb-2">{{ __('hiko.merge_options') }}</h4>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="flex items-start">
-                                <input id="manual-merge-identities" wire:model.live="mergeOptions.mergeIdentities" type="checkbox" 
+                                <input id="manual-merge-identities" wire:model.live="mergeOptions.mergeIdentities" type="checkbox"
                                     class="h-4 w-4 mt-1 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
                                 <label for="manual-merge-identities" class="ml-2 block text-sm text-gray-700">
                                     {{ __('hiko.merge_identities') }}
                                 </label>
                             </div>
                             <div class="flex items-start">
-                                <input id="manual-merge-categories" wire:model.live="mergeOptions.mergeCategories" type="checkbox" 
+                                <input id="manual-merge-categories" wire:model.live="mergeOptions.mergeCategories" type="checkbox"
                                     class="h-4 w-4 mt-1 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
                                 <label for="manual-merge-categories" class="ml-2 block text-sm text-gray-700">
                                     {{ __('hiko.merge_categories') }}
@@ -200,7 +200,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Selection grids -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Local professions column -->
@@ -209,13 +209,13 @@
                                 <span class="inline-flex items-center justify-center mr-2 h-5 w-5 text-xs bg-blue-100 text-blue-700 rounded-full">1</span>
                                 {{ __('hiko.local_professions') }}
                             </h4>
-                            
+
                             <!-- Search filter for local professions -->
                             <div class="mb-2">
-                                <input type="text" 
-                                wire:model.debounce.300ms="localProfessionSearch" 
+                                <input type="text"
+                                wire:model.debounce.300ms="localProfessionSearch"
                                 wire:keydown.debounce.300ms="search"
-                                placeholder="{{ __('hiko.search_local_professions') }}" 
+                                placeholder="{{ __('hiko.search_local_professions') }}"
                                 class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
                                 wire:loading.class="opacity-75"
                                 wire:target="search">
@@ -223,12 +223,12 @@
                                     {{ __('hiko.filtering') }}
                                 </div>
                             </div>
-                            
+
                             <div class="border rounded-md h-96 overflow-y-auto">
                                 <ul class="divide-y divide-gray-200">
                                     @forelse($unmergedProfessionsToDisplay as $profession)
                                     <li wire:click="selectLocalProfession({{ $profession['id'] }})"
-                                        class="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors duration-150 
+                                        class="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors duration-150
                                             {{ $selectedLocalProfession == $profession['id'] ? 'bg-blue-50 border-l-4 border-blue-500' : '' }}">
                                         <div class="font-medium">CS: {{ $profession['cs'] }}</div>
                                         <div>EN: {{ $profession['en'] }}</div>
@@ -248,21 +248,21 @@
                                 </ul>
                             </div>
                         </div>
-                        
+
                         <!-- Global professions column -->
                         <div>
                             <h4 class="font-medium text-gray-700 mb-2 flex items-center">
                                 <span class="inline-flex items-center justify-center mr-2 h-5 w-5 text-xs bg-red-100 text-red-700 rounded-full">2</span>
                                 {{ __('hiko.global_professions') }}
                             </h4>
-                            
+
                             <!-- Search filter for global professions -->
                             <div class="mb-2">
-                                <input type="text" 
-                                    wire:model.debounce.300ms="globalProfessionSearch" 
+                                <input type="text"
+                                    wire:model.debounce.300ms="globalProfessionSearch"
                                     wire:keydown.debounce.300ms="search"
-                                    placeholder="{{ __('hiko.search_global_professions') }}" 
-                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 
+                                    placeholder="{{ __('hiko.search_global_professions') }}"
+                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500
                                         {{ !$selectedLocalProfession ? 'opacity-50 cursor-not-allowed' : '' }}"
                                     {{ !$selectedLocalProfession ? 'disabled' : '' }}
                                     wire:loading.class="opacity-75"
@@ -271,32 +271,32 @@
                                     {{ __('hiko.filtering') }}
                                 </div>
                             </div>
-                            
+
                             <div class="border rounded-md h-96 overflow-y-auto">
                                 <ul class="divide-y divide-gray-200">
                                     @if($selectedLocalProfession)
                                         @forelse($globalProfessionsToDisplay as $profession)
                                         <li wire:click="selectGlobalProfession({{ $profession['id'] }})"
-                                        class="px-4 py-3 hover:bg-red-50 cursor-pointer transition-colors duration-150 
+                                        class="px-4 py-3 hover:bg-red-50 cursor-pointer transition-colors duration-150
                                         {{ $selectedGlobalProfession == $profession['id'] ? 'bg-red-50 border-l-4 border-red-700' : '' }}">
                                             <div class="font-medium">CS: {{ $profession['cs'] }}</div>
                                             <div>EN: {{ $profession['en'] }}</div>
-                                            
+
                                             <!-- Category and similarity information -->
                                             <div class="flex flex-wrap gap-2 mt-2">
                                                 @if(isset($profession['csSimilarity']) || isset($profession['enSimilarity']))
                                                 <div class="flex space-x-2 text-xs">
-                                                    <span class="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded 
+                                                    <span class="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded
                                                         {{ $profession['csSimilarity'] > 85 ? 'bg-green-100 text-green-800' : '' }}">
                                                         CS: {{ number_format($profession['csSimilarity'], 1) }}%
                                                     </span>
-                                                    <span class="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded 
+                                                    <span class="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded
                                                         {{ $profession['enSimilarity'] > 85 ? 'bg-green-100 text-green-800' : '' }}">
                                                         EN: {{ number_format($profession['enSimilarity'], 1) }}%
                                                     </span>
                                                 </div>
                                                 @endif
-                                                
+
                                                 @if(!empty($profession['category_name']))
                                                 <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded
                                                     {{ isset($profession['categoryMatch']) && $profession['categoryMatch'] ? 'bg-red-100 text-red-800' : '' }}">
@@ -323,12 +323,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Modal footer -->
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col-reverse sm:flex-row-reverse space-y-3 space-y-reverse sm:space-y-0 sm:space-x-3 sm:space-x-reverse">
                     <button type="button" wire:click="performManualMerge" wire:loading.attr="disabled" wire:target="performManualMerge"
                         @if(!$selectedLocalProfession || !$selectedGlobalProfession) disabled @endif
-                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-black text-white text-base font-medium hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black sm:w-auto sm:text-sm transition-colors duration-150 
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-black text-white text-base font-medium hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black sm:w-auto sm:text-sm transition-colors duration-150
                             {{ (!$selectedLocalProfession || !$selectedGlobalProfession) ? 'opacity-50 cursor-not-allowed' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m-8 6H4m0 0l4 4m-4-4l4-4" />
@@ -341,7 +341,7 @@
                             </svg>
                         </span>
                     </button>
-                    <button type="button" wire:click="closeManualMerge" 
+                    <button type="button" wire:click="closeManualMerge"
                         class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm transition-colors duration-150">
                         {{ __('hiko.cancel') }}
                     </button>
@@ -351,24 +351,24 @@
     </div>
 
     <!-- Merge Preview Modal -->
-    <div x-data="{ showModal: @entangle('showPreview') }" x-show="showModal" x-cloak class="fixed z-[999] inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div x-data="{ showModal: @entangle('showPreview') }" x-show="showModal" x-cloak class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0" x-transition:enter="ease-out duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-            
+
             <!-- Background overlay -->
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
                 x-on:click="$wire.closePreview()"></div>
-                
+
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            
+
             <!-- Modal panel -->
             <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all my-4 w-full mx-2 max-h-[85vh] md:max-h-[90vh] sm:my-6 md:my-8 sm:align-middle sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-6xl"
                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-                
+
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 max-h-[70vh] overflow-y-auto">
                     <!-- Header -->
                     <div class="flex justify-between items-center border-b pb-3">
@@ -381,19 +381,19 @@
                             </svg>
                         </button>
                     </div>
-                    
+
                     <!-- Merge Options -->
                     <div class="mt-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                             <!-- Similarity Threshold Input -->
                             <div class="flex items-center space-x-2">
                                 <span class="text-sm font-medium text-gray-700 whitespace-nowrap">{{ __('hiko.similarity_threshold') }}:</span>
-                                <input type="range" min="80" max="100" step="1" wire:model.live="similarityThreshold" class="w-24 sm:w-32">
+                                <input type="range" min="80" max="100" step="1" wire:model.live.debounce.1000ms="similarityThreshold" class="w-24 sm:w-32">
                                 <span class="text-sm font-medium text-gray-700 whitespace-nowrap">{{ $similarityThreshold }}%</span>
                             </div>
                             <!-- Merge Categories Checkbox -->
                             <div class="flex items-start">
-                                <input id="preview-merge-categories" wire:model.live="mergeOptions.mergeCategories" type="checkbox" 
+                                <input id="preview-merge-categories" wire:model.live="mergeOptions.mergeCategories" type="checkbox"
                                     class="h-4 w-4 mt-1 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
                                 <label for="preview-merge-categories" class="ml-2 block text-sm text-gray-700">
                                     {{ __('hiko.merge_categories') }}
@@ -401,15 +401,15 @@
                             </div>
                             <!-- Merge Identities Checkbox -->
                             <div class="flex items-start">
-                                <input id="preview-merge-identities" wire:model.live="mergeOptions.mergeIdentities" type="checkbox" 
+                                <input id="preview-merge-identities" wire:model.live="mergeOptions.mergeIdentities" type="checkbox"
                                     class="h-4 w-4 mt-1 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
                                 <label for="preview-merge-identities" class="ml-2 block text-sm text-gray-700">
                                     {{ __('hiko.merge_identities') }}
                                 </label>
                             </div>
-                        </div>                        
+                        </div>
                     </div>
-                    
+
                     <!-- Statistics Summary -->
                     <div class="mt-4 flex flex-wrap items-center gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
                         <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 flex items-center">
@@ -431,7 +431,7 @@
                             {{ $mergeStats['total'] }} {{ __('hiko.total') }}
                         </span>
                     </div>
-                    
+
                     <!-- Preview Table -->
                     <div class="mt-4">
                         <div class="overflow-x-auto -mx-4 sm:mx-0">
@@ -540,7 +540,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Modal footer -->
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col-reverse sm:flex-row-reverse space-y-3 space-y-reverse sm:space-y-0 sm:space-x-3 sm:space-x-reverse">
                     <button type="button" wire:click="mergeAll" wire:loading.attr="disabled" wire:target="mergeAll"
@@ -556,7 +556,7 @@
                             </svg>
                         </span>
                     </button>
-                    <button type="button" wire:click="closePreview" 
+                    <button type="button" wire:click="closePreview"
                         class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm transition-colors duration-150">
                         {{ __('hiko.cancel') }}
                     </button>
@@ -565,3 +565,13 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+    Livewire.on('alert', data => {
+        const { type, message } = data[0];
+        if (type && message) {
+            alert(`[${type.toUpperCase()}] ${message}`);
+        }
+    })
+</script>
+@endpush

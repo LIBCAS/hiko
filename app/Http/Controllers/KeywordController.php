@@ -90,9 +90,9 @@ class KeywordController extends Controller
             },
             'keyword_category'
         ]);
-    
+
         return view('pages.keywords.form', [
-            'title' => __('hiko.keyword') . ': ' . $keyword->id,
+            'title' => __('hiko.keyword') . ': ' . $keyword->getTranslation('name', app()->getLocale()),
             'keyword' => $keyword,
             'method' => 'PUT',
             'action' => route('keywords.update', $keyword),
@@ -100,12 +100,12 @@ class KeywordController extends Controller
             'categories' => KeywordCategory::all(),
             'category' => $keyword->keyword_category,
         ]);
-    }    
+    }
 
     public function update(Request $request, Keyword $keyword): RedirectResponse
     {
         $validated = $request->validate($this->getRules());
-    
+
         DB::transaction(function () use ($validated, $keyword) {
             $keyword->update([
                 'name' => [
@@ -113,19 +113,19 @@ class KeywordController extends Controller
                     'en' => $validated['en'],
                 ],
             ]);
-    
+
             $keyword->keyword_category()->dissociate();
-    
+
             if (!empty($validated['category'])) {
                 $keyword->keyword_category()->associate($validated['category']);
                 $keyword->save();
             }
         });
-    
+
         return redirect()
             ->route('keywords.edit', $keyword->id)
             ->with('success', __('hiko.saved'));
-    }    
+    }
 
     public function destroy(Keyword $keyword): RedirectResponse
     {

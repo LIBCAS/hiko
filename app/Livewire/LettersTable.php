@@ -21,7 +21,7 @@ class LettersTable extends Component
     protected array $allowedFilters = [
         'id', 'signature', 'author', 'recipient',
         'origin', 'destination', 'repository', 'archive', 'collection',
-        'keyword', 'mentioned', 'fulltext', 'abstract',
+        'keyword', 'mentioned', 'content_stripped', 'abstract',
         'languages', 'note', 'media', 'status', 'approval', 'editor',
         'after', 'before'
     ];
@@ -61,14 +61,14 @@ class LettersTable extends Component
         if (is_array($key) && isset($key['filterKey'])) {
             $key = $key['filterKey'];
         }
-    
+
         if (in_array($key, $this->allowedFilters)) {
             unset($this->filters[$key]);
             session()->put('lettersTableFilters', $this->filters);
         }
-    
+
         $this->resetPage();
-    }       
+    }
 
     public function resetLettersTablePage() { $this->resetPage(); }
 
@@ -96,7 +96,7 @@ class LettersTable extends Component
         $query = Letter::query()
             ->select("$lettersTable.*")
             ->with([
-                'identities', 'places', 'keywords', 'media', 'users'
+                'identities', 'places', 'localKeywords', 'globalKeywords', 'media', 'users'
             ])
             ->from($lettersTable);
 
@@ -155,16 +155,22 @@ class LettersTable extends Component
             });
         }
 
-        foreach (['repository', 'archive', 'collection', 'mentioned', 'fulltext', 'abstract', 'note'] as $field) {
+        foreach (['repository', 'archive', 'collection', 'mentioned', 'content_stripped', 'abstract', 'note'] as $field) {
             if (!empty($filters[$field])) {
                 $query->where("{$prefix}letters.$field", 'like', '%' . $filters[$field] . '%');
             }
         }
 
         if (!empty($filters['keyword'])) {
-            $query->whereHas('keywords', function ($q) use ($filters) {
-                $q->where('name->cs', 'like', '%' . $filters['keyword'] . '%')
-                  ->orWhere('name->en', 'like', '%' . $filters['keyword'] . '%');
+            $query->where(function ($q) use ($filters) {
+                $q->whereHas('localKeywords', function ($sub) use ($filters) {
+                    $sub->where('name->cs', 'like', '%' . $filters['keyword'] . '%')
+                        ->orWhere('name->en', 'like', '%' . $filters['keyword'] . '%');
+                })
+                ->orWhereHas('globalKeywords', function ($sub) use ($filters) {
+                    $sub->where('name->cs', 'like', '%' . $filters['keyword'] . '%')
+                        ->orWhere('name->en', 'like', '%' . $filters['keyword'] . '%');
+                });
             });
         }
 
@@ -292,8 +298,9 @@ class LettersTable extends Component
                         'label' => collect($places['destination'] ?? [])->pluck('name')->toArray(),
                     ],
                     [
-                        'label' => collect($letter->keywords)->map(function ($kw) {
-                            return $kw->getTranslation('name', config('hiko.metadata_default_locale'));
+                        'label' => collect($letter->all_keywords)->map(function ($kw) {
+                            $name = $kw->getTranslation('name', config('hiko.metadata_default_locale'));
+                            return $kw->type === 'global' ? "{$name} (G)" : "{$name} (L)";
                         })->toArray(),
                     ],
                     [

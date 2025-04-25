@@ -2,7 +2,7 @@
     <div class="relative" x-data="{ isVisible: true }" @click.away="isVisible = false">
         <x-label for="search_viaf" :value="__('hiko.query')" />
         <div class="relative">
-            <x-input wire:model.live="search" id="search_viaf" class="block w-full mt-1" type="search" x-ref="search"
+            <x-input wire:model.live.debounce.1000ms="search" id="search_viaf" class="block w-full mt-1" type="search" x-ref="search"
                 @focus="isVisible = true" @keydown.escape.window="isVisible = false" @keydown="isVisible = true"
                 @keydown.shift.tab="isVisible = false" />
             <x-icons.refresh wire:loading

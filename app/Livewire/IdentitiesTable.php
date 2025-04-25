@@ -78,29 +78,29 @@ class IdentitiesTable extends Component
         if (is_null($relatedNames)) {
             return ''; // Returns an empty string if the relatedNames is equal to null
         }
-    
+
         $relatedNamesArray = is_array($relatedNames) ? $relatedNames : json_decode($relatedNames, true);
-    
+
         if (json_last_error() !== JSON_ERROR_NONE || !is_array($relatedNamesArray)) {
             return ''; // Empty string in the case of the incorrect JSON
         }
-    
-        return implode(', ', array_map(fn($name) => 
+
+        return implode(', ', array_map(fn($name) =>
             trim("{$name['surname']} {$name['forename']} {$name['general_name_modifier']}"),
             $relatedNamesArray
         ));
-    }    
+    }
 
     protected function findIdentities(): LengthAwarePaginator
     {
         $filters = $this->filters;
         $tenantPrefix = tenancy()->initialized ? tenancy()->tenant->table_prefix : null;
-    
+
         $query = Identity::with([
             'professions.profession_category',
             'globalProfessions.profession_category',
         ])->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names');
-    
+
         $query->when($filters['name'], fn($q) => $q->where('name', 'like', "%{$filters['name']}%"));
         $query->when($filters['related_names'], fn($q) => $q->where('related_names', 'like', "%{$filters['related_names']}%"));
         $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
@@ -109,7 +109,7 @@ class IdentitiesTable extends Component
                 $sq->where('name', 'like', "%{$filters['profession']}%")
             )
         );
-    
+
         $query->when($filters['category'], fn($q) => $q->where(function ($sq) use ($filters, $tenantPrefix) {
             $sq->whereHas('professions.profession_category', fn($qq) =>
                 $qq->where("{$tenantPrefix}__profession_categories.name", 'like', "%{$filters['category']}%")
@@ -117,15 +117,15 @@ class IdentitiesTable extends Component
                 $qq->where('name', 'like', "%{$filters['category']}%")
             );
         }));
-    
+
         $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
-    
+
         if (in_array($filters['order'], ['name', 'birth_year', 'death_year'])) {
             $query->orderBy($filters['order']);
         }
-    
+
         $identities = $query->paginate(25, ['*'], 'identitiesPage');
-    
+
         // Enrich with global professions from central DB
         if ($tenantPrefix) {
             Tenancy::central(function () use ($identities, $tenantPrefix) {
@@ -134,21 +134,21 @@ class IdentitiesTable extends Component
                     ->whereIn('identity_id', $ids)
                     ->whereNotNull('global_profession_id')
                     ->pluck('global_profession_id', 'identity_id');
-    
+
                 $globalProfessions = GlobalProfession::whereIn('id', $mapping->values())
                     ->with('profession_category')
                     ->get()
                     ->keyBy('id');
-    
+
                 foreach ($identities as $identity) {
                     $id = $mapping[$identity->id] ?? null;
                     $identity->setRelation('globalProfessions', collect($id ? [$globalProfessions[$id]] : []));
                 }
             });
         }
-    
+
         return $identities;
-    }    
+    }
 
     protected function formatTableData($data): array
     {

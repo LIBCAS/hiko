@@ -35,9 +35,6 @@ class Letter extends Model implements HasMedia
 
         if (function_exists('tenancy') && tenancy()->initialized) {
             $this->setTable(tenancy()->tenant->table_prefix . '__letters');
-        } else {
-            //$this->setTable('blekastad__letters');
-            //throw new \Exception("Tenancy not initialized – cannot set tenant table for Letter.");
         }
     }
     /**
@@ -62,7 +59,7 @@ class Letter extends Model implements HasMedia
             ->storeConversionsOnDisk('public');
             //->withResponsiveImages();
     }
-    
+
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumb')
@@ -70,7 +67,7 @@ class Letter extends Model implements HasMedia
             ->width(180)
             ->keepOriginalImageFormat()
             ->nonQueued();
-    
+
         // Ensure watermark conversion
         if (Storage::disk('public')->exists('watermark/logo.png')) {
             $this->addMediaConversion('watermark')
@@ -111,7 +108,7 @@ class Letter extends Model implements HasMedia
     public function identities(): BelongsToMany
     {
         return $this->belongsToMany(
-            Identity::class, 
+            Identity::class,
             tenancy()->tenant->table_prefix . '__identity_letter'
         )
         ->withPivot('position', 'role', 'marked', 'salutation')
@@ -121,7 +118,7 @@ class Letter extends Model implements HasMedia
     public function places(): BelongsToMany
     {
         return $this->belongsToMany(
-            Place::class, 
+            Place::class,
             tenancy()->tenant->table_prefix . '__letter_place'
         )
         ->withPivot('position', 'role', 'marked')
@@ -141,11 +138,41 @@ class Letter extends Model implements HasMedia
     public function keywords(): BelongsToMany
     {
         return $this->belongsToMany(
-            Keyword::class, 
+            Keyword::class,
             tenancy()->tenant->table_prefix . '__keyword_letter'
         )
         ->withPivot('keyword_id', 'letter_id')
         ->orderBy('pivot_keyword_id', 'asc');
+    }
+
+    public function localKeywords(): BelongsToMany
+    {
+        return $this->keywords();
+    }
+
+    public function globalKeywords(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            GlobalKeyword::class,
+            tenancy()->tenant->table_prefix . '__keyword_letter',
+            'letter_id',
+            'global_keyword_id'
+        );
+    }
+
+    public function getAllKeywordsAttribute()
+    {
+        $local = $this->localKeywords->map(function ($keyword) {
+            $keyword->type = 'local';
+            return $keyword;
+        });
+
+        $global = $this->globalKeywords->map(function ($keyword) {
+            $keyword->type = 'global';
+            return $keyword;
+        });
+
+        return $local->merge($global);
     }
 
     /**
@@ -174,7 +201,7 @@ class Letter extends Model implements HasMedia
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(
-            User::class, 
+            User::class,
             tenancy()->tenant->table_prefix . '__letter_user'
         )
         ->withPivot('letter_id', 'user_id');
@@ -214,7 +241,7 @@ class Letter extends Model implements HasMedia
     {
         return TenantMedia::class;
     }
-    
+
     protected function formatDate($day, $month, $year): string
     {
         $day = $day && $day != 0 ? $day : '?';

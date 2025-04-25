@@ -54,7 +54,7 @@
                 </div>
 
                 <!-- Livewire Modal for Creating New Category -->
-                <livewire:create-new-item-modal :route="route('professions.category.create')" :text="__('hiko.modal_new_profession_category')" />
+                <livewire:create-new-item-modal :route="route('global.professions.category.create')" :text="__('hiko.modal_new_global_profession_category')" />
 
                 <!-- Action Buttons -->
                 <x-button-simple class="w-full" name="action" value="edit">

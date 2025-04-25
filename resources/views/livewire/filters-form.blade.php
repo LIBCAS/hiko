@@ -4,11 +4,11 @@
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.from') }}</span>
-                <x-input wire:model.live="filters.after" class="w-full px-2 text-sm" type="date" />
+                <x-input wire:model.live.debounce.1000ms="filters.after" class="w-full px-2 text-sm" type="date" />
             </label>
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.to') }}</span>
-                <x-input wire:model.live="filters.before" class="w-full px-2 text-sm" type="date" />
+                <x-input wire:model.live.debounce.1000ms="filters.before" class="w-full px-2 text-sm" type="date" />
             </label>
         </div>
     </div>
@@ -18,11 +18,11 @@
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.id') }}</span>
-                <x-input wire:model.live="filters.id" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.id" class="w-full px-2 text-sm" type="text" />
             </label>
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.signature') }}</span>
-                <x-input wire:model.live="filters.signature" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.signature" class="w-full px-2 text-sm" type="text" />
             </label>
         </div>
     </div>
@@ -32,11 +32,11 @@
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.author') }}</span>
-                <x-input wire:model.live="filters.author" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.author" class="w-full px-2 text-sm" type="text" />
             </label>
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.recipient') }}</span>
-                <x-input wire:model.live="filters.recipient" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.recipient" class="w-full px-2 text-sm" type="text" />
             </label>
         </div>
     </div>
@@ -46,11 +46,11 @@
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.origin') }}</span>
-                <x-input wire:model.live="filters.origin" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.origin" class="w-full px-2 text-sm" type="text" />
             </label>
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.destination') }}</span>
-                <x-input wire:model.live="filters.destination" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.destination" class="w-full px-2 text-sm" type="text" />
             </label>
         </div>
     </div>
@@ -60,15 +60,15 @@
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.repository') }}</span>
-                <x-input wire:model.live="filters.repository" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.repository" class="w-full px-2 text-sm" type="text" />
             </label>
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.archive') }}</span>
-                <x-input wire:model.live="filters.archive" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.archive" class="w-full px-2 text-sm" type="text" />
             </label>
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.collection') }}</span>
-                <x-input wire:model.live="filters.collection" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.collection" class="w-full px-2 text-sm" type="text" />
             </label>
         </div>
     </div>
@@ -78,19 +78,19 @@
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.keywords') }}</span>
-                <x-input wire:model.live="filters.keyword" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.keyword" class="w-full px-2 text-sm" type="text" />
             </label>
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.mentioned') }}</span>
-                <x-input wire:model.live="filters.mentioned" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.mentioned" class="w-full px-2 text-sm" type="text" />
             </label>
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.full_text') }}</span>
-                <x-input wire:model.live="filters.fulltext" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.content_stripped" class="w-full px-2 text-sm" type="text" />
             </label>
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.abstract') }}</span>
-                <x-input wire:model.live="filters.abstract" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.abstract" class="w-full px-2 text-sm" type="text" />
             </label>
         </div>
     </div>
@@ -100,17 +100,17 @@
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.language') }} {{ __('hiko.in_english') }}</span>
-                <x-input wire:model.live="filters.languages" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.languages" class="w-full px-2 text-sm" type="text" />
             </label>
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.note') }}</span>
-                <x-input wire:model.live="filters.note" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.note" class="w-full px-2 text-sm" type="text" />
             </label>
             <label class="block text-sm">
                 <span class="block text-black">
                     {{ __('hiko.media') }}
                 </span>
-                <x-select wire:model.live="filters.media" class="w-full px-2 text-sm">
+                <x-select wire:model.live.debounce.1000ms="filters.media" class="w-full px-2 text-sm">
                     <option value="">
                         ---
                     </option>
@@ -126,7 +126,7 @@
                 <span class="block text-black">
                     {{ __('hiko.status') }}
                 </span>
-                <x-select wire:model.live="filters.status" class="w-full px-2 text-sm">
+                <x-select wire:model.live.debounce.1000ms="filters.status" class="w-full px-2 text-sm">
                     <option value="">
                         ---
                     </option>
@@ -142,7 +142,7 @@
                 <span class="block text-black">
                     {{ __('hiko.approval') }}
                 </span>
-                <x-select wire:model.live="filters.approval" class="w-full px-2 text-sm">
+                <x-select wire:model.live.debounce.1000ms="filters.approval" class="w-full px-2 text-sm">
                     <option value="">
                         ---
                     </option>
@@ -157,14 +157,14 @@
             @can('manage-users')
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.editors') }}</span>
-                <x-input wire:model.live="filters.editor" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.editor" class="w-full px-2 text-sm" type="text" />
             </label>
             @elsecan('manage-metadata')
             <label class="block text-sm">
                 <span class="block text-black">
                     {{ __('hiko.only_my_records') }}
                 </span>
-                <x-select wire:model.live="filters.editor" class="w-full px-2 text-sm">
+                <x-select wire:model.live.debounce.1000ms="filters.editor" class="w-full px-2 text-sm">
                     <option value="">
                         {{ __('hiko.no') }}
                     </option>

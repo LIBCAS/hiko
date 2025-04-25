@@ -21,3 +21,4 @@ storage/app/google-cloud/
 /certs
 /database/export
 /database/import
+adminer-x.php

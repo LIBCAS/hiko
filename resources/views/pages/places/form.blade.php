@@ -50,8 +50,8 @@
 
                 <div>
                     <x-label for="note" :value="__('hiko.note')" />
-                    <x-textarea name="note" id="note"
-                        class="block w-full mt-1">{{ old('note', $place->note) }}</x-textarea>
+                    <x-textarea name="note" id="note" rows="3"
+                        class="block w-full mt-1" style="min-height: 90px;">{{ old('note', $place->note) }}</x-textarea>
                     @error('note')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
@@ -73,8 +73,7 @@
                 <!-- Latitude and Longitude Fields -->
                 <div>
                     <x-label for="latitude" :value="__('hiko.latitude')" />
-                    <x-input id="latitude" class="block w-full mt-1" type="text" name="latitude"
-                        wire:model.live="latitude" :value="old('latitude', $place->latitude)" />
+                    <x-input id="latitude" class="block w-full mt-1" type="text" name="latitude" :value="old('latitude', $place->latitude)" />
                     @error('latitude')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
@@ -82,8 +81,7 @@
 
                 <div>
                     <x-label for="longitude" :value="__('hiko.longitude')" />
-                    <x-input id="longitude" class="block w-full mt-1" type="text" name="longitude"
-                        wire:model.live="longitude" :value="old('longitude', $place->longitude)" />
+                    <x-input id="longitude" class="block w-full mt-1" type="text" name="longitude" :value="old('longitude', $place->longitude)" />
                     @error('longitude')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
@@ -92,8 +90,7 @@
                 <!-- Geoname ID Field -->
                 <div>
                     <x-label for="geoname_id" :value="__('Geoname ID')" />
-                    <x-input id="geoname_id" class="block w-full mt-1" type="text" name="geoname_id"
-                        wire:model.live="geoname_id" :value="old('geoname_id', $place->geoname_id)" />
+                    <x-input id="geoname_id" class="block w-full mt-1" type="text" name="geoname_id" :value="old('geoname_id', $place->geoname_id)" />
                     @error('geoname_id')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror

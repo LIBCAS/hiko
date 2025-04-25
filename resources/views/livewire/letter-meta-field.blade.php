@@ -25,6 +25,9 @@
                                 </option>
                             @endif
                         </x-select>
+                        @if (strpos(route($route), 'identity') !== false)
+                            <livewire:create-new-item-modal :route="route('identities.create')" :text="__('hiko.modal_new_identity')" />
+                        @endif
                     </div>
                 </div>
                 <div>

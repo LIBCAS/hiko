@@ -56,7 +56,7 @@
                 </div>
 
                 <!-- Livewire Modal for Creating New Category -->
-                <livewire:create-new-item-modal :route="route('global.keywords.category.create')" :text="__('hiko.modal_new_keyword_category')" />
+                <livewire:create-new-item-modal :route="route('global.keywords.category.create')" :text="__('hiko.modal_new_global_keyword_category')" />
 
                 <!-- Action Buttons -->
                 <div class="space-y-2">
@@ -85,10 +85,24 @@
                 @endcan
             @endif
         </div>
-
-        <!-- Right Column: Attached Category Details -->
         @if ($keyword->id)
-            <div class="max-w-sm bg-white p-6 shadow rounded-md col-span-2">
+            <div class="max-w-sm bg-white p-6 shadow rounded-md">
+                @if ($keyword->letters->count())
+                    <h2 class="text-l font-semibold">{{ __('hiko.letters') }}: {{ $keyword->letters->count() }}</h2>
+                    <ul class="list-disc px-3 py-3">
+                        @foreach ($keyword->letters as $letter)
+                            <li class="text-sm">
+                                {{ $letter->id }} - <a href="{{ route('letters.edit', $letter->id) }}"
+                                    class="border-b text-primary-dark border-primary-light hover:border-primary-dark">{{ $letter->name }}</a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <h2 class="text-l font-semibold">{{ __('hiko.no_attached_letters') }}</h2>
+                @endif
+            </div>
+            <!-- Right Column: Attached Category Details -->
+            <div class="max-w-sm bg-white p-6 shadow rounded-md">
                 @if ($keyword->keyword_category)
                     <h2 class="text-lg font-semibold">
                         {{ __('hiko.attached_category') }}:
