@@ -35,7 +35,7 @@
                 <x-alert-similar-names />
                 <div class="required">
                     <x-label for="category" :value="__('hiko.category')" />
-                    <x-select name="category" id="category" class="block w-full mt-1" x-data="ajaxChoices({ url: '{{ route('ajax.keywords.category') }}', element: $el })"
+                    <x-select name="category" id="category" class="block w-full mt-1" x-data="ajaxChoices({ url: '{{ route('ajax.keywords.category') }}', element: $el, shouldSort: false })"
                         x-init="initSelect()" required>
                         <option value="">{{ __('hiko.select_category') }}</option>
                         @foreach ($categories as $availableCategory)
@@ -233,6 +233,25 @@
                         }
                     });
                 });
+
+                // Track modal close events
+                setTimeout(function() {
+                    document.addEventListener('modal-closed', function() {
+                        const selectorElmId = 'category';
+                        const selectorElm = document.getElementById(selectorElmId);
+                        const ajaxChoicesInstance = window.ajaxChoicesSelectors[selectorElmId];
+                        if (selectorElm && ajaxChoicesInstance) {
+                            ajaxChoicesInstance.clearChoices();
+                            ajaxChoicesInstance.removeActiveItems();
+
+                            fetch('{{ route('ajax.keywords.category') }}?search=')
+                                .then(response => response.json())
+                                .then(json => {
+                                    ajaxChoicesInstance.setChoices(json, 'value', 'label', true);
+                                });
+                        }
+                    });
+                }, 2000);
             });
 
             // Keep the debounce function
@@ -254,9 +273,11 @@
 
             // Use debounce with the AJAX request
             var searchInput = document.getElementById('mentioned');
-            searchInput.addEventListener('input', debounce(function(e) {
-                // Make AJAX request here
-            }, 500));
+            if (searchInput) {
+                searchInput.addEventListener('input', debounce(function(e) {
+                    // Make AJAX request here
+                }, 500));
+            }
 
             // Hide header and footer in modals
             function hideHeaderFooterInIframe() {

@@ -338,9 +338,11 @@ $relatedIdentities = $relatedIdentities->sortBy('name');
 
             // Use debounce with the AJAX request
             var searchInput = document.getElementById('mentioned');
-            searchInput.addEventListener('input', debounce(function(e) {
-                // Make AJAX request here
-            }, 500));
+            if (searchInput) {
+                searchInput.addEventListener('input', debounce(function(e) {
+                    // Make AJAX request here
+                }, 500));
+            }
 
             // Hide header and footer in modals
             function hideHeaderFooterInIframe() {

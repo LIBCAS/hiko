@@ -1,5 +1,7 @@
 import Choices from 'choices.js'
 
+window.ajaxChoicesSelectors = {};
+
 window.choices = (data) => {
     return {
         initSelect: () => {
@@ -20,7 +22,10 @@ window.ajaxChoices = function (data) {
                 removeItemButton: true,
                 searchResultLimit: 10,
                 duplicateItemsAllowed: false,
+                shouldSort: data.shouldSort ?? true,
             })
+
+            window.ajaxChoicesSelectors[data.element.id] = select
 
             data.element.addEventListener(
                 'search',
