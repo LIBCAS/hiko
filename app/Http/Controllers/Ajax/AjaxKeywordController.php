@@ -38,7 +38,7 @@ class AjaxKeywordController extends Controller
                 ->map(fn($keyword) => [
                     'id' => 'global-' . $keyword->id,
                     'value' => 'global-' . $keyword->id,
-                    'label' => $keyword->getTranslation('name', $locale),
+                    'label' => $keyword->getTranslation('name', $locale) . ' (' . __('hiko.global') . ')',
                     'type' => __('hiko.global')
                 ])
                 ->values()

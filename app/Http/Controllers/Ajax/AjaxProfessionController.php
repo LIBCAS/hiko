@@ -42,7 +42,7 @@ class AjaxProfessionController extends Controller
                 ->map(fn($prof) => [
                     'id' => 'global-' . $prof->id,
                     'value' => 'global-' . $prof->id,
-                    'label' => $prof->getTranslation('name', $locale),
+                    'label' => $prof->getTranslation('name', $locale) . ' (' . __('hiko.global') . ')',
                     'type' => __('hiko.global')
                 ])
                 ->values()
