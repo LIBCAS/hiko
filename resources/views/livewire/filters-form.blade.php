@@ -168,7 +168,7 @@
                     <option value="">
                         {{ __('hiko.no') }}
                     </option>
-                    <option value='my'>
+                    <option value='{{ auth()->user()->name }}'>
                         {{ __('hiko.yes') }}
                     </option>
                 </x-select>
