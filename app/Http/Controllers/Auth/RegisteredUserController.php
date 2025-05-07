@@ -9,6 +9,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 
 class RegisteredUserController extends Controller
@@ -33,9 +34,11 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request)
     {
+        $userTable = (new User)->getTable();
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique($userTable)],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
