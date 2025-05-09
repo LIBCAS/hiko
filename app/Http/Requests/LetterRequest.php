@@ -83,7 +83,7 @@ class LetterRequest extends FormRequest
 
             // Another JSON array
             'related_resources'            => ['nullable', 'array'],
-            'related_resources.*.title'    => ['required', 'string', 'max:255'],
+            'related_resources.*.title'    => ['required', 'string'],
             'related_resources.*.link'     => ['nullable', 'url'],
 
             // Abstract is stored as JSON by Spatie\Translatable
