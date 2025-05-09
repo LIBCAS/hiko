@@ -224,10 +224,10 @@
                             @endforeach
                         </ul>
                         @if ($letter->destination_uncertain)
-                            <small class="block pl-3"><em>{{ __('hiko.uncertain_destination') }}<</em></small>
+                            <small class="block pl-3"><em>{{ __('hiko.uncertain_destination') }}</em></small>
                         @endif
                         @if ($letter->destination_inferred)
-                            <small class="block pl-3"><em>{{ __('hiko.inferred_destination') }}<</em></small>
+                            <small class="block pl-3"><em>{{ __('hiko.inferred_destination') }}</em></small>
                         @endif
                     </td>
                 </tr>

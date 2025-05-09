@@ -35,15 +35,13 @@ class SearchIdentity
             ->take($limit)
             ->get()
             ->map(function ($identity) {
-                return $identity->type === 'person'
-                    ? [
-                        'id' => $identity->id,
-                        'label' => $identity->name ? "{$identity->name} ({$identity->birth_year} - {$identity->death_year})" : 'No Name (Local)',
-                    ]
-                    : [
-                        'id' => $identity->id,
-                        'label' => $identity->name ? $identity->name : 'No Name (Local)',
-                    ];
+                $birthYear = $identity->birth_year ? $identity->birth_year : '?';
+                $deathYear = $identity->death_year ? $identity->death_year : '?';
+
+                return [
+                    'id' => $identity->id,
+                    'label' => $identity->name ? "{$identity->name} ({$birthYear} - {$deathYear})" : 'No Name (Local)',
+                ];
             });
     }
 }
