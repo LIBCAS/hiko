@@ -372,7 +372,16 @@
                     <div>
                         <x-label for="mentioned" :value="__('hiko.mentioned')" />
                         <x-select name="mentioned[]" class="block w-full mt-1" id="mentioned"
-                            x-data="ajaxChoices({ url: '{{ route('ajax.identities') }}', element: $el })" x-init="initSelect()" multiple @input.debounce.500ms="search">
+                            x-data="ajaxChoices({
+                                url: '{{ route('ajax.identities') }}',
+                                element: $el,
+                                extraParams: {
+                                    allTypes: true
+                                }
+                            })"
+                            x-init="initSelect()"
+                            multiple @input.debounce.500ms="search"
+                        >
                             @foreach ($selectedMentioned as $mention)
                                 <option value="{{ $mention['value'] }}" selected>{{ $mention['label'] }}</option>
                             @endforeach

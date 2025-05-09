@@ -32,10 +32,15 @@ window.ajaxChoices = function (data) {
                 debounce(
                     this,
                     (e) => {
-                        const url =
-                            data.url +
-                            '?search=' +
-                            encodeURIComponent(e.detail.value)
+                        const params = new URLSearchParams({ search: e.detail.value });
+
+                        if (data.extraParams) {
+                            Object.entries(data.extraParams).forEach(([key, val]) =>
+                                params.append(key, val)
+                            );
+                        }
+
+                        const url = data.url + '?' + params.toString();
 
                         fetch(url)
                             .then(function (response) {

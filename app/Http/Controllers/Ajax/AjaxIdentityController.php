@@ -16,10 +16,16 @@ class AjaxIdentityController extends Controller
             return [];
         }
 
-        $searchFilters = [
-            'name' => $request->input('search'),
-            'type' => $request->input('type', 'person'),
-        ];
+        if ($request->boolean('allTypes')) {
+            $searchFilters = [
+                'name' => $request->input('search')
+            ];
+        } else {
+            $searchFilters = [
+                'name' => $request->input('search'),
+                'type' => $request->input('type', 'person'),
+            ];
+        }
 
         $search = new SearchIdentity;
         $results = $search($searchFilters)
