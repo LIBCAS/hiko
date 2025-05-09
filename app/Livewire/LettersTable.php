@@ -27,7 +27,7 @@ class LettersTable extends Component
     ];
 
     protected array $allowedSorting = [
-        'id', 'updated_at', 'author', 'recipient', 'origin', 'destination', 'media'
+        'id', 'updated_at', 'author', 'recipient', 'origin', 'destination', 'media', 'date_computed', 'abstract'
     ];
 
     public function mount()
