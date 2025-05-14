@@ -239,25 +239,8 @@ class LetterController extends Controller
 
     protected function duplicateRelatedEntities(Letter $sourceLetter, Letter $duplicatedLetter)
     {
-        $keywords = $sourceLetter->keywords ?? [];
-        if (!empty($keywords)) {
-            $localKeywords = [];
-            $globalKeywords = [];
-
-            foreach ($keywords as $kw) {
-                $isGlobalKw = str_starts_with($kw, 'global-');
-                $kwId = (int) str_replace(['global-', 'local-'], '', $kw);
-
-                if ($isGlobalKw) {
-                    $globalKeywords[] = $kwId;
-                } else {
-                    $localKeywords[] = $kwId;
-                }
-            }
-
-            $duplicatedLetter->localKeywords()->sync($localKeywords);
-            $duplicatedLetter->globalKeywords()->sync($globalKeywords);
-        }
+        $duplicatedLetter->localKeywords()->sync($sourceLetter->localKeywords->pluck('id')->toArray());
+        $duplicatedLetter->globalKeywords()->sync($sourceLetter->globalKeywords->pluck('id')->toArray());
 
         $duplicatedLetter->identities()->detach();
         $duplicatedLetter->places()->detach();
