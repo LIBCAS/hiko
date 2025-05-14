@@ -103,8 +103,8 @@
                 <x-input wire:model.live.debounce.1000ms="filters.languages" class="w-full px-2 text-sm" type="text" />
             </label>
             <label class="block text-sm">
-                <span class="block text-black">{{ __('hiko.note') }}</span>
-                <x-input wire:model.live.debounce.1000ms="filters.note" class="w-full px-2 text-sm" type="text" />
+                <span class="block text-black">{{ __('hiko.notes_private') }}</span>
+                <x-input wire:model.live.debounce.1000ms="filters.notes_private" class="w-full px-2 text-sm" type="text" />
             </label>
             <label class="block text-sm">
                 <span class="block text-black">

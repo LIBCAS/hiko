@@ -22,7 +22,7 @@ class LettersTable extends Component
         'id', 'signature', 'author', 'recipient',
         'origin', 'destination', 'repository', 'archive', 'collection',
         'keyword', 'mentioned', 'content_stripped', 'abstract',
-        'languages', 'note', 'media', 'status', 'approval', 'editor',
+        'languages', 'notes_private', 'media', 'status', 'approval', 'editor',
         'after', 'before'
     ];
 
@@ -114,8 +114,10 @@ class LettersTable extends Component
             $query->where("{$prefix}letters.id", $filters['id']);
         }
 
-        if (!empty($filters['signature'])) {
-            $query->whereRaw("JSON_EXTRACT(copies, '$[*].signature') LIKE ?", ["%{$filters['signature']}%"]);
+        foreach (['repository', 'archive', 'collection', 'signature'] as $field) {
+            if (!empty($filters[$field])) {
+                $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(copies, '$[*].{$field}'))) LIKE ?", ['%' . strtolower($filters[$field]) . '%']);
+            }
         }
 
         if (!empty($filters['author'])) {
@@ -178,9 +180,9 @@ class LettersTable extends Component
             });
         }
 
-        foreach (['repository', 'archive', 'collection', 'content_stripped', 'abstract', 'note'] as $field) {
+        foreach (['content_stripped', 'abstract', 'notes_private', 'languages'] as $field) {
             if (!empty($filters[$field])) {
-                $query->where("{$prefix}letters.$field", 'like', '%' . $filters[$field] . '%');
+                $query->whereRaw("LOWER({$prefix}letters.$field) LIKE ?", ['%' . strtolower($filters[$field]) . '%']);
             }
         }
 
@@ -197,9 +199,9 @@ class LettersTable extends Component
             });
         }
 
-        if (!empty($filters['languages'])) {
-            $query->whereJsonContains('languages', $filters['languages']);
-        }
+        // if (!empty($filters['languages'])) {
+        //     $query->whereJsonContains('languages', $filters['languages']);
+        // }
 
         if (!empty($filters['media'])) {
             if ($filters['media'] === '1') {
