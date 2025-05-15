@@ -72,6 +72,21 @@ class LetterResource extends JsonResource
                 'note' => $this->people_mentioned_note,
             ],
             'metadata' => $this->getMetadata(),
+            'keywords' => $this->localKeywords->map(function ($keyword) {
+                return [
+                    'id' => $keyword->id,
+                    'name' => $keyword->name,
+                    'type' => 'local',
+                ];
+            })->merge(
+                $this->globalKeywords->map(function ($keyword) {
+                    return [
+                        'id' => $keyword->id,
+                        'name' => $keyword->name,
+                        'type' => 'global',
+                    ];
+                })
+            )->values(),
         ];
     }
 

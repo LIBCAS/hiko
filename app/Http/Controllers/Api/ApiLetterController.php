@@ -20,11 +20,12 @@ class ApiLetterController extends Controller
     public function index(Request $request): LetterCollection|\Illuminate\Http\JsonResponse
     {
         try {
-            $letters = Letter::with($this->relationships())
+            $lettersQuery = Letter::with($this->relationships())
                 ->published()
                 ->filter($request->all())
-                ->orderByDate($request->input('order', 'asc'))
-                ->paginate($this->limit($request));
+                ->orderByDate($request->input('order', 'asc'));
+
+            $letters = $lettersQuery->paginate($this->limit($request));
 
             return new LetterCollection($letters);
         } catch (\Exception $e) {
@@ -62,6 +63,32 @@ class ApiLetterController extends Controller
         }
     }
 
+    public function media($uuid)
+    {
+        $letter = Letter::where('uuid', $uuid)->published()->first();
+
+        if (!$letter) {
+            abort(404);
+        }
+
+        $mediaQuery = $letter->media();
+        $media = $mediaQuery->get(['id', 'file_name', 'mime_type', 'disk', 'size']);
+
+        return response()->json(
+            $media->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'file_name' => $item->file_name,
+                    'mime_type' => $item->mime_type,
+                    'disk' => $item->disk,
+                    'size' => $item->size,
+                    'url' => $item->getUrl(),
+                    'preview_url' => $item->getUrl('preview'),
+                ];
+            })->values()
+        );
+    }
+
     /**
      * Define the relationships to load based on request parameters.
      *
@@ -71,16 +98,19 @@ class ApiLetterController extends Controller
     {
         return [
             'identities' => function ($query) {
-                $query->select('identities.id', 'name', 'role')
-                      ->whereIn('role', ['author', 'recipient'])
-                      ->orderBy('position');
+                $identityTable = tenancy()->tenant->table_prefix . '__identities';
+                $query->select("{$identityTable}.id", "{$identityTable}.name")
+                    ->wherePivotIn('role', ['author', 'recipient'])
+                    ->orderBy('pivot_position');
             },
             'places' => function ($query) {
-                $query->select('places.id', 'name', 'role')
-                      ->whereIn('role', ['origin', 'destination'])
-                      ->orderBy('position');
+                $placeTable = tenancy()->tenant->table_prefix . '__places';
+                $query->select("{$placeTable}.id", "{$placeTable}.name")
+                    ->wherePivotIn('role', ['origin', 'destination'])
+                    ->orderBy('pivot_position');
             },
-            'keywords:id,name', // Select only necessary columns
+            'localKeywords:id,name',
+            'globalKeywords:id,name',
         ];
     }
 

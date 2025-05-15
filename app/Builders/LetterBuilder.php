@@ -67,6 +67,10 @@ class LetterBuilder extends Builder
             $this->whereRaw("LOWER(JSON_EXTRACT(copies, '$[*].signature')) LIKE ?", ['%' . Str::lower($filters['signature']) . '%']);
         }
 
+        if (!empty($filters['content'])) {
+            $this->where('content_stripped', 'LIKE', '%' . $filters['content'] . '%');
+        }
+
         if (!empty($filters['author'])) {
             $this->addIdentityNameFilter('author', $filters['author']);
         }
@@ -96,18 +100,33 @@ class LetterBuilder extends Builder
         }
 
         if (!empty($filters['keyword'])) {
-            $this->whereHas('keywords', function ($query) use ($filters) {
-                $query->whereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) LIKE ?", ['%' . Str::lower($filters['keyword']) . '%'])
-                      ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.en')) LIKE ?", ['%' . Str::lower($filters['keyword']) . '%']);
-            });
-        }
+            // Check if keyword is in ID-prefixed format (e.g., local-4 or global-7)
+            if (preg_match('/^(local|global)-(\d+)$/', $filters['keyword'], $matches)) {
+                [$full, $type, $id] = $matches;
 
-        if (!empty($filters['languages'])) {
-            $this->where(function ($query) use ($filters) {
-                foreach (explode(';', $filters['languages']) as $lang) {
-                    $query->orWhereRaw("LOWER(languages) LIKE ?", ['%' . Str::lower(trim($lang)) . '%']);
+                if ($type === 'local') {
+                    $keywordTable = tenancy()->tenant->table_prefix . '__keywords';
+                    $this->whereHas('localKeywords', function ($query) use ($id, $keywordTable) {
+                        $query->where("{$keywordTable}.id", $id);
+                    });
+                } elseif ($type === 'global') {
+                    $keywordTable = 'global_keywords';
+                    $this->whereHas('globalKeywords', function ($query) use ($id, $keywordTable) {
+                        $query->where("{$keywordTable}.id", $id);
+                    });
                 }
-            });
+            } else {
+                // fallback: name search in both local and global keywords
+                $this->where(function ($query) use ($filters) {
+                    $query->whereHas('localKeywords', function ($q) use ($filters) {
+                        $q->whereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) LIKE ?", ['%' . Str::lower($filters['keyword']) . '%'])
+                          ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.en')) LIKE ?", ['%' . Str::lower($filters['keyword']) . '%']);
+                    })->orWhereHas('globalKeywords', function ($q) use ($filters) {
+                        $q->whereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) LIKE ?", ['%' . Str::lower($filters['keyword']) . '%'])
+                          ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.en')) LIKE ?", ['%' . Str::lower($filters['keyword']) . '%']);
+                    });
+                });
+            }
         }
 
         if (!empty($filters['mentioned'])) {
@@ -129,11 +148,19 @@ class LetterBuilder extends Builder
     protected function addIdentityNameFilter(string $type, $search): LetterBuilder
     {
         return $this->whereHas('identities', function ($query) use ($type, $search) {
-            $query->where('role', $type)
-                  ->where(function ($subquery) use ($search) {
-                      $subquery->where('name', 'LIKE', '%' . $search . '%')
-                               ->orWhereRaw('LOWER(alternative_names) LIKE ?', ['%' . Str::lower($search) . '%']);
-                  });
+            $pivotTable = tenancy()->tenant->table_prefix . '__identity_letter';
+            $identityTable = tenancy()->tenant->table_prefix . '__identities';
+
+            $query->where("{$pivotTable}.role", $type);
+
+            $query->where(function ($subquery) use ($identityTable, $search) {
+                if (is_numeric($search)) {
+                    $subquery->where("{$identityTable}.id", $search);
+                } else {
+                    $subquery->where("{$identityTable}.name", 'like', '%' . $search . '%')
+                             ->orWhereRaw("LOWER({$identityTable}.alternative_names) LIKE ?", ['%' . strtolower($search) . '%']);
+                }
+            });
         });
     }
 
@@ -141,7 +168,19 @@ class LetterBuilder extends Builder
     protected function addPlaceFilter(string $type, $search): LetterBuilder
     {
         return $this->whereHas('places', function ($query) use ($type, $search) {
-            $query->where('role', $type)->where('name', 'LIKE', '%' . $search . '%');
+            $pivotTable = tenancy()->tenant->table_prefix . '__letter_place';
+            $placeTable = tenancy()->tenant->table_prefix . '__places';
+
+            $query->where("{$pivotTable}.role", $type);
+
+            $query->where(function ($subquery) use ($placeTable, $search) {
+                if (is_numeric($search)) {
+                    $subquery->where("{$placeTable}.id", $search);
+                } else {
+                    $subquery->where("{$placeTable}.name", 'like', '%' . $search . '%')
+                            ->orWhereRaw("LOWER({$placeTable}.alternative_names) LIKE ?", ['%' . strtolower($search) . '%']);
+                }
+            });
         });
     }
 
@@ -173,5 +212,11 @@ class LetterBuilder extends Builder
         }
 
         return $this;
+    }
+
+    public function orderByDate(string $direction = 'asc'): LetterBuilder
+    {
+        $direction = strtolower($direction) === 'desc' ? 'desc' : 'asc';
+        return $this->orderBy('date_computed', $direction);
     }
 }

@@ -42,6 +42,11 @@ class Letter extends Model implements HasMedia
      */
     const APPROVED = 1;
     const NOT_APPROVED = 0;
+    /**
+     * Constants for letter status
+     */
+    const PUBLISHED = "publish";
+    const DRAFT = "draft";
 
     protected $connection = 'tenant';
     public $translatable = ['abstract'];
@@ -51,6 +56,11 @@ class Letter extends Model implements HasMedia
         'copies' => 'array',
         'related_resources' => 'array',
     ];
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', self::PUBLISHED);
+    }
 
     public function registerMediaCollections(): void
     {

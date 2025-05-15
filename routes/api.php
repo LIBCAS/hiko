@@ -26,6 +26,8 @@ Route::middleware([InitializeTenancyByDomain::class, 'web'])->group(function () 
 
     Route::get('letter/{uuid}', [ApiLetterController::class, 'show']);
 
+    Route::get('letter/{uuid}/media', [ApiLetterController::class, 'media']);
+
     Route::get('letters', [ApiLetterController::class, 'index']);
 
 });

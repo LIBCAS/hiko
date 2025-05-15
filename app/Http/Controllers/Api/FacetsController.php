@@ -19,6 +19,7 @@ class FacetsController extends Controller
     public function __invoke(Request $request)
     {
         $model = $request->input('model');
+        $query = $request->input('query');
 
         if (!array_key_exists($model, $this->models)) {
             return response()->json(['message' => 'Not Found'], 404);
@@ -28,15 +29,16 @@ class FacetsController extends Controller
             return response()->json(['message' => 'Bad request'], 400);
         }
 
-        return call_user_func(
-            [$this, $this->models[$model]],
-            $request->input('query'),
-        );
+        return match ($model) {
+            'identity' => $this->searchIdentity(['name' => $query]),
+            'place'    => $this->searchPlace($query),
+            'keyword'  => $this->searchKeyword($query),
+        };
     }
 
-    protected function searchIdentity(string $query)
+    protected function searchIdentity(array $filters)
     {
-        return (new SearchIdentity())($query);
+        return (new SearchIdentity())($filters);
     }
 
     protected function searchPlace(string $query)
@@ -46,13 +48,6 @@ class FacetsController extends Controller
 
     protected function searchKeyword(string $query)
     {
-        $search = new SearchKeyword;
-
-        return $search($query)->map(function ($kw) {
-            return [
-                'id' => $kw->id,
-                'label' => implode(' | ', array_values($kw->getTranslations('name'))),
-            ];
-        });
+        return (new SearchKeyword())($query);
     }
 }
