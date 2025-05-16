@@ -456,18 +456,18 @@
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </fieldset>
-                @can('delete-metadata')
-                    <fieldset id="a-approval" class="p-3 shadow mt-4">
-                        <legend class="text-lg font-semibold">
-                            Schválení
-                        </legend>
+                <fieldset id="a-approval" class="p-3 shadow mt-4">
+                    <legend class="text-lg font-semibold">
+                        {{ __('hiko.approval') }}
+                    </legend>
+                    @can('delete-metadata')
                         <div>
                             <label class="inline-flex items-center">
                                 <input type="radio" name="approval" value="1"
                                     {{ old('approval', $letter->approval) == 1 ? 'checked' : '' }}
                                     class="border-gray-300 shadow-sm text-primary focus:border-primary-light focus:ring focus:ring-primary-light focus:ring-opacity-50"
                                     required>
-                                <span class="ml-2 text-sm text-gray-600">Schváleno</span>
+                                <span class="ml-2 text-sm text-gray-600">{{ __('hiko.approved') }}</span>
                             </label>
                         </div>
                         <div>
@@ -476,14 +476,24 @@
                                     {{ old('approval', $letter->approval) == 0 ? 'checked' : '' }}
                                     class="border-gray-300 shadow-sm text-primary focus:border-primary-light focus:ring focus:ring-primary-light focus:ring-opacity-50"
                                     required>
-                                <span class="ml-2 text-sm text-gray-600">Neschváleno</span>
+                                <span class="ml-2 text-sm text-gray-600">{{ __('hiko.not_approved') }}</span>
                             </label>
                         </div>
-                        @error('approval')
-                            <div class="text-red-600">{{ $message }}</div>
-                        @enderror
-                    </fieldset>
-                @endcan
+                    @else
+                        <div>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="approval" value="0"
+                                    checked
+                                    class="border-gray-300 shadow-sm text-primary focus:border-primary-light focus:ring focus:ring-primary-light focus:ring-opacity-50"
+                                    required>
+                                <span class="ml-2 text-sm text-gray-600">{{ __('hiko.not_approved') }}</span>
+                            </label>
+                        </div>
+                    @endcan
+                    @error('approval')
+                        <div class="text-red-600">{{ $message }}</div>
+                    @enderror
+                </fieldset>
                 <div class="h-1"></div>
                 <x-button-simple class="w-full" onclick="preventLeaving = false" name="action" value="edit">
                     {{ $label }}
