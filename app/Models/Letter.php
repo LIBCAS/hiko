@@ -13,7 +13,9 @@ use TeamTNT\TNTSearch\Indexer\TNTIndexer;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Translatable\HasTranslations;
-use Spatie\Image\Manipulations;
+use Spatie\Image\Enums\AlignPosition;
+use Spatie\Image\Enums\Unit;
+use Spatie\Image\Enums\Fit;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,6 +23,7 @@ use App\Models\TenantMedia;
 use Stancl\Tenancy\Facades\Tenancy;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+
 
 class Letter extends Model implements HasMedia
 {
@@ -81,12 +84,21 @@ class Letter extends Model implements HasMedia
         // Ensure watermark conversion
         if (Storage::disk('public')->exists('watermark/logo.png')) {
             $this->addMediaConversion('watermark')
-                ->watermark(storage_path('app/public/watermark/logo.png'))
-                ->watermarkPosition(Manipulations::POSITION_CENTER)
-                ->watermarkOpacity(50)
+                ->watermark(
+                    storage_path('app/public/watermark/logo.png'),
+                    AlignPosition::Center,
+                    0,
+                    0,
+                    Unit::Pixel,
+                    0,
+                    Unit::Pixel,
+                    0,
+                    Unit::Pixel,
+                    Fit::Contain,
+                    50
+                )
                 ->performOnCollections('default')
                 ->keepOriginalImageFormat()
-                ->storeConversionsOnDisk('public')  // Store watermark conversions on 'public'
                 ->nonQueued();
         }
     }
