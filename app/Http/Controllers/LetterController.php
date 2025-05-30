@@ -190,24 +190,20 @@ class LetterController extends Controller
     protected function attachRelated(Request $request, Letter $letter)
     {
         $keywords = $request->keywords ?? [];
-        if (!empty($keywords)) {
-            $localKeywords = [];
-            $globalKeywords = [];
+        $localKeywords = [];
+        $globalKeywords = [];
+        foreach ($keywords as $kw) {
+            $isGlobalKw = str_starts_with($kw, 'global-');
+            $kwId = (int) str_replace(['global-', 'local-'], '', $kw);
 
-            foreach ($request->keywords as $kw) {
-                $isGlobalKw = str_starts_with($kw, 'global-');
-                $kwId = (int) str_replace(['global-', 'local-'], '', $kw);
-
-                if ($isGlobalKw) {
-                    $globalKeywords[] = $kwId;
-                } else {
-                    $localKeywords[] = $kwId;
-                }
+            if ($isGlobalKw) {
+                $globalKeywords[] = $kwId;
+            } else {
+                $localKeywords[] = $kwId;
             }
-
-            $letter->localKeywords()->sync($localKeywords);
-            $letter->globalKeywords()->sync($globalKeywords);
         }
+        $letter->localKeywords()->sync($localKeywords);
+        $letter->globalKeywords()->sync($globalKeywords);
 
         $letter->identities()->detach();
         $letter->places()->detach();
