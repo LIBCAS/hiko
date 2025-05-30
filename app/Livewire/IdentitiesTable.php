@@ -130,19 +130,31 @@ class IdentitiesTable extends Component
         if ($tenantPrefix) {
             Tenancy::central(function () use ($identities, $tenantPrefix) {
                 $ids = $identities->pluck('id');
-                $mapping = DB::table("{$tenantPrefix}__identity_profession")
+                $rawMappings = DB::table("{$tenantPrefix}__identity_profession")
                     ->whereIn('identity_id', $ids)
                     ->whereNotNull('global_profession_id')
-                    ->pluck('global_profession_id', 'identity_id');
+                    ->get(['identity_id', 'global_profession_id']);
 
-                $globalProfessions = GlobalProfession::whereIn('id', $mapping->values())
+                // Group all global profession IDs by identity ID
+                $mapping = $rawMappings->groupBy('identity_id')->map(function ($group) {
+                    return $group->pluck('global_profession_id');
+                });
+
+                // Collect all unique global profession IDs
+                $allGlobalProfessionIds = $mapping->flatten()->unique()->values();
+
+                $globalProfessions = GlobalProfession::whereIn('id', $allGlobalProfessionIds)
                     ->with('profession_category')
                     ->get()
                     ->keyBy('id');
 
+                // Attach all related globalProfessions per Identity
                 foreach ($identities as $identity) {
-                    $id = $mapping[$identity->id] ?? null;
-                    $identity->setRelation('globalProfessions', collect($id ? [$globalProfessions[$id]] : []));
+                    $ids = $mapping[$identity->id] ?? collect();
+                    $identity->setRelation(
+                        'globalProfessions',
+                        $ids->map(fn($id) => $globalProfessions[$id])->filter()
+                    );
                 }
             });
         }
