@@ -42,6 +42,7 @@ class LetterResource extends JsonResource
     {
         $identities = $this->identities->groupBy('pivot.role');
         $places = $this->places->groupBy('pivot.role');
+        $letterAttrs = $this->getAttributes();
 
         return [
             'name' => $this->name,
@@ -72,21 +73,35 @@ class LetterResource extends JsonResource
                 'note' => $this->people_mentioned_note,
             ],
             'metadata' => $this->getMetadata(),
-            'keywords' => $this->localKeywords->map(function ($keyword) {
+            'keywords' => collect($this->localKeywords)->map(function ($keyword) {
+                $names = json_decode($keyword->getAttributes()['name'], true) ?: [];
+
                 return [
                     'id' => $keyword->id,
-                    'name' => $keyword->name,
-                    'type' => 'local',
+                    'name_cs' => $names['cs'] ?? '',
+                    'name_en' => $names['en'] ?? '',
+                    'type' => 'L.',
                 ];
             })->merge(
-                $this->globalKeywords->map(function ($keyword) {
+                collect($this->globalKeywords)->map(function ($keyword) {
+                    $names = json_decode($keyword->getAttributes()['name'], true) ?: [];
+
                     return [
                         'id' => $keyword->id,
-                        'name' => $keyword->name,
-                        'type' => 'global',
+                        'name_cs' => $names['cs'] ?? '',
+                        'name_en' => $names['en'] ?? '',
+                        'type' => 'G.',
                     ];
                 })
             )->values(),
+            'copies' => $this->copies,
+            'related_resources' => json_decode($letterAttrs['related_resources'], true) ?: [],
+            'abstract' => json_decode($letterAttrs['abstract'], true) ?: [],
+            'incipit' => $this->incipit,
+            'explicit' => $this->explicit,
+            'languages' => explode(';', $this->languages),
+            'note' => $this->notes_public,
+            'content' => $this->content,
         ];
     }
 

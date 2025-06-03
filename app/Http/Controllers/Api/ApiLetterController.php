@@ -72,18 +72,23 @@ class ApiLetterController extends Controller
         }
 
         $mediaQuery = $letter->media();
-        $media = $mediaQuery->get(['id', 'file_name', 'mime_type', 'disk', 'size']);
+        $media = $mediaQuery->get();
 
         return response()->json(
             $media->map(function ($item) {
+                $baseUrl = $item->getUrl();
+                $hasWatermark = $item->hasGeneratedConversion('watermark');
+
                 return [
                     'id' => $item->id,
                     'file_name' => $item->file_name,
                     'mime_type' => $item->mime_type,
                     'disk' => $item->disk,
                     'size' => $item->size,
-                    'url' => $item->getUrl(),
-                    'preview_url' => $item->getUrl('preview'),
+                    'full_url' => $hasWatermark ? $item->getUrl('watermark') : $baseUrl,
+                    'thumb_url' => $item->hasGeneratedConversion('thumb')
+                        ? $item->getUrl('thumb')
+                        : ($hasWatermark ? $item->getUrl('watermark') : $baseUrl),
                 ];
             })->values()
         );
