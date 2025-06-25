@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Letter;
+use App\Models\TenantMedia;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LetterResource;
@@ -72,7 +73,9 @@ class ApiLetterController extends Controller
         }
 
         $mediaQuery = $letter->media();
-        $media = $mediaQuery->get();
+        $media = $mediaQuery->get()->filter(function ($item) {
+            return $item->getCustomProperty('status') === TenantMedia::STATUS_PUBLISHED;
+        });
 
         return response()->json(
             $media->map(function ($item) {
