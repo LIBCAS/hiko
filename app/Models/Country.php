@@ -22,4 +22,9 @@ class Country extends Model
             ];
         })->toArray();
     }
+
+    public static function names(): array
+    {
+        return static::all()->pluck('name')->toArray();
+    }
 }

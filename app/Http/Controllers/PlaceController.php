@@ -2,33 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PlaceRequest;
 use App\Models\Place;
 use App\Models\Country;
-use Illuminate\Http\Request;
-use App\Services\Geonames;
+use App\Services\PlaceService;
+use Illuminate\Http\RedirectResponse;
 use App\Exports\PlacesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class PlaceController extends Controller
 {
-    protected array $rules = [
-        'name' => ['required', 'string', 'max:255'],
-        'country' => ['required', 'string', 'max:255'],
-        'division' => ['nullable', 'string'],
-        'note' => ['nullable', 'string'],
-        'latitude' => ['nullable', 'numeric'],
-        'longitude' => ['nullable', 'numeric'],
-        'geoname_id' => ['nullable', 'integer'],
-    ];
+    protected PlaceService $placeService;
 
-    protected Geonames $geonames;
-
-    public function __construct(Geonames $geonames)
+    public function __construct(PlaceService $placeService)
     {
-        $this->geonames = $geonames;
+        $this->placeService = $placeService;
     }
 
     public function index()
@@ -49,21 +39,24 @@ class PlaceController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(PlaceRequest $request): RedirectResponse
     {
         Log::info('Store method called with request data:', $request->all());
 
-        $validated = $request->validate($this->rules);
+        $validated = $request->validated();
+
+        if ($request->failsDuplicateCheck()) {
+            return redirect()
+                ->back()
+                ->withErrors(['name' => __('hiko.entity_already_exists')])
+                ->withInput();
+        }
+
         Log::info('Validation passed. Data:', $validated);
 
-        $alternativeNames = $this->fetchAlternativeNames($validated['geoname_id']);
-        Log::info('Fetched alternative names:', ['alternative_names' => $alternativeNames]);
+        $place = $this->placeService->create($validated);
 
-        $place = Place::create($validated);
-        $place->alternative_names = $alternativeNames;
-        $place->save();
-
-        Log::info('Place created successfully with alternative names after save. ID:', ['place_id' => $place->id]);
+        Log::info('Place created successfully with ID:', ['place_id' => $place->id]);
         Log::info('Final stored alternative names:', ['alternative_names' => $place->alternative_names]);
 
         return redirect()
@@ -71,17 +64,22 @@ class PlaceController extends Controller
             ->with('success', __('hiko.saved'));
     }
 
-    public function update(Request $request, Place $place): RedirectResponse
+    public function update(PlaceRequest $request, Place $place): RedirectResponse
     {
         Log::info('Update method called for Place ID:', ['place_id' => $place->id]);
 
-        $validated = $request->validate($this->rules);
+        $validated = $request->validated();
+
+        if ($request->failsDuplicateCheck($place->id)) {
+            return redirect()
+                ->back()
+                ->withErrors(['name' => __('hiko.entity_already_exists')])
+                ->withInput();
+        }
+
         Log::info('Validation passed. Data:', $validated);
 
-        $alternativeNames = $this->fetchAlternativeNames($validated['geoname_id']);
-        Log::info('Fetched alternative names:', ['alternative_names' => $alternativeNames]);
-
-        $place->update(array_merge($validated, ['alternative_names' => $alternativeNames]));
+        $this->placeService->update($place, $validated);
 
         Log::info('Place updated successfully with ID:', ['place_id' => $place->id]);
 
@@ -115,22 +113,5 @@ class PlaceController extends Controller
     public function export()
     {
         return Excel::download(new PlacesExport, 'places.xlsx');
-    }
-
-
-    protected function fetchAlternativeNames(?int $geonameId): array
-    {
-        if (!$geonameId) {
-            Log::info('No geoname ID provided, skipping alternative names fetch.');
-            return [];
-        }
-
-        $alternativeNames = $this->geonames->fetchAlternativeNames($geonameId);
-
-        if (!is_array($alternativeNames)) {
-            Log::error('Alternative names fetched are not an array:', ['alternative_names' => $alternativeNames]);
-            return [];
-        }
-        return $alternativeNames;
     }
 }
