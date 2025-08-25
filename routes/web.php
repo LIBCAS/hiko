@@ -119,7 +119,7 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('/archive/search', [LocationController::class, 'searchArchive'])
             ->name('locations.archive.search')
             ->middleware(['auth', 'can:view-metadata']);
-            
+
         Route::get('/collection/search', [LocationController::class, 'searchCollection'])
             ->name('locations.collection.search')
         ->middleware(['auth', 'can:view-metadata']);
@@ -197,7 +197,7 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('/', [GlobalProfessionController::class, 'index'])
             ->name('index')
             ->middleware('can:view-users');
-    
+
         Route::get('create', [GlobalProfessionController::class, 'create'])
             ->name('create')
             ->middleware('can:manage-users');
@@ -218,12 +218,12 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
             ->name('destroy')
             ->middleware('can:manage-users');
     });
-    
+
     Route::prefix('global-profession-categories')->middleware(['auth'])->name('global.professions.category.')->group(function () {
         Route::get('/', [GlobalProfessionCategoryController::class, 'index'])
             ->name('index')
             ->middleware('can:view-users');
-    
+
         Route::get('create', [GlobalProfessionCategoryController::class, 'create'])
             ->name('create')
             ->middleware('can:manage-users');
@@ -244,7 +244,7 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
             ->name('destroy')
             ->middleware('can:manage-users');
     });
-    
+
     Route::prefix('keywords')->group(function () {
         Route::get('/', [KeywordController::class, 'index'])
             ->name('keywords')
@@ -309,7 +309,7 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('/', [GlobalKeywordController::class, 'index'])
             ->name('index')
             ->middleware('can:view-users');
-    
+
         Route::get('create', [GlobalKeywordController::class, 'create'])
             ->name('create')
             ->middleware('can:manage-users');
@@ -330,12 +330,12 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
             ->name('destroy')
             ->middleware('can:manage-users');
     });
-    
+
     Route::prefix('global-keyword-categories')->middleware(['auth'])->name('global.keywords.category.')->group(function () {
         Route::get('/', [GlobalKeywordCategoryController::class, 'index'])
             ->name('index')
             ->middleware('can:view-users');
-    
+
         Route::get('create', [GlobalKeywordCategoryController::class, 'create'])
             ->name('create')
             ->middleware('can:manage-users');
@@ -429,107 +429,107 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('/', [LetterController::class, 'index'])
             ->name('letters')
             ->middleware(['auth', 'can:view-metadata']);
-    
+
         Route::get('create', [LetterController::class, 'create'])
             ->name('letters.create')
             ->middleware(['auth', 'can:manage-metadata']);
-        
+
         Route::get('{letter}/edit', [LetterController::class, 'edit'])
             ->name('letters.edit')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::post('/', [LetterController::class, 'store'])
             ->name('letters.store')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('{letter}/show', [LetterController::class, 'show'])
             ->name('letters.show')
             ->middleware(['auth', 'can:view-metadata']);
-    
+
         Route::put('{letter}', [LetterController::class, 'update'])
             ->name('letters.update')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::delete('{letter}', [LetterController::class, 'destroy'])
             ->name('letters.destroy')
             ->middleware(['auth', 'can:delete-metadata']);
-    
+
         Route::get('export/palladio/character', [LetterController::class, 'exportPalladioCharacter'])
             ->name('letters.export.palladio.character')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('export', [LetterController::class, 'export'])
             ->name('letters.export')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('{letter}/images', [LetterController::class, 'images'])
             ->name('letters.images')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('{letter}/text', [LetterController::class, 'text'])
             ->name('letters.text')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('preview', LetterPreviewController::class)
             ->name('letters.preview')
             ->middleware(['auth', 'can:view-metadata']);
-    
+
         Route::get('{letter}/duplicate', [LetterController::class, 'duplicate'])
             ->name('letters.duplicate')
             ->middleware(['auth', 'can:manage-metadata']);
     });
-    
+
     Route::prefix('compare-letters')->group(function () {
         Route::get('/', [LetterComparisonController::class, 'index'])
             ->name('compare-letters.index')
             ->middleware(['auth', 'can:view-metadata']);
-    
+
         Route::post('search', [LetterComparisonController::class, 'search'])
             ->name('compare-letters.search')
             ->middleware(['auth', 'can:view-metadata']);
-            
+
         Route::get('{comparison}/show', [LetterComparisonController::class, 'show'])
             ->name('compare-letters.show')
             ->middleware(['auth', 'can:view-metadata']);
-    
+
         Route::post('ajax/compare', [AjaxLetterComparisonController::class, 'search'])
             ->name('compare-letters.ajax')
             ->middleware(['auth', 'can:view-metadata']);
-    });    
-    
+    });
+
     Route::prefix('ajax')->group(function () {
         Route::get('keyword-category', [AjaxKeywordCategoryController::class, '__invoke'])
             ->name('ajax.keywords.category')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('professions', [AjaxProfessionController::class, '__invoke'])
             ->name('ajax.professions')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('profession-category', [AjaxProfessionCategoryController::class, '__invoke'])
             ->name('ajax.professions.category')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('global-profession-category', [AjaxGlobalProfessionCategoryController::class, '__invoke'])
             ->name('ajax.global.professions.category')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('identity', [AjaxIdentityController::class, '__invoke'])
             ->name('ajax.identities')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('identity/similar', [SimilarNamesController::class, '__invoke'])
             ->name('ajax.identities.similar')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('place', [AjaxPlaceController::class, '__invoke'])
             ->name('ajax.places')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('places/similar', [SimilarPlacesController::class, '__invoke'])
             ->name('ajax.places.similar')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('keyword', [AjaxKeywordController::class, '__invoke'])
             ->name('ajax.keywords')
             ->middleware(['auth', 'can:manage-metadata']);
@@ -537,15 +537,15 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('global-keyword-category', [AjaxGlobalKeywordCategoryController::class, '__invoke'])
             ->name('ajax.global.keywords.category')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('locations/similar', [SimilarLocationsController::class, '__invoke'])
             ->name('ajax.locations.similar')
             ->middleware(['auth', 'can:manage-metadata']);
-    
+
         Route::get('items/similar', [SimilarItemsController::class, '__invoke'])
             ->name('ajax.items.similar')
             ->middleware(['auth', 'can:manage-metadata']);
-    });    
+    });
 
     Route::prefix('dev')->group(function () {
         Route::get('optimize', [DevToolsController::class, 'cache'])
@@ -567,7 +567,7 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
     Route::get('/tenant-storage/{path}', [TenantStorageController::class, 'show'])
         ->where('path', '.*')
         ->name('tenant.storage')
-        ->middleware(['auth']);  
+        ->middleware(['auth']);
 
     Route::get('edit/{letter:uuid}', EditLinkController::class)
         ->name('edit-link')
@@ -588,19 +588,19 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         ->name('lang');
         Route::get('/serve-local-file/{path}', function ($path) {
             $path = urldecode($path);
-        
+
             // Prevent directory traversal attacks
             if (strpos($path, '..') !== false || strpos($path, '/') === 0) {
                 abort(403);
             }
-        
+
             if (!Storage::disk('local')->exists($path)) {
                 abort(404);
             }
-        
+
             $file = Storage::disk('local')->get($path);
             $type = Storage::disk('local')->mimeType($path);
-        
+
             return response($file, 200)->header('Content-Type', $type);
         })->name('serve-local-file')->where('path', '.*');
 

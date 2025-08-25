@@ -413,4 +413,6 @@ return [
     'load_more' => 'Načíst více',
     'no_professions_in_category' => 'Žádné profese v této kategorii',
     'no_keywords_in_category' => 'Žádná klíčová slova v této kategorii',
+    'entity_already_exists' => 'Taková entita již existuje. Zkontrolujte prosím odeslané údaje.',
+    'tenancy_not_initialized' => 'Tenancy není inicializováno.',
 ];

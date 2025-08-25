@@ -55,12 +55,28 @@ class LetterBuilder extends Builder
             $this->where('approval', $filters['approval']);
         }
 
+        // Filter by date_computed
         if (!empty($filters['after'])) {
             $this->after($filters['after']);
         }
-
         if (!empty($filters['before'])) {
             $this->before($filters['before']);
+        }
+
+        // Filter by created_at
+        if (!empty($filters['created_at_after'])) {
+            $this->where('created_at', '>=', $filters['created_at_after']);
+        }
+        if (!empty($filters['created_at_before'])) {
+            $this->where('created_at', '<=', $filters['created_at_before']);
+        }
+
+        // Filter by updated_at
+        if (!empty($filters['updated_at_after'])) {
+            $this->where('updated_at', '>=', $filters['updated_at_after']);
+        }
+        if (!empty($filters['updated_at_before'])) {
+            $this->where('updated_at', '<=', $filters['updated_at_before']);
         }
 
         if (!empty($filters['signature'])) {

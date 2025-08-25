@@ -15,4 +15,7 @@ return [
     'failed'   => 'Tyto přihlašovací údaje neodpovídají žadnému záznamu.',
     'password' => 'Zadané heslo je neplatné.',
     'throttle' => 'Příliš mnoho pokusů o přihlášení. Zkuste to prosím znovu za :seconds sekund.',
+    'user_logged_in' => 'Uživatel byl úspěšně přihlášen.',
+    'user_logged_out' => 'Uživatel byl úspěšně odhlášen.',
+    'user_inactive' => 'Uživatel není aktivní.',
 ];

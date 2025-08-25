@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Api\v2;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Enums\LocationType;
+use App\Models\Letter;
 use App\Models\Location;
 
 /**
@@ -89,10 +90,9 @@ class LetterRequest extends FormRequest
             'related_resources.*.title'    => ['required', 'string'],
             'related_resources.*.link'     => ['nullable', 'url'],
 
-            // Abstract is stored as JSON by Spatie\Translatable
-            // but we treat it here as a simple array
-            'abstract'   => ['nullable', 'array'],
-            // 'abstract_cs' / 'abstract_en' are combined later, see prepareForValidation.
+            'abstract' => ['nullable', 'array'],
+            'abstract.cs' => ['nullable', 'string'],
+            'abstract.en' => ['nullable', 'string'],
 
             // Simple text fields
             'explicit'   => ['nullable', 'string', 'max:255'],
@@ -105,20 +105,20 @@ class LetterRequest extends FormRequest
             'notes_private' => ['nullable', 'string'],
             'notes_public'  => ['nullable', 'string'],
 
-            'status'         => ['required', 'string', 'max:255'],
-            'approval'       => ['required', 'integer', 'in:1,0'],
+            'status' => ['sometimes', 'string', Rule::in([Letter::PUBLISHED, Letter::DRAFT])],
+            'approval' => ['sometimes', 'integer', Rule::in([Letter::APPROVED, Letter::NOT_APPROVED])],
 
             // Pivot fields we do NOT store in letters table, but still validate as arrays
             'authors'      => ['nullable', 'array'],
-            'authors.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
+            'authors.*.id' => ['required', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
             'recipients'   => ['nullable', 'array'],
-            'recipients.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
+            'recipients.*.id' => ['required', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
             'mentioned' => ['nullable', 'array'],
             'mentioned.*' => ['integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
             'destinations' => ['nullable', 'array'],
-            'destinations.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__places,id'],
+            'destinations.*.id' => ['required', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__places,id'],
             'origins'      => ['nullable', 'array'],
-            'origins.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__places,id'],
+            'origins.*.id' => ['required', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__places,id'],
 
             // IMPORTANT: keywords => array of integer IDs
             'keywords'     => ['nullable', 'array'],
@@ -128,6 +128,10 @@ class LetterRequest extends FormRequest
             'local_keywords.*' => ['integer', 'exists:' . tenancy()->tenant->table_prefix . '__keywords,id'],
             'global_keywords' => ['sometimes', 'array'],
             'global_keywords.*' => ['integer', 'exists:global_keywords,id'],
+
+            // Content fields
+            'content' => ['nullable', 'string'],
+            'content_stripped' => ['nullable', 'string'],
         ];
     }
 
@@ -161,6 +165,10 @@ class LetterRequest extends FormRequest
             'origin_uncertain'       => $this->boolDefault('origin_uncertain'),
             'origin_inferred'        => $this->boolDefault('origin_inferred'),
 
+            // Handle `status` and `approval` with default values
+            'status' => $this->input('status', Letter::DRAFT),
+            'approval' => $this->input('approval', Letter::NOT_APPROVED),
+
             // Convert array of languages -> semicolon string
             'languages'             => $this->prepareStringField('languages', ';'),
 
@@ -172,11 +180,8 @@ class LetterRequest extends FormRequest
             'destinations'      => $this->prepareJsonField('destinations'),
             'origins'           => $this->prepareJsonField('origins'),
 
-            // Merge abstract_cs / abstract_en into single 'abstract' array
-            'abstract' => [
-                'cs' => $this->input('abstract_cs'),
-                'en' => $this->input('abstract_en'),
-            ],
+            // Handle abstract
+            'abstract' => $this->normalizeAbstract($this->input('abstract')),
         ]);
     }
 
@@ -209,5 +214,16 @@ class LetterRequest extends FormRequest
             return $val;
         }
         return empty($val) ? null : json_decode($val, true);
+    }
+
+    /**
+     * Normalize the `abstract` field
+     */
+    private function normalizeAbstract($abstract): array
+    {
+        return [
+            'cs' => $abstract['cs'] ?? null,
+            'en' => $abstract['en'] ?? null,
+        ];
     }
 }

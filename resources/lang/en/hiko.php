@@ -412,4 +412,6 @@ return [
     'load_more' => 'Load more',
     'no_professions_in_category' => 'No professions in this category',
     'no_keywords_in_category' => 'No keywords in this category',
+    'entity_already_exists' => 'Such entity already exists. Please check submitted data.',
+    'tenancy_not_initialized' => 'Tenancy is not initialized.',
 ];
