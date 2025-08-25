@@ -23,31 +23,31 @@ class IdentityController extends Controller
         $filters = request()->only([
             'name', 'related_names', 'type', 'profession', 'category', 'note', 'order'
         ]);
-    
+
         $labels = [
             'name' => __('hiko.name'),
             'surname' => __('hiko.surname'),
             'type' => __('hiko.type'),
         ];
-    
+
         $identities = $this->findIdentities($filters);
-    
+
         return view('pages.identities.index', [
             'title' => __('hiko.identities'),
             'labels' => $labels,
             'identities' => $identities,
         ]);
-    }    
+    }
 
     protected function findIdentities(array $filters): LengthAwarePaginator
     {
         $tenantPrefix = tenancy()->initialized ? tenancy()->tenant->table_prefix : null;
-    
+
         $query = Identity::with([
             'professions.profession_category',
             'globalProfessions.profession_category',
         ])->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names');
-    
+
         $query->when($filters['name'] ?? null, fn($q) => $q->where('name', 'like', '%' . $filters['name'] . '%'));
         $query->when($filters['related_names'] ?? null, fn($q) => $q->where('related_names', 'like', '%' . $filters['related_names'] . '%'));
         $query->when($filters['type'] ?? null, fn($q) => $q->where('type', $filters['type']));
@@ -56,7 +56,7 @@ class IdentityController extends Controller
                 $sq->where('name', 'like', '%' . $filters['profession'] . '%')
             )
         );
-    
+
         $query->when($filters['category'] ?? null, fn($q) => $q->where(function ($sq) use ($filters, $tenantPrefix) {
             $sq->whereHas('professions.profession_category', fn($qq) =>
                 $qq->where("{$tenantPrefix}__profession_categories.name", 'like', '%' . $filters['category'] . '%')
@@ -64,15 +64,15 @@ class IdentityController extends Controller
                 $qq->where('name', 'like', '%' . $filters['category'] . '%')
             );
         }));
-    
+
         $query->when($filters['note'] ?? null, fn($q) => $q->where('note', 'like', '%' . $filters['note'] . '%'));
-    
+
         if (in_array($filters['order'] ?? '', ['name', 'birth_year', 'death_year'])) {
             $query->orderBy($filters['order']);
         }
-    
+
         $identities = $query->paginate(25, ['*'], 'identitiesPage');
-    
+
         // globalProfessions z central DB
         if ($tenantPrefix) {
             Tenancy::central(function () use ($identities, $tenantPrefix) {
@@ -81,21 +81,21 @@ class IdentityController extends Controller
                     ->whereIn('identity_id', $ids)
                     ->whereNotNull('global_profession_id')
                     ->pluck('global_profession_id', 'identity_id');
-    
+
                 $globalProfessions = GlobalProfession::whereIn('id', $mapping->values())
                     ->with('profession_category')
                     ->get()
                     ->keyBy('id');
-    
+
                 foreach ($identities as $identity) {
                     $id = $mapping[$identity->id] ?? null;
                     $identity->setRelation('globalProfessions', collect($id ? [$globalProfessions[$id]] : []));
                 }
             });
         }
-    
+
         return $identities;
-    }       
+    }
 
     public function create()
     {
@@ -256,26 +256,26 @@ class IdentityController extends Controller
     {
         $localIds = [];
         $globalIds = [];
-    
+
         foreach ($professions as $professionId) {
             $isGlobal = str_starts_with($professionId, 'global-');
             $cleanId = (int) str_replace(['global-', 'local-'], '', $professionId);
-    
+
             if ($isGlobal) {
                 $globalIds[] = $cleanId;
             } else {
                 $localIds[] = $cleanId;
             }
         }
-    
+
         $tenantPivotTable = tenancy()->tenant->table_prefix . '__identity_profession';
-    
+
         DB::transaction(function () use ($identity, $localIds, $globalIds, $tenantPivotTable) {
             // 🧹 Remove all existing local & global professions
             DB::table($tenantPivotTable)
                 ->where('identity_id', $identity->id)
                 ->delete();
-    
+
             // 🔗 Attach Local Professions
             if (!empty($localIds)) {
                 $localData = collect($localIds)->mapWithKeys(function ($id) {
@@ -285,10 +285,10 @@ class IdentityController extends Controller
                         'position' => null,
                     ]];
                 })->toArray();
-    
+
                 $identity->professions()->attach($localData);
             }
-    
+
             // 🔗 Attach Global Professions (profession_id = null is now valid)
             if (!empty($globalIds)) {
                 $globalData = collect($globalIds)->map(function ($id) use ($identity) {
@@ -299,11 +299,11 @@ class IdentityController extends Controller
                         'position' => null,
                     ];
                 })->toArray();
-    
+
                 DB::table($tenantPivotTable)->insert($globalData);
             }
         });
-    }    
+    }
 
     protected function getTypes(): array
     {

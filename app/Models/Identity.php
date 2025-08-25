@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\IdentityType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\DB;
@@ -33,17 +34,29 @@ class Identity extends Model
 
     public function professions(): BelongsToMany
     {
-        $pivotTable = $this->isTenancyInitialized()
-            ? "{$this->getTenantPrefix()}__identity_profession"
-            : 'global_identity_profession';
+        return $this->belongsToMany(
+            Profession::class,
+            tenancy()->tenant->table_prefix . '__identity_profession'
+        )
+        ->withPivot('id', 'identity_id', 'profession_id', 'position', 'global_profession_id')
+        ->orderBy('position', 'asc');
+    }
 
-        return $this->belongsToMany(Profession::class, $pivotTable, 'identity_id', 'profession_id')
-                    ->withPivot('position', 'global_profession_id');
+    public function localProfessions(): BelongsToMany
+    {
+        return $this->professions();
     }
 
     public function globalProfessions(): BelongsToMany
     {
-        return $this->belongsToMany(GlobalProfession::class, 'global_identity_profession', 'identity_id', 'profession_id');
+        return $this->belongsToMany(
+            GlobalProfession::class,
+            tenancy()->tenant->table_prefix . '__identity_profession',
+            'identity_id',
+            'global_profession_id'
+        )
+        ->withPivot('id', 'identity_id', 'profession_id', 'position', 'global_profession_id')
+        ->orderBy('position', 'asc');
     }
 
     public function profession_categories(): BelongsToMany
@@ -69,9 +82,9 @@ class Identity extends Model
         $pivotTable = tenancy()->initialized
             ? tenancy()->tenant->table_prefix . '__keyword_letter'
             : 'keyword_letter';
-    
+
         return $this->belongsToMany(Letter::class, $pivotTable, 'keyword_id', 'letter_id');
-    }    
+    }
 
     public function scopeSearch($query, $filters)
     {
@@ -97,8 +110,8 @@ class Identity extends Model
         if ($this->isTenancyInitialized()) {
             $tenantTablePrefix = $this->getTenantPrefix() . '__identity_profession';
             $query->with(['globalProfessions' => function ($globalQuery) use ($tenantTablePrefix) {
-                $globalQuery->selectRaw("global_professions.id as global_profession_id, 
-                                         JSON_UNQUOTE(JSON_EXTRACT(global_professions.name, '$.en')) as name, 
+                $globalQuery->selectRaw("global_professions.id as global_profession_id,
+                                         JSON_UNQUOTE(JSON_EXTRACT(global_professions.name, '$.en')) as name,
                                          'Global' as scope")
                              ->join($tenantTablePrefix, "{$tenantTablePrefix}.global_profession_id", '=', 'global_professions.id')
                              ->whereNotNull("{$tenantTablePrefix}.global_profession_id");
@@ -106,5 +119,10 @@ class Identity extends Model
         }
 
         return $query;
-    }    
+    }
+
+    public static function types(): array
+    {
+        return IdentityType::values();
+    }
 }
