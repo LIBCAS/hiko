@@ -5,22 +5,26 @@ namespace App\Http\Controllers;
 use App\Models\Location;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Exports\LocationsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class LocationController extends Controller
 {
-    protected array $rules = [
-        'name' => ['required', 'string', 'max:255'],
-        'type' => ['required', 'string'],
-    ];
+    protected function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'string', Rule::in(Location::types())],
+        ];
+    }
 
     public function index()
     {
         return view('pages.locations.index', [
             'title' => __('hiko.locations'),
-            'labels' => ['repository', 'collection', 'archive'],
+            'labels' => Location::types(),
         ]);
     }
 
@@ -31,13 +35,29 @@ class LocationController extends Controller
             'location' => new Location,
             'action' => route('locations.store'),
             'label' => __('hiko.create'),
-            'types' => ['repository', 'collection', 'archive'],
+            'types' => Location::types(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate($this->rules);
+        $request->merge([
+            'name' => trim($request->input('name')),
+            'type' => trim($request->input('type')),
+        ]);
+
+        $validated = $request->validate($this->rules());
+
+        $exists = Location::whereRaw('LOWER(name) = ?', [mb_strtolower($validated['name'])])
+                        ->where('type', $validated['type'])
+                        ->exists();
+
+        if ($exists) {
+            return redirect()
+                ->back()
+                ->withErrors(['name' => __('hiko.entity_already_exists')])
+                ->withInput();
+        }
 
         $location = Location::create($validated);
 
@@ -54,13 +74,34 @@ class LocationController extends Controller
             'action' => route('locations.update', $location),
             'method' => 'PUT',
             'label' => __('hiko.edit'),
-            'types' => ['repository', 'collection', 'archive'],
+            'types' => Location::types(),
         ]);
     }
 
     public function update(Request $request, Location $location): RedirectResponse
     {
-        $validated = $request->validate($this->rules);
+        $request->merge([
+            'name' => trim($request->input('name')),
+            'type' => trim($request->input('type')),
+        ]);
+
+        $validated = $request->validate($this->rules());
+
+        $name = $validated['name'] ?? $location->name;
+        $type = $validated['type'] ?? $location->type;
+
+        $exists = Location::whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+                        ->where('type', $type)
+                        ->where('id', '!=', $location->id)
+                        ->exists();
+
+        if ($exists) {
+            return redirect()
+                ->back()
+                ->withErrors(['name' => __('hiko.entity_already_exists')])
+                ->withInput();
+        }
+
         $location->update($validated);
 
         return redirect()

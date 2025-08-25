@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Laravel\Scout\Searchable;
 use App\Builders\LocationBuilder;
+use App\Enums\LocationType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -24,7 +25,7 @@ class Location extends Model
             $tenantPrefix = tenancy()->tenant->table_prefix;
             $this->table = $tenantPrefix . '__locations';
         }
-    } 
+    }
 
     public function searchableAs(): string
     {
@@ -42,5 +43,10 @@ class Location extends Model
     public function newEloquentBuilder($query): LocationBuilder
     {
         return new LocationBuilder($query);
+    }
+
+    public static function types(): array
+    {
+        return LocationType::values();
     }
 }
