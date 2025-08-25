@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\KeywordCategoryRequest;
 use App\Models\KeywordCategory;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\KeywordCategoriesExport;
@@ -11,11 +12,6 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class KeywordCategoryController extends Controller
 {
-    protected array $rules = [
-        'cs' => ['max:255', 'required_without:en'],
-        'en' => ['max:255', 'required_without:cs'],
-    ];
-
     public function create()
     {
         return view('pages.keywords-categories.form', [
@@ -26,9 +22,16 @@ class KeywordCategoryController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(KeywordCategoryRequest $request): RedirectResponse
     {
-        $validated = $request->validate($this->rules);
+        $validated = $request->validated();
+
+        if ($request->failsDuplicateCheck()) {
+            return redirect()
+                ->back()
+                ->withErrors(['cs' => __('hiko.entity_already_exists')])
+                ->withInput();
+        }
 
         $keywordCategory = KeywordCategory::create([
             'name' => [
@@ -53,9 +56,17 @@ class KeywordCategoryController extends Controller
         ]);
     }
 
-    public function update(Request $request, KeywordCategory $keywordCategory): RedirectResponse
+    public function update(KeywordCategoryRequest $request, KeywordCategory $keywordCategory): RedirectResponse
     {
-        $validated = $request->validate($this->rules);
+        $validated = $request->validated();
+
+        if ($request->failsDuplicateCheck($keywordCategory->id)) {
+            return redirect()
+                ->back()
+                ->withErrors(['cs' => __('hiko.entity_already_exists')])
+                ->withInput();
+        }
+
         $keywordCategory->update([
             'name' => [
                 'cs' => $validated['cs'],
