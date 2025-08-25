@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\ProfessionCategoryRequest;
 use App\Models\ProfessionCategory;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProfessionCategoriesExport;
@@ -13,11 +14,6 @@ use App\Models\GlobalProfession;
 
 class ProfessionCategoryController extends Controller
 {
-    protected array $rules = [
-        'cs' => ['max:255', 'required_without:en'],
-        'en' => ['max:255', 'required_without:cs'],
-    ];
-
     public function create()
     {
         return view('pages.professions-categories.form', [
@@ -28,9 +24,16 @@ class ProfessionCategoryController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(ProfessionCategoryRequest $request): RedirectResponse
     {
-        $validated = $request->validate($this->rules);
+        $validated = $request->validated();
+
+        if ($request->failsDuplicateCheck()) {
+        return redirect()
+            ->back()
+            ->withErrors(['cs' => __('hiko.entity_already_exists')])
+            ->withInput();
+        }
 
         $professionCategory = ProfessionCategory::create([
             'name' => [
@@ -38,11 +41,11 @@ class ProfessionCategoryController extends Controller
                 'en' => $validated['en'],
             ]
         ]);
-    
+
         return redirect()
             ->route('professions.category.edit', $professionCategory->id)
             ->with('success', __('hiko.saved'));
-    }    
+    }
 
     public function edit(ProfessionCategory $professionCategory)
     {
@@ -61,10 +64,23 @@ class ProfessionCategoryController extends Controller
         ]);
     }
 
-    public function update(Request $request, ProfessionCategory $professionCategory): RedirectResponse
+    public function update(ProfessionCategoryRequest $request, ProfessionCategory $professionCategory): RedirectResponse
     {
-        $validated = $request->validate($this->rules);
-        $professionCategory->update($validated);
+        $validated = $request->validated();
+
+        if ($request->failsDuplicateCheck($professionCategory->id)) {
+            return redirect()
+                ->back()
+                ->withErrors(['cs' => __('hiko.entity_already_exists')])
+                ->withInput();
+        }
+
+        $professionCategory->update([
+            'name' => [
+                'cs' => $validated['cs'],
+                'en' => $validated['en'],
+            ]
+        ]);
 
         return redirect()
             ->route('professions.category.edit', $professionCategory->id)
