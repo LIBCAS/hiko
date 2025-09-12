@@ -13,7 +13,6 @@ use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Jobs\RegenerateNames;
-use App\Jobs\LetterSaved;
 use App\Exports\LettersExport;
 use App\Exports\PalladioCharacterExport;
 
@@ -98,7 +97,6 @@ class LetterController extends Controller
 
         $this->attachRelated($request, $letter);
 
-        LetterSaved::dispatch($letter);
         RegenerateNames::dispatch($letter->authors()->get());
         RegenerateNames::dispatch($letter->recipients()->get());
 

@@ -7,6 +7,8 @@ use Illuminate\Validation\Rule;
 use App\Enums\LocationType;
 use App\Models\Letter;
 use App\Models\Location;
+use App\Helpers\DateHelper;
+use App\Helpers\FormRequestHelper;
 
 /**
  * LetterRequest handles validation rules for creating/updating letters.
@@ -29,8 +31,8 @@ class LetterRequest extends FormRequest
     {
         return [
             // Basic date fields
-            'date_year'           => ['nullable', 'integer', 'digits_between:1,4'],
-            'date_month'          => ['nullable', 'integer', 'between:1,12'],
+            'date_year'           => ['nullable', 'integer', 'min:1', 'max:9999'],
+            'date_month'          => ['nullable', 'integer', 'between:1,12', 'required_with:date_day'],
             'date_day'            => ['nullable', 'integer', 'between:1,31'],
             'date_marked'         => ['nullable', 'string', 'max:255'],
 
@@ -41,9 +43,9 @@ class LetterRequest extends FormRequest
             'date_is_range'       => ['required', 'boolean'],
 
             // Range date fields
-            'range_year'          => ['nullable', 'integer'],
-            'range_month'         => ['nullable', 'integer'],
-            'range_day'           => ['nullable', 'integer'],
+            'range_year' => ['nullable','integer','min:1','max:9999','exclude_unless:date_is_range,1,true,on'],
+            'range_month' => ['nullable','integer','between:1,12','required_with:range_day','exclude_unless:date_is_range,1,true,on'],
+            'range_day' => ['nullable','integer','between:1,31','exclude_unless:date_is_range,1,true,on'],
 
             'date_note'           => ['nullable', 'string'],
 
@@ -97,7 +99,7 @@ class LetterRequest extends FormRequest
             // Simple text fields
             'explicit'   => ['nullable', 'string', 'max:255'],
             'incipit'    => ['nullable', 'string', 'max:255'],
-            'copyright'  => ['nullable', 'string', 'max:255'],
+            'copyright'  => ['nullable', 'string'],
 
             // 'languages' is stored as a semicolon-delimited string
             'languages'  => ['nullable', 'string', 'max:255'],
@@ -140,10 +142,7 @@ class LetterRequest extends FormRequest
      */
     public function attributes(): array
     {
-        return collect($this->rules())
-            ->keys()
-            ->mapWithKeys(fn($field) => [$field => __("hiko.{$field}")])
-            ->toArray();
+        return FormRequestHelper::mapAttributeLabelsFromRules($this->rules());
     }
 
     /**
@@ -183,6 +182,87 @@ class LetterRequest extends FormRequest
             // Handle abstract
             'abstract' => $this->normalizeAbstract($this->input('abstract')),
         ]);
+
+        // Normalize date fields: trim strings, convert '0' / 0 / '' to null
+        $datePatch = [];
+        foreach (['date_year', 'date_month', 'date_day', 'range_year', 'range_month', 'range_day'] as $f) {
+            $v = $this->input($f);
+
+            if (is_string($v)) {
+                $v = trim($v);
+            }
+
+            if ($v === '' || $v === '0' || $v === 0) {
+                $v = null;
+            }
+
+            if ($v !== $this->input($f)) {
+                $datePatch[$f] = $v;
+            }
+        }
+
+        if ($datePatch) {
+            $this->merge($datePatch);
+        }
+
+        // If user checked the box but provided no range parts at all, treat it as NOT a range
+        $isRange = $this->boolDefault('date_is_range');
+        $hasAnyRangePart = $this->filled('range_year') || $this->filled('range_month') || $this->filled('range_day');
+        if ($isRange && ! $hasAnyRangePart) {
+            $this->merge(['date_is_range' => false]);
+        }
+
+        // If date_is_range is false, clear range date fields
+        if (!$isRange) {
+            $this->merge([
+                'range_year'  => null,
+                'range_month' => null,
+                'range_day'   => null,
+            ]);
+        }
+    }
+
+    /**
+     * Custom validation after the standard rules.
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($v) {
+            $y = $this->input('date_year');
+            $m = $this->input('date_month');
+            $d = $this->input('date_day');
+
+            // main date existence
+            if ($y && $m && $d && !checkdate((int)$m, (int)$d, (int)$y)) {
+                $v->errors()->add('date_day', __('validation.date', ['attribute' => FormRequestHelper::attributeLabel('date_day')]));
+            }
+
+            // only check range date if date_is_range = true
+            if ($this->boolDefault('date_is_range')) {
+                $ry = $this->input('range_year');
+                $rm = $this->input('range_month');
+                $rd = $this->input('range_day');
+
+                // range date existence
+                if ($ry && $rm && $rd && !checkdate((int)$rm, (int)$rd, (int)$ry)) {
+                    $v->errors()->add('range_day', __('validation.date', ['attribute' => FormRequestHelper::attributeLabel('range_day')]));
+                }
+
+                // ensure range end date >= range start date
+                $start = DateHelper::deriveStartBoundDate($y, $m, $d);
+                $end = DateHelper::deriveEndBoundDate($ry, $rm, $rd);
+
+                if ($start && $end && $end->lt($start)) {
+                    $v->errors()->add(
+                        'range_day',
+                        __('validation.after_or_equal', [
+                            'attribute' => FormRequestHelper::attributeLabel('range_day'),
+                            'date'      => $start->toDateString(),
+                        ])
+                    );
+                }
+            }
+        });
     }
 
     /**

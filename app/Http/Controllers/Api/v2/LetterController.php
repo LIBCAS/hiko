@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Api\v2;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\v2\LetterRequest;
-use App\Jobs\LetterSaved;
 use App\Jobs\RegenerateNames;
 use App\Models\Letter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Spatie\QueryBuilder\QueryBuilder;
 use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\AllowedSort;
+use Spatie\QueryBuilder\QueryBuilder;
 use Symfony\Component\HttpFoundation\Response;
 
 class LetterController extends Controller
@@ -28,12 +28,15 @@ class LetterController extends Controller
 
         $includes = $request->query('include') ? explode(',', $request->query('include')) : [];
 
-        Log::info('API V2: Fetching letters', [
-            'per_page' => $perPage,
-            'page' => $page,
-            'includes' => $includes,
-            'filters' => $request->query('filter', []),
-        ]);
+        $allowedSorts = ['created_at', 'updated_at', 'date_computed', 'date_year', 'status'];
+        $defaultSorts = ['date_computed', '-status'];
+        $customSorts = $request->query('sort')
+            ? array_filter(
+                explode(',', $request->query('sort')),
+                fn($s) => in_array(ltrim($s, '-'), $allowedSorts, true)
+            )
+            : [];
+        $sorts = !empty($customSorts) ? $customSorts : $defaultSorts;
 
         $letters = QueryBuilder::for(Letter::class)
             ->allowedIncludes([
@@ -51,8 +54,7 @@ class LetterController extends Controller
             ->tap(function ($query) use ($request) {
                 $query->filter($request->query('filter', []));  // Use the existing `filter()` logic in LetterBuilder
             })
-            ->defaultSort('-created_at')
-            ->allowedSorts(['created_at', 'updated_at', 'date_computed', 'date_year', 'status'])
+            ->defaultSort($sorts)
             ->with($includes)
             ->paginate($perPage, ['*'], 'page', $page)
             ->appends($request->query());
@@ -102,7 +104,6 @@ class LetterController extends Controller
 
         $this->attachRelated($request, $letter);
 
-        LetterSaved::dispatch($letter);
         RegenerateNames::dispatch($letter->authors()->get());
         RegenerateNames::dispatch($letter->recipients()->get());
 

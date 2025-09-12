@@ -53,7 +53,7 @@ class Letter extends Model implements HasMedia
 
     protected $connection = 'tenant';
     public $translatable = ['abstract'];
-    protected $guarded = ['id', 'uuid'];
+    protected $guarded = ['id', 'uuid', 'date_computed'];
     protected $table;
     protected $casts = [
         'copies' => 'array',

@@ -11,12 +11,21 @@ class LetterBuilder extends Builder
     // Date filters: before and after a given date
     public function before($date): LetterBuilder
     {
-        return $this->whereDate('date_computed', '<=', $date);
+        $to = $this->normalizeEnd($date); // e.g. '1955' -> '1955-12-31'
+        if ($to) {
+            $this->whereDate('date_computed', '<=', $to);
+        }
+        return $this;
     }
 
     public function after($date): LetterBuilder
     {
-        return $this->whereDate('date_computed', '>=', $date);
+        $from = $this->normalizeStart($date); // e.g. '1953' -> '1953-01-01'
+        if ($from) {
+            $endExpr = $this->endDateExpr();
+            $this->whereRaw("({$endExpr}) >= ?", [$from]);
+        }
+        return $this;
     }
 
     // Full-text search in the content_stripped field
@@ -39,7 +48,7 @@ class LetterBuilder extends Builder
         if (!empty($filters['abstract'])) {
             $this->where(function ($query) use ($filters) {
                 $query->whereRaw("LOWER(JSON_EXTRACT(abstract, '$.cs')) LIKE ?", ['%' . Str::lower($filters['abstract']) . '%'])
-                      ->orWhereRaw("LOWER(JSON_EXTRACT(abstract, '$.en')) LIKE ?", ['%' . Str::lower($filters['abstract']) . '%']);
+                    ->orWhereRaw("LOWER(JSON_EXTRACT(abstract, '$.en')) LIKE ?", ['%' . Str::lower($filters['abstract']) . '%']);
             });
         }
 
@@ -136,10 +145,10 @@ class LetterBuilder extends Builder
                 $this->where(function ($query) use ($filters) {
                     $query->whereHas('localKeywords', function ($q) use ($filters) {
                         $q->whereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) LIKE ?", ['%' . Str::lower($filters['keyword']) . '%'])
-                          ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.en')) LIKE ?", ['%' . Str::lower($filters['keyword']) . '%']);
+                            ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.en')) LIKE ?", ['%' . Str::lower($filters['keyword']) . '%']);
                     })->orWhereHas('globalKeywords', function ($q) use ($filters) {
                         $q->whereRaw("LOWER(JSON_EXTRACT(name, '$.cs')) LIKE ?", ['%' . Str::lower($filters['keyword']) . '%'])
-                          ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.en')) LIKE ?", ['%' . Str::lower($filters['keyword']) . '%']);
+                            ->orWhereRaw("LOWER(JSON_EXTRACT(name, '$.en')) LIKE ?", ['%' . Str::lower($filters['keyword']) . '%']);
                     });
                 });
             }
@@ -174,7 +183,7 @@ class LetterBuilder extends Builder
                     $subquery->where("{$identityTable}.id", $search);
                 } else {
                     $subquery->where("{$identityTable}.name", 'like', '%' . $search . '%')
-                             ->orWhereRaw("LOWER({$identityTable}.alternative_names) LIKE ?", ['%' . strtolower($search) . '%']);
+                        ->orWhereRaw("LOWER({$identityTable}.alternative_names) LIKE ?", ['%' . strtolower($search) . '%']);
                 }
             });
         });
@@ -194,7 +203,7 @@ class LetterBuilder extends Builder
                     $subquery->where("{$placeTable}.id", $search);
                 } else {
                     $subquery->where("{$placeTable}.name", 'like', '%' . $search . '%')
-                            ->orWhereRaw("LOWER({$placeTable}.alternative_names) LIKE ?", ['%' . strtolower($search) . '%']);
+                        ->orWhereRaw("LOWER({$placeTable}.alternative_names) LIKE ?", ['%' . strtolower($search) . '%']);
                 }
             });
         });
@@ -205,13 +214,13 @@ class LetterBuilder extends Builder
     {
         return $this->where(function ($query) use ($search) {
             $query->where('date_note', 'LIKE', '%' . $search . '%')
-                  ->orWhere('author_note', 'LIKE', '%' . $search . '%')
-                  ->orWhere('recipient_note', 'LIKE', '%' . $search . '%')
-                  ->orWhere('destination_note', 'LIKE', '%' . $search . '%')
-                  ->orWhere('origin_note', 'LIKE', '%' . $search . '%')
-                  ->orWhere('people_mentioned_note', 'LIKE', '%' . $search . '%')
-                  ->orWhere('notes_private', 'LIKE', '%' . $search . '%')
-                  ->orWhere('notes_public', 'LIKE', '%' . $search . '%');
+                ->orWhere('author_note', 'LIKE', '%' . $search . '%')
+                ->orWhere('recipient_note', 'LIKE', '%' . $search . '%')
+                ->orWhere('destination_note', 'LIKE', '%' . $search . '%')
+                ->orWhere('origin_note', 'LIKE', '%' . $search . '%')
+                ->orWhere('people_mentioned_note', 'LIKE', '%' . $search . '%')
+                ->orWhere('notes_private', 'LIKE', '%' . $search . '%')
+                ->orWhere('notes_public', 'LIKE', '%' . $search . '%');
         });
     }
 
@@ -234,5 +243,63 @@ class LetterBuilder extends Builder
     {
         $direction = strtolower($direction) === 'desc' ? 'desc' : 'asc';
         return $this->orderBy('date_computed', $direction);
+    }
+
+    protected function endDateExpr(): string
+    {
+        return "CASE
+            WHEN range_year IS NULL OR range_year = 0
+                THEN date_computed
+            ELSE LAST_DAY(
+                MAKEDATE(range_year, 1)
+                + INTERVAL (COALESCE(NULLIF(range_month,0), 12) - 1) MONTH
+            )
+        END";
+    }
+
+    protected function normalizeStart(?string $value): ?string
+    {
+        if (!$value) return null;
+        $value = trim($value);
+
+        if (preg_match('/^\d{4}$/', $value)) {
+            return \Carbon\Carbon::createMidnightDate((int)$value, 1, 1)->toDateString();
+        }
+        if (preg_match('/^\d{4}-\d{2}$/', $value)) {
+            [$y, $m] = explode('-', $value);
+            return \Carbon\Carbon::createMidnightDate((int)$y, (int)$m, 1)->toDateString();
+        }
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return $value;
+        }
+
+        try {
+            return \Carbon\Carbon::parse($value)->startOfDay()->toDateString();
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    protected function normalizeEnd(?string $value): ?string
+    {
+        if (!$value) return null;
+        $value = trim($value);
+
+        if (preg_match('/^\d{4}$/', $value)) {
+            return \Carbon\Carbon::createMidnightDate((int)$value, 12, 31)->toDateString();
+        }
+        if (preg_match('/^\d{4}-\d{2}$/', $value)) {
+            [$y, $m] = explode('-', $value);
+            return \Carbon\Carbon::createMidnightDate((int)$y, (int)$m, 1)->endOfMonth()->toDateString();
+        }
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return $value;
+        }
+
+        try {
+            return \Carbon\Carbon::parse($value)->endOfDay()->toDateString();
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }
