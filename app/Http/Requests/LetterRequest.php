@@ -168,6 +168,7 @@ class LetterRequest extends FormRequest
             'related_resources' => $this->prepareJsonField('related_resources'),
             'authors'           => $this->prepareJsonField('authors'),
             'recipients'        => $this->prepareJsonField('recipients'),
+            'mentioned'         => $this->prepareJsonField('mentioned'),
             'destinations'      => $this->prepareJsonField('destinations'),
             'origins'           => $this->prepareJsonField('origins'),
 
@@ -295,11 +296,14 @@ class LetterRequest extends FormRequest
         }
 
         // Normalize authors, recipients, mentioned
-        if (in_array($field, ['authors', 'recipients']) && is_array($items)) {
+        if (in_array($field, ['authors', 'recipients', 'mentioned']) && is_array($items)) {
             foreach ($items as &$item) {
                 if (isset($item['value'])) {
                     // convert "local-7" or "global-13" → "7" / "13"
                     $item['value'] = preg_replace('/\D/', '', $item['value']);
+                } else {
+                    // convert "local-7" or "global-13" → "7" / "13"
+                    $item = preg_replace('/\D/', '', $item);
                 }
             }
         }
