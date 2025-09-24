@@ -108,7 +108,7 @@ class ApiLetterController extends Controller
             'identities' => function ($query) {
                 $identityTable = tenancy()->tenant->table_prefix . '__identities';
                 $query->select("{$identityTable}.id", "{$identityTable}.name")
-                    ->wherePivotIn('role', ['author', 'recipient'])
+                    ->wherePivotIn('role', ['author', 'recipient', 'mentioned'])
                     ->orderBy('pivot_position');
             },
             'places' => function ($query) {

@@ -102,6 +102,7 @@ class LetterResource extends JsonResource
             'languages' => explode(';', $this->languages),
             'note' => $this->notes_public,
             'content' => $this->content,
+            'copyright' => $this->copyright,
         ];
     }
 
