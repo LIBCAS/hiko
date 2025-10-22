@@ -39,29 +39,30 @@ class PlaceRequest extends FormRequest
 
     public function failsDuplicateCheck(?int $excludeId = null): bool
     {
-        $query = Place::query();
+        return Place::query()
+            ->where(function ($query) {
+                // Compare by normalized name + country + division
+                $query->where(function ($q) {
+                    $q->whereRaw('LOWER(name) = ?', [mb_strtolower($this->input('name'))])
+                    ->whereRaw('LOWER(country) = ?', [mb_strtolower($this->input('country'))])
+                    ->whereRaw('LOWER(COALESCE(division, "")) = ?', [mb_strtolower($this->input('division', ''))]);
+                });
 
-        $query->where(function ($q) {
-            $q->whereRaw('LOWER(name) = ?', [mb_strtolower($this->input('name'))])
-              ->whereRaw('LOWER(country) = ?', [mb_strtolower($this->input('country'))])
-              ->whereRaw('LOWER(division) <=> ?', [mb_strtolower($this->input('division', ''))]);
-        });
+                // Compare by coordinates (if present)
+                if ($this->filled('latitude') && $this->filled('longitude')) {
+                    $query->orWhere(function ($q) {
+                        $q->where('latitude', $this->input('latitude'))
+                        ->where('longitude', $this->input('longitude'));
+                    });
+                }
 
-        if ($this->filled('latitude') && $this->filled('longitude')) {
-            $query->orWhere(function ($q) {
-                $q->where('latitude', $this->input('latitude'))
-                  ->where('longitude', $this->input('longitude'));
-            });
-        }
-
-        if ($this->filled('geoname_id')) {
-            $query->orWhere('geoname_id', $this->input('geoname_id'));
-        }
-
-        if ($excludeId !== null) {
-            $query->where('id', '!=', $excludeId);
-        }
-
-        return $query->exists();
+                // Compare by Geoname ID (if present)
+                if ($this->filled('geoname_id')) {
+                    $query->orWhere('geoname_id', $this->input('geoname_id'));
+                }
+            })
+            // Exclude the record being edited
+            ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+            ->exists();
     }
 }
