@@ -104,10 +104,26 @@ class IdentitiesTable extends Component
         $query->when($filters['name'], fn($q) => $q->where('name', 'like', "%{$filters['name']}%"));
         $query->when($filters['related_names'], fn($q) => $q->where('related_names', 'like', "%{$filters['related_names']}%"));
         $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
-        $query->when($filters['profession'], fn($q) =>
-            $q->whereHas('professions', fn($sq) =>
-                $sq->where('name', 'like', "%{$filters['profession']}%")
-            )
+        $query->when(
+            $this->filters['profession'] ?? null,
+            function ($q, $term) {
+                $locale = app()->getLocale();
+                $q->where(function ($sq) use ($term, $locale) {
+                    $sq->whereHas('professions', function ($qq) use ($term) {
+                        $qq->whereRaw(
+                            "name COLLATE utf8mb4_general_ci LIKE ?",
+                            ['%' . $term . '%']
+                        );
+                    });
+                    $sq->orWhereHas('globalProfessions', function ($qq) use ($term, $locale) {
+                        $qq->whereRaw(
+                            "JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"'))
+                     COLLATE utf8mb4_general_ci LIKE ?",
+                            ['%' . $term . '%']
+                        );
+                    });
+                });
+            }
         );
 
         $query->when($filters['category'], fn($q) => $q->where(function ($sq) use ($filters, $tenantPrefix) {
