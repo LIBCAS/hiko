@@ -110,15 +110,11 @@ class IdentitiesTable extends Component
                 $locale = app()->getLocale();
                 $q->where(function ($sq) use ($term, $locale) {
                     $sq->whereHas('professions', function ($qq) use ($term) {
-                        $qq->whereRaw(
-                            "name COLLATE utf8mb4_general_ci LIKE ?",
-                            ['%' . $term . '%']
-                        );
+                        $qq->whereRaw('name LIKE ?', ['%' . $term . '%']);
                     });
                     $sq->orWhereHas('globalProfessions', function ($qq) use ($term, $locale) {
                         $qq->whereRaw(
-                            "JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"'))
-                     COLLATE utf8mb4_general_ci LIKE ?",
+                            "JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"')) LIKE ?",
                             ['%' . $term . '%']
                         );
                     });
