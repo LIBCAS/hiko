@@ -9,6 +9,7 @@ return [
     'contributor' => 'Přispěvatel (omezená editace)',
     'name' => 'Jméno',
     'name_2' => 'Název',
+    'additional_name' => 'Další jméno',
     'role' => 'Role',
     'status' => 'Status',
     'active' => 'Aktivní',

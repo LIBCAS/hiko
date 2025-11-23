@@ -39,6 +39,7 @@ class Place extends Model
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'additional_name' => $this->additional_name,
             'alternative_names' => is_array($this->alternative_names) ? implode(', ', $this->alternative_names) : $this->alternative_names,
         ];
     }    

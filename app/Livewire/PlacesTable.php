@@ -50,9 +50,9 @@ class PlacesTable extends Component
     protected function findPlaces(): LengthAwarePaginator
     {
         $filters = $this->filters;
-    
-        $query = Place::select('id', 'name', 'division', 'latitude', 'longitude', 'country');
-    
+
+        $query = Place::select('id', 'name', 'additional_name', 'division', 'latitude', 'longitude', 'country');
+
         if (tenancy()->initialized) {
             $prefix = tenancy()->tenant->table_prefix;
             $query->from("{$prefix}__places");
@@ -61,6 +61,7 @@ class PlacesTable extends Component
         if (!empty($filters['name'])) {
             $query->where(function ($q) use ($filters) {
                 $q->where('name', 'like', "%{$filters['name']}%")
+                  ->orWhere('additional_name', 'like', "%{$filters['name']}%")
                   ->orWhere('division', 'like', "%{$filters['name']}%")
                   ->orWhere('country', 'like', "%{$filters['name']}%");
                 for ($i = 0; $i < 50; $i++) {
@@ -85,7 +86,7 @@ class PlacesTable extends Component
     protected function formatTableData($data): array
     {
         return [
-            'header' => [__('hiko.name'), __('hiko.division'), __('hiko.country'), __('hiko.coordinates')],
+            'header' => [__('hiko.name'), __('hiko.additional_name'), __('hiko.division'), __('hiko.country'), __('hiko.coordinates')],
             'rows' => $data->map(function ($place) {
                 $hasLatLng = $place->latitude && $place->longitude;
                 return [
@@ -97,6 +98,9 @@ class PlacesTable extends Component
                             ],
                             'name' => 'tables.edit-link',
                         ],
+                    ],
+                    [
+                        'label' => $place->additional_name,
                     ],
                     [
                         'label' => $place->division,

@@ -13,6 +13,7 @@ class PlaceRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'additional_name' => ['nullable', 'string', 'max:255'],
             'country' => ['required', 'string', 'max:255', Rule::in(Country::names())],
             'division' => ['nullable', 'string', 'max:255'],
             'note' => ['nullable', 'string'],
@@ -32,6 +33,7 @@ class PlaceRequest extends FormRequest
     {
         $this->merge([
             'name' => trim($this->input('name')),
+            'additional_name' => $this->input('additional_name') ? trim($this->input('additional_name')) : null,
             'country' => trim($this->input('country')),
             'division' => trim($this->input('division')),
         ]);

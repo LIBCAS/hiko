@@ -21,6 +21,15 @@
                     @enderror
                 </div>
 
+                <!-- Additional Name Field -->
+                <div>
+                    <x-label for="additional_name" :value="__('hiko.additional_name')" />
+                    <x-input id="additional_name" class="block w-full mt-1" type="text" name="additional_name" :value="old('additional_name', $place->additional_name)" />
+                    @error('additional_name')
+                        <div class="text-red-600">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 <!-- Country Select -->
                 <div class="required">
                     <x-label for="country" :value="__('hiko.country')" />

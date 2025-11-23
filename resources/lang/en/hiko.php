@@ -9,6 +9,7 @@ return [
     'contributor' => 'Contributor (restricted editing)',
     'name' => 'Name',
     'name_2' => 'Title',
+    'additional_name' => 'Additional name',
     'role' => 'Role',
     'status' => 'Status',
     'active' => 'Active',
