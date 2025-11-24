@@ -36,7 +36,8 @@ class IdentityRequest extends FormRequest
             'type' => ['required', 'string', 'max:255', Rule::in(Identity::types())],
             'category' => ['nullable', 'exists:profession_categories,id'],
             'profession' => [
-                'nullable', 'array',
+                'nullable',
+                'array',
                 function ($attribute, $value, $fail) use ($isTenancyInitialized) {
                     foreach ($value as $professionId) {
                         $isGlobal = str_starts_with($professionId, 'global-');
@@ -62,6 +63,11 @@ class IdentityRequest extends FormRequest
             'local_professions.*' => ['integer', 'exists:' . tenancy()->tenant->table_prefix . '__professions,id'],
             'global_professions' => ['sometimes', 'array'],
             'global_professions.*' => ['integer', 'exists:global_professions,id'],
+            'religions'   => ['nullable', 'array'],
+            'religions.*' => [
+                'integer',
+                Rule::exists('religions', 'id')->where(fn($q) => $q->where('is_active', 1)),
+            ],
         ];
     }
 
@@ -85,9 +91,33 @@ class IdentityRequest extends FormRequest
         $relatedNames = $this->input('related_names');
         $relatedResources = $this->input('related_identity_resources');
 
+        // Clean religions to drop blanks and cast to ints
+        $religions = $this->input('religions');
+        if (is_array($religions)) {
+            $religions = array_values(array_filter($religions, fn($v) => $v !== null && $v !== '' && $v !== false));
+            $religions = array_map(fn($v) => (int) $v, $religions);
+            $religions = empty($religions) ? null : $religions;
+        } else {
+            $religions = null;
+        }
+
         $this->merge([
             'related_names' => is_array($relatedNames) ? $relatedNames : json_decode($relatedNames, true) ?? [],
             'related_identity_resources' => is_array($relatedResources) ? $relatedResources : json_decode($relatedResources, true) ?? [],
+            'religions' => $religions,
         ]);
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->sometimes('religions', ['nullable', 'array'], function () {
+            return $this->input('type') === 'person';
+        });
+
+        $validator->after(function ($v) {
+            if ($this->input('type') !== 'person' && $this->filled('religions')) {
+                $v->errors()->add('religions', 'Only identities of type "person" may have religions.');
+            }
+        });
     }
 }

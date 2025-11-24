@@ -4,6 +4,8 @@
 /storage/*.key
 /vendor
 .env
+.env.prod
+.env.test
 .phpunit.result.cache
 docker-compose.override.yml
 Homestead.json
@@ -22,3 +24,4 @@ storage/app/google-cloud/
 /database/export
 /database/import
 adminer-x.php
+HELP.md

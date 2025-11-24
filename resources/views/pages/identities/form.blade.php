@@ -10,14 +10,19 @@
         name: '{{ $identity->name }}',
         forename: '{{ $identity->forename }}'
     })" x-init="$watch('fullName', () => findSimilarNames($data))" action="{{ $action }}" method="post"
-        class="max-w-sm space-y-6">
+        class="max-w-lg space-y-6">
         @csrf
         @isset($method)
             @method($method)
         @endisset
 
-        <livewire:identity-form-switcher :types="$types" :identityType="$selectedType" :identity="$identity" :selectedProfessions="$selectedProfessions"
-            :selectedCategories="$selectedCategories" />
+        <livewire:identity-form-switcher
+            :types="$types"
+            :identityType="$selectedType"
+            :identity="$identity"
+            :selectedProfessions="$selectedProfessions"
+            :selectedCategories="$selectedCategories"
+            :selectedReligions="$selectedReligions" />
 
         <livewire:related-identity-resources :resources="$identity->related_identity_resources" />
 
@@ -46,7 +51,7 @@
     @can('delete-metadata')
         @if ($canRemove)
             <form x-data="{ form: $el }" action="{{ route('identities.destroy', $identity->id) }}" method="post"
-                class="max-w-sm space-y-6">
+                class="max-w-lg space-y-6">
                 @csrf
                 @method('DELETE')
                 <x-button-danger type="button" class="w-full"

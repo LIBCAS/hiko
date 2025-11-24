@@ -8,7 +8,7 @@ window.choices = (data) => {
             return new Choices(data.element, {
                 allowHTML: true,
                 removeItemButton: true,
-                searchResultLimit: 10,
+                searchResultLimit: 1000,
             })
         },
     }
@@ -20,7 +20,7 @@ window.ajaxChoices = function (data) {
             const select = new Choices(data.element, {
                 allowHTML: true,
                 removeItemButton: true,
-                searchResultLimit: 10,
+                searchResultLimit: 1000,
                 duplicateItemsAllowed: false,
                 shouldSort: data.shouldSort ?? true,
             })

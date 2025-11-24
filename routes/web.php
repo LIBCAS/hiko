@@ -25,6 +25,7 @@ use App\Http\Controllers\GlobalKeywordController;
 use App\Http\Controllers\GlobalKeywordCategoryController;
 use App\Http\Controllers\LetterComparisonController;
 use App\Http\Controllers\TenantStorageController;
+use App\Http\Controllers\ReligionTranslationsController;
 use App\Http\Controllers\OAIPMHController;
 use App\Http\Controllers\MergeLetterController;
 use App\Http\Controllers\Ajax\AjaxPlaceController;
@@ -38,9 +39,13 @@ use App\Http\Controllers\Ajax\SimilarLocationsController;
 use App\Http\Controllers\Ajax\AjaxKeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxGlobalKeywordCategoryController;
 use App\Http\Controllers\Ajax\AjaxProfessionCategoryController;
+use App\Http\Controllers\Ajax\AjaxReligionController;
 use App\Http\Controllers\Ajax\AjaxGlobalProfessionCategoryController;
 use App\Http\Controllers\Ajax\AjaxLetterComparisonController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
+use App\Http\Controllers\ReligionAdminController;
+use App\Http\Controllers\ReligionTreeController;
+use App\Http\Controllers\ReligionSearchController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -510,6 +515,10 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
             ->name('ajax.professions.category')
             ->middleware(['auth', 'can:manage-metadata']);
 
+        Route::get('religions', [AjaxReligionController::class, '__invoke'])
+            ->name('ajax.religions')
+            ->middleware(['auth', 'can:manage-metadata']);
+
         Route::get('global-profession-category', [AjaxGlobalProfessionCategoryController::class, '__invoke'])
             ->name('ajax.global.professions.category')
             ->middleware(['auth', 'can:manage-metadata']);
@@ -545,6 +554,27 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('items/similar', [SimilarItemsController::class, '__invoke'])
             ->name('ajax.items.similar')
             ->middleware(['auth', 'can:manage-metadata']);
+    });
+
+    Route::prefix('religions')->middleware(['auth', 'can:manage-metadata'])->group(function () {
+        Route::get('/', [ReligionAdminController::class, 'index'])
+            ->name('religions.index')
+            ->middleware('can:manage-users');
+
+        // jsTree ajax
+        Route::get('/tree', [ReligionTreeController::class, 'tree'])->middleware('can:manage-users');   // lazy-load
+        Route::get('/tree-full', [ReligionTreeController::class, 'treeFull'])->middleware('can:manage-users');   // full tree
+        Route::post('/', [ReligionTreeController::class, 'store'])->middleware('can:manage-users');   // create
+        Route::patch('/{id}', [ReligionTreeController::class, 'update'])->middleware('can:manage-users');   // rename/toggle/sort
+        // Route::post('/{id}/move', [ReligionTreeController::class, 'move'])->middleware('can:manage-users');   // move
+        Route::delete('/{id}', [ReligionTreeController::class, 'destroy'])->middleware('can:manage-users');   // delete
+
+        Route::get('/{id}/translations', [ReligionTranslationsController::class, 'show']);
+        Route::patch('/{id}/translations', [ReligionTranslationsController::class, 'update']);
+
+        // search for the identity form (async)
+        Route::get('/search', [ReligionSearchController::class, 'search'])
+            ->name('religions.search');
     });
 
     Route::prefix('dev')->group(function () {

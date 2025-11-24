@@ -4,13 +4,13 @@
             <span class="block text-sm">
                 {{ __('hiko.name') }}
             </span>
-            <x-input wire:model.live.debounce.1000ms="filters.name" class="block w-full px-2 text-sm lg:w-32" type="text"/>
+            <x-input wire:model.live.debounce.1000ms="filters.name" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">
                 {{ __('hiko.related_names') }}
             </span>
-            <x-input wire:model.live.debounce.1000ms="filters.related_names" class="block w-full px-2 text-sm lg:w-32" type="text"/>
+            <x-input wire:model.live.debounce.1000ms="filters.related_names" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">
@@ -28,24 +28,30 @@
         </label>
         <label>
             <span class="block text-sm">
-               {{ __('hiko.profession') }}
+                {{ __('hiko.profession') }}
             </span>
-            <x-input wire:model.live.debounce.1000ms="filters.profession" class="block w-full px-2 text-sm lg:w-32" type="text"/>
+            <x-input wire:model.live.debounce.1000ms="filters.profession" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">
-               {{ __('hiko.category') }}
+                {{ __('hiko.category') }}
             </span>
-            <x-input wire:model.live.debounce.1000ms="filters.category" class="block w-full px-2 text-sm lg:w-32" type="text"/>
+            <x-input wire:model.live.debounce.1000ms="filters.category" class="block w-full px-2 text-sm lg:w-32" type="text" />
+        </label>
+        <label>
+            <span class="block text-sm">
+                {{ __('hiko.religion') }}
+            </span>
+            <x-input wire:model.live.debounce.1000ms="filters.religion" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
         <label>
             <span class="block text-sm">
                 {{ __('hiko.note') }}
             </span>
-            <x-input wire:model.live.debounce.1000ms="filters.note" class="block w-full px-2 text-sm lg:w-32" type="text"/>
+            <x-input wire:model.live.debounce.1000ms="filters.note" class="block w-full px-2 text-sm lg:w-32" type="text" />
         </label>
     </x-filter-form>
-    <x-table :tableData="$tableData"/>
+    <x-table :tableData="$tableData" />
     <div class="w-full pl-1 mt-3">
         {{ $pagination->links() }}
     </div>

@@ -22,6 +22,7 @@ class IdentitiesTable extends Component
         'category' => '',
         'note' => '',
         'order' => 'name',
+        'religion' => null,
     ];
 
     public function search()
@@ -40,6 +41,7 @@ class IdentitiesTable extends Component
             'category' => '',
             'note' => '',
             'order' => 'name',
+            'religion' => null,
         ];
         $this->search();
     }
@@ -55,6 +57,7 @@ class IdentitiesTable extends Component
             'category' => '',
             'note' => '',
             'order' => 'name',
+            'religion' => null,
         ]);
     }
 
@@ -85,7 +88,8 @@ class IdentitiesTable extends Component
             return ''; // Empty string in the case of the incorrect JSON
         }
 
-        return implode(', ', array_map(fn($name) =>
+        return implode(', ', array_map(
+            fn($name) =>
             trim("{$name['surname']} {$name['forename']} {$name['general_name_modifier']}"),
             $relatedNamesArray
         ));
@@ -122,10 +126,56 @@ class IdentitiesTable extends Component
             }
         );
 
+        $query->when(isset($filters['religion']) && strlen(trim((string)$filters['religion'])) > 0, function ($q) use ($filters) {
+            $term   = trim((string) $filters['religion']);
+            $locale = app()->getLocale();
+
+            // 1) Numeric? keep exact-ID behavior (backward compatible)
+            if (ctype_digit($term)) {
+                $ids = [(int) $term];
+            } else {
+                // 2) Text: find religion(s) by translation in the current locale only
+                $needle = mb_strtolower($term, 'UTF-8');
+
+                // match on name + path_text (both case-insensitive); also leverage lower_path_text if present
+                $baseIds = DB::table('religion_translations')
+                    ->where('locale', $locale)
+                    ->where(function ($t) use ($needle) {
+                        $t->whereRaw('LOWER(name) LIKE ?', ["%{$needle}%"])
+                            ->orWhereRaw('LOWER(path_text) LIKE ?', ["%{$needle}%"])
+                            ->orWhere('lower_path_text', 'like', "%{$needle}%");
+                    })
+                    ->pluck('religion_id');
+
+                // If nothing matches in the current locale, force empty result set
+                if ($baseIds->isEmpty()) {
+                    $q->whereRaw('0 = 1');
+                    return;
+                }
+
+                // Include descendants so searching a parent like "christ" matches its "Christianity" subtree
+                $ids = DB::table('religion_closure')
+                    ->whereIn('ancestor_id', $baseIds)
+                    ->pluck('descendant_id')
+                    ->unique()
+                    ->values()
+                    ->all();
+            }
+
+            // Apply the filter via the pivot (tenant-aware relation)
+            $q->whereHas('religions', function ($qq) use ($ids) {
+                $qq->whereIn('religions.id', $ids);
+            });
+        });
+
         $query->when($filters['category'], fn($q) => $q->where(function ($sq) use ($filters, $tenantPrefix) {
-            $sq->whereHas('professions.profession_category', fn($qq) =>
+            $sq->whereHas(
+                'professions.profession_category',
+                fn($qq) =>
                 $qq->where("{$tenantPrefix}__profession_categories.name", 'like', "%{$filters['category']}%")
-            )->orWhereHas('globalProfessions.profession_category', fn($qq) =>
+            )->orWhereHas(
+                'globalProfessions.profession_category',
+                fn($qq) =>
                 $qq->where('name', 'like', "%{$filters['category']}%")
             );
         }));

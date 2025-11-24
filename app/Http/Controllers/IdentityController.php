@@ -21,7 +21,13 @@ class IdentityController extends Controller
     public function index()
     {
         $filters = request()->only([
-            'name', 'related_names', 'type', 'profession', 'category', 'note', 'order'
+            'name',
+            'related_names',
+            'type',
+            'profession',
+            'category',
+            'note',
+            'order',
         ]);
 
         $labels = [
@@ -51,16 +57,24 @@ class IdentityController extends Controller
         $query->when($filters['name'] ?? null, fn($q) => $q->where('name', 'like', '%' . $filters['name'] . '%'));
         $query->when($filters['related_names'] ?? null, fn($q) => $q->where('related_names', 'like', '%' . $filters['related_names'] . '%'));
         $query->when($filters['type'] ?? null, fn($q) => $q->where('type', $filters['type']));
-        $query->when($filters['profession'] ?? null, fn($q) =>
-            $q->whereHas('professions', fn($sq) =>
+        $query->when(
+            $filters['profession'] ?? null,
+            fn($q) =>
+            $q->whereHas(
+                'professions',
+                fn($sq) =>
                 $sq->where('name', 'like', '%' . $filters['profession'] . '%')
             )
         );
 
         $query->when($filters['category'] ?? null, fn($q) => $q->where(function ($sq) use ($filters, $tenantPrefix) {
-            $sq->whereHas('professions.profession_category', fn($qq) =>
+            $sq->whereHas(
+                'professions.profession_category',
+                fn($qq) =>
                 $qq->where("{$tenantPrefix}__profession_categories.name", 'like', '%' . $filters['category'] . '%')
-            )->orWhereHas('globalProfessions.profession_category', fn($qq) =>
+            )->orWhereHas(
+                'globalProfessions.profession_category',
+                fn($qq) =>
                 $qq->where('name', 'like', '%' . $filters['category'] . '%')
             );
         }));
@@ -116,6 +130,7 @@ class IdentityController extends Controller
             'selectedCategories' => [],
             'professionsList' => $this->getProfessionsList(),
             'categoriesList' => $this->getCategoriesList(),
+            'selectedReligions' => [],
         ]);
     }
 
@@ -153,6 +168,7 @@ class IdentityController extends Controller
             'categoriesList' => $this->getCategoriesList(),
             'resources' => $identity->related_identity_resources,
             'relatedNames' => $identity->related_names,
+            'selectedReligions' => $this->getSelectedReligions($identity),
         ]);
     }
 
@@ -181,6 +197,9 @@ class IdentityController extends Controller
 
         $identity->update($validated);
         $this->syncRelations($identity, $validated);
+        if ($validated['type'] == 'person') {
+            $identity->syncReligions($request->input('religions', null));
+        }
 
         if ($request->input('action') === 'create') {
             return redirect()
@@ -216,6 +235,10 @@ class IdentityController extends Controller
 
         // Sync professions and categories if provided
         $this->syncRelations($identity, $request->validated());
+
+        if ($validated['type'] == 'person') {
+            $identity->syncReligions($request->input('religions', null));
+        }
 
         if ($request->input('action') === 'create') {
             return redirect()
@@ -414,5 +437,27 @@ class IdentityController extends Controller
         }
 
         return $categories;
+    }
+
+    protected function getSelectedReligions(Identity $identity): array
+    {
+        $locale = app()->getLocale();
+        $ids = $identity->religions->pluck('id')->all();
+
+        if (empty($ids)) return [];
+
+        $rows = DB::table('religion_translations as rt')
+            ->join('religions as r', 'r.id', '=', 'rt.religion_id')
+            ->select('rt.religion_id', 'rt.path_text', 'r.is_active')
+            ->where('rt.locale', $locale)
+            ->whereIn('rt.religion_id', $ids)
+            ->get();
+
+        return $rows->map(fn($r) => [
+            'value' => (int) $r->religion_id,   // religion ID to be submitted
+            'label' => $r->is_active
+                ? $r->path_text
+                : "{$r->path_text} — (inactive)",   // religion path with inactive note if needed
+        ])->toArray();
     }
 }

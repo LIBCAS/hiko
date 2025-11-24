@@ -7,7 +7,7 @@
         @enderror
 
         @if (!empty($items))
-        <div>
+        <div class="space-y-2">
             @foreach ($items as $index => $item)
                 <div wire:key="item-{{ $index }}" class="relative">
                     <div

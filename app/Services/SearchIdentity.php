@@ -32,7 +32,6 @@ class SearchIdentity
             ->when(isset($filters['note']), function ($query) use ($filters) {
                 $query->where('note', 'like', '%' . $filters['note'] . '%');
             })
-            ->take($limit)
             ->get()
             ->map(function ($identity) {
                 $birthYear = $identity->birth_year ? $identity->birth_year : '?';

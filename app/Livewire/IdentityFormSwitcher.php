@@ -11,6 +11,7 @@ class IdentityFormSwitcher extends Component
     public $identity;
     public $selectedProfessions;
     public $selectedCategories;
+    public $selectedReligions;
 
     public function render()
     {

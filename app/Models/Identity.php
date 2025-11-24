@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\IdentityType;
+use App\Models\Religion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\DB;
@@ -38,8 +39,8 @@ class Identity extends Model
             Profession::class,
             tenancy()->tenant->table_prefix . '__identity_profession'
         )
-        ->withPivot('id', 'identity_id', 'profession_id', 'position', 'global_profession_id')
-        ->orderBy('position', 'asc');
+            ->withPivot('id', 'identity_id', 'profession_id', 'position', 'global_profession_id')
+            ->orderBy('position', 'asc');
     }
 
     public function localProfessions(): BelongsToMany
@@ -55,8 +56,8 @@ class Identity extends Model
             'identity_id',
             'global_profession_id'
         )
-        ->withPivot('id', 'identity_id', 'profession_id', 'position', 'global_profession_id')
-        ->orderBy('position', 'asc');
+            ->withPivot('id', 'identity_id', 'profession_id', 'position', 'global_profession_id')
+            ->orderBy('position', 'asc');
     }
 
     public function profession_categories(): BelongsToMany
@@ -74,7 +75,7 @@ class Identity extends Model
 
         // Return an empty BelongsToMany relationship to prevent errors
         return $this->belongsToMany(ProfessionCategory::class, null, null, null)
-                    ->whereRaw('1 = 0'); // Ensures no records are returned
+            ->whereRaw('1 = 0'); // Ensures no records are returned
     }
 
     public function letters(): BelongsToMany
@@ -103,7 +104,7 @@ class Identity extends Model
     {
         $query->with(['professions' => function ($localQuery) {
             $localQuery->select('id', 'name')
-                       ->addSelect(DB::raw("'Local' as scope"));
+                ->addSelect(DB::raw("'Local' as scope"));
         }]);
 
         // Load global professions based on tenant's identity_profession table
@@ -113,8 +114,8 @@ class Identity extends Model
                 $globalQuery->selectRaw("global_professions.id as global_profession_id,
                                          JSON_UNQUOTE(JSON_EXTRACT(global_professions.name, '$.en')) as name,
                                          'Global' as scope")
-                             ->join($tenantTablePrefix, "{$tenantTablePrefix}.global_profession_id", '=', 'global_professions.id')
-                             ->whereNotNull("{$tenantTablePrefix}.global_profession_id");
+                    ->join($tenantTablePrefix, "{$tenantTablePrefix}.global_profession_id", '=', 'global_professions.id')
+                    ->whereNotNull("{$tenantTablePrefix}.global_profession_id");
             }]);
         }
 
@@ -124,5 +125,16 @@ class Identity extends Model
     public static function types(): array
     {
         return IdentityType::values();
+    }
+
+    public function religions(): BelongsToMany
+    {
+        $pivotTable = $this->getTenantPrefix() . '__identity_religion';
+        return $this->belongsToMany(Religion::class, $pivotTable, 'identity_id', 'religion_id');
+    }
+
+    public function syncReligions(?array $ids): void
+    {
+        $this->religions()->sync($ids ?? []); // null => no rows (no religion)
     }
 }

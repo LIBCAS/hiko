@@ -135,6 +135,48 @@ return new class extends Migration
                 $table->foreign('profession_id')->references('id')->on('global_professions')->onDelete('cascade');
             });
         }
+
+        // Religions
+        if (!Schema::hasTable('religions')) {
+            Schema::create('religions', function (Blueprint $table) {
+                $table->bigIncrements('id');
+                $table->string('slug', 120)->unique();
+                $table->string('name', 255);
+                $table->boolean('is_active')->default(true)->index();
+                $table->integer('sort_order')->default(0)->index();
+                // Denormalized path for search/display (updated by service)
+                $table->string('path_text', 1024)->nullable()->index();
+                $table->string('lower_path_text', 1024)->nullable()->index();
+                $table->timestamps();
+            });
+        }
+        if (!Schema::hasTable('religion_closure')) {
+            Schema::create('religion_closure', function (Blueprint $table) {
+                $table->unsignedBigInteger('ancestor_id');
+                $table->unsignedBigInteger('descendant_id');
+                $table->unsignedInteger('depth'); // 0=self
+                $table->primary(['ancestor_id', 'descendant_id']);
+                $table->index(['descendant_id', 'depth']);
+                $table->index(['ancestor_id', 'depth']);
+                $table->foreign('ancestor_id')->references('id')->on('religions')->onDelete('cascade');
+                $table->foreign('descendant_id')->references('id')->on('religions')->onDelete('cascade');
+            });
+        }
+        if (!Schema::hasTable('religion_translations')) {
+            Schema::create('religion_translations', function (Blueprint $table) {
+                $table->unsignedBigInteger('religion_id');
+                $table->char('locale', 2);                   // 'cs', 'en'
+                $table->string('name', 255)->nullable();     // allow NULL for fresh nodes (# placeholders)
+                $table->string('slug', 160)->nullable();
+                $table->string('path_text', 512)->nullable();
+                $table->string('lower_path_text', 512)->nullable();
+                $table->timestamps();
+                $table->primary(['religion_id', 'locale']);
+                $table->unique(['locale', 'slug']);
+                $table->index(['locale', 'lower_path_text']);
+                $table->foreign('religion_id')->references('id')->on('religions')->onDelete('cascade');
+            });
+        }
     }
 
     private function createEssentialTables(): void
@@ -284,6 +326,7 @@ return new class extends Migration
             Schema::dropIfExists("{$prefix}profession_categories");
             Schema::dropIfExists("{$prefix}letters");
             Schema::dropIfExists("{$prefix}identities");
+            Schema::dropIfExists("{$prefix}identity_religion");
         }
 
         // Drop Global Tables
@@ -295,6 +338,9 @@ return new class extends Migration
         Schema::dropIfExists('global_professions');
         Schema::dropIfExists('global_profession_categories');
         Schema::dropIfExists('identity_profession');
+        Schema::dropIfExists('religions');
+        Schema::dropIfExists('religion_closure');
+        Schema::dropIfExists('religion_translations');
 
         // Drop Essential Tables
         Schema::dropIfExists('domains');
