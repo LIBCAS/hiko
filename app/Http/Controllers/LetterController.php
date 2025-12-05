@@ -204,12 +204,17 @@ class LetterController extends Controller
         $letter->globalKeywords()->sync($globalKeywords);
 
         $letter->identities()->detach();
-        $letter->places()->detach();
+        $letter->localPlaces()->detach();
+        $letter->globalPlaces()->detach();
 
         $letter->identities()->attach($this->prepareAttachmentData($request->authors, 'author'));
         $letter->identities()->attach($this->prepareAttachmentData($request->recipients, 'recipient', ['salutation']));
-        $letter->places()->attach($this->prepareAttachmentData($request->origins, 'origin'));
-        $letter->places()->attach($this->prepareAttachmentData($request->destinations, 'destination'));
+
+        // Handle origins (local and global places)
+        $this->attachPlacesToLetter($letter, $request->origins, 'origin');
+
+        // Handle destinations (local and global places)
+        $this->attachPlacesToLetter($letter, $request->destinations, 'destination');
 
         // Ensure mentioned is an array
         $mentioned = [];
@@ -368,6 +373,57 @@ class LetterController extends Controller
      */
     protected function getSelectedMetaFields(Letter $letter, string $fieldKey, array $pivotFields): array
     {
+        // Handle origins and destinations (which can be local or global places)
+        if ($fieldKey === 'origins' || $fieldKey === 'destinations') {
+            $localMethod = $fieldKey; // 'origins' or 'destinations'
+            $globalMethod = 'global' . ucfirst($fieldKey); // 'globalOrigins' or 'globalDestinations'
+
+            // Get local places
+            $localPlaces = collect($letter->{$localMethod})->map(function ($item) use ($pivotFields) {
+                $labelParts = [$item->name];
+                if (!empty($item->division)) {
+                    $labelParts[] = $item->division;
+                }
+                if (!empty($item->country)) {
+                    $labelParts[] = $item->country;
+                }
+                $label = implode(', ', array_filter($labelParts));
+
+                $result = [
+                    'value' => 'local-' . $item->id,
+                    'label' => $label . ' (' . __('hiko.local') . ')',
+                ];
+                foreach ($pivotFields as $field) {
+                    $result[$field] = $item->pivot->{$field};
+                }
+                return $result;
+            });
+
+            // Get global places
+            $globalPlaces = collect($letter->{$globalMethod})->map(function ($item) use ($pivotFields) {
+                $labelParts = [$item->name];
+                if (!empty($item->division)) {
+                    $labelParts[] = $item->division;
+                }
+                if (!empty($item->country)) {
+                    $labelParts[] = $item->country;
+                }
+                $label = implode(', ', array_filter($labelParts));
+
+                $result = [
+                    'value' => 'global-' . $item->id,
+                    'label' => $label . ' (' . __('hiko.global') . ')',
+                ];
+                foreach ($pivotFields as $field) {
+                    $result[$field] = $item->pivot->{$field};
+                }
+                return $result;
+            });
+
+            return $localPlaces->merge($globalPlaces)->toArray();
+        }
+
+        // Default behavior for other fields
         return $letter->{$fieldKey}->map(function ($item) use ($pivotFields) {
             $result = [
                 'value' => $item->id,
@@ -454,5 +510,56 @@ class LetterController extends Controller
             $results[$model->id] = $data;
         }
         return $results;
+    }
+
+    /**
+     * Attach places (local or global) to a letter with the specified role.
+     *
+     * @param Letter $letter
+     * @param array|null $places
+     * @param string $role
+     * @return void
+     */
+    protected function attachPlacesToLetter(Letter $letter, ?array $places, string $role): void
+    {
+        if (!$places) {
+            return;
+        }
+
+        $localPlaces = [];
+        $globalPlaces = [];
+
+        foreach ($places as $position => $item) {
+            $value = $item['value'] ?? null;
+            if (!$value) {
+                continue;
+            }
+
+            $isGlobal = str_starts_with($value, 'global-');
+            $placeId = (int) str_replace(['global-', 'local-'], '', $value);
+
+            if ($placeId) {
+                $data = [
+                    'position' => $position,
+                    'role'     => $role,
+                    'marked'   => $item['marked'] ?? null,
+                ];
+
+                if ($isGlobal) {
+                    $globalPlaces[$placeId] = $data;
+                } else {
+                    $localPlaces[$placeId] = $data;
+                }
+            }
+        }
+
+        // Attach local and global places
+        if (!empty($localPlaces)) {
+            $letter->localPlaces()->attach($localPlaces);
+        }
+
+        if (!empty($globalPlaces)) {
+            $letter->globalPlaces()->attach($globalPlaces);
+        }
     }
 }

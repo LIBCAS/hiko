@@ -61,3 +61,35 @@ if (!function_exists('similar')) {
         ) <= 3;
     }
 }
+
+if (!function_exists('calculateSimilarityPercentage')) {
+    /**
+     * Calculate similarity percentage between two strings using similar_text.
+     * Returns a value between 0 and 100.
+     *
+     * @param string $string1
+     * @param string $string2
+     * @return float Similarity percentage (0-100)
+     */
+    function calculateSimilarityPercentage(string $string1, string $string2): float
+    {
+        if (empty($string1) || empty($string2)) {
+            return 0.0;
+        }
+
+        // Normalize strings: remove accents, convert to lowercase, trim
+        $normalized1 = trim(strtolower(str_replace(',', '', removeAccents($string1))));
+        $normalized2 = trim(strtolower(str_replace(',', '', removeAccents($string2))));
+
+        // Handle identical strings
+        if ($normalized1 === $normalized2) {
+            return 100.0;
+        }
+
+        // Calculate similarity using PHP's similar_text function
+        $percent = 0.0;
+        similar_text($normalized1, $normalized2, $percent);
+
+        return round($percent, 2);
+    }
+}

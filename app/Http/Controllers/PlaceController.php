@@ -6,7 +6,9 @@ use App\Http\Requests\PlaceRequest;
 use App\Models\Place;
 use App\Models\Country;
 use App\Services\PlaceService;
+use App\Services\PlaceMergeService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use App\Exports\PlacesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Log;
@@ -113,5 +115,66 @@ class PlaceController extends Controller
     public function export()
     {
         return Excel::download(new PlacesExport, 'places.xlsx');
+    }
+
+    public function validation()
+    {
+        return view('pages.places.validation', [
+            'title' => __('hiko.data_validation'),
+        ]);
+    }
+
+    public function localMerge()
+    {
+        return view('pages.places.local-merge', [
+            'title' => __('hiko.local_place_merging'),
+        ]);
+    }
+
+    /**
+     * Merge local places into global places.
+     * Only accessible to users with 'manage-metadata' ability.
+     *
+     * @return JsonResponse
+     */
+    public function merge(): JsonResponse
+    {
+        try {
+            $mergeService = app(PlaceMergeService::class);
+            $result = $mergeService->mergeLocalPlacesToGlobal();
+
+            if ($result['success']) {
+                $message = __('hiko.places_merge_success', [
+                    'merged' => $result['merged'],
+                    'created' => $result['created'],
+                ]);
+
+                if ($result['skipped'] > 0) {
+                    $message .= ' ' . __('hiko.places_merge_skipped', ['skipped' => $result['skipped']]);
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                    'stats' => [
+                        'merged' => $result['merged'],
+                        'created' => $result['created'],
+                        'skipped' => $result['skipped'],
+                    ],
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('hiko.places_merge_error') . ': ' . $result['error'],
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            Log::error('[PlaceMerge] Controller error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => __('hiko.places_merge_error') . ': ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

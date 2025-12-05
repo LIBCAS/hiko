@@ -46,7 +46,12 @@ class Place extends Model
 
     public function letters()
     {
-        return $this->belongsToMany(Letter::class);
+        $pivotTable = tenancy()->initialized
+            ? tenancy()->tenant->table_prefix . '__letter_place'
+            : 'letter_place';
+
+        return $this->belongsToMany(Letter::class, $pivotTable, 'place_id', 'letter_id')
+            ->withPivot('role', 'position', 'marked');
     }
 
     public function newEloquentBuilder($query)

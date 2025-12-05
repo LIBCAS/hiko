@@ -165,12 +165,19 @@ class LetterController extends Controller
         $letter->globalKeywords()->sync($globalKeywords);
 
         $letter->identities()->detach();
-        $letter->places()->detach();
+        $letter->localPlaces()->detach();
+        $letter->globalPlaces()->detach();
 
         $letter->identities()->attach($this->prepareAttachmentData($request->authors, 'author'));
         $letter->identities()->attach($this->prepareAttachmentData($request->recipients, 'recipient', ['salutation']));
-        $letter->places()->attach($this->prepareAttachmentData($request->origins, 'origin'));
-        $letter->places()->attach($this->prepareAttachmentData($request->destinations, 'destination'));
+
+        // Handle origins (local_origins and global_origins)
+        $this->attachPlacesToLetter($letter, $request->local_origins, 'origin', false);
+        $this->attachPlacesToLetter($letter, $request->global_origins, 'origin', true);
+
+        // Handle destinations (local_destinations and global_destinations)
+        $this->attachPlacesToLetter($letter, $request->local_destinations, 'destination', false);
+        $this->attachPlacesToLetter($letter, $request->global_destinations, 'destination', true);
 
         // Ensure mentioned is an array
         $mentioned = [];
@@ -190,5 +197,29 @@ class LetterController extends Controller
         }
 
         $letter->identities()->attach($mentioned);
+    }
+
+    /**
+     * Attach places (local or global) to a letter with the specified role for API.
+     *
+     * @param Letter $letter
+     * @param array|null $places
+     * @param string $role
+     * @param bool $isGlobal
+     * @return void
+     */
+    protected function attachPlacesToLetter(Letter $letter, ?array $places, string $role, bool $isGlobal): void
+    {
+        if (!$places) {
+            return;
+        }
+
+        $preparedData = $this->prepareAttachmentData($places, $role);
+
+        if ($isGlobal) {
+            $letter->globalPlaces()->attach($preparedData);
+        } else {
+            $letter->localPlaces()->attach($preparedData);
+        }
     }
 }

@@ -118,9 +118,9 @@ class LetterRequest extends FormRequest
             'mentioned' => ['nullable', 'array'],
             'mentioned.*' => ['integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
             'destinations' => ['nullable', 'array'],
-            'destinations.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__places,id'],
+            'destinations.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
             'origins'      => ['nullable', 'array'],
-            'origins.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__places,id'],
+            'origins.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
 
             // IMPORTANT: keywords => array of integer IDs
             'keywords'     => ['nullable', 'array'],

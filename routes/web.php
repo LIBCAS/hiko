@@ -7,6 +7,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\MergeController;
 use App\Http\Controllers\PlaceController;
+use App\Http\Controllers\GlobalPlaceController;
+use App\Http\Controllers\GlobalPlaceMergeController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\KeywordController;
@@ -390,6 +392,44 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('export', [PlaceController::class, 'export'])
             ->name('places.export')
             ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('validation', [PlaceController::class, 'validation'])
+            ->name('places.validation')
+            ->middleware(['auth', 'can:view-metadata']);
+
+        Route::get('local-merge', [PlaceController::class, 'localMerge'])
+            ->name('places.local-merge')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('global-merge', [GlobalPlaceMergeController::class, 'index'])
+            ->name('places.global-merge')
+            ->middleware(['auth', 'can:manage-users']);
+
+        Route::post('global-merge', [GlobalPlaceMergeController::class, 'execute'])
+            ->name('places.global-merge.execute')
+            ->middleware(['auth', 'can:manage-users']);
+    });
+
+    Route::prefix('global-places')->middleware(['auth'])->name('global.places.')->group(function () {
+        Route::get('create', [GlobalPlaceController::class, 'create'])
+            ->name('create')
+            ->middleware('can:manage-users');
+
+        Route::get('{place}/edit', [GlobalPlaceController::class, 'edit'])
+            ->name('edit')
+            ->middleware('can:manage-users');
+
+        Route::post('/', [GlobalPlaceController::class, 'store'])
+            ->name('store')
+            ->middleware('can:manage-users');
+
+        Route::put('{place}', [GlobalPlaceController::class, 'update'])
+            ->name('update')
+            ->middleware('can:manage-users');
+
+        Route::delete('{place}', [GlobalPlaceController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('can:manage-users');
     });
 
     Route::prefix('identities')->group(function () {

@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\TenantMedia;
+use App\Models\GlobalPlace;
 use Stancl\Tenancy\Facades\Tenancy;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -147,14 +148,86 @@ class Letter extends Model implements HasMedia
         ->orderBy('pivot_position', 'asc');
     }
 
+    public function localPlaces(): BelongsToMany
+    {
+        return $this->places();
+    }
+
+    public function globalPlaces(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            GlobalPlace::class,
+            tenancy()->tenant->table_prefix . '__letter_place',
+            'letter_id',
+            'global_place_id'
+        )
+        ->withPivot('position', 'role', 'marked')
+        ->orderBy('pivot_position', 'asc');
+    }
+
     public function origins(): BelongsToMany
     {
         return $this->places()->where('role', '=', 'origin');
     }
 
+    public function globalOrigins(): BelongsToMany
+    {
+        return $this->globalPlaces()->where('role', '=', 'origin');
+    }
+
     public function destinations(): BelongsToMany
     {
         return $this->places()->where('role', '=', 'destination');
+    }
+
+    public function globalDestinations(): BelongsToMany
+    {
+        return $this->globalPlaces()->where('role', '=', 'destination');
+    }
+
+    public function getAllPlacesAttribute()
+    {
+        $local = $this->localPlaces->map(function ($place) {
+            $place->type = 'local';
+            return $place;
+        });
+
+        $global = $this->globalPlaces->map(function ($place) {
+            $place->type = 'global';
+            return $place;
+        });
+
+        return $local->merge($global);
+    }
+
+    public function getAllOriginsAttribute()
+    {
+        $local = $this->origins->map(function ($place) {
+            $place->type = 'local';
+            return $place;
+        });
+
+        $global = $this->globalOrigins->map(function ($place) {
+            $place->type = 'global';
+            return $place;
+        });
+
+        return $local->merge($global);
+    }
+
+    public function getAllDestinationsAttribute()
+    {
+        $local = $this->destinations->map(function ($place) {
+            $place->type = 'local';
+            return $place;
+        });
+
+        $global = $this->globalDestinations->map(function ($place) {
+            $place->type = 'global';
+            return $place;
+        });
+
+        return $local->merge($global);
     }
 
     public function keywords(): BelongsToMany
