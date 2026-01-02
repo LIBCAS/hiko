@@ -25,6 +25,7 @@ class AjaxKeywordController extends Controller
                 ->map(fn($keyword) => [
                     'id' => 'local-' . $keyword->id,
                     'value' => 'local-' . $keyword->id,
+                    'name' => $keyword->getTranslation('name', $locale),
                     'label' => $keyword->getTranslation('name', $locale) . ' (' . __('hiko.local') . ')',
                     'type' => __('hiko.local')
                 ])
@@ -38,6 +39,7 @@ class AjaxKeywordController extends Controller
                 ->map(fn($keyword) => [
                     'id' => 'global-' . $keyword->id,
                     'value' => 'global-' . $keyword->id,
+                    'name' => $keyword->getTranslation('name', $locale),
                     'label' => $keyword->getTranslation('name', $locale) . ' (' . __('hiko.global') . ')',
                     'type' => __('hiko.global')
                 ])
@@ -45,9 +47,26 @@ class AjaxKeywordController extends Controller
                 ->toArray()
         );
 
+        $needle = trim((string) $request->query('search', ''));
+        $needleNorm = removeAccents(mb_strtolower($needle, 'UTF-8'));
+
         return $tenantKeywords
             ->merge($globalKeywords)
-            ->sortBy('label')
+            ->sort(function (array $a, array $b) use ($needleNorm) {
+                $aName = removeAccents(mb_strtolower($a['name'] ?? '', 'UTF-8'));
+                $bName = removeAccents(mb_strtolower($b['name'] ?? '', 'UTF-8'));
+
+                $aExact = ($aName === $needleNorm) ? 0 : 1; // 0 sorts first
+                $bExact = ($bName === $needleNorm) ? 0 : 1;
+
+                // exact matches first
+                if ($aExact !== $bExact) {
+                    return $aExact <=> $bExact;
+                }
+
+                // then alphabetical by displayed label
+                return strcasecmp($a['label'] ?? '', $b['label'] ?? '');
+            })
             ->values()
             ->toArray();
     }
