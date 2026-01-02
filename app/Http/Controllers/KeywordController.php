@@ -54,6 +54,12 @@ class KeywordController extends Controller
             'keyword_category_id' => $validated['keyword_category_id'] ?? null,
         ]);
 
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('keywords.create')
+                ->with('success', __('hiko.saved'));
+        }
+
         return redirect()
             ->route('keywords.edit', $keyword->id)
             ->with('success', __('hiko.saved'));
@@ -96,6 +102,12 @@ class KeywordController extends Controller
             ],
             'keyword_category_id' => $validated['keyword_category_id'] ?? null,
         ]);
+
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('keywords.create')
+                ->with('success', __('hiko.saved'));
+        }
 
         return redirect()
             ->route('keywords.edit', $keyword->id)
