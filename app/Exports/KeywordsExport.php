@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Models\GlobalKeyword;
 use App\Models\Keyword;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -11,7 +12,17 @@ class KeywordsExport implements FromCollection, WithMapping, WithHeadings
 {
     public function collection()
     {
-        return Keyword::all();
+        $local = Keyword::all()->map(function ($item) {
+            $item->setAttribute('source_type', __('hiko.local'));
+            return $item;
+        });
+
+        $global = GlobalKeyword::all()->map(function ($item) {
+            $item->setAttribute('source_type', __('hiko.global'));
+            return $item;
+        });
+
+        return $local->concat($global);
     }
 
     public function headings(): array
@@ -21,6 +32,7 @@ class KeywordsExport implements FromCollection, WithMapping, WithHeadings
             'cs',
             'en',
             'category',
+            'source',
         ];
     }
 
@@ -34,6 +46,7 @@ class KeywordsExport implements FromCollection, WithMapping, WithHeadings
             $name['cs'] ?? '',
             $name['en'] ?? '',
             $category ? implode(' | ', array_values($category->getTranslations('name'))) : '',
+            $keyword->source_type,
         ];
     }
 }
