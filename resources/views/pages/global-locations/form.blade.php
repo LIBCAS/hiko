@@ -3,15 +3,14 @@
     <x-form-errors />
     @if (!empty($location->id))
         <x-page-lock
-            scope="tenant"
-            resource-type="location_edit"
+            scope="global"
+            resource-type="global_location_edit"
             :resource-id="$location->id"
             :redirect-url="route('locations')"
             :read-only-on-deny="true" />
     @endif
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        {{-- Left Column: Form --}}
         <div class="col-span-1 space-y-3">
             <form x-data="similarItems({ similarNamesUrl: '{{ route('ajax.locations.similar') }}', id: '{{ $location->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" action="{{ $action }}" method="post"
                 class="space-y-3" autocomplete="off">
@@ -51,7 +50,7 @@
             </form>
             @if ($location->id)
                 @can('delete-metadata')
-                    <form x-data="{ form: $el }" action="{{ route('locations.destroy', $location->id) }}" method="post"
+                    <form x-data="{ form: $el }" action="{{ route('global.locations.destroy', $location->id) }}" method="post"
                         class="w-full mt-8">
                         @csrf
                         @method('DELETE')
@@ -64,7 +63,6 @@
             @endif
         </div>
 
-        {{-- Right Column: Attached Letters --}}
         @if ($location->id)
             <div class="col-span-1">
                 @if (isset($letters))

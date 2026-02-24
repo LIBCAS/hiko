@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\LocationsExport;
 use App\Models\Location;
+use App\Models\GlobalLocation;
+use App\Models\Manifestation;
+use App\Services\PageLockService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Exports\LocationsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -68,6 +71,16 @@ class LocationController extends Controller
 
     public function edit(Location $location)
     {
+        // Fetch all manifestations that use this location
+        $manifestations = Manifestation::with('letter')
+            ->where('repository_id', $location->id)
+            ->orWhere('archive_id', $location->id)
+            ->orWhere('collection_id', $location->id)
+            ->get();
+
+        // Extract unique letters
+        $letters = $manifestations->pluck('letter')->filter()->unique('id');
+
         return view('pages.locations.form', [
             'title' => __('hiko.location') . ': '. $location->id,
             'location' => $location,
@@ -75,11 +88,25 @@ class LocationController extends Controller
             'method' => 'PUT',
             'label' => __('hiko.edit'),
             'types' => Location::types(),
+            'letters' => $letters,
         ]);
     }
 
     public function update(Request $request, Location $location): RedirectResponse
     {
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'tenant',
+            'resource_type' => 'location_edit',
+            'resource_id' => (string) $location->id,
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('locations')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
         $request->merge([
             'name' => trim($request->input('name')),
             'type' => trim($request->input('type')),
@@ -125,40 +152,61 @@ class LocationController extends Controller
 
     public function searchRepository(Request $request)
     {
-        $search = $request->input('search');
-
-        $locations = Location::where('type', 'repository')
-                             ->where('name', 'like', '%' . $search . '%')
-                             ->orderBy('name')
-                             ->limit(10)
-                             ->get(['id', 'name as label', 'name as value']);
-
-        return response()->json($locations);
+        return $this->searchLocations($request, 'repository');
     }
 
     public function searchArchive(Request $request)
     {
-        $search = $request->input('search');
-
-        $locations = Location::where('type', 'archive')
-                             ->where('name', 'like', '%' . $search . '%')
-                             ->orderBy('name')
-                             ->limit(10)
-                             ->get(['id', 'name as label', 'name as value']);
-
-        return response()->json($locations);
+        return $this->searchLocations($request, 'archive');
     }
 
     public function searchCollection(Request $request)
     {
+        return $this->searchLocations($request, 'collection');
+    }
+
+    protected function searchLocations(Request $request, string $type)
+    {
         $search = $request->input('search');
 
-        $locations = Location::where('type', 'collection')
-                             ->where('name', 'like', '%' . $search . '%')
-                             ->orderBy('name')
-                             ->limit(10)
-                             ->get(['id', 'name as label', 'name as value']);
+        // Local Locations
+        $local = Location::where('type', $type)
+            ->where('name', 'like', '%' . $search . '%')
+            ->orderBy('name')
+            ->limit(10)
+            ->get()
+            ->map(fn($loc) => [
+                'id' => 'local-' . $loc->id,
+                'value' => 'local-' . $loc->id,
+                'label' => $loc->name . ' (' . __('hiko.local') . ')',
+            ]);
 
-        return response()->json($locations);
+        // Global Locations
+        $global = GlobalLocation::where('type', $type)
+            ->where('name', 'like', '%' . $search . '%')
+            ->orderBy('name')
+            ->limit(10)
+            ->get()
+            ->map(fn($loc) => [
+                'id' => 'global-' . $loc->id,
+                'value' => 'global-' . $loc->id,
+                'label' => $loc->name . ' (' . __('hiko.global') . ')',
+            ]);
+
+        return response()->json($local->merge($global));
+    }
+
+    public function validation()
+    {
+        return view('pages.locations.validation', [
+            'title' => __('hiko.input_control'),
+        ]);
+    }
+
+    public function localMerge()
+    {
+        return view('pages.locations.local-merge', [
+            'title' => __('hiko.local_location_merging'),
+        ]);
     }
 }
