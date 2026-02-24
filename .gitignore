@@ -7,7 +7,6 @@
 /docs/*.pdf
 /docs/*.sql
 .env
-.env.*
 tenant_mapping.json
 *.sql
 .phpunit.result.cache
