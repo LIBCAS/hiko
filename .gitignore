@@ -3,9 +3,13 @@
 /public/storage
 /storage/*.key
 /vendor
+/docs/CONTEXT.md
+/docs/*.pdf
+/docs/*.sql
 .env
-.env.prod
-.env.test
+.env.*
+tenant_mapping.json
+*.sql
 .phpunit.result.cache
 docker-compose.override.yml
 Homestead.json

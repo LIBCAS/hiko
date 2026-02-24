@@ -1,7 +1,6 @@
-# Set the base image
-FROM webdevops/php-apache-dev:7.4
+FROM webdevops/php-apache-dev:8.2
 
-# Set the working directory in Docker
+# Working directory in Docker
 WORKDIR /var/www/html
 
 # Copy the existing application directory contents
