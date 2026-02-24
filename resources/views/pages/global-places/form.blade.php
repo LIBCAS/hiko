@@ -1,6 +1,14 @@
 <x-app-layout :title="$title">
     <x-success-alert />
     <x-form-errors />
+    @if (!empty($place->id))
+        <x-page-lock
+            scope="global"
+            resource-type="global_place_edit"
+            :resource-id="$place->id"
+            :redirect-url="route('places')"
+            :read-only-on-deny="true" />
+    @endif
 
     <div class="grid-cols-3 grid gap-4 mb-4 space-y-3">
         <div class="max-w-sm col-span-1">

@@ -1,5 +1,10 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    <x-page-lock
+        scope="tenant"
+        resource-type="place_local_merge"
+        :redirect-url="route('places')"
+        :read-only-on-deny="true" />
 
     <div x-data="{ showGuide: false }">
         <div class="mb-6 flex justify-between">
@@ -19,9 +24,9 @@
                 </button>
                 <h3 class="text-sm font-bold text-blue-800">{{ __('hiko.how_to_merge') }}</h3>
                 <ul class="list-disc list-inside text-sm text-blue-700 mt-2">
-                    <li>{{ __('hiko.local_merge_step_1') }}</li>
-                    <li>{{ __('hiko.local_merge_step_2') }}</li>
-                    <li>{{ __('hiko.local_merge_step_3') }}</li>
+                    <li>{{ __('hiko.local_place_merge_step_1') }}</li>
+                    <li>{{ __('hiko.local_place_merge_step_2') }}</li>
+                    <li>{{ __('hiko.local_place_merge_step_3') }}</li>
                 </ul>
             </div>
 

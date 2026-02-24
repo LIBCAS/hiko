@@ -11,7 +11,7 @@ class GlobalPlaceMergeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->hasAbility('manage-metadata');
+        return $this->user()?->hasAbility('manage-users') ?? false;
     }
 
     /**

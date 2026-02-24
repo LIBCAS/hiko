@@ -5,6 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+use OpenApi\Attributes as OA;
+
+#[OA\Schema(
+    schema: "GlobalPlace",
+    required: ["name"],
+    properties: [
+        new OA\Property(property: "id", type: "integer", readOnly: true),
+        new OA\Property(property: "name", type: "string"),
+        new OA\Property(property: "alternative_names", type: "array", items: new OA\Items(type: "string"), nullable: true),
+        new OA\Property(property: "created_at", type: "string", format: "date-time", readOnly: true),
+        new OA\Property(property: "updated_at", type: "string", format: "date-time", readOnly: true)
+    ]
+)]
 class GlobalPlace extends Model
 {
     protected $table = 'global_places';

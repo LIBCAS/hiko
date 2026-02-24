@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Place;
 use App\Models\GlobalPlace;
+use App\Models\MergeAuditLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
@@ -71,8 +72,9 @@ class GlobalPlaceMergeService
         return $previewData;
     }
 
-    /**
+/**
      * Determine the merge strategy for a local place.
+     * Finds the BEST match among global places based on criteria priority.
      *
      * @param Place $local
      * @param array $criteria
@@ -97,33 +99,81 @@ class GlobalPlaceMergeService
                 continue;
             }
 
+            $bestMatch = null;
+            $bestScore = -1; // Used for similarity (higher is better) or distance (lower is better, handled logically)
+
             foreach ($globalPlaces as $global) {
-                $matches = match ($criterion) {
-                    'geoname_id' => $this->checkGeonameIdMatch($local, $global),
-                    'alternative_names' => $this->checkAlternativeNamesMatch($local, $global),
-                    'country_and_name' => $this->checkCountryAndNameMatch($local, $global, $options['country_and_name_threshold'] ?? config('global_place_merge.country_and_name_threshold')),
-                    'name_similarity' => $this->checkNameSimilarity($local, $global, $options['name_similarity_threshold'] ?? config('global_place_merge.name_similarity_threshold')),
-                    'coordinates' => $this->checkCoordinatesMatch($local, $global, $options['latitude_tolerance'] ?? config('global_place_merge.latitude_tolerance'), $options['longitude_tolerance'] ?? config('global_place_merge.longitude_tolerance')),
-                    default => false,
-                };
+                switch ($criterion) {
+                    case 'coordinates':
+                        $latTol = $options['latitude_tolerance'] ?? config('global_place_merge.latitude_tolerance');
+                        $lonTol = $options['longitude_tolerance'] ?? config('global_place_merge.longitude_tolerance');
 
-                if ($matches) {
-                    // Debug logging to understand why certain criteria match
-                    Log::debug("[GlobalPlaceMerge] Match found", [
-                        'local_place' => $local->name,
-                        'local_geoname_id' => $local->geoname_id,
-                        'global_place' => $global->name,
-                        'global_geoname_id' => $global->geoname_id,
-                        'criterion' => $criterion,
-                        'criteria_checked' => $criteria,
-                    ]);
+                        if ($this->checkCoordinatesMatch($local, $global, $latTol, $lonTol)) {
+                            // Calculate total distance (lower is better)
+                            $dist = abs((float)$local->latitude - (float)$global->latitude) +
+                                    abs((float)$local->longitude - (float)$global->longitude);
 
-                    return [
-                        'type' => 'merge',
-                        'global_place' => $global,
-                        'reason' => $criterion,
-                    ];
+                            // Initialize bestScore with a high number for distance logic if it's -1
+                            if ($bestScore === -1) $bestScore = 999999;
+
+                            if ($dist < $bestScore) {
+                                $bestScore = $dist;
+                                $bestMatch = $global;
+                            }
+                        }
+                        break;
+
+                    case 'name_similarity':
+                    case 'country_and_name':
+                        $threshold = ($criterion === 'name_similarity')
+                            ? ($options['name_similarity_threshold'] ?? config('global_place_merge.name_similarity_threshold'))
+                            : ($options['country_and_name_threshold'] ?? config('global_place_merge.country_and_name_threshold'));
+
+                        // For country_and_name, check country strictly first
+                        if ($criterion === 'country_and_name') {
+                            if (!$this->checkCountryMatch($local, $global)) continue 2;
+                        }
+
+                        if (function_exists('calculateSimilarityPercentage')) {
+                            $similarity = calculateSimilarityPercentage($local->name, $global->name);
+                            if ($similarity >= $threshold) {
+                                // Higher similarity is better
+                                if ($similarity > $bestScore) {
+                                    $bestScore = $similarity;
+                                    $bestMatch = $global;
+                                }
+                            }
+                        }
+                        break;
+
+                    case 'geoname_id':
+                        if ($this->checkGeonameIdMatch($local, $global)) {
+                            // Exact match found, return immediately as this is the strongest criteria
+                            return ['type' => 'merge', 'global_place' => $global, 'reason' => $criterion];
+                        }
+                        break;
+
+                    case 'alternative_names':
+                        if ($this->checkAlternativeNamesMatch($local, $global)) {
+                            // Exact name match found in alternatives, usually sufficient to return immediately
+                            return ['type' => 'merge', 'global_place' => $global, 'reason' => $criterion];
+                        }
+                        break;
                 }
+            }
+
+            // If we found a best match for this criterion, use it
+            if ($bestMatch) {
+                Log::debug("[GlobalPlaceMerge] Best Match found for {$criterion}", [
+                    'local_id' => $local->id,
+                    'global_id' => $bestMatch->id,
+                    'score_or_distance' => $bestScore
+                ]);
+                return [
+                    'type' => 'merge',
+                    'global_place' => $bestMatch,
+                    'reason' => $criterion,
+                ];
             }
         }
 
@@ -133,6 +183,15 @@ class GlobalPlaceMergeService
             'global_place' => null,
             'reason' => null,
         ];
+    }
+
+    /**
+     * Helper to check strict country match (used in loop above).
+     */
+    protected function checkCountryMatch(Place $local, GlobalPlace $global): bool
+    {
+        if ($local->country === null || $global->country === null) return false;
+        return strtolower(trim($local->country)) === strtolower(trim($global->country));
     }
 
     /**
@@ -251,6 +310,13 @@ class GlobalPlaceMergeService
             throw new \Exception('Tenancy not initialized');
         }
 
+        $payload = [
+            'selected_place_ids' => $selectedPlaceIds,
+            'criteria' => $criteria,
+            'options' => $options,
+            'merge_attrs' => $mergeAttrs,
+        ];
+
         $tenant = tenancy()->tenant;
         $tenantPrefix = $tenant->table_prefix;
 
@@ -301,22 +367,28 @@ class GlobalPlaceMergeService
 
             Log::info("[GlobalPlaceMerge] Merge completed. Created: $created, Merged: $merged, Skipped: $skipped");
 
-            return [
+            $result = [
                 'success' => true,
                 'merged' => $merged,
                 'created' => $created,
                 'skipped' => $skipped,
                 'errors' => $errors,
             ];
+            $this->logAudit('success', $payload, $result);
+            Log::info('[GlobalPlaceMerge] audit success logged', $result);
+            return $result;
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("[GlobalPlaceMerge] Transaction failed: " . $e->getMessage());
 
-            return [
+            $result = [
                 'success' => false,
                 'error' => $e->getMessage(),
             ];
+            $this->logAudit('error', $payload, $result, $e->getMessage());
+            Log::error('[GlobalPlaceMerge] audit error logged: ' . $e->getMessage(), ['payload' => $payload]);
+            return $result;
         }
     }
 
@@ -472,6 +544,28 @@ class GlobalPlaceMergeService
                     ]);
                 Log::info("[GlobalPlaceMerge] Updated pivot: letter {$record->letter_id} now uses global_place_id {$globalPlaceId}");
             }
+        }
+    }
+
+    private function logAudit(string $status, array $payload, array $result = [], ?string $errorMessage = null): void
+    {
+        try {
+            $user = auth()->user();
+
+            MergeAuditLog::create([
+                'tenant_id' => tenancy()->tenant?->id,
+                'tenant_prefix' => tenancy()->tenant?->table_prefix,
+                'user_id' => $user?->id,
+                'user_email' => $user?->email,
+                'entity' => 'place',
+                'operation' => 'global_merge',
+                'status' => $status,
+                'payload' => $payload,
+                'result' => $result,
+                'error_message' => $errorMessage,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('[GlobalPlaceMerge] failed to persist audit log: ' . $e->getMessage());
         }
     }
 }

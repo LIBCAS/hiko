@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PlaceRequest;
 use App\Models\Place;
 use App\Models\Country;
+use App\Services\PageLockService;
 use App\Services\PlaceService;
 use App\Services\PlaceMergeService;
 use Illuminate\Http\RedirectResponse;
@@ -68,6 +69,19 @@ class PlaceController extends Controller
 
     public function update(PlaceRequest $request, Place $place): RedirectResponse
     {
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'tenant',
+            'resource_type' => 'place_edit',
+            'resource_id' => (string) $place->id,
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('places')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
         Log::info('Update method called for Place ID:', ['place_id' => $place->id]);
 
         $validated = $request->validated();
@@ -120,7 +134,7 @@ class PlaceController extends Controller
     public function validation()
     {
         return view('pages.places.validation', [
-            'title' => __('hiko.data_validation'),
+            'title' => __('hiko.input_control'),
         ]);
     }
 

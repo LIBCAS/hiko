@@ -26,7 +26,7 @@ class GlobalPlaceRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return auth()->user()->hasAbility('manage-metadata');
+        return $this->user()?->hasAbility('manage-users') ?? false;
     }
 
     public function prepareForValidation(): void

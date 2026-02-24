@@ -1,5 +1,10 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    <x-page-lock
+        scope="global"
+        resource-type="place_global_merge"
+        :redirect-url="route('places')"
+        :read-only-on-deny="true" />
 
     @if($errors->any())
         <div class="max-w-7xl mx-auto mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -88,9 +93,9 @@
             <h3 class="text-sm font-bold text-blue-800">{{ __('hiko.how_to_merge') }}</h3>
             <ul class="list-disc list-inside text-sm text-blue-700 mt-2">
                 {{-- Note: You may want to create specific translation keys for Global Merge steps later --}}
-                <li>{{ __('hiko.global_merge_step_1') ?? 'Choose criteria to match local places with existing global places.' }}</li>
-                <li>{{ __('hiko.global_merge_step_2') ?? 'Review the preview table. Items marked "Merge" will update a global place. Items marked "Move" will become new global places.' }}</li>
-                <li>{{ __('hiko.global_merge_step_3') ?? 'Select the places you wish to process and click "Execute Merge".' }}</li>
+                <li>{{ __('hiko.global_place_merge_step_1') ?? 'Choose criteria to match local places with existing global places.' }}</li>
+                <li>{{ __('hiko.global_place_merge_step_2') ?? 'Review the preview table. Items marked "Merge" will update a global place. Items marked "Move" will become new global places.' }}</li>
+                <li>{{ __('hiko.global_place_merge_step_3') ?? 'Select the places you wish to process and click "Execute Merge".' }}</li>
             </ul>
         </div>
 
@@ -235,7 +240,7 @@
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span x-text="isLoading ? '{{ __('hiko.loading') }}...' : '{{ __('hiko.update_preview') }}'"></span>
+                    <span x-text="isLoading ? '{{ __('hiko.loading') }}' : '{{ __('hiko.update_preview') }}'"></span>
                 </button>
             </div>
         </div>
@@ -282,7 +287,7 @@
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     <span x-show="!submitLoading">{{ __('hiko.execute_merge') }}</span>
-                    <span x-show="submitLoading" style="display: none;">{{ __('hiko.loading') }}...</span>
+                    <span x-show="submitLoading" style="display: none;">{{ __('hiko.loading') }}</span>
                 </button>
             </div>
         </form>

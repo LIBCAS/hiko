@@ -25,9 +25,15 @@ class AjaxPlaceController extends Controller
             $tenantPrefix = tenancy()->initialized ? tenancy()->tenant->table_prefix : 'global';
 
             $localPlaces = DB::table("{$tenantPrefix}__places")
-                ->where(function($query) use ($searchTerm) {
-                    $query->whereRaw('LOWER(name) LIKE ?', ['%' . $searchTerm . '%'])
-                          ->orWhereRaw('LOWER(alternative_names) LIKE ?', ['%' . $searchTerm . '%']);
+                ->where(function ($query) use ($searchTerm) {
+                    $query->whereRaw('LOWER(name) LIKE ?', ['%' . $searchTerm . '%']);
+
+                    for ($i = 0; $i < 50; $i++) {
+                        $query->orWhereRaw(
+                            "LOWER(JSON_UNQUOTE(JSON_EXTRACT(alternative_names, '$[$i]'))) LIKE ?",
+                            ['%' . $searchTerm . '%']
+                        );
+                    }
                 })
                 ->get(['id', 'name', 'country', 'division']);
 
@@ -54,9 +60,15 @@ class AjaxPlaceController extends Controller
 
             // Query global places
             $globalPlaces = DB::table('global_places')
-                ->where(function($query) use ($searchTerm) {
-                    $query->whereRaw('LOWER(name) LIKE ?', ['%' . $searchTerm . '%'])
-                          ->orWhereRaw('LOWER(alternative_names) LIKE ?', ['%' . $searchTerm . '%']);
+                ->where(function ($query) use ($searchTerm) {
+                    $query->whereRaw('LOWER(name) LIKE ?', ['%' . $searchTerm . '%']);
+
+                    for ($i = 0; $i < 50; $i++) {
+                        $query->orWhereRaw(
+                            "LOWER(JSON_UNQUOTE(JSON_EXTRACT(alternative_names, '$[$i]'))) LIKE ?",
+                            ['%' . $searchTerm . '%']
+                        );
+                    }
                 })
                 ->get(['id', 'name', 'country', 'division']);
 

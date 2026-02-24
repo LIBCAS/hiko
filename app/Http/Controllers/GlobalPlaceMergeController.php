@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\GlobalPlaceMergeRequest;
 use App\Services\GlobalPlaceMergeService;
+use App\Services\PageLockService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -42,15 +43,38 @@ class GlobalPlaceMergeController extends Controller
      */
     public function execute(GlobalPlaceMergeRequest $request): RedirectResponse
     {
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'global',
+            'resource_type' => 'place_global_merge',
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('places')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
         try {
             $result = $this->mergeService->executeMerge(
                 $request->validated('selected_places'),
                 $request->validated('criteria'),
                 [
-                    'name_similarity_threshold' => $request->validated('name_similarity_threshold') ?? config('global_place_merge.name_similarity_threshold'),
-                    'latitude_tolerance' => $request->validated('latitude_tolerance') ?? config('global_place_merge.latitude_tolerance'),
-                    'longitude_tolerance' => $request->validated('longitude_tolerance') ?? config('global_place_merge.longitude_tolerance'),
-                    'country_and_name_threshold' => $request->validated('country_and_name_threshold') ?? config('global_place_merge.country_and_name_threshold'),
+                    'name_similarity_threshold' => !is_null($request->validated('name_similarity_threshold'))
+                        ? (int)$request->validated('name_similarity_threshold')
+                        : config('global_place_merge.name_similarity_threshold'),
+
+                    'latitude_tolerance' => !is_null($request->validated('latitude_tolerance'))
+                        ? (float)$request->validated('latitude_tolerance')
+                        : config('global_place_merge.latitude_tolerance'),
+
+                    'longitude_tolerance' => !is_null($request->validated('longitude_tolerance'))
+                        ? (float)$request->validated('longitude_tolerance')
+                        : config('global_place_merge.longitude_tolerance'),
+
+                    'country_and_name_threshold' => !is_null($request->validated('country_and_name_threshold'))
+                        ? (int)$request->validated('country_and_name_threshold')
+                        : config('global_place_merge.country_and_name_threshold'),
                 ],
                 $request->input('merge_attrs', [])
             );
@@ -67,7 +91,8 @@ class GlobalPlaceMergeController extends Controller
 
                 return redirect()
                     ->route('places')
-                    ->with('success', $message);
+                    ->with('success', $message)
+                    ->with('success_sticky', true);
             }
 
             return redirect()

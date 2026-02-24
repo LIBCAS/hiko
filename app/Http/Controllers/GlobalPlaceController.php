@@ -6,6 +6,7 @@ use App\Http\Requests\GlobalPlaceRequest;
 use App\Models\GlobalPlace;
 use App\Models\Country;
 use App\Services\GlobalPlaceService;
+use App\Services\PageLockService;
 use App\Services\PlaceMergeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -68,6 +69,19 @@ class GlobalPlaceController extends Controller
 
     public function update(GlobalPlaceRequest $request, GlobalPlace $place): RedirectResponse
     {
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'global',
+            'resource_type' => 'global_place_edit',
+            'resource_id' => (string) $place->id,
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('places')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
         Log::info('Update method called for Place ID:', ['place_id' => $place->id]);
 
         $validated = $request->validated();
