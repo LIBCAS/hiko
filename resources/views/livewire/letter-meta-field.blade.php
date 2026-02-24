@@ -61,7 +61,7 @@
 
 @push('scripts')
 <script>
-    function ajaxChoices({ url, element, change }) {
+    function ajaxChoices({ url, element, change, extraParams = {} }) {
         return {
             initSelect() {
                 const select = this.$el;
@@ -69,7 +69,13 @@
                 select.dataset.choicesInitialized = true;
 
                 const loadOptions = (query = '') => {
-                    fetch(`${url}?search=${query}`)
+                    const params = new URLSearchParams({ search: query });
+
+                    for (const [key, value] of Object.entries(extraParams)) {
+                        params.append(key, value);
+                    }
+
+                    fetch(`${url}?${params.toString()}`)
                         .then(response => response.json())
                         .then(data => {
                             select.innerHTML = '';
@@ -98,7 +104,7 @@
 
                 select.addEventListener('change', (event) => {
                     const selectedOption = event.target.options[event.target.selectedIndex];
-                    change({
+                    change?.({
                         value: selectedOption.value,
                         label: selectedOption.text
                     });

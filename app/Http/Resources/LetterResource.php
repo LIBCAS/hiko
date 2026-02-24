@@ -41,7 +41,9 @@ class LetterResource extends JsonResource
     protected function getDetailedRecord(): array
     {
         $identities = $this->identities->groupBy('pivot.role');
-        $places = $this->places->groupBy('pivot.role');
+        $allPlaces = $this->places->merge($this->globalPlaces);
+        $places = $allPlaces->groupBy('pivot.role');
+        $letterAttrs = $this->getAttributes();
 
         return [
             'name' => $this->name,
@@ -72,6 +74,36 @@ class LetterResource extends JsonResource
                 'note' => $this->people_mentioned_note,
             ],
             'metadata' => $this->getMetadata(),
+            'keywords' => collect($this->localKeywords)->map(function ($keyword) {
+                $names = json_decode($keyword->getAttributes()['name'], true) ?: [];
+
+                return [
+                    'id' => $keyword->id,
+                    'name_cs' => $names['cs'] ?? '',
+                    'name_en' => $names['en'] ?? '',
+                    'type' => 'L.',
+                ];
+            })->merge(
+                collect($this->globalKeywords)->map(function ($keyword) {
+                    $names = json_decode($keyword->getAttributes()['name'], true) ?: [];
+
+                    return [
+                        'id' => $keyword->id,
+                        'name_cs' => $names['cs'] ?? '',
+                        'name_en' => $names['en'] ?? '',
+                        'type' => 'G.',
+                    ];
+                })
+            )->values(),
+            'copies' => $this->copies,
+            'related_resources' => json_decode($letterAttrs['related_resources'], true) ?: [],
+            'abstract' => json_decode($letterAttrs['abstract'], true) ?: [],
+            'incipit' => $this->incipit,
+            'explicit' => $this->explicit,
+            'languages' => explode(';', $this->languages),
+            'note' => $this->notes_public,
+            'content' => $this->content,
+            'copyright' => $this->copyright,
         ];
     }
 

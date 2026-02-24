@@ -2,6 +2,7 @@
 
 namespace App\Tenancy;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper;
 use Stancl\Tenancy\Contracts\Tenant;
@@ -15,6 +16,7 @@ class ConfigFilesystemTenancyBootstrapper extends FilesystemTenancyBootstrapper
         // storage_path()
         if ($this->app['config']['tenancy.filesystem.suffix_storage_path'] ?? true) {
             $this->app->useStoragePath($this->originalPaths['storage'] . "/{$suffix}");
+            $this->ensureTenantStorageDirectories();
         }
 
         // asset()
@@ -47,6 +49,30 @@ class ConfigFilesystemTenancyBootstrapper extends FilesystemTenancyBootstrapper
             }
 
             $this->app['config']["filesystems.disks.{$disk}.root"] = $finalPrefix;
+        }
+    }
+
+    protected function ensureTenantStorageDirectories(): void
+    {
+        $paths = [
+            storage_path(),
+            storage_path('app'),
+            storage_path('app/imports'),
+            storage_path('app/livewire-tmp'),
+            storage_path('app/public'),
+            storage_path('debugbar'),
+            storage_path('framework'),
+            storage_path('framework/cache'),
+            storage_path('framework/cache/data'),
+            storage_path('framework/sessions'),
+            storage_path('framework/testing'),
+            storage_path('framework/views'),
+            storage_path('indexes'),
+            storage_path('logs'),
+        ];
+
+        foreach ($paths as $path) {
+            File::ensureDirectoryExists($path, 0755, true);
         }
     }
 }

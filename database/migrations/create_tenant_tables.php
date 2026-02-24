@@ -49,7 +49,12 @@ return new class extends Migration
                     $table->string('death_year')->nullable();
                     $table->longText('related_identity_resources')->nullable();
                     $table->string('viaf_id')->nullable();
+                    $table->unsignedBigInteger('global_identity_id')->nullable();
                     $table->text('note')->nullable();
+                    $table->foreign('global_identity_id')
+                        ->references('id')
+                        ->on('global_identities')
+                        ->onDelete('set null');
                 });
             }
 
@@ -194,7 +199,7 @@ return new class extends Migration
                     $table->unsignedBigInteger('user_id');
                     $table->unique(['letter_id', 'user_id'], 'letter_user_letter_id_user_id_unique');
                     $table->foreign('letter_id')->references('id')->on($prefix . 'letters')->onDelete('cascade');
-                    $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+                    $table->foreign('user_id')->references('id')->on($prefix . 'users')->onDelete('cascade');
                 });
             }
 

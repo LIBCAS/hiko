@@ -19,7 +19,7 @@ class ConfigTenancyBootstrapper implements TenancyBootstrapper
             'hiko.geonames_username' => $tenant->geonames_username,
             'hiko.main_character' => $tenant->main_character,
             'hiko.metadata_default_locale' => $tenant->metadata_default_locale,
-            'hiko.version' => $tenant->version,
+            'hiko.version' => config('hiko.version'),
             'hiko.show_watermark' => $tenant->show_watermark,
             'hiko.public_url' => $tenant->public_url,
         ]);

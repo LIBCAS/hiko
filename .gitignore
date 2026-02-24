@@ -3,7 +3,12 @@
 /public/storage
 /storage/*.key
 /vendor
+/docs/CONTEXT.md
+/docs/*.pdf
+/docs/*.sql
 .env
+tenant_mapping.json
+*.sql
 .phpunit.result.cache
 docker-compose.override.yml
 Homestead.json
@@ -21,3 +26,5 @@ storage/app/google-cloud/
 /certs
 /database/export
 /database/import
+adminer-x.php
+HELP.md

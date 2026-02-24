@@ -137,3 +137,7 @@ html {
         radial-gradient(at 51% 43%, hsla(185,100%,47%,1) 0px, transparent 50%),
         radial-gradient(at 56% 58%, hsla(312,66%,77%,1) 0px, transparent 50%);
 }
+
+.jstree-node.is-inactive > [role="treeitem"] {
+    text-decoration: line-through;
+}

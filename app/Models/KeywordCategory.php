@@ -9,6 +9,21 @@ use Spatie\Translatable\HasTranslations;
 use Laravel\Scout\Searchable;
 use Illuminate\Support\Facades\Log;
 
+use OpenApi\Attributes as OA;
+
+#[OA\Schema(
+    schema: "KeywordCategory",
+    required: ["name"],
+    properties: [
+        new OA\Property(property: "id", type: "integer", readOnly: true),
+        new OA\Property(property: "name", type: "object", properties: [
+            new OA\Property(property: "cs", type: "string"),
+            new OA\Property(property: "en", type: "string")
+        ]),
+        new OA\Property(property: "created_at", type: "string", format: "date-time", readOnly: true),
+        new OA\Property(property: "updated_at", type: "string", format: "date-time", readOnly: true)
+    ]
+)]
 class KeywordCategory extends Model
 {
     use HasFactory, HasTranslations, Searchable;

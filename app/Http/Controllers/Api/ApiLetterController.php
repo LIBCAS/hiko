@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Letter;
+use App\Models\TenantMedia;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LetterResource;
@@ -20,11 +21,12 @@ class ApiLetterController extends Controller
     public function index(Request $request): LetterCollection|\Illuminate\Http\JsonResponse
     {
         try {
-            $letters = Letter::with($this->relationships())
+            $lettersQuery = Letter::with($this->relationships())
                 ->published()
                 ->filter($request->all())
-                ->orderByDate($request->input('order', 'asc'))
-                ->paginate($this->limit($request));
+                ->orderByDate($request->input('order', 'asc'));
+
+            $letters = $lettersQuery->paginate($this->limit($request));
 
             return new LetterCollection($letters);
         } catch (\Exception $e) {
@@ -62,6 +64,39 @@ class ApiLetterController extends Controller
         }
     }
 
+    public function media($uuid)
+    {
+        $letter = Letter::where('uuid', $uuid)->published()->first();
+
+        if (!$letter) {
+            abort(404);
+        }
+
+        $mediaQuery = $letter->media();
+        $media = $mediaQuery->get()->filter(function ($item) {
+            return $item->getCustomProperty('status') === TenantMedia::STATUS_PUBLISHED;
+        });
+
+        return response()->json(
+            $media->map(function ($item) {
+                $baseUrl = $item->getUrl();
+                $hasWatermark = $item->hasGeneratedConversion('watermark');
+
+                return [
+                    'id' => $item->id,
+                    'file_name' => $item->file_name,
+                    'mime_type' => $item->mime_type,
+                    'disk' => $item->disk,
+                    'size' => $item->size,
+                    'full_url' => $hasWatermark ? $item->getUrl('watermark') : $baseUrl,
+                    'thumb_url' => $item->hasGeneratedConversion('thumb')
+                        ? $item->getUrl('thumb')
+                        : ($hasWatermark ? $item->getUrl('watermark') : $baseUrl),
+                ];
+            })->values()
+        );
+    }
+
     /**
      * Define the relationships to load based on request parameters.
      *
@@ -71,16 +106,19 @@ class ApiLetterController extends Controller
     {
         return [
             'identities' => function ($query) {
-                $query->select('identities.id', 'name', 'role')
-                      ->whereIn('role', ['author', 'recipient'])
-                      ->orderBy('position');
+                $identityTable = tenancy()->tenant->table_prefix . '__identities';
+                $query->select("{$identityTable}.id", "{$identityTable}.name")
+                    ->wherePivotIn('role', ['author', 'recipient', 'mentioned'])
+                    ->orderBy('pivot_position');
             },
             'places' => function ($query) {
-                $query->select('places.id', 'name', 'role')
-                      ->whereIn('role', ['origin', 'destination'])
-                      ->orderBy('position');
+                $placeTable = tenancy()->tenant->table_prefix . '__places';
+                $query->select("{$placeTable}.id", "{$placeTable}.name")
+                    ->wherePivotIn('role', ['origin', 'destination'])
+                    ->orderBy('pivot_position');
             },
-            'keywords:id,name', // Select only necessary columns
+            'localKeywords:id,name',
+            'globalKeywords:id,name',
         ];
     }
 

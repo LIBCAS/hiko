@@ -1,4 +1,4 @@
-co<?php
+<?php
 
 namespace Tests\Feature;
 

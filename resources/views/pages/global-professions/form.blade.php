@@ -1,5 +1,13 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    @if (!empty($profession?->id))
+        <x-page-lock
+            scope="global"
+            resource-type="global_profession_edit"
+            :resource-id="$profession->id"
+            :redirect-url="route('professions')"
+            :read-only-on-deny="true" />
+    @endif
 
     <div class="grid-cols-3 grid gap-4 mb-4 space-y-3">
         <div class="max-w-sm">
@@ -54,7 +62,7 @@
                 </div>
 
                 <!-- Livewire Modal for Creating New Category -->
-                <livewire:create-new-item-modal :route="route('professions.category.create')" :text="__('hiko.modal_new_profession_category')" />
+                <livewire:create-new-item-modal :route="route('global.professions.category.create')" :text="__('hiko.modal_new_global_profession_category')" />
 
                 <!-- Action Buttons -->
                 <x-button-simple class="w-full" name="action" value="edit">

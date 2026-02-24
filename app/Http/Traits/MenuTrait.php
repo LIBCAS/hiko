@@ -46,6 +46,12 @@ trait MenuTrait
                 'ability' => 'view-metadata',
             ],
             [
+                'route' => 'religions.index',
+                'name' => __('hiko.religions'),
+                'icon' => 'icons.religions',
+                'ability' => 'manage-users',
+            ],
+            [
                 'route' => 'users',
                 'name' => __('hiko.users'),
                 'icon' => 'icons.user-add',

@@ -1,5 +1,13 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    @if (!empty($profession?->id))
+        <x-page-lock
+            scope="tenant"
+            resource-type="profession_edit"
+            :resource-id="$profession->id"
+            :redirect-url="route('professions')"
+            :read-only-on-deny="true" />
+    @endif
     <div class="grid-cols-3 grid gap-4 mb-4 space-y-3">
         <div class="max-w-sm">
             <form x-data="similarItems({ similarNamesUrl: '{{ route('ajax.items.similar', ['model' => 'Profession']) }}', id: '{{ $profession ? $profession->id : null }}' })" x-init="$watch('search', () => findSimilarNames($data))" action="{{ $action }}" method="post"
@@ -47,7 +55,6 @@
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>
-
                 <livewire:create-new-item-modal :route="route('professions.category.create')" :text="__('hiko.modal_new_profession_category')" />
                 <x-button-simple class="w-full" name="action" value="edit">
                     {{ $label }}

@@ -11,13 +11,15 @@ class RepeatedSelect extends Component
     public $fieldLabel;
     public $fieldKey;
     public $route;
+    public $routeParams = [];
 
-    public function mount($items = [], $fieldLabel, $fieldKey, $route)
+    public function mount($items = [], $fieldLabel, $fieldKey, $route, $routeParams = [])
     {
         $this->items = $items;
         $this->fieldLabel = $fieldLabel;
         $this->fieldKey = $fieldKey;
         $this->route = $route;
+        $this->routeParams = $routeParams;
 
         if (empty($this->items)) {
             $this->addItem();
@@ -51,7 +53,7 @@ class RepeatedSelect extends Component
         }
 
         try {
-            $response = Http::get(route($this->route), ['search' => $search]);
+            $response = Http::get(route($this->route, $this->routeParams), ['search' => $search]);
             return $response->json() ?? [];
         } catch (\Exception $e) {
             return [];

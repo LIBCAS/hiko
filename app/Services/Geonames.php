@@ -66,20 +66,20 @@ class Geonames
         if (!$geonameId) {
             return [];
         }
-    
+
         $url = 'https://secure.geonames.org/getJSON';
         $response = Http::get($url, [
             'geonameId' => $geonameId,
             'username' => $this->username,
         ]);
-    
+
         if ($response->failed() || !$response->json()) {
             \Log::error("Geonames API failed for geonameId: $geonameId");
             return [];
         }
-    
+
         $data = $response->json();
-    
+
         return isset($data['alternateNames']) && is_array($data['alternateNames'])
             ? collect($data['alternateNames'])
                 ->pluck('name')
@@ -89,5 +89,5 @@ class Geonames
                 ->toArray()
             : [];
     }
-    
+
 }

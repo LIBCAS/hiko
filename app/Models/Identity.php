@@ -2,16 +2,48 @@
 
 namespace App\Models;
 
+use App\Enums\IdentityType;
+use App\Models\Religion;
+use App\Models\GlobalIdentity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 use Stancl\Tenancy\Facades\Tenancy;
 
+#[OA\Schema(
+    schema: "Identity",
+    required: ["name", "type"],
+    properties: [
+        new OA\Property(property: "id", type: "integer", readOnly: true),
+        new OA\Property(property: "name", type: "string"),
+        new OA\Property(property: "surname", type: "string", nullable: true),
+        new OA\Property(property: "forename", type: "string", nullable: true),
+        new OA\Property(property: "type", type: "string", enum: ["person", "institution"]),
+        new OA\Property(property: "nationality", type: "string", nullable: true),
+        new OA\Property(property: "gender", type: "string", nullable: true),
+        new OA\Property(property: "birth_year", type: "string", nullable: true),
+        new OA\Property(property: "death_year", type: "string", nullable: true),
+        new OA\Property(property: "viaf_id", type: "string", nullable: true),
+        new OA\Property(property: "note", type: "string", nullable: true),
+        new OA\Property(property: "alternative_names", type: "array", items: new OA\Items(type: "string")),
+        new OA\Property(property: "related_names", type: "array", items: new OA\Items(type: "object")),
+        new OA\Property(property: "created_at", type: "string", format: "date-time", readOnly: true),
+        new OA\Property(property: "updated_at", type: "string", format: "date-time", readOnly: true)
+    ]
+)]
 class Identity extends Model
 {
-    protected $guarded = ['id'];
     protected $table;
+
+    protected $guarded = ['id'];
+
+    protected $casts = [
+        'alternative_names' => 'array',
+        'related_names' => 'array',
+        'related_identity_resources' => 'array',
+    ];
 
     public function __construct(array $attributes = [])
     {
@@ -33,17 +65,29 @@ class Identity extends Model
 
     public function professions(): BelongsToMany
     {
-        $pivotTable = $this->isTenancyInitialized()
-            ? "{$this->getTenantPrefix()}__identity_profession"
-            : 'global_identity_profession';
+        return $this->belongsToMany(
+            Profession::class,
+            tenancy()->tenant->table_prefix . '__identity_profession'
+        )
+            ->withPivot('id', 'identity_id', 'profession_id', 'position', 'global_profession_id')
+            ->orderBy('position', 'asc');
+    }
 
-        return $this->belongsToMany(Profession::class, $pivotTable, 'identity_id', 'profession_id')
-                    ->withPivot('position', 'global_profession_id');
+    public function localProfessions(): BelongsToMany
+    {
+        return $this->professions();
     }
 
     public function globalProfessions(): BelongsToMany
     {
-        return $this->belongsToMany(GlobalProfession::class, 'global_identity_profession', 'identity_id', 'profession_id');
+        return $this->belongsToMany(
+            GlobalProfession::class,
+            tenancy()->tenant->table_prefix . '__identity_profession',
+            'identity_id',
+            'global_profession_id'
+        )
+            ->withPivot('id', 'identity_id', 'profession_id', 'position', 'global_profession_id')
+            ->orderBy('position', 'asc');
     }
 
     public function profession_categories(): BelongsToMany
@@ -61,7 +105,7 @@ class Identity extends Model
 
         // Return an empty BelongsToMany relationship to prevent errors
         return $this->belongsToMany(ProfessionCategory::class, null, null, null)
-                    ->whereRaw('1 = 0'); // Ensures no records are returned
+            ->whereRaw('1 = 0'); // Ensures no records are returned
     }
 
     public function letters(): BelongsToMany
@@ -69,9 +113,9 @@ class Identity extends Model
         $pivotTable = tenancy()->initialized
             ? tenancy()->tenant->table_prefix . '__keyword_letter'
             : 'keyword_letter';
-    
+
         return $this->belongsToMany(Letter::class, $pivotTable, 'keyword_id', 'letter_id');
-    }    
+    }
 
     public function scopeSearch($query, $filters)
     {
@@ -90,21 +134,42 @@ class Identity extends Model
     {
         $query->with(['professions' => function ($localQuery) {
             $localQuery->select('id', 'name')
-                       ->addSelect(DB::raw("'Local' as scope"));
+                ->addSelect(DB::raw("'Local' as scope"));
         }]);
 
         // Load global professions based on tenant's identity_profession table
         if ($this->isTenancyInitialized()) {
             $tenantTablePrefix = $this->getTenantPrefix() . '__identity_profession';
             $query->with(['globalProfessions' => function ($globalQuery) use ($tenantTablePrefix) {
-                $globalQuery->selectRaw("global_professions.id as global_profession_id, 
-                                         JSON_UNQUOTE(JSON_EXTRACT(global_professions.name, '$.en')) as name, 
+                $globalQuery->selectRaw("global_professions.id as global_profession_id,
+                                         JSON_UNQUOTE(JSON_EXTRACT(global_professions.name, '$.en')) as name,
                                          'Global' as scope")
-                             ->join($tenantTablePrefix, "{$tenantTablePrefix}.global_profession_id", '=', 'global_professions.id')
-                             ->whereNotNull("{$tenantTablePrefix}.global_profession_id");
+                    ->join($tenantTablePrefix, "{$tenantTablePrefix}.global_profession_id", '=', 'global_professions.id')
+                    ->whereNotNull("{$tenantTablePrefix}.global_profession_id");
             }]);
         }
 
         return $query;
-    }    
+    }
+
+    public static function types(): array
+    {
+        return IdentityType::values();
+    }
+
+    public function religions(): BelongsToMany
+    {
+        $pivotTable = $this->getTenantPrefix() . '__identity_religion';
+        return $this->belongsToMany(Religion::class, $pivotTable, 'identity_id', 'religion_id');
+    }
+
+    public function syncReligions(?array $ids): void
+    {
+        $this->religions()->sync($ids ?? []); // null => no rows (no religion)
+    }
+
+    public function globalIdentity()
+    {
+        return $this->belongsTo(GlobalIdentity::class, 'global_identity_id');
+    }
 }

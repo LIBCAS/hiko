@@ -8,6 +8,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
 use Stancl\Tenancy\Facades\Tenancy;
 
+use OpenApi\Attributes as OA;
+
+#[OA\Schema(
+    schema: "Place",
+    required: ["name"],
+    properties: [
+        new OA\Property(property: "id", type: "integer", readOnly: true),
+        new OA\Property(property: "name", type: "string"),
+        new OA\Property(property: "alternative_names", type: "array", items: new OA\Items(type: "string"), nullable: true),
+        new OA\Property(property: "created_at", type: "string", format: "date-time", readOnly: true),
+        new OA\Property(property: "updated_at", type: "string", format: "date-time", readOnly: true)
+    ]
+)]
 class Place extends Model
 {
     use HasFactory;
@@ -39,13 +52,19 @@ class Place extends Model
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'additional_name' => $this->additional_name,
             'alternative_names' => is_array($this->alternative_names) ? implode(', ', $this->alternative_names) : $this->alternative_names,
         ];
     }    
 
     public function letters()
     {
-        return $this->belongsToMany(Letter::class);
+        $pivotTable = tenancy()->initialized
+            ? tenancy()->tenant->table_prefix . '__letter_place'
+            : 'letter_place';
+
+        return $this->belongsToMany(Letter::class, $pivotTable, 'place_id', 'letter_id')
+            ->withPivot('role', 'position', 'marked');
     }
 
     public function newEloquentBuilder($query)

@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\LettersExport;
+use App\Exports\PalladioCharacterExport;
 use App\Http\Requests\LetterRequest;
+use App\Jobs\RegenerateNames;
 use App\Models\Letter;
 use App\Models\Identity;
 use App\Models\Language;
+use App\Services\LetterService;
+use App\Services\PageLockService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use App\Jobs\RegenerateNames;
-use App\Jobs\LetterSaved;
-use App\Exports\LettersExport;
-use App\Exports\PalladioCharacterExport;
 
 /**
  * LetterController handles all CRUD operations for the "letters" table,
@@ -24,6 +25,13 @@ use App\Exports\PalladioCharacterExport;
  */
 class LetterController extends Controller
 {
+    protected LetterService $letterService;
+
+    public function __construct(LetterService $letterService)
+    {
+        $this->letterService = $letterService;
+    }
+
     /**
      * Display a list of letters in an index view.
      */
@@ -32,7 +40,7 @@ class LetterController extends Controller
         return view('pages.letters.index', [
             'title' => __('hiko.letters'),
             'mainCharacter' => config('hiko.main_character')
-                ? Identity::find(config('hiko.main_character'))->value('surname')
+                ? optional(Identity::find(config('hiko.main_character')))->value('surname')
                 : null,
         ]);
     }
@@ -56,7 +64,14 @@ class LetterController extends Controller
     {
         $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';
 
-        $letter = Letter::create($request->validated());
+        // Validated data contains 'copies' array.
+        // We must exclude it from the Letter create, as it's not a column anymore.
+        $data = $request->validated();
+        unset($data['copies']);
+
+        $letter = Letter::create($data);
+
+        $this->letterService->syncManifestations($letter, $request->input('copies', []));
 
         $this->attachRelated($request, $letter);
 
@@ -92,13 +107,30 @@ class LetterController extends Controller
 
     public function update(LetterRequest $request, Letter $letter)
     {
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'tenant',
+            'resource_type' => 'letter_edit',
+            'resource_id' => (string) $letter->id,
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('letters')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
         $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';
 
-        $letter->update($request->validated());
+        $data = $request->validated();
+        unset($data['copies']);
+
+        $letter->update($data);
+
+        $this->letterService->syncManifestations($letter, $request->input('copies', []));
 
         $this->attachRelated($request, $letter);
 
-        LetterSaved::dispatch($letter);
         RegenerateNames::dispatch($letter->authors()->get());
         RegenerateNames::dispatch($letter->recipients()->get());
 
@@ -189,38 +221,91 @@ class LetterController extends Controller
 
     protected function attachRelated(Request $request, Letter $letter)
     {
-        $letter->keywords()->sync($request->keywords);
+        $keywords = $request->keywords ?? [];
+        $localKeywords = [];
+        $globalKeywords = [];
+        foreach ($keywords as $kw) {
+            $isGlobalKw = str_starts_with($kw, 'global-');
+            $kwId = (int) str_replace(['global-', 'local-'], '', $kw);
+
+            if ($isGlobalKw) {
+                $globalKeywords[] = $kwId;
+            } else {
+                $localKeywords[] = $kwId;
+            }
+        }
+        $letter->localKeywords()->sync($localKeywords);
+        $letter->globalKeywords()->sync($globalKeywords);
+
         $letter->identities()->detach();
-        $letter->places()->detach();
-    
-        $letter->identities()->attach($this->prepareAttachmentData($request->authors, 'author'));
-        $letter->identities()->attach($this->prepareAttachmentData($request->recipients, 'recipient', ['salutation']));
-        $letter->places()->attach($this->prepareAttachmentData($request->origins, 'origin'));
-        $letter->places()->attach($this->prepareAttachmentData($request->destinations, 'destination'));
-    
-        // Ensure mentioned is an array
-        $mentioned = [];
-        if (is_array($request->mentioned)) {
-            foreach ($request->mentioned as $key => $id) {
-                // Extract numeric part from the ID (e.g., 'local-7' -> 7)
-                $numericId = preg_replace('/\D/', '', $id);
-                if (is_numeric($numericId)) {
-                    $mentioned[$numericId] = [
-                        'position' => $key,
-                        'role' => 'mentioned',
-                    ];
+        $letter->globalIdentities()->detach();
+        $letter->localPlaces()->detach();
+        $letter->globalPlaces()->detach();
+
+        $this->attachMixedIdentities($letter, $request->authors, 'author');
+        $this->attachMixedIdentities($letter, $request->recipients, 'recipient', ['salutation']);
+        $this->attachMixedIdentities($letter, $request->mentioned, 'mentioned');
+
+        // Handle origins (local and global places)
+        $this->attachPlacesToLetter($letter, $request->origins, 'origin');
+
+        // Handle destinations (local and global places)
+        $this->attachPlacesToLetter($letter, $request->destinations, 'destination');
+    }
+
+    /**
+     * Helper to attach mixed Local/Global identities.
+     */
+    protected function attachMixedIdentities(Letter $letter, ?array $items, string $role, array $extraFields = [])
+    {
+        if (empty($items)) {
+            return;
+        }
+
+        $localSync = [];
+        $globalSync = [];
+
+        foreach ($items as $index => $item) {
+            // Check if item is just an ID string (legacy/simple) or array structure
+            $value = is_array($item) ? ($item['value'] ?? '') : $item;
+
+            // Check prefix
+            $isGlobal = str_starts_with($value, 'global-');
+            $cleanId = (int) str_replace(['global-', 'local-'], '', $value);
+
+            if ($cleanId > 0) {
+                $pivotData = [
+                    'role' => $role,
+                    'position' => $index,
+                    'marked' => $item['marked'] ?? null,
+                ];
+
+                foreach ($extraFields as $field) {
+                    $pivotData[$field] = $item[$field] ?? null;
+                }
+
+                if ($isGlobal) {
+                    $globalSync[$cleanId] = $pivotData;
                 } else {
-                    Log::warning("Invalid mentioned ID: {$id}");
+                    $localSync[$cleanId] = $pivotData;
                 }
             }
         }
-    
-        $letter->identities()->attach($mentioned);
+
+        if (!empty($localSync)) {
+            $letter->identities()->attach($localSync);
+        }
+
+        if (!empty($globalSync)) {
+            $letter->globalIdentities()->attach($globalSync);
+        }
     }
 
     protected function duplicateRelatedEntities(Letter $sourceLetter, Letter $duplicatedLetter)
     {
-        $duplicatedLetter->keywords()->sync($sourceLetter->keywords);
+        $duplicatedLetter->localKeywords()->sync($sourceLetter->localKeywords->pluck('id')->toArray());
+        $duplicatedLetter->globalKeywords()->sync($sourceLetter->globalKeywords->pluck('id')->toArray());
+
         $duplicatedLetter->identities()->detach();
         $duplicatedLetter->places()->detach();
 
@@ -338,7 +423,7 @@ class LetterController extends Controller
 
             // Pre-selected keywords => array of [ 'value' => id, 'label' => name ]
             'selectedKeywords'     => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
-            // Example: "mentioned" is authors pivot with role= 'mentioned' 
+            // Example: "mentioned" is authors pivot with role= 'mentioned'
             'selectedMentioned'    => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
 
             // Provide languages from a table, or just a static array
@@ -353,6 +438,88 @@ class LetterController extends Controller
      */
     protected function getSelectedMetaFields(Letter $letter, string $fieldKey, array $pivotFields): array
     {
+        // Handle origins and destinations (which can be local or global places)
+        if ($fieldKey === 'origins' || $fieldKey === 'destinations') {
+            $localMethod = $fieldKey; // 'origins' or 'destinations'
+            $globalMethod = 'global' . ucfirst($fieldKey); // 'globalOrigins' or 'globalDestinations'
+
+            // Get local places
+            $localPlaces = collect($letter->{$localMethod})->map(function ($item) use ($pivotFields) {
+                $labelParts = [$item->name];
+                if (!empty($item->division)) {
+                    $labelParts[] = $item->division;
+                }
+                if (!empty($item->country)) {
+                    $labelParts[] = $item->country;
+                }
+                $label = implode(', ', array_filter($labelParts));
+
+                $result = [
+                    'value' => 'local-' . $item->id,
+                    'label' => $label . ' (' . __('hiko.local') . ')',
+                ];
+                foreach ($pivotFields as $field) {
+                    $result[$field] = $item->pivot->{$field};
+                }
+                return $result;
+            });
+
+            // Get global places
+            $globalPlaces = collect($letter->{$globalMethod})->map(function ($item) use ($pivotFields) {
+                $labelParts = [$item->name];
+                if (!empty($item->division)) {
+                    $labelParts[] = $item->division;
+                }
+                if (!empty($item->country)) {
+                    $labelParts[] = $item->country;
+                }
+                $label = implode(', ', array_filter($labelParts));
+
+                $result = [
+                    'value' => 'global-' . $item->id,
+                    'label' => $label . ' (' . __('hiko.global') . ')',
+                ];
+                foreach ($pivotFields as $field) {
+                    $result[$field] = $item->pivot->{$field};
+                }
+                return $result;
+            });
+
+            return $localPlaces->merge($globalPlaces)->toArray();
+        }
+
+        // Handle Identities (Authors, Recipients)
+        if (in_array($fieldKey, ['authors', 'recipients'])) {
+            $role = rtrim($fieldKey, 's'); // author, recipient
+
+            // Local
+            $local = $letter->identities()->where('role', $role)->get()->map(function ($item) use ($pivotFields) {
+                $data = [
+                    'value' => 'local-' . $item->id,
+                    'label' => $item->name . ' (' . __('hiko.local') . ')',
+                ];
+                foreach ($pivotFields as $field) {
+                    $data[$field] = $item->pivot->{$field};
+                }
+                return $data;
+            });
+
+            // Global
+            $global = $letter->globalIdentities()->where('role', $role)->get()->map(function ($item) use ($pivotFields) {
+                $data = [
+                    'value' => 'global-' . $item->id,
+                    'label' => $item->name . ' (' . __('hiko.global') . ')',
+                ];
+                foreach ($pivotFields as $field) {
+                    $data[$field] = $item->pivot->{$field};
+                }
+                return $data;
+            });
+
+            return $local->merge($global)->toArray();
+        }
+
+        // Default behavior for other fields
         return $letter->{$fieldKey}->map(function ($item) use ($pivotFields) {
             $result = [
                 'value' => $item->id,
@@ -371,12 +538,57 @@ class LetterController extends Controller
      */
     protected function getSelectedMeta(Letter $letter, string $model, string $fieldKey): array
     {
-        return $letter->{$fieldKey}->map(function ($item) {
-            return [
-                'value' => $item->id,
-                'label' => $item->name,
-            ];
-        })->toArray();
+        switch ($fieldKey) {
+            case 'mentioned':
+                $localMentioned = $letter->identities()->where('role', 'mentioned')->get()->map(function ($item) {
+                    return [
+                        'value' => 'local-' . $item->id,
+                        'label' => $item->name . ' (' . __('hiko.local') . ')',
+                    ];
+                });
+
+                $globalMentioned = $letter->globalIdentities()->where('role', 'mentioned')->get()->map(function ($item) {
+                    return [
+                        'value' => 'global-' . $item->id,
+                        'label' => $item->name . ' (' . __('hiko.global') . ')',
+                    ];
+                });
+
+                $selectedMeta = $localMentioned->merge($globalMentioned);
+
+                break;
+            case 'keywords':
+                $globalKws = collect($letter->globalKeywords)->map(function ($kw) {
+                    return [
+                        'id' => 'global-' . $kw->id,
+                        'value' => 'global-' . $kw->id,
+                        'label' => $kw->getTranslation('name', config('app.locale')) . ' (' . __('hiko.global') . ')',
+                        'type' => __('hiko.global')
+                    ];
+                });
+
+                $localKws = collect($letter->localKeywords)->map(function ($kw) {
+                    return [
+                        'id' => 'local-' . $kw->id,
+                        'value' => 'local-' . $kw->id,
+                        'label' => $kw->getTranslation('name', config('app.locale')) . ' (' . __('hiko.local') . ')',
+                        'type' => __('hiko.local')
+                    ];
+                });
+
+                $selectedMeta = $localKws->merge($globalKws);
+
+                break;
+            default:
+                $selectedMeta = $letter->{$fieldKey}->map(function ($item) {
+                    return [
+                        'value' => $item->id,
+                        'label' => $item->name,
+                    ];
+                });
+        }
+
+        return is_array($selectedMeta) ? $selectedMeta : $selectedMeta->toArray();
     }
 
     /**
@@ -412,5 +624,63 @@ class LetterController extends Controller
             $results[$model->id] = $data;
         }
         return $results;
+    }
+
+    /**
+     * Attach places (local or global) to a letter with the specified role.
+     *
+     * @param Letter $letter
+     * @param array|null $places
+     * @param string $role
+     * @return void
+     */
+    protected function attachPlacesToLetter(Letter $letter, ?array $places, string $role): void
+    {
+        if (!$places) {
+            return;
+        }
+
+        $localPlaces = [];
+        $globalPlaces = [];
+
+        foreach ($places as $position => $item) {
+            $value = $item['value'] ?? null;
+            if (!$value) {
+                continue;
+            }
+
+            $isGlobal = str_starts_with($value, 'global-');
+            $placeId = (int) str_replace(['global-', 'local-'], '', $value);
+
+            if ($placeId) {
+                $data = [
+                    'position' => $position,
+                    'role'     => $role,
+                    'marked'   => $item['marked'] ?? null,
+                ];
+
+                if ($isGlobal) {
+                    $globalPlaces[$placeId] = $data;
+                } else {
+                    $localPlaces[$placeId] = $data;
+                }
+            }
+        }
+
+        // Attach local and global places
+        if (!empty($localPlaces)) {
+            $letter->localPlaces()->attach($localPlaces);
+        }
+
+        if (!empty($globalPlaces)) {
+            $letter->globalPlaces()->attach($globalPlaces);
+        }
+    }
+
+    public function validation()
+    {
+        return view('pages.letters.validation', [
+            'title' => __('hiko.input_control'),
+        ]);
     }
 }

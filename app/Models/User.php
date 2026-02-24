@@ -46,6 +46,19 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    protected $table;
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        if (function_exists('tenancy') && tenancy()->initialized) {
+            $this->setTable(tenancy()->tenant->table_prefix . '__users');
+        } else {
+            $this->setTable('users'); // fallback, just in case
+        }
+    }
+
     public function hasAbility($ability)
     {
         $role = Role::whereLabel($this->role)->first();

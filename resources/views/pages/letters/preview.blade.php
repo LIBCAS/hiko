@@ -152,25 +152,30 @@
                     Manifestations and repositories
                 </h3>
                 @foreach ((array) $letter->copies as $c)
+                    @php
+                        $repositoryLabel = is_array($c['repository'] ?? null) ? ($c['repository']['label'] ?? '') : ($c['repository'] ?? '');
+                        $archiveLabel = is_array($c['archive'] ?? null) ? ($c['archive']['label'] ?? '') : ($c['archive'] ?? '');
+                        $collectionLabel = is_array($c['collection'] ?? null) ? ($c['collection']['label'] ?? '') : ($c['collection'] ?? '');
+                    @endphp
                     <ul @if(!$loop->last) class="border-b" @endif>
                         @if ($c['l_number'])
                             <li>
                                 Letter number: {{ $c['l_number'] }}
                             </li>
                         @endif
-                        @if ($c['repository'])
+                        @if ($repositoryLabel)
                             <li>
-                                Repository: {{ $c['repository'] }}
+                                Repository: {{ $repositoryLabel }}
                             </li>
                         @endif
-                        @if ($c['archive'])
+                        @if ($archiveLabel)
                             <li>
-                                Archive: {{ $c['archive'] }}
+                                Archive: {{ $archiveLabel }}
                             </li>
                         @endif
-                        @if ($c['collection'])
+                        @if ($collectionLabel)
                             <li>
-                                Collection: {{ $c['collection'] }}
+                                Collection: {{ $collectionLabel }}
                             </li>
                         @endif
                         @if ($c['signature'])

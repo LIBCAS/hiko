@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -37,8 +38,16 @@ class UserController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $userTable = (new User)->getTable();
+
         $validated = $request->validate(array_merge($this->rules, [
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique($userTable),
+            ],
         ]));
 
         $user = User::create($validated);

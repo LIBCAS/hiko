@@ -1,4 +1,12 @@
 <x-app-layout :title="$title">
+    @if (!empty($letter->id))
+        <x-page-lock
+            scope="tenant"
+            resource-type="letter_edit"
+            :resource-id="$letter->id"
+            :redirect-url="route('letters')"
+            :read-only-on-deny="true" />
+    @endif
     @if ($letter->id)
         <ul class="flex flex-wrap mb-6 space-x-6 text-sm">
             <li>
@@ -191,6 +199,7 @@
                     </legend>
                     <livewire:letter-meta-field :items="$selectedAuthors" fieldKey="authors" route="ajax.identities"
                         :label="__('hiko.author_name')" :fields="[['label' => __('hiko.name_marked'), 'key' => 'marked']]" />
+                    <livewire:create-new-item-modal :route="route('identities.create')" :text="__('hiko.modal_new_identity')" />
                     <div>
                         <x-checkbox name="author_inferred" label="{{ __('hiko.author_inferred') }}"
                             :checked="boolval(old('author_inferred', $letter->author_inferred))" />
@@ -222,6 +231,7 @@
                             ['label' => __('hiko.name_marked'), 'key' => 'marked'],
                             ['label' => __('hiko.salutation'), 'key' => 'salutation'],
                         ]" />
+                    <livewire:create-new-item-modal :route="route('identities.create')" :text="__('hiko.modal_new_identity')" />
                     <div>
                         <x-checkbox name="recipient_inferred" label="{{ __('hiko.recipient_inferred') }}"
                             :checked="boolval(old('recipient_inferred', $letter->recipient_inferred))" />
@@ -331,7 +341,7 @@
                         @error('keywords')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
-                        <livewire:create-new-item-modal :route="route('global.keywords.create')" :text="__('hiko.modal_new_keyword')" />
+                        <livewire:create-new-item-modal :route="route('keywords.create')" :text="__('hiko.modal_new_keyword')" />
                     </div>
                     <div>
                         <x-label for="abstract_cs" :value="__('hiko.abstract') . ' CS'" />
@@ -372,7 +382,16 @@
                     <div>
                         <x-label for="mentioned" :value="__('hiko.mentioned')" />
                         <x-select name="mentioned[]" class="block w-full mt-1" id="mentioned"
-                            x-data="ajaxChoices({ url: '{{ route('ajax.identities') }}', element: $el })" x-init="initSelect()" multiple @input.debounce.500ms="search">
+                            x-data="ajaxChoices({
+                                url: '{{ route('ajax.identities') }}',
+                                element: $el,
+                                extraParams: {
+                                    allTypes: true
+                                }
+                            })"
+                            x-init="initSelect()"
+                            multiple @input.debounce.500ms="search"
+                        >
                             @foreach ($selectedMentioned as $mention)
                                 <option value="{{ $mention['value'] }}" selected>{{ $mention['label'] }}</option>
                             @endforeach
@@ -447,18 +466,18 @@
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </fieldset>
-                @can('delete-metadata')
-                    <fieldset id="a-approval" class="p-3 shadow mt-4">
-                        <legend class="text-lg font-semibold">
-                            Schválení
-                        </legend>
+                <fieldset id="a-approval" class="p-3 shadow mt-4">
+                    <legend class="text-lg font-semibold">
+                        {{ __('hiko.approval') }}
+                    </legend>
+                    @can('delete-metadata')
                         <div>
                             <label class="inline-flex items-center">
                                 <input type="radio" name="approval" value="1"
                                     {{ old('approval', $letter->approval) == 1 ? 'checked' : '' }}
                                     class="border-gray-300 shadow-sm text-primary focus:border-primary-light focus:ring focus:ring-primary-light focus:ring-opacity-50"
                                     required>
-                                <span class="ml-2 text-sm text-gray-600">Schváleno</span>
+                                <span class="ml-2 text-sm text-gray-600">{{ __('hiko.approved') }}</span>
                             </label>
                         </div>
                         <div>
@@ -467,14 +486,24 @@
                                     {{ old('approval', $letter->approval) == 0 ? 'checked' : '' }}
                                     class="border-gray-300 shadow-sm text-primary focus:border-primary-light focus:ring focus:ring-primary-light focus:ring-opacity-50"
                                     required>
-                                <span class="ml-2 text-sm text-gray-600">Neschváleno</span>
+                                <span class="ml-2 text-sm text-gray-600">{{ __('hiko.not_approved') }}</span>
                             </label>
                         </div>
-                        @error('approval')
-                            <div class="text-red-600">{{ $message }}</div>
-                        @enderror
-                    </fieldset>
-                @endcan
+                    @else
+                        <div>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="approval" value="0"
+                                    checked
+                                    class="border-gray-300 shadow-sm text-primary focus:border-primary-light focus:ring focus:ring-primary-light focus:ring-opacity-50"
+                                    required>
+                                <span class="ml-2 text-sm text-gray-600">{{ __('hiko.not_approved') }}</span>
+                            </label>
+                        </div>
+                    @endcan
+                    @error('approval')
+                        <div class="text-red-600">{{ $message }}</div>
+                    @enderror
+                </fieldset>
                 <div class="h-1"></div>
                 <x-button-simple class="w-full" onclick="preventLeaving = false" name="action" value="edit">
                     {{ $label }}
@@ -498,7 +527,7 @@
                 @endcan
             @endif
         </div>
-        <div class="md:w-1/2"> <livewire:ocr-upload /></div>
+        <div class="md:w-1/2"> <livewire:ocr-upload :letter-id="$letter->id" /></div>
     </div>
     @push('scripts')
         <script>
@@ -663,9 +692,11 @@
             }
             // Use debounce with the AJAX request
             var searchInput = document.getElementById('mentioned');
-            searchInput.addEventListener('input', debounce(function(e) {
-                // Make AJAX request here
-            }, 500));
+            if (searchInput) {
+                searchInput.addEventListener('input', debounce(function(e) {
+                    // Make AJAX request here
+                }, 500));
+            }
 
             // Hide header and footer in modals
             function hideHeaderFooterInIframe() {
@@ -698,6 +729,107 @@
                 var iframes = document.querySelectorAll('iframe');
                 iframes.forEach(function(iframe) {
                     iframe.addEventListener('load', handleIframeLoad);
+                });
+            });
+
+            document.addEventListener('livewire:initialized', () => {
+                const isEmptyValue = (value) => {
+                    if (value === null || value === undefined) return true;
+                    if (Array.isArray(value)) return value.length === 0;
+                    if (typeof value === 'string') return value.trim() === '';
+                    return false;
+                };
+
+                const setInput = (id, value, mode = 'selected') => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+
+                    if (mode === 'empty' && !isEmptyValue(el.value)) {
+                        return;
+                    }
+
+                    el.value = value;
+                    el.dispatchEvent(new Event('input'));
+                    el.dispatchEvent(new Event('change'));
+                };
+
+                const setCheckbox = (name, value, mode = 'selected') => {
+                    const checkbox = document.querySelector(`input[name="${name}"]`);
+                    if (!checkbox || typeof value !== 'boolean') return;
+
+                    if (mode === 'empty') {
+                        // "Empty only" for booleans means apply only if unchecked and incoming is true.
+                        if (!(checkbox.checked === false && value === true)) {
+                            return;
+                        }
+                    }
+
+                    checkbox.checked = value;
+                    checkbox.dispatchEvent(new Event('change'));
+                };
+
+                const setLanguages = (values, mode = 'selected') => {
+                    const select = document.getElementById('languages');
+                    if (!select || !Array.isArray(values)) return;
+
+                    const selectedNow = Array.from(select.selectedOptions).map(opt => opt.value);
+                    if (mode === 'empty' && selectedNow.length > 0) {
+                        return;
+                    }
+
+                    Array.from(select.options).forEach((opt) => {
+                        opt.selected = values.includes(opt.value);
+                    });
+                    select.dispatchEvent(new Event('change'));
+                };
+
+                const setRecognizedText = (value, mode = 'selected') => {
+                    if (typeof value !== 'string') return;
+                    const editorDiv = document.getElementById('editor');
+                    if (!editorDiv) return;
+
+                    const qlEditor = editorDiv.querySelector('.ql-editor');
+                    const currentlyEmpty = !qlEditor || qlEditor.innerText.trim() === '';
+                    if (mode === 'empty' && !currentlyEmpty) {
+                        return;
+                    }
+
+                    if (qlEditor) {
+                        qlEditor.innerHTML = value.replace(/\n/g, '<br>');
+                    } else {
+                        editorDiv.innerHTML = value.replace(/\n/g, '<br>');
+                    }
+                };
+
+                Livewire.on('ocr-apply-snapshot', (event) => {
+                    const data = Array.isArray(event) ? event[0] : event;
+                    const fields = data.fields || {};
+                    const mode = data.mode || 'selected';
+
+                    Object.entries(fields).forEach(([key, value]) => {
+                        switch (key) {
+                            case 'date_uncertain':
+                            case 'date_approximate':
+                            case 'date_inferred':
+                            case 'date_is_range':
+                            case 'author_inferred':
+                            case 'author_uncertain':
+                            case 'recipient_inferred':
+                            case 'recipient_uncertain':
+                                setCheckbox(key, value, mode);
+                                break;
+                            case 'languages':
+                                setLanguages(value, mode);
+                                break;
+                            case 'recognized_text':
+                                setRecognizedText(value, mode);
+                                break;
+                            default:
+                                setInput(key, value, mode);
+                        }
+                    });
+
+                    alert("OCR data prepared. Selected fields were applied to the form.");
                 });
             });
         </script>

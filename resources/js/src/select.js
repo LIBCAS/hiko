@@ -1,12 +1,14 @@
 import Choices from 'choices.js'
 
+window.ajaxChoicesSelectors = {};
+
 window.choices = (data) => {
     return {
         initSelect: () => {
             return new Choices(data.element, {
                 allowHTML: true,
                 removeItemButton: true,
-                searchResultLimit: 10,
+                searchResultLimit: 1000,
             })
         },
     }
@@ -18,19 +20,27 @@ window.ajaxChoices = function (data) {
             const select = new Choices(data.element, {
                 allowHTML: true,
                 removeItemButton: true,
-                searchResultLimit: 10,
+                searchResultLimit: 1000,
                 duplicateItemsAllowed: false,
+                shouldSort: data.shouldSort ?? true,
             })
+
+            window.ajaxChoicesSelectors[data.element.id] = select
 
             data.element.addEventListener(
                 'search',
                 debounce(
                     this,
                     (e) => {
-                        const url =
-                            data.url +
-                            '?search=' +
-                            encodeURIComponent(e.detail.value)
+                        const params = new URLSearchParams({ search: e.detail.value });
+
+                        if (data.extraParams) {
+                            Object.entries(data.extraParams).forEach(([key, val]) =>
+                                params.append(key, val)
+                            );
+                        }
+
+                        const url = data.url + '?' + params.toString();
 
                         fetch(url)
                             .then(function (response) {

@@ -2,34 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\KeywordsExport;
+use App\Http\Requests\KeywordRequest;
 use App\Models\Keyword;
 use App\Models\KeywordCategory;
+use App\Services\PageLockService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use App\Exports\KeywordsExport;
 
 class KeywordController extends Controller
 {
-    protected function getRules(): array
-    {
-        $categoryTable = tenancy()->initialized
-            ? tenancy()->tenant->table_prefix . '__keyword_categories'
-            : 'keyword_categories';
-
-        return [
-            'cs' => ['max:255', 'required_without:en'],
-            'en' => ['max:255', 'required_without:cs'],
-            'category' => [
-                'nullable',
-                "exists:{$categoryTable},id",
-            ],
-        ];
-    }
-
     public function index()
     {
         return view('pages.keywords.index', [
@@ -39,6 +23,10 @@ class KeywordController extends Controller
 
     public function create()
     {
+        if (!tenancy()->initialized) {
+            abort(403, __('hiko.tenancy_not_initialized'));
+        }
+
         return view('pages.keywords.form', [
             'title' => __('hiko.new_keyword'),
             'keyword' => new Keyword,
@@ -49,37 +37,33 @@ class KeywordController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(KeywordRequest $request): RedirectResponse
     {
-        try {
-            $validated = $request->validate($this->getRules());
+        $validated = $request->validated();
 
-            $keyword = DB::transaction(function () use ($validated) {
-                $keyword = Keyword::create([
-                    'name' => [
-                        'cs' => $validated['cs'],
-                        'en' => $validated['en'],
-                    ],
-                ]);
-
-                if (!empty($validated['category'])) {
-                    $keyword->keyword_category()->associate($validated['category']);
-                    $keyword->save(); // Обязательно сохранить изменения
-                }
-
-                return $keyword;
-            });
-
-            return redirect()
-                ->route('keywords.edit', $keyword->id)
-                ->with('success', __('hiko.saved'));
-        } catch (\Exception $e) {
-            Log::error('Error storing keyword: ' . $e->getMessage());
-
-            return redirect()
-                ->back()
-                ->with('error', __('hiko.error_saving'));
+        if ($request->failsDuplicateCheck()) {
+            return redirect()->back()
+                ->withErrors(['cs' => __('hiko.entity_already_exists')])
+                ->withInput();
         }
+
+        $keyword = Keyword::create([
+            'name' => [
+                'cs' => $validated['cs'],
+                'en' => $validated['en'],
+            ],
+            'keyword_category_id' => $validated['keyword_category_id'] ?? null,
+        ]);
+
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('keywords.create')
+                ->with('success', __('hiko.saved'));
+        }
+
+        return redirect()
+            ->route('keywords.edit', $keyword->id)
+            ->with('success', __('hiko.saved'));
     }
 
     public function edit(Keyword $keyword)
@@ -90,9 +74,9 @@ class KeywordController extends Controller
             },
             'keyword_category'
         ]);
-    
+
         return view('pages.keywords.form', [
-            'title' => __('hiko.keyword') . ': ' . $keyword->id,
+            'title' => __('hiko.keyword') . ': ' . $keyword->getTranslation('name', app()->getLocale()),
             'keyword' => $keyword,
             'method' => 'PUT',
             'action' => route('keywords.update', $keyword),
@@ -100,32 +84,49 @@ class KeywordController extends Controller
             'categories' => KeywordCategory::all(),
             'category' => $keyword->keyword_category,
         ]);
-    }    
+    }
 
-    public function update(Request $request, Keyword $keyword): RedirectResponse
+    public function update(KeywordRequest $request, Keyword $keyword): RedirectResponse
     {
-        $validated = $request->validate($this->getRules());
-    
-        DB::transaction(function () use ($validated, $keyword) {
-            $keyword->update([
-                'name' => [
-                    'cs' => $validated['cs'],
-                    'en' => $validated['en'],
-                ],
-            ]);
-    
-            $keyword->keyword_category()->dissociate();
-    
-            if (!empty($validated['category'])) {
-                $keyword->keyword_category()->associate($validated['category']);
-                $keyword->save();
-            }
-        });
-    
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'tenant',
+            'resource_type' => 'keyword_edit',
+            'resource_id' => (string) $keyword->id,
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('keywords')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
+        $validated = $request->validated();
+
+        if ($request->failsDuplicateCheck($keyword->id)) {
+            return redirect()->back()
+                ->withErrors(['cs' => __('hiko.entity_already_exists')])
+                ->withInput();
+        }
+
+        $keyword->update([
+            'name' => [
+                'cs' => $validated['cs'],
+                'en' => $validated['en'],
+            ],
+            'keyword_category_id' => $validated['keyword_category_id'] ?? null,
+        ]);
+
+        if ($request->input('action') === 'create') {
+            return redirect()
+                ->route('keywords.create')
+                ->with('success', __('hiko.saved'));
+        }
+
         return redirect()
             ->route('keywords.edit', $keyword->id)
             ->with('success', __('hiko.saved'));
-    }    
+    }
 
     public function destroy(Keyword $keyword): RedirectResponse
     {
@@ -155,5 +156,19 @@ class KeywordController extends Controller
                 ->back()
                 ->with('error', __('hiko.error_exporting'));
         }
+    }
+
+    public function validation()
+    {
+        return view('pages.keywords.validation', [
+            'title' => __('hiko.input_control'),
+        ]);
+    }
+
+    public function localMerge()
+    {
+        return view('pages.keywords.local-merge', [
+            'title' => __('hiko.local_keyword_merging'),
+        ]);
     }
 }

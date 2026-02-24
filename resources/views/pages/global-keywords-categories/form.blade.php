@@ -1,5 +1,13 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    @if (!empty($keywordCategory->id))
+        <x-page-lock
+            scope="global"
+            resource-type="global_keyword_category_edit"
+            :resource-id="$keywordCategory->id"
+            :redirect-url="route('keywords')"
+            :read-only-on-deny="true" />
+    @endif
 
     <div class="grid grid-cols-3 gap-4 mb-4 space-y-3">
         <!-- Form Section -->
@@ -251,9 +259,11 @@
 
             // Use debounce with the AJAX request
             var searchInput = document.getElementById('mentioned');
-            searchInput.addEventListener('input', debounce(function(e) {
-                // Make AJAX request here
-            }, 500));
+            if (searchInput) {
+                searchInput.addEventListener('input', debounce(function(e) {
+                    // Make AJAX request here
+                }, 500));
+            }
 
             // Hide header and footer in modals
             function hideHeaderFooterInIframe() {

@@ -24,7 +24,7 @@ services:
             - mysql
 
     mysql:
-        image: mysql:5.7
+        image: mysql:8.0
         container_name: hiko_mysql_db
         environment:
             MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -36,16 +36,15 @@ services:
         volumes:
             - mysql_data:/var/lib/mysql
 
-    phpmyadmin:
-        image: phpmyadmin/phpmyadmin
-        container_name: hiko_phpmyadmin
-        links:
-            - mysql
-        environment:
-            PMA_HOST: mysql
-            PMA_PORT: 3306
+    adminer:
+        image: adminer
+        container_name: hiko_adminer
         ports:
-            - '8080:80'
+            - "8080:8080"
+        environment:
+            ADMINER_DEFAULT_SERVER: mysql
+        depends_on:
+            - mysql
 
     mailhog:
         image: mailhog/mailhog

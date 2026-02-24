@@ -8,6 +8,14 @@
         <h2 class="text-l font-semibold">{{ __('hiko.no_attached_category') }}</h2>
     @endif
     <x-success-alert />
+    @if (!empty($keyword->id))
+        <x-page-lock
+            scope="tenant"
+            resource-type="keyword_edit"
+            :resource-id="$keyword->id"
+            :redirect-url="route('keywords')"
+            :read-only-on-deny="true" />
+    @endif
     <div class="grid-cols-3 grid gap-4 mb-4 space-y-3">
         <div class="max-w-sm col-span-1">
             <form x-data="similarItems({ similarNamesUrl: '{{ route('ajax.items.similar', ['model' => 'Keyword']) }}', id: '{{ $keyword->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" action="{{ $action }}" method="post"
@@ -35,16 +43,21 @@
                 <x-alert-similar-names />
                 <div class="required">
                     <x-label for="category" :value="__('hiko.category')" />
-                    <x-select name="category" id="category" class="block w-full mt-1" x-data="ajaxChoices({ url: '{{ route('ajax.keywords.category') }}', element: $el })"
+                    <x-select name="category" id="category" class="block w-full mt-1" x-data="ajaxChoices({ url: '{{ route('ajax.keywords.category') }}', element: $el, shouldSort: false })"
                         x-init="initSelect()" required>
-                        @if ($category)
-                            <option value="{{ $category['id'] }}">{{ $category['label'] }}</option>
-                        @endif
+                        <option value="">{{ __('hiko.select_category') }}</option>
+                        @foreach ($categories as $availableCategory)
+                            <option value="{{ $availableCategory->id }}"
+                                {{ old('category', $keyword->keyword_category_id ?? '') == $availableCategory->id ? 'selected' : '' }}>
+                                {{ $availableCategory->getTranslation('name', app()->getLocale()) }}
+                            </option>
+                        @endforeach
                     </x-select>
                     @error('category')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>
+                <livewire:create-new-item-modal :route="route('keywords.category.create')" :text="__('hiko.modal_new_keyword_category')" />
                 <x-button-simple class="w-full" name="action" value="edit">
                     {{ $label }}
                 </x-button-simple>
@@ -228,6 +241,25 @@
                         }
                     });
                 });
+
+                // Track modal close events
+                setTimeout(function() {
+                    document.addEventListener('modal-closed', function() {
+                        const selectorElmId = 'category';
+                        const selectorElm = document.getElementById(selectorElmId);
+                        const ajaxChoicesInstance = window.ajaxChoicesSelectors[selectorElmId];
+                        if (selectorElm && ajaxChoicesInstance) {
+                            ajaxChoicesInstance.clearChoices();
+                            ajaxChoicesInstance.removeActiveItems();
+
+                            fetch('{{ route('ajax.keywords.category') }}?search=')
+                                .then(response => response.json())
+                                .then(json => {
+                                    ajaxChoicesInstance.setChoices(json, 'value', 'label', true);
+                                });
+                        }
+                    });
+                }, 2000);
             });
 
             // Keep the debounce function
@@ -249,9 +281,11 @@
 
             // Use debounce with the AJAX request
             var searchInput = document.getElementById('mentioned');
-            searchInput.addEventListener('input', debounce(function(e) {
-                // Make AJAX request here
-            }, 500));
+            if (searchInput) {
+                searchInput.addEventListener('input', debounce(function(e) {
+                    // Make AJAX request here
+                }, 500));
+            }
 
             // Hide header and footer in modals
             function hideHeaderFooterInIframe() {

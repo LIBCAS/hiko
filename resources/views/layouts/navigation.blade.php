@@ -30,6 +30,12 @@
                     </a>
                 </div>
                 <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
+                    <a href="{{ route('app') }}"
+                        class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
+                        {{ __('hiko.application_info') }}
+                    </a>
+                </div>
+                <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
@@ -77,6 +83,10 @@
             <a href="{{ route('account') }}"
                 class="block py-2 pl-3 pr-4 border-l-4 hover:bg-primary hover:bg-opacity-10 @if (request()->routeIs('account')) border-primary-light bg-primary bg-opacity-5 @else border-transparent @endif ">
                 {{ __('hiko.settings') }}
+            </a>
+            <a href="{{ route('app') }}"
+                class="block py-2 pl-3 pr-4 border-l-4 hover:bg-primary hover:bg-opacity-10 @if (request()->routeIs('app')) border-primary-light bg-primary bg-opacity-5 @else border-transparent @endif ">
+                {{ __('hiko.application_info') }}
             </a>
         </div>
         <div class="pt-4 pb-1 border-t border-gray-200">

@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Identity;
+use App\Models\GlobalIdentity;
+use App\Models\MergeAuditLog;
 use App\Models\Profession;
 use App\Models\GlobalProfession;
 use App\Models\ProfessionCategory;
 use App\Http\Requests\IdentityRequest;
+use App\Services\PageLockService;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\IdentitiesExport;
 use Illuminate\Http\RedirectResponse;
@@ -18,61 +21,79 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class IdentityController extends Controller
 {
+    public function __construct(protected PageLockService $pageLocks)
+    {
+    }
+
     public function index()
     {
         $filters = request()->only([
-            'name', 'related_names', 'type', 'profession', 'category', 'note', 'order'
+            'name',
+            'related_names',
+            'type',
+            'profession',
+            'category',
+            'note',
+            'order',
         ]);
-    
+
         $labels = [
             'name' => __('hiko.name'),
             'surname' => __('hiko.surname'),
             'type' => __('hiko.type'),
         ];
-    
+
         $identities = $this->findIdentities($filters);
-    
+
         return view('pages.identities.index', [
             'title' => __('hiko.identities'),
             'labels' => $labels,
             'identities' => $identities,
         ]);
-    }    
+    }
 
     protected function findIdentities(array $filters): LengthAwarePaginator
     {
         $tenantPrefix = tenancy()->initialized ? tenancy()->tenant->table_prefix : null;
-    
+
         $query = Identity::with([
             'professions.profession_category',
             'globalProfessions.profession_category',
         ])->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names');
-    
+
         $query->when($filters['name'] ?? null, fn($q) => $q->where('name', 'like', '%' . $filters['name'] . '%'));
         $query->when($filters['related_names'] ?? null, fn($q) => $q->where('related_names', 'like', '%' . $filters['related_names'] . '%'));
         $query->when($filters['type'] ?? null, fn($q) => $q->where('type', $filters['type']));
-        $query->when($filters['profession'] ?? null, fn($q) =>
-            $q->whereHas('professions', fn($sq) =>
+        $query->when(
+            $filters['profession'] ?? null,
+            fn($q) =>
+            $q->whereHas(
+                'professions',
+                fn($sq) =>
                 $sq->where('name', 'like', '%' . $filters['profession'] . '%')
             )
         );
-    
+
         $query->when($filters['category'] ?? null, fn($q) => $q->where(function ($sq) use ($filters, $tenantPrefix) {
-            $sq->whereHas('professions.profession_category', fn($qq) =>
+            $sq->whereHas(
+                'professions.profession_category',
+                fn($qq) =>
                 $qq->where("{$tenantPrefix}__profession_categories.name", 'like', '%' . $filters['category'] . '%')
-            )->orWhereHas('globalProfessions.profession_category', fn($qq) =>
+            )->orWhereHas(
+                'globalProfessions.profession_category',
+                fn($qq) =>
                 $qq->where('name', 'like', '%' . $filters['category'] . '%')
             );
         }));
-    
+
         $query->when($filters['note'] ?? null, fn($q) => $q->where('note', 'like', '%' . $filters['note'] . '%'));
-    
+
         if (in_array($filters['order'] ?? '', ['name', 'birth_year', 'death_year'])) {
             $query->orderBy($filters['order']);
         }
-    
+
         $identities = $query->paginate(25, ['*'], 'identitiesPage');
-    
+
         // globalProfessions z central DB
         if ($tenantPrefix) {
             Tenancy::central(function () use ($identities, $tenantPrefix) {
@@ -81,21 +102,21 @@ class IdentityController extends Controller
                     ->whereIn('identity_id', $ids)
                     ->whereNotNull('global_profession_id')
                     ->pluck('global_profession_id', 'identity_id');
-    
+
                 $globalProfessions = GlobalProfession::whereIn('id', $mapping->values())
                     ->with('profession_category')
                     ->get()
                     ->keyBy('id');
-    
+
                 foreach ($identities as $identity) {
                     $id = $mapping[$identity->id] ?? null;
                     $identity->setRelation('globalProfessions', collect($id ? [$globalProfessions[$id]] : []));
                 }
             });
         }
-    
+
         return $identities;
-    }       
+    }
 
     public function create()
     {
@@ -116,6 +137,8 @@ class IdentityController extends Controller
             'selectedCategories' => [],
             'professionsList' => $this->getProfessionsList(),
             'categoriesList' => $this->getCategoriesList(),
+            'selectedReligions' => [],
+            'selectedGlobalIdentity' => [],
         ]);
     }
 
@@ -153,6 +176,22 @@ class IdentityController extends Controller
             'categoriesList' => $this->getCategoriesList(),
             'resources' => $identity->related_identity_resources,
             'relatedNames' => $identity->related_names,
+            'selectedReligions' => $this->getSelectedReligions($identity),
+            'selectedGlobalIdentity' => $this->getSelectedGlobalIdentity($identity),
+        ]);
+    }
+
+    public function validation()
+    {
+        return view('pages.identities.validation', [
+            'title' => __('hiko.input_control'),
+        ]);
+    }
+
+    public function localMerge()
+    {
+        return view('pages.identities.local-merge', [
+            'title' => __('hiko.local_merging'),
         ]);
     }
 
@@ -176,11 +215,30 @@ class IdentityController extends Controller
 
     public function update(IdentityRequest $request, Identity $identity): RedirectResponse
     {
+        $lock = $this->pageLocks->assertOwned([
+            'scope' => 'tenant',
+            'resource_type' => 'identity_edit',
+            'resource_id' => (string) $identity->id,
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('identities')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
         $validated = $request->validated();
-        $validated['related_names'] = json_encode($validated['related_names'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $previousGlobalIdentityId = $identity->global_identity_id;
+        // Ensure it defaults to empty array if null, so Model casts handle it correctly
+        $validated['related_names'] = $validated['related_names'] ?? [];
 
         $identity->update($validated);
+        $this->logGlobalIdentityLinkAudit($identity, $previousGlobalIdentityId, $identity->global_identity_id, 'update');
         $this->syncRelations($identity, $validated);
+        if ($validated['type'] == 'person') {
+            $identity->syncReligions($request->input('religions', null));
+        }
 
         if ($request->input('action') === 'create') {
             return redirect()
@@ -197,9 +255,9 @@ class IdentityController extends Controller
     {
         $validated = $request->validated();
 
-        // Convert array fields to JSON strings if necessary
-        $validated['related_names'] = json_encode($validated['related_names'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $validated['related_identity_resources'] = json_encode($validated['related_identity_resources'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        // Ensure defaults are arrays if null, so Model casts handle them correctly
+        $validated['related_names'] = $validated['related_names'] ?? [];
+        $validated['related_identity_resources'] = $validated['related_identity_resources'] ?? [];
 
         // Remove non-existent columns in the identities table
         unset($validated['category'], $validated['profession']);
@@ -213,9 +271,14 @@ class IdentityController extends Controller
 
         // Create the new Identity record
         $identity = Identity::create($validated);
+        $this->logGlobalIdentityLinkAudit($identity, null, $identity->global_identity_id, 'store');
 
         // Sync professions and categories if provided
         $this->syncRelations($identity, $request->validated());
+
+        if ($validated['type'] == 'person') {
+            $identity->syncReligions($request->input('religions', null));
+        }
 
         if ($request->input('action') === 'create') {
             return redirect()
@@ -256,26 +319,26 @@ class IdentityController extends Controller
     {
         $localIds = [];
         $globalIds = [];
-    
+
         foreach ($professions as $professionId) {
             $isGlobal = str_starts_with($professionId, 'global-');
             $cleanId = (int) str_replace(['global-', 'local-'], '', $professionId);
-    
+
             if ($isGlobal) {
                 $globalIds[] = $cleanId;
             } else {
                 $localIds[] = $cleanId;
             }
         }
-    
+
         $tenantPivotTable = tenancy()->tenant->table_prefix . '__identity_profession';
-    
+
         DB::transaction(function () use ($identity, $localIds, $globalIds, $tenantPivotTable) {
             // 🧹 Remove all existing local & global professions
             DB::table($tenantPivotTable)
                 ->where('identity_id', $identity->id)
                 ->delete();
-    
+
             // 🔗 Attach Local Professions
             if (!empty($localIds)) {
                 $localData = collect($localIds)->mapWithKeys(function ($id) {
@@ -285,10 +348,10 @@ class IdentityController extends Controller
                         'position' => null,
                     ]];
                 })->toArray();
-    
+
                 $identity->professions()->attach($localData);
             }
-    
+
             // 🔗 Attach Global Professions (profession_id = null is now valid)
             if (!empty($globalIds)) {
                 $globalData = collect($globalIds)->map(function ($id) use ($identity) {
@@ -299,11 +362,11 @@ class IdentityController extends Controller
                         'position' => null,
                     ];
                 })->toArray();
-    
+
                 DB::table($tenantPivotTable)->insert($globalData);
             }
         });
-    }    
+    }
 
     protected function getTypes(): array
     {
@@ -414,5 +477,89 @@ class IdentityController extends Controller
         }
 
         return $categories;
+    }
+
+    protected function getSelectedReligions(Identity $identity): array
+    {
+        $locale = app()->getLocale();
+        $ids = $identity->religions->pluck('id')->all();
+
+        if (empty($ids)) return [];
+
+        $rows = DB::table('religion_translations as rt')
+            ->join('religions as r', 'r.id', '=', 'rt.religion_id')
+            ->select('rt.religion_id', 'rt.path_text', 'r.is_active')
+            ->where('rt.locale', $locale)
+            ->whereIn('rt.religion_id', $ids)
+            ->get();
+
+        return $rows->map(fn($r) => [
+            'value' => (int) $r->religion_id,   // religion ID to be submitted
+            'label' => $r->is_active
+                ? $r->path_text
+                : "{$r->path_text} — (inactive)",   // religion path with inactive note if needed
+        ])->toArray();
+    }
+
+    protected function getSelectedGlobalIdentity(Identity $identity): array
+    {
+        if (empty($identity->global_identity_id)) {
+            return [];
+        }
+
+        $globalIdentity = GlobalIdentity::find($identity->global_identity_id);
+        if (!$globalIdentity) {
+            return [];
+        }
+
+        $dates = trim("{$globalIdentity->birth_year} - {$globalIdentity->death_year}");
+        $label = $globalIdentity->name . ($dates !== ' - ' ? " ({$dates})" : '');
+
+        return [
+            'value' => (int)$globalIdentity->id,
+            'label' => $label,
+        ];
+    }
+
+    protected function logGlobalIdentityLinkAudit(Identity $identity, ?int $fromGlobalIdentityId, ?int $toGlobalIdentityId, string $action): void
+    {
+        if ((int)$fromGlobalIdentityId === (int)$toGlobalIdentityId) {
+            return;
+        }
+
+        try {
+            $user = auth()->user();
+
+            MergeAuditLog::create([
+                'tenant_id' => tenancy()->tenant?->id,
+                'tenant_prefix' => tenancy()->tenant?->table_prefix,
+                'user_id' => $user?->id,
+                'user_email' => $user?->email,
+                'entity' => 'identity',
+                'operation' => 'global_link',
+                'status' => 'success',
+                'payload' => [
+                    'identity_id' => (int)$identity->id,
+                    'action' => $action,
+                    'from_global_identity_id' => $fromGlobalIdentityId,
+                    'to_global_identity_id' => $toGlobalIdentityId,
+                ],
+                'result' => [
+                    'identity_id' => (int)$identity->id,
+                    'global_identity_id' => $toGlobalIdentityId,
+                ],
+            ]);
+
+            Log::info('[IdentityGlobalLink] success', [
+                'identity_id' => (int)$identity->id,
+                'from_global_identity_id' => $fromGlobalIdentityId,
+                'to_global_identity_id' => $toGlobalIdentityId,
+                'action' => $action,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('[IdentityGlobalLink] failed to persist audit log: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
     }
 }

@@ -7,7 +7,7 @@
             <div class="p-3 space-y-6 bg-gray-200 shadow" wire:key="copy-item-{{ $index }}">
                 <div>
                     <x-label for="preservation_{{ $index }}" :value="__('hiko.preservation')" />
-                    <x-select wire:model.live="copies.{{ $index }}.preservation"
+                    <x-select wire:model.defer="copies.{{ $index }}.preservation"
                         name="copies[{{ $index }}][preservation]" id="preservation_{{ $index }}"
                         class="block w-full mt-1">
                         <option value="">
@@ -22,7 +22,7 @@
                 </div>
                 <div>
                     <x-label for="type_{{ $index }}" :value="__('hiko.doc_type')" />
-                    <x-select wire:model.live="copies.{{ $index }}.type" id="type_{{ $index }}"
+                    <x-select wire:model.defer="copies.{{ $index }}.type" id="type_{{ $index }}"
                         name="copies[{{ $index }}][type]" class="block w-full mt-1">
                         <option value="">
                             ---
@@ -36,7 +36,7 @@
                 </div>
                 <div>
                     <x-label for="copy_{{ $index }}" :value="__('hiko.doc_mode')" />
-                    <x-select wire:model.live="copies.{{ $index }}.copy" id="doc_mode_{{ $index }}"
+                    <x-select wire:model.defer="copies.{{ $index }}.copy" id="doc_mode_{{ $index }}"
                         name="copies[{{ $index }}][copy]" class="block w-full mt-1">
                         <option value="">
                             ---
@@ -50,25 +50,29 @@
                 </div>
                 <div>
                     <x-label for="manifestation_notes_{{ $index }}" :value="__('hiko.manifestation_notes')" />
-                    <x-textarea wire:model.live="copies.{{ $index }}.manifestation_notes"
+                    <x-textarea wire:model.defer="copies.{{ $index }}.manifestation_notes"
                         name="copies[{{ $index }}][manifestation_notes]"
                         id="manifestation_notes_{{ $index }}" class="block w-full mt-1">
                     </x-textarea>
                 </div>
                 <div>
                     <x-label for="l_number_{{ $index }}" :value="__('hiko.l_number')" />
-                    <x-input wire:model.live="copies.{{ $index }}.l_number"
+                    <x-input wire:model.defer="copies.{{ $index }}.l_number"
                         name="copies[{{ $index }}][l_number]" id="l_number_{{ $index }}"
                         class="block w-full mt-1" type="text" />
                 </div>
 
                 <div>
                     <x-label for="repository_{{ $index }}" :value="__('hiko.repository')" />
+                    @php
+                        $repoVal = is_array($item['repository'] ?? null) ? ($item['repository']['value'] ?? '') : ($item['repository'] ?? '');
+                        $repoLabel = is_array($item['repository'] ?? null) ? ($item['repository']['label'] ?? '') : ($item['repository'] ?? '');
+                    @endphp
                     <div
                         x-data="enhancedSelect({
                             url: '{{ route('locations.repository.search') }}',
-                            initialValue: '{{ $item['repository'] ?? '' }}',
-                            initialLabel: '{{ $item['repository'] ?? '' }}',
+                            initialValue: '{{ $repoVal }}',
+                            initialLabel: '{{ $repoLabel }}',
                             index: {{ $index }},
                             fieldKey: 'repository'
                         })"
@@ -86,7 +90,7 @@
                                     type="text"
                                     x-ref="searchInput"
                                     x-model="searchQuery"
-                                    x-on:focus="openDropdown"
+                                    x-on:click="openDropdown"
                                     x-on:input="openDropdown"
                                     x-on:blur="closeDropdown"
                                     x-on:keydown.arrow-down.prevent="highlightNext"
@@ -154,11 +158,15 @@
 
                 <div>
                     <x-label for="archive_{{ $index }}" :value="__('hiko.archive')" />
+                    @php
+                        $archVal = is_array($item['archive'] ?? null) ? ($item['archive']['value'] ?? '') : ($item['archive'] ?? '');
+                        $archLabel = is_array($item['archive'] ?? null) ? ($item['archive']['label'] ?? '') : ($item['archive'] ?? '');
+                    @endphp
                     <div
                         x-data="enhancedSelect({
                             url: '{{ route('locations.archive.search') }}',
-                            initialValue: '{{ $item['archive'] ?? '' }}',
-                            initialLabel: '{{ $item['archive'] ?? '' }}',
+                            initialValue: '{{ $archVal }}',
+                            initialLabel: '{{ $archLabel }}',
                             index: {{ $index }},
                             fieldKey: 'archive'
                         })"
@@ -176,7 +184,7 @@
                                     type="text"
                                     x-ref="searchInput"
                                     x-model="searchQuery"
-                                    x-on:focus="openDropdown"
+                                    x-on:click="openDropdown"
                                     x-on:input="openDropdown"
                                     x-on:blur="closeDropdown"
                                     x-on:keydown.arrow-down.prevent="highlightNext"
@@ -244,11 +252,15 @@
 
                 <div>
                     <x-label for="collection_{{ $index }}" :value="__('hiko.collection')" />
+                    @php
+                        $collVal = is_array($item['collection'] ?? null) ? ($item['collection']['value'] ?? '') : ($item['collection'] ?? '');
+                        $collLabel = is_array($item['collection'] ?? null) ? ($item['collection']['label'] ?? '') : ($item['collection'] ?? '');
+                    @endphp
                     <div
                         x-data="enhancedSelect({
                             url: '{{ route('locations.collection.search') }}',
-                            initialValue: '{{ $item['collection'] ?? '' }}',
-                            initialLabel: '{{ $item['collection'] ?? '' }}',
+                            initialValue: '{{ $collVal }}',
+                            initialLabel: '{{ $collLabel }}',
                             index: {{ $index }},
                             fieldKey: 'collection'
                         })"
@@ -266,7 +278,7 @@
                                     type="text"
                                     x-ref="searchInput"
                                     x-model="searchQuery"
-                                    x-on:focus="openDropdown"
+                                    x-on:click="openDropdown"
                                     x-on:input="openDropdown"
                                     x-on:blur="closeDropdown"
                                     x-on:keydown.arrow-down.prevent="highlightNext"
@@ -334,13 +346,13 @@
 
                 <div>
                     <x-label for="signature_{{ $index }}" :value="__('hiko.signature')" />
-                    <x-input wire:model.live="copies.{{ $index }}.signature"
+                    <x-input wire:model.defer="copies.{{ $index }}.signature"
                         name="copies[{{ $index }}][signature]" id="signature_{{ $index }}"
                         class="block w-full mt-1" type="text" />
                 </div>
                 <div>
                     <x-label for="location_note_{{ $index }}" :value="__('hiko.location_note')" />
-                    <x-textarea wire:model.live="copies.{{ $index }}.location_note"
+                    <x-textarea wire:model.defer="copies.{{ $index }}.location_note"
                         name="copies[{{ $index }}][location_note]" id="location_note_{{ $index }}"
                         class="block w-full mt-1">
                     </x-textarea>

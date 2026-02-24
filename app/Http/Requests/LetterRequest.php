@@ -3,6 +3,13 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Enums\LocationType;
+use App\Models\Location;
+use App\Helpers\DateHelper;
+use App\Helpers\FormRequestHelper;
+use App\Traits\GeneratesLetterAttributes;
+use Illuminate\Support\Facades\DB;
 
 /**
  * LetterRequest handles validation rules for creating/updating letters.
@@ -10,6 +17,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class LetterRequest extends FormRequest
 {
+    use GeneratesLetterAttributes;
+
     /**
      * Ensure the user is authorized to manage metadata.
      */
@@ -25,9 +34,9 @@ class LetterRequest extends FormRequest
     {
         return [
             // Basic date fields
-            'date_year'           => ['nullable', 'integer'],
-            'date_month'          => ['nullable', 'integer'],
-            'date_day'            => ['nullable', 'integer'],
+            'date_year'           => ['nullable', 'integer', 'min:1', 'max:9999'],
+            'date_month'          => ['nullable', 'integer', 'between:1,12', 'required_with:date_day'],
+            'date_day'            => ['nullable', 'integer', 'between:1,31'],
             'date_marked'         => ['nullable', 'string', 'max:255'],
 
             // Boolean flags for date
@@ -37,9 +46,9 @@ class LetterRequest extends FormRequest
             'date_is_range'       => ['required', 'boolean'],
 
             // Range date fields
-            'range_year'          => ['nullable', 'integer'],
-            'range_month'         => ['nullable', 'integer'],
-            'range_day'           => ['nullable', 'integer'],
+            'range_year' => ['nullable','integer','min:1','max:9999','exclude_unless:date_is_range,1,true,on'],
+            'range_month' => ['nullable','integer','between:1,12','required_with:range_day','exclude_unless:date_is_range,1,true,on'],
+            'range_day' => ['nullable','integer','between:1,31','exclude_unless:date_is_range,1,true,on'],
 
             'date_note'           => ['nullable', 'string'],
 
@@ -69,21 +78,21 @@ class LetterRequest extends FormRequest
             // JSON array fields
             'copies' => ['nullable', 'array'],
             // Subfields for copies
-            'copies.*.archive'             => ['nullable', 'string', 'max:255'],
-            'copies.*.collection'          => ['nullable', 'string', 'max:255'],
+            'copies.*.repository' => ['nullable', $this->getLocationValidationRule('repository')],
+            'copies.*.archive'    => ['nullable', $this->getLocationValidationRule('archive')],
+            'copies.*.collection' => ['nullable', $this->getLocationValidationRule('collection')],
             'copies.*.copy'                => ['nullable', 'string', 'max:255'],
             'copies.*.l_number'            => ['nullable', 'string', 'max:255'],
             'copies.*.location_note'       => ['nullable', 'string'],
             'copies.*.manifestation_notes' => ['nullable', 'string'],
             'copies.*.ms_manifestation'    => ['nullable', 'string', 'max:10'],
             'copies.*.preservation'        => ['nullable', 'string', 'max:50'],
-            'copies.*.repository'          => ['nullable', 'string', 'max:255'],
             'copies.*.signature'           => ['nullable', 'string', 'max:255'],
             'copies.*.type'                => ['nullable', 'string', 'max:50'],
 
             // Another JSON array
             'related_resources'            => ['nullable', 'array'],
-            'related_resources.*.title'    => ['required', 'string', 'max:255'],
+            'related_resources.*.title'    => ['required', 'string'],
             'related_resources.*.link'     => ['nullable', 'url'],
 
             // Abstract is stored as JSON by Spatie\Translatable
@@ -94,7 +103,7 @@ class LetterRequest extends FormRequest
             // Simple text fields
             'explicit'   => ['nullable', 'string', 'max:255'],
             'incipit'    => ['nullable', 'string', 'max:255'],
-            'copyright'  => ['nullable', 'string', 'max:255'],
+            'copyright'  => ['nullable', 'string'],
 
             // 'languages' is stored as a semicolon-delimited string
             'languages'  => ['nullable', 'string', 'max:255'],
@@ -107,13 +116,27 @@ class LetterRequest extends FormRequest
 
             // Pivot fields we do NOT store in letters table, but still validate as arrays
             'authors'      => ['nullable', 'array'],
+            'authors.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
+            // 'authors.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
             'recipients'   => ['nullable', 'array'],
+            'recipients.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
+            // 'recipients.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
+            'mentioned' => ['nullable', 'array'],
+            'mentioned.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
+            // 'mentioned.*' => ['integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
             'destinations' => ['nullable', 'array'],
+            'destinations.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
             'origins'      => ['nullable', 'array'],
+            'origins.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
 
             // IMPORTANT: keywords => array of integer IDs
             'keywords'     => ['nullable', 'array'],
-            'keywords.*'   => ['integer'], 
+            'keywords.*'   => ['regex:/^(local|global)-\d+$/'],
+
+            'local_keywords' => ['sometimes', 'array'],
+            'local_keywords.*' => ['integer', 'exists:' . tenancy()->tenant->table_prefix . '__keywords,id'],
+            'global_keywords' => ['sometimes', 'array'],
+            'global_keywords.*' => ['integer', 'exists:global_keywords,id'],
         ];
     }
 
@@ -122,10 +145,7 @@ class LetterRequest extends FormRequest
      */
     public function attributes(): array
     {
-        return collect($this->rules())
-            ->keys()
-            ->mapWithKeys(fn($field) => [$field => __("hiko.{$field}")])
-            ->toArray();
+        return $this->generateLetterAttributes($this->all(), $this->rules());
     }
 
     /**
@@ -155,6 +175,7 @@ class LetterRequest extends FormRequest
             'related_resources' => $this->prepareJsonField('related_resources'),
             'authors'           => $this->prepareJsonField('authors'),
             'recipients'        => $this->prepareJsonField('recipients'),
+            'mentioned'         => $this->prepareJsonField('mentioned'),
             'destinations'      => $this->prepareJsonField('destinations'),
             'origins'           => $this->prepareJsonField('origins'),
 
@@ -164,6 +185,87 @@ class LetterRequest extends FormRequest
                 'en' => $this->input('abstract_en'),
             ],
         ]);
+
+        // Normalize date fields: trim strings, convert '0' / 0 / '' to null
+        $datePatch = [];
+        foreach (['date_year', 'date_month', 'date_day', 'range_year', 'range_month', 'range_day'] as $f) {
+            $v = $this->input($f);
+
+            if (is_string($v)) {
+                $v = trim($v);
+            }
+
+            if ($v === '' || $v === '0' || $v === 0) {
+                $v = null;
+            }
+
+            if ($v !== $this->input($f)) {
+                $datePatch[$f] = $v;
+            }
+        }
+
+        if ($datePatch) {
+            $this->merge($datePatch);
+        }
+
+        // If user checked the box but provided no range parts at all, treat it as NOT a range
+        $isRange = $this->boolDefault('date_is_range');
+        $hasAnyRangePart = $this->filled('range_year') || $this->filled('range_month') || $this->filled('range_day');
+        if ($isRange && ! $hasAnyRangePart) {
+            $this->merge(['date_is_range' => false]);
+        }
+
+        // If date_is_range is false, clear range date fields
+        if (!$isRange) {
+            $this->merge([
+                'range_year'  => null,
+                'range_month' => null,
+                'range_day'   => null,
+            ]);
+        }
+    }
+
+    /**
+     * Custom validation after the standard rules.
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($v) {
+            $y = $this->input('date_year');
+            $m = $this->input('date_month');
+            $d = $this->input('date_day');
+
+            // main date existence
+            if ($y && $m && $d && !checkdate((int)$m, (int)$d, (int)$y)) {
+                $v->errors()->add('date_day', __('validation.date', ['attribute' => FormRequestHelper::attributeLabel('date_day')]));
+            }
+
+            // only check range date if date_is_range = true
+            if ($this->boolDefault('date_is_range')) {
+                $ry = $this->input('range_year');
+                $rm = $this->input('range_month');
+                $rd = $this->input('range_day');
+
+                // range date existence
+                if ($ry && $rm && $rd && !checkdate((int)$rm, (int)$rd, (int)$ry)) {
+                    $v->errors()->add('range_day', __('validation.date', ['attribute' => FormRequestHelper::attributeLabel('range_day')]));
+                }
+
+                // ensure range end date >= range start date
+                $start = DateHelper::deriveStartBoundDate($y, $m, $d);
+                $end = DateHelper::deriveEndBoundDate($ry, $rm, $rd);
+
+                if ($start && $end && $end->lt($start)) {
+                    $v->errors()->add(
+                        'range_day',
+                        __('validation.after_or_equal', [
+                            'attribute' => FormRequestHelper::attributeLabel('range_day'),
+                            'date'      => $start->toDateString(),
+                        ])
+                    );
+                }
+            }
+        });
     }
 
     /**
@@ -191,9 +293,66 @@ class LetterRequest extends FormRequest
     private function prepareJsonField(string $field): ?array
     {
         $val = $this->input($field);
+
         if (is_array($val)) {
-            return $val;
+            $items = $val;
+        } elseif (!empty($val)) {
+            $items = json_decode($val, true);
+        } else {
+            return null;
         }
-        return empty($val) ? null : json_decode($val, true);
+
+        return $items;
+    }
+
+    protected function getLocationValidationRule(string $type)
+    {
+        return function ($attribute, $value, $fail) use ($type) {
+            // Handle Array Input (from Livewire enhancedSelect)
+            if (is_array($value)) {
+                $value = $value['value'] ?? ($value['label'] ?? null);
+            }
+
+            if (empty($value)) {
+                return; // Nullable
+            }
+
+            // Check if it's an ID (local-X or global-X)
+            if (preg_match('/^(local|global)-(\d+)$/', $value, $matches)) {
+                $scope = $matches[1];
+                $id = $matches[2];
+
+                if ($scope === 'local') {
+                    $exists = DB::table(tenancy()->tenant->table_prefix . '__locations')
+                        ->where('id', $id)
+                        ->where('type', $type)
+                        ->exists();
+
+                    if (!$exists) {
+                        $fail(__('hiko.validation_id_not_found', ['id' => $value]));
+                    }
+                } elseif ($scope === 'global') {
+                    $exists = DB::table('global_locations')
+                        ->where('id', $id)
+                        ->where('type', $type)
+                        ->exists();
+
+                    if (!$exists) {
+                        $fail(__('hiko.validation_id_not_found', ['id' => $value]));
+                    }
+                }
+            }
+            // If it's a plain string (New Name), we generally allow it
+            // because the Controller will create it.
+            // OR we can enforce max length.
+            else {
+                if (strlen($value) > 255) {
+                    $fail(__('hiko.validation_max_string_length', [
+                        'attribute' => $attribute,
+                        'max' => 255,
+                    ]));
+                }
+            }
+        };
     }
 }

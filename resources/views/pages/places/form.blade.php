@@ -1,6 +1,14 @@
 <x-app-layout :title="$title">
     <x-success-alert />
     <x-form-errors />
+    @if (!empty($place->id))
+        <x-page-lock
+            scope="tenant"
+            resource-type="place_edit"
+            :resource-id="$place->id"
+            :redirect-url="route('places')"
+            :read-only-on-deny="true" />
+    @endif
 
     <div class="grid-cols-3 grid gap-4 mb-4 space-y-3">
         <div class="max-w-sm col-span-1">
@@ -17,6 +25,15 @@
                     <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $place->name)"
                         x-on:change="search = $el.value" required />
                     @error('name')
+                        <div class="text-red-600">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- Additional Name Field -->
+                <div>
+                    <x-label for="additional_name" :value="__('hiko.additional_name')" />
+                    <x-input id="additional_name" class="block w-full mt-1" type="text" name="additional_name" :value="old('additional_name', $place->additional_name)" />
+                    @error('additional_name')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>
@@ -50,8 +67,8 @@
 
                 <div>
                     <x-label for="note" :value="__('hiko.note')" />
-                    <x-textarea name="note" id="note"
-                        class="block w-full mt-1">{{ old('note', $place->note) }}</x-textarea>
+                    <x-textarea name="note" id="note" rows="3"
+                        class="block w-full mt-1" style="min-height: 90px;">{{ old('note', $place->note) }}</x-textarea>
                     @error('note')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
@@ -73,8 +90,7 @@
                 <!-- Latitude and Longitude Fields -->
                 <div>
                     <x-label for="latitude" :value="__('hiko.latitude')" />
-                    <x-input id="latitude" class="block w-full mt-1" type="text" name="latitude"
-                        wire:model.live="latitude" :value="old('latitude', $place->latitude)" />
+                    <x-input id="latitude" class="block w-full mt-1" type="text" name="latitude" :value="old('latitude', $place->latitude)" />
                     @error('latitude')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
@@ -82,8 +98,7 @@
 
                 <div>
                     <x-label for="longitude" :value="__('hiko.longitude')" />
-                    <x-input id="longitude" class="block w-full mt-1" type="text" name="longitude"
-                        wire:model.live="longitude" :value="old('longitude', $place->longitude)" />
+                    <x-input id="longitude" class="block w-full mt-1" type="text" name="longitude" :value="old('longitude', $place->longitude)" />
                     @error('longitude')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
@@ -92,8 +107,7 @@
                 <!-- Geoname ID Field -->
                 <div>
                     <x-label for="geoname_id" :value="__('Geoname ID')" />
-                    <x-input id="geoname_id" class="block w-full mt-1" type="text" name="geoname_id"
-                        wire:model.live="geoname_id" :value="old('geoname_id', $place->geoname_id)" />
+                    <x-input id="geoname_id" class="block w-full mt-1" type="text" name="geoname_id" :value="old('geoname_id', $place->geoname_id)" />
                     @error('geoname_id')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
@@ -299,9 +313,11 @@
 
             // Use debounce with the AJAX request
             var searchInput = document.getElementById('mentioned');
-            searchInput.addEventListener('input', debounce(function(e) {
-                // Make AJAX request here
-            }, 500));
+            if (searchInput) {
+                searchInput.addEventListener('input', debounce(function(e) {
+                    // Make AJAX request here
+                }, 500));
+            }
 
             // Hide header and footer in modals
             function hideHeaderFooterInIframe() {

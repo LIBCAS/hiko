@@ -1,54 +1,97 @@
 <x-app-layout :title="$title">
     <x-success-alert />
-    <form x-data="similarItems({ similarNamesUrl: '{{ route('ajax.locations.similar') }}', id: '{{ $location->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" action="{{ $action }}" method="post"
-        class="max-w-sm space-y-3" autocomplete="off">
-        @csrf
-        @isset($method)
-            @method($method)
-        @endisset
-        <div class="required">
-            <x-label for="name" :value="__('hiko.name')" />
-            <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $location->name)"
-                x-on:change="search = $el.value" required />
-            @error('name')
-                <div class="text-red-600">{{ $message }}</div>
-            @enderror
-        </div>
-        <x-alert-similar-names />
-        <div class="required">
-            <x-label for="type" :value="__('hiko.type')" />
-            <x-select id="type" class="block w-full mt-1" name="type" required>
-                @foreach ($types as $type)
-                    <option value="{{ $type }}"
-                        {{ old('type', $location->type) === $type ? 'selected' : '' }}>
-                        {{ __("hiko.{$type}") }}
-                    </option>
-                @endforeach
-            </x-select>
-            @error('type')
-                <div class="text-red-600">{{ $message }}</div>
-            @enderror
-        </div>
-        <x-button-simple class="w-full" name="action" value="edit">
-            {{ $label }}
-        </x-button-simple>
-        <x-button-inverted class="w-full text-black bg-white" name="action" value="create">
-            {{ $label }} {{ __('hiko.and_create_new') }}
-        </x-button-inverted>
-    </form>
-    @if ($location->id)
-        @can('delete-metadata')
-            <form x-data="{ form: $el }" action="{{ route('locations.destroy', $location->id) }}" method="post"
-                class="w-full mt-8">
-                @csrf
-                @method('DELETE')
-                <x-button-danger class="w-full"
-                    x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
-                    {{ __('hiko.remove') }}
-                </x-button-danger>
-            </form>
-        @endcan
+    <x-form-errors />
+    @if (!empty($location->id))
+        <x-page-lock
+            scope="tenant"
+            resource-type="location_edit"
+            :resource-id="$location->id"
+            :redirect-url="route('locations')"
+            :read-only-on-deny="true" />
     @endif
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        {{-- Left Column: Form --}}
+        <div class="col-span-1 space-y-3">
+            <form x-data="similarItems({ similarNamesUrl: '{{ route('ajax.locations.similar') }}', id: '{{ $location->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" action="{{ $action }}" method="post"
+                class="space-y-3" autocomplete="off">
+                @csrf
+                @isset($method)
+                    @method($method)
+                @endisset
+                <div class="required">
+                    <x-label for="name" :value="__('hiko.name')" />
+                    <x-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $location->name)"
+                        x-on:change="search = $el.value" required />
+                    @error('name')
+                        <div class="text-red-600">{{ $message }}</div>
+                    @enderror
+                </div>
+                <x-alert-similar-names />
+                <div class="required">
+                    <x-label for="type" :value="__('hiko.type')" />
+                    <x-select id="type" class="block w-full mt-1" name="type" required>
+                        @foreach ($types as $type)
+                            <option value="{{ $type }}"
+                                {{ old('type', $location->type) === $type ? 'selected' : '' }}>
+                                {{ __("hiko.{$type}") }}
+                            </option>
+                        @endforeach
+                    </x-select>
+                    @error('type')
+                        <div class="text-red-600">{{ $message }}</div>
+                    @enderror
+                </div>
+                <x-button-simple class="w-full" name="action" value="edit">
+                    {{ $label }}
+                </x-button-simple>
+                <x-button-inverted class="w-full text-black bg-white" name="action" value="create">
+                    {{ $label }} {{ __('hiko.and_create_new') }}
+                </x-button-inverted>
+            </form>
+            @if ($location->id)
+                @can('delete-metadata')
+                    <form x-data="{ form: $el }" action="{{ route('locations.destroy', $location->id) }}" method="post"
+                        class="w-full mt-8">
+                        @csrf
+                        @method('DELETE')
+                        <x-button-danger class="w-full"
+                            x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
+                            {{ __('hiko.remove') }}
+                        </x-button-danger>
+                    </form>
+                @endcan
+            @endif
+        </div>
+
+        {{-- Right Column: Attached Letters --}}
+        @if ($location->id)
+            <div class="col-span-1">
+                @if (isset($letters))
+                    <div class="bg-white p-6 shadow rounded-md">
+                        <h2 class="text-l font-semibold mb-3">
+                            {{ __('hiko.attached_letters_count') }}: {{ $letters->count() }}
+                        </h2>
+
+                        @if ($letters->count() > 0)
+                            <ul class="list-disc px-3 space-y-1">
+                                @foreach ($letters->sortBy('date_computed') as $letter)
+                                    <li>
+                                        <a href="{{ route('letters.edit', $letter->id) }}"
+                                           class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark" target="_blank">
+                                            {{ $letter->name }} [ID: {{ $letter->id }}]
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <p class="text-sm text-gray-500">{{ __('hiko.no_attached_letters') }}</p>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        @endif
+    </div>
 
     @push('scripts')
         <script>
@@ -214,9 +257,11 @@
 
             // Use debounce with the AJAX request
             var searchInput = document.getElementById('mentioned');
-            searchInput.addEventListener('input', debounce(function(e) {
-                // Make AJAX request here
-            }, 500));
+            if (searchInput) {
+                searchInput.addEventListener('input', debounce(function(e) {
+                    // Make AJAX request here
+                }, 500));
+            }
 
             // Hide header and footer in modals
             function hideHeaderFooterInIframe() {

@@ -308,8 +308,14 @@ class AddTenant extends Command
                 $table->longText('related_names')->collation('utf8mb4_bin')->nullable();
                 $table->longText('related_identity_resources')->collation('utf8mb4_bin')->nullable();
                 $table->string('viaf_id')->nullable();
+                $table->unsignedBigInteger('global_identity_id')->nullable();
                 $table->text('note')->nullable();
                 $table->timestamps();
+
+                $table->foreign('global_identity_id')
+                      ->references('id')
+                      ->on('global_identities')
+                      ->onDelete('set null');
             });
         }
 
