@@ -9,6 +9,7 @@ use App\Models\Letter;
 use App\Models\Location;
 use App\Helpers\DateHelper;
 use App\Helpers\FormRequestHelper;
+use App\Traits\GeneratesLetterAttributes;
 
 /**
  * LetterRequest handles validation rules for creating/updating letters.
@@ -16,6 +17,8 @@ use App\Helpers\FormRequestHelper;
  */
 class LetterRequest extends FormRequest
 {
+    use GeneratesLetterAttributes;
+
     /**
      * Ensure the user is authorized to manage metadata.
      */
@@ -29,6 +32,8 @@ class LetterRequest extends FormRequest
      */
     public function rules(): array
     {
+        $tenantTablePrefix = tenancy()->tenant->table_prefix;
+
         return [
             // Basic date fields
             'date_year'           => ['nullable', 'integer', 'min:1', 'max:9999'],
@@ -75,15 +80,15 @@ class LetterRequest extends FormRequest
             // JSON array fields
             'copies' => ['nullable', 'array'],
             // Subfields for copies
-            'copies.*.archive'             => ['nullable', 'string', 'max:255', Rule::in(Location::query()->where('type', LocationType::Archive->value)->pluck('name')->toArray())],
-            'copies.*.collection'          => ['nullable', 'string', 'max:255', Rule::in(Location::query()->where('type', LocationType::Collection->value)->pluck('name')->toArray())],
+            'copies.*.repository' => ['nullable', $this->getLocationValidationRule('repository')],
+            'copies.*.archive'    => ['nullable', $this->getLocationValidationRule('archive')],
+            'copies.*.collection' => ['nullable', $this->getLocationValidationRule('collection')],
             'copies.*.copy'                => ['nullable', 'string', 'max:255'],
             'copies.*.l_number'            => ['nullable', 'string', 'max:255'],
             'copies.*.location_note'       => ['nullable', 'string'],
             'copies.*.manifestation_notes' => ['nullable', 'string'],
             'copies.*.ms_manifestation'    => ['nullable', 'string', 'max:10'],
             'copies.*.preservation'        => ['nullable', 'string', 'max:50'],
-            'copies.*.repository'          => ['nullable', 'string', 'max:255', Rule::in(Location::query()->where('type', LocationType::Repository->value)->pluck('name')->toArray())],
             'copies.*.signature'           => ['nullable', 'string', 'max:255'],
             'copies.*.type'                => ['nullable', 'string', 'max:50'],
 
@@ -112,22 +117,28 @@ class LetterRequest extends FormRequest
 
             // Pivot fields we do NOT store in letters table, but still validate as arrays
             'authors'      => ['nullable', 'array'],
-            'authors.*.id' => ['required', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
+            'authors.*.id' => ['required', 'integer', 'exists:' . $tenantTablePrefix . '__identities,id'],
             'recipients'   => ['nullable', 'array'],
-            'recipients.*.id' => ['required', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
+            'recipients.*.id' => ['required', 'integer', 'exists:' . $tenantTablePrefix . '__identities,id'],
             'mentioned' => ['nullable', 'array'],
-            'mentioned.*' => ['integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
-            'destinations' => ['nullable', 'array'],
-            'destinations.*.id' => ['required', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__places,id'],
-            'origins'      => ['nullable', 'array'],
-            'origins.*.id' => ['required', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__places,id'],
+            'mentioned.*' => ['integer', 'exists:' . $tenantTablePrefix . '__identities,id'],
+
+            // Places
+            'local_origins' => ['sometimes', 'array'],
+            'local_origins.*.id' => ['required', 'integer', 'exists:' . $tenantTablePrefix . '__places,id'],
+            'global_origins' => ['sometimes', 'array'],
+            'global_origins.*.id' => ['required', 'integer', 'exists:global_places,id'],
+            'local_destinations' => ['sometimes', 'array'],
+            'local_destinations.*.id' => ['required', 'integer', 'exists:' . $tenantTablePrefix . '__places,id'],
+            'global_destinations' => ['sometimes', 'array'],
+            'global_destinations.*.id' => ['required', 'integer', 'exists:global_places,id'],
 
             // IMPORTANT: keywords => array of integer IDs
             'keywords'     => ['nullable', 'array'],
             'keywords.*'   => ['regex:/^(local|global)-\d+$/'],
 
             'local_keywords' => ['sometimes', 'array'],
-            'local_keywords.*' => ['integer', 'exists:' . tenancy()->tenant->table_prefix . '__keywords,id'],
+            'local_keywords.*' => ['integer', 'exists:' . $tenantTablePrefix . '__keywords,id'],
             'global_keywords' => ['sometimes', 'array'],
             'global_keywords.*' => ['integer', 'exists:global_keywords,id'],
 
@@ -142,7 +153,7 @@ class LetterRequest extends FormRequest
      */
     public function attributes(): array
     {
-        return FormRequestHelper::mapAttributeLabelsFromRules($this->rules());
+        return $this->generateLetterAttributes($this->all(), $this->rules());
     }
 
     /**
@@ -220,6 +231,13 @@ class LetterRequest extends FormRequest
                 'range_day'   => null,
             ]);
         }
+
+        // XSS Sanitization for content fields
+        if ($this->has('content')) {
+            $this->merge([
+                'content' => $this->sanitizeHtml($this->input('content')),
+            ]);
+        }
     }
 
     /**
@@ -266,6 +284,16 @@ class LetterRequest extends FormRequest
     }
 
     /**
+     * Allow only basic formatting tags.
+     */
+    private function sanitizeHtml(?string $html): ?string
+    {
+        if (!$html) return null;
+        // Allowed tags: p, br, b, strong, i, em, u, ul, ol, li, span, div, a
+        return strip_tags($html, '<p><br><b><strong><i><em><u><ul><ol><li><span><div><a>');
+    }
+
+    /**
      * Convert a checkbox-like field to boolean with a default of false if missing.
      */
     private function boolDefault(string $field, bool $default = false): bool
@@ -305,5 +333,56 @@ class LetterRequest extends FormRequest
             'cs' => $abstract['cs'] ?? null,
             'en' => $abstract['en'] ?? null,
         ];
+    }
+
+    protected function getLocationValidationRule(string $type)
+    {
+        return function ($attribute, $value, $fail) use ($type) {
+            // Handle Array Input (from Livewire enhancedSelect)
+            if (is_array($value)) {
+                $value = $value['value'] ?? ($value['label'] ?? null);
+            }
+
+            if (empty($value)) {
+                return; // Nullable
+            }
+
+            // Check if it's an ID (local-X or global-X)
+            if (preg_match('/^(local|global)-(\d+)$/', $value, $matches)) {
+                $scope = $matches[1];
+                $id = $matches[2];
+
+                if ($scope === 'local') {
+                    $exists = DB::table(tenancy()->tenant->table_prefix . '__locations')
+                        ->where('id', $id)
+                        ->where('type', $type)
+                        ->exists();
+
+                    if (!$exists) {
+                        $fail(__('hiko.validation_id_not_found', ['id' => $value]));
+                    }
+                } elseif ($scope === 'global') {
+                    $exists = DB::table('global_locations')
+                        ->where('id', $id)
+                        ->where('type', $type)
+                        ->exists();
+
+                    if (!$exists) {
+                        $fail(__('hiko.validation_id_not_found', ['id' => $value]));
+                    }
+                }
+            }
+            // If it's a plain string (New Name), we generally allow it
+            // because the Controller will create it.
+            // OR we can enforce max length.
+            else {
+                if (strlen($value) > 255) {
+                    $fail(__('hiko.validation_max_string_length', [
+                        'attribute' => $attribute,
+                        'max' => 255,
+                    ]));
+                }
+            }
+        };
     }
 }

@@ -3,47 +3,46 @@
 namespace App\Http\Controllers\Api\v2;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\PlaceRequest;
+use App\Http\Requests\GlobalPlaceRequest;
 use App\Http\Resources\PlaceResource;
-use App\Models\Place;
-use App\Services\PlaceService;
+use App\Models\GlobalPlace;
+use App\Services\GlobalPlaceService;
 use Illuminate\Http\Request;
 
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
-    name: "Places",
-    description: "Management of places"
+    name: "Global Places",
+    description: "Management of global places"
 )]
-class PlaceController extends Controller
+class GlobalPlaceController extends Controller
 {
     public static int $maxPerPage = 100;
     public static int $defaultPerPage = 20;
 
-    protected PlaceService $placeService;
+    protected GlobalPlaceService $placeService;
 
-    public function __construct(PlaceService $placeService)
+    public function __construct(GlobalPlaceService $placeService)
     {
         $this->placeService = $placeService;
     }
 
     #[OA\Get(
-        path: "/places",
-        summary: "List places",
-        tags: ["Places"],
+        path: "/global-places",
+        summary: "List global places",
+        tags: ["Global Places"],
         security: [["bearerAuth" => []]],
         parameters: [
             new OA\Parameter(name: "page", in: "query", description: "Page number", schema: new OA\Schema(type: "integer")),
-            new OA\Parameter(name: "per_page", in: "query", description: "Items per page", schema: new OA\Schema(type: "integer")),
-            new OA\Parameter(name: "lang", in: "query", description: "Language (cs or en)", schema: new OA\Schema(type: "string", enum: ["cs", "en"]))
+            new OA\Parameter(name: "per_page", in: "query", description: "Items per page", schema: new OA\Schema(type: "integer"))
         ],
         responses: [
             new OA\Response(
                 response: 200,
-                description: "List of places",
+                description: "List of global places",
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(property: "data", type: "array", items: new OA\Items(ref: "#/components/schemas/Place")),
+                        new OA\Property(property: "data", type: "array", items: new OA\Items(ref: "#/components/schemas/GlobalPlace")),
                         new OA\Property(property: "meta", type: "object")
                     ]
                 )
@@ -53,15 +52,15 @@ class PlaceController extends Controller
     public function index(Request $request)
     {
         $perPage = min(max((int) $request->query('per_page', self::$defaultPerPage), 1), self::$maxPerPage);
-        $places = Place::paginate($perPage);
+        $places = GlobalPlace::paginate($perPage);
 
         return PlaceResource::collection($places);
     }
 
     #[OA\Get(
-        path: "/place/{id}",
-        summary: "Get place by ID",
-        tags: ["Places"],
+        path: "/global-place/{id}",
+        summary: "Get global place by ID",
+        tags: ["Global Places"],
         security: [["bearerAuth" => []]],
         parameters: [
             new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
@@ -69,44 +68,44 @@ class PlaceController extends Controller
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Place details",
-                content: new OA\JsonContent(ref: "#/components/schemas/Place")
+                description: "Global place details",
+                content: new OA\JsonContent(ref: "#/components/schemas/GlobalPlace")
             ),
-            new OA\Response(response: 404, description: "Place not found")
+            new OA\Response(response: 404, description: "Global Place not found")
         ]
     )]
     public function show($id)
     {
-        $place = Place::findOrFail($id);
+        $place = GlobalPlace::findOrFail($id);
         return new PlaceResource($place);
     }
 
     #[OA\Post(
-        path: "/places",
-        summary: "Create new place",
-        tags: ["Places"],
+        path: "/global-places",
+        summary: "Create new global place",
+        tags: ["Global Places"],
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Place")
+            content: new OA\JsonContent(ref: "#/components/schemas/GlobalPlace")
         ),
         responses: [
             new OA\Response(
                 response: 201,
-                description: "Place created",
-                content: new OA\JsonContent(ref: "#/components/schemas/Place")
+                description: "Global place created",
+                content: new OA\JsonContent(ref: "#/components/schemas/GlobalPlace")
             ),
             new OA\Response(response: 401, description: "Unauthenticated"),
             new OA\Response(response: 409, description: "Entity already exists"),
             new OA\Response(response: 422, description: "Validation error")
         ]
     )]
-    public function store(PlaceRequest $request)
+    public function store(GlobalPlaceRequest $request)
     {
         $validated = $request->validated();
 
         if ($request->failsDuplicateCheck()) {
-            return response()->json(['message' => __('hiko.entity_already_exists')], 409);
+            return response()->json(['message' => 'Such entity already exists.'], 409);
         }
 
         $place = $this->placeService->create($validated);
@@ -114,34 +113,34 @@ class PlaceController extends Controller
     }
 
     #[OA\Put(
-        path: "/place/{id}",
-        summary: "Update place",
-        tags: ["Places"],
+        path: "/global-place/{id}",
+        summary: "Update global place",
+        tags: ["Global Places"],
         security: [["bearerAuth" => []]],
         parameters: [
             new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Place")
+            content: new OA\JsonContent(ref: "#/components/schemas/GlobalPlace")
         ),
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Place updated",
-                content: new OA\JsonContent(ref: "#/components/schemas/Place")
+                description: "Global place updated",
+                content: new OA\JsonContent(ref: "#/components/schemas/GlobalPlace")
             ),
-            new OA\Response(response: 404, description: "Place not found"),
+            new OA\Response(response: 404, description: "Global Place not found"),
             new OA\Response(response: 422, description: "Validation error")
         ]
     )]
-    public function update(PlaceRequest $request, $id)
+    public function update(GlobalPlaceRequest $request, $id)
     {
-        $place = Place::findOrFail($id);
+        $place = GlobalPlace::findOrFail($id);
         $validated = $request->validated();
 
         if ($request->failsDuplicateCheck($place->id)) {
-            return response()->json(['message' => __('hiko.entity_already_exists')], 422);
+            return response()->json(['message' => 'Such entity already exists.'], 409);
         }
 
         $updated = $this->placeService->update($place, $validated);
@@ -149,9 +148,9 @@ class PlaceController extends Controller
     }
 
     #[OA\Delete(
-        path: "/place/{id}",
-        summary: "Delete place",
-        tags: ["Places"],
+        path: "/global-place/{id}",
+        summary: "Delete global place",
+        tags: ["Global Places"],
         security: [["bearerAuth" => []]],
         parameters: [
             new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
@@ -159,19 +158,19 @@ class PlaceController extends Controller
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Place deleted",
+                description: "Global place deleted",
                 content: new OA\JsonContent(
                     properties: [new OA\Property(property: "message", type: "string", example: "Entity deleted successfully.")]
                 )
             ),
-            new OA\Response(response: 404, description: "Place not found")
+            new OA\Response(response: 404, description: "Global Place not found")
         ]
     )]
     public function destroy($id)
     {
-        $place = Place::findOrFail($id);
+        $place = GlobalPlace::findOrFail($id);
         $place->delete();
 
-        return response()->json(['message' => __('hiko.removed')]);
+        return response()->json(['message' => 'Entity deleted successfully.']);
     }
 }

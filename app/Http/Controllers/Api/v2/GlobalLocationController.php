@@ -4,38 +4,37 @@ namespace App\Http\Controllers\Api\v2;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LocationResource;
-use App\Models\Location;
+use App\Models\GlobalLocation;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
-    name: "Locations",
-    description: "Management of locations (repositories, archives, collections)"
+    name: "Global Locations",
+    description: "Management of global locations"
 )]
-class LocationController extends Controller
+class GlobalLocationController extends Controller
 {
     public static int $maxPerPage = 100;
     public static int $defaultPerPage = 20;
 
     #[OA\Get(
-        path: "/locations",
-        summary: "List locations",
-        tags: ["Locations"],
+        path: "/global-locations",
+        summary: "List global locations",
+        tags: ["Global Locations"],
         security: [["bearerAuth" => []]],
         parameters: [
             new OA\Parameter(name: "page", in: "query", description: "Page number", schema: new OA\Schema(type: "integer")),
-            new OA\Parameter(name: "per_page", in: "query", description: "Items per page", schema: new OA\Schema(type: "integer")),
-            new OA\Parameter(name: "lang", in: "query", description: "Language (cs or en)", schema: new OA\Schema(type: "string", enum: ["cs", "en"]))
+            new OA\Parameter(name: "per_page", in: "query", description: "Items per page", schema: new OA\Schema(type: "integer"))
         ],
         responses: [
             new OA\Response(
                 response: 200,
-                description: "List of locations",
+                description: "List of global locations",
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(property: "data", type: "array", items: new OA\Items(ref: "#/components/schemas/Location")),
+                        new OA\Property(property: "data", type: "array", items: new OA\Items(ref: "#/components/schemas/GlobalLocation")),
                         new OA\Property(property: "meta", type: "object")
                     ]
                 )
@@ -45,15 +44,15 @@ class LocationController extends Controller
     public function index(Request $request)
     {
         $perPage = min(max((int) $request->query('per_page', self::$defaultPerPage), 1), self::$maxPerPage);
-        $locations = Location::paginate($perPage);
+        $locations = GlobalLocation::paginate($perPage);
 
         return LocationResource::collection($locations);
     }
 
     #[OA\Get(
-        path: "/locations/{id}",
-        summary: "Get location by ID",
-        tags: ["Locations"],
+        path: "/global-locations/{id}",
+        summary: "Get global location by ID",
+        tags: ["Global Locations"],
         security: [["bearerAuth" => []]],
         parameters: [
             new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
@@ -61,32 +60,32 @@ class LocationController extends Controller
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Location details",
-                content: new OA\JsonContent(ref: "#/components/schemas/Location")
+                description: "Global location details",
+                content: new OA\JsonContent(ref: "#/components/schemas/GlobalLocation")
             ),
-            new OA\Response(response: 404, description: "Location not found")
+            new OA\Response(response: 404, description: "Global Location not found")
         ]
     )]
     public function show($id)
     {
-        $location = Location::findOrFail($id);
+        $location = GlobalLocation::findOrFail($id);
         return new LocationResource($location);
     }
 
     #[OA\Post(
-        path: "/locations",
-        summary: "Create new location",
-        tags: ["Locations"],
+        path: "/global-locations",
+        summary: "Create new global location",
+        tags: ["Global Locations"],
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Location")
+            content: new OA\JsonContent(ref: "#/components/schemas/GlobalLocation")
         ),
         responses: [
             new OA\Response(
                 response: 201,
-                description: "Location created",
-                content: new OA\JsonContent(ref: "#/components/schemas/Location")
+                description: "Global location created",
+                content: new OA\JsonContent(ref: "#/components/schemas/GlobalLocation")
             ),
             new OA\Response(response: 401, description: "Unauthenticated"),
             new OA\Response(response: 409, description: "Entity already exists"),
@@ -102,42 +101,42 @@ class LocationController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'string', Rule::in(Location::types())],
+            'type' => ['required', 'string', Rule::in(GlobalLocation::types())],
         ]);
 
-        $exists = Location::whereRaw('LOWER(name) = ?', [mb_strtolower($validated['name'])])
-                          ->where('type', $validated['type'])
-                          ->exists();
+        $exists = GlobalLocation::whereRaw('LOWER(name) = ?', [mb_strtolower($validated['name'])])
+                           ->where('type', $validated['type'])
+                           ->exists();
 
         if ($exists) {
             return response()->json([
-                'message' => __('hiko.entity_already_exists'),
+                'message' => 'Such entity already exists.',
             ], 409);
         }
 
-        $location = Location::create($validated);
+        $location = GlobalLocation::create($validated);
         return new LocationResource($location);
     }
 
     #[OA\Put(
-        path: "/locations/{id}",
-        summary: "Update location",
-        tags: ["Locations"],
+        path: "/global-locations/{id}",
+        summary: "Update global location",
+        tags: ["Global Locations"],
         security: [["bearerAuth" => []]],
         parameters: [
             new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Location")
+            content: new OA\JsonContent(ref: "#/components/schemas/GlobalLocation")
         ),
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Location updated",
-                content: new OA\JsonContent(ref: "#/components/schemas/Location")
+                description: "Global location updated",
+                content: new OA\JsonContent(ref: "#/components/schemas/GlobalLocation")
             ),
-            new OA\Response(response: 404, description: "Location not found"),
+            new OA\Response(response: 404, description: "Global Location not found"),
             new OA\Response(response: 422, description: "Validation error")
         ]
     )]
@@ -148,24 +147,24 @@ class LocationController extends Controller
             'type' => trim($request->input('type')),
         ]);
 
-        $location = Location::findOrFail($id);
+        $location = GlobalLocation::findOrFail($id);
 
         $validated = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'type' => ['sometimes', 'required', 'string', Rule::in(Location::types())],
+            'type' => ['sometimes', 'required', 'string', Rule::in(GlobalLocation::types())],
         ]);
 
         $name = $validated['name'] ?? $location->name;
         $type = $validated['type'] ?? $location->type;
 
-        $exists = Location::whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
-                          ->where('type', $type)
-                          ->where('id', '!=', $location->id)
-                          ->exists();
+        $exists = GlobalLocation::whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+                           ->where('type', $type)
+                           ->where('id', '!=', $location->id)
+                           ->exists();
 
         if ($exists) {
             return response()->json([
-                'message' => __('hiko.entity_already_exists'),
+                'message' => 'Such entity already exists.',
             ], 422);
         }
 
@@ -174,9 +173,9 @@ class LocationController extends Controller
     }
 
     #[OA\Delete(
-        path: "/locations/{id}",
-        summary: "Delete location",
-        tags: ["Locations"],
+        path: "/global-locations/{id}",
+        summary: "Delete global location",
+        tags: ["Global Locations"],
         security: [["bearerAuth" => []]],
         parameters: [
             new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
@@ -184,19 +183,19 @@ class LocationController extends Controller
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Location deleted",
+                description: "Global location deleted",
                 content: new OA\JsonContent(
                     properties: [new OA\Property(property: "message", type: "string", example: "Entity deleted successfully.")]
                 )
             ),
-            new OA\Response(response: 404, description: "Location not found")
+            new OA\Response(response: 404, description: "Global Location not found")
         ]
     )]
     public function destroy($id)
     {
-        $location = Location::findOrFail($id);
+        $location = GlobalLocation::findOrFail($id);
         $location->delete();
 
-        return response()->json(['message' => __('hiko.removed')]);
+        return response()->json(['message' => 'Entity deleted successfully.']);
     }
 }

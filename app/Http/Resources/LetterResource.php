@@ -41,7 +41,8 @@ class LetterResource extends JsonResource
     protected function getDetailedRecord(): array
     {
         $identities = $this->identities->groupBy('pivot.role');
-        $places = $this->places->groupBy('pivot.role');
+        $allPlaces = $this->places->merge($this->globalPlaces);
+        $places = $allPlaces->groupBy('pivot.role');
         $letterAttrs = $this->getAttributes();
 
         return [

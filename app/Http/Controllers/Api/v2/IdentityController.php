@@ -4,17 +4,71 @@ namespace App\Http\Controllers\Api\v2;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\IdentityRequest;
+use App\Http\Resources\IdentityResource;
 use App\Models\Identity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
+use OpenApi\Attributes as OA;
+
+#[OA\Tag(
+    name: "Identities",
+    description: "Management of historical identities (persons, institutions)"
+)]
 class IdentityController extends Controller
 {
     public static int $maxPerPage = 100;
     public static int $defaultPerPage = 20;
 
+    #[OA\Get(
+        path: "/identities",
+        summary: "List identities",
+        tags: ["Identities"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "page", in: "query", description: "Page number", schema: new OA\Schema(type: "integer")),
+            new OA\Parameter(name: "per_page", in: "query", description: "Items per page", schema: new OA\Schema(type: "integer")),
+            new OA\Parameter(name: "lang", in: "query", description: "Language (cs or en)", schema: new OA\Schema(type: "string", enum: ["cs", "en"]))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "List of identities",
+                content: new OA\JsonContent(
+                    example: [
+                        "data" => [
+                            [
+                                "id" => 1335,
+                                "name" => "Tester, Local",
+                                "surname" => "Tester",
+                                "forename" => "Local",
+                                "type" => "person",
+                                "global_identity_id" => 1,
+                                "global_identity" => [
+                                    "id" => 1,
+                                    "name" => "Tester, Global",
+                                    "type" => "person",
+                                    "birth_year" => null,
+                                    "death_year" => null,
+                                ],
+                            ],
+                        ],
+                        "meta" => [
+                            "current_page" => 1,
+                            "per_page" => 20,
+                            "total" => 1,
+                        ],
+                    ],
+                    properties: [
+                        new OA\Property(property: "data", type: "array", items: new OA\Items(ref: "#/components/schemas/Identity")),
+                        new OA\Property(property: "meta", type: "object")
+                    ]
+                )
+            )
+        ]
+    )]
     public function index(Request $request)
     {
         $perPage = (int) $request->query('per_page', self::$defaultPerPage);
@@ -26,27 +80,134 @@ class IdentityController extends Controller
         $identities = Identity::with([
                 'localProfessions',
                 'globalProfessions',
+                'globalIdentity',
             ])
             ->paginate($perPage, ['*'], 'page', $page);
 
-        return response()->json($identities);
+        return IdentityResource::collection($identities);
     }
 
+    #[OA\Get(
+        path: "/identity/{id}",
+        summary: "Get identity by ID",
+        tags: ["Identities"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Identity details",
+                content: new OA\JsonContent(
+                    ref: "#/components/schemas/Identity",
+                    example: [
+                        "id" => 1335,
+                        "name" => "Tester, Local",
+                        "surname" => "Tester",
+                        "forename" => "Local",
+                        "type" => "person",
+                        "nationality" => "czech",
+                        "global_identity_id" => 1,
+                        "global_identity" => [
+                            "id" => 1,
+                            "name" => "Tester, Global",
+                            "type" => "person",
+                            "birth_year" => null,
+                            "death_year" => null,
+                        ],
+                        "created_at" => "2026-02-18T10:00:00.000000Z",
+                        "updated_at" => "2026-02-18T10:00:00.000000Z",
+                    ]
+                )
+            ),
+            new OA\Response(response: 404, description: "Identity not found")
+        ]
+    )]
     public function show($id)
     {
         $identity = Identity::with([
             'localProfessions',
             'globalProfessions',
+            'globalIdentity',
         ])->findOrFail($id);
-        return response()->json($identity);
+        return new IdentityResource($identity->load(['globalIdentity']));
     }
 
+    #[OA\Post(
+        path: "/identities",
+        summary: "Create new identity",
+        tags: ["Identities"],
+        security: [["bearerAuth" => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                oneOf: [
+                    new OA\Schema(
+                        title: "Person payload",
+                        required: ["type", "surname"],
+                        properties: [
+                            new OA\Property(property: "type", type: "string", enum: ["person"], example: "person"),
+                            new OA\Property(property: "surname", type: "string", example: "Tester"),
+                            new OA\Property(property: "forename", type: "string", example: "Local"),
+                            new OA\Property(property: "general_name_modifier", type: "string", nullable: true, example: null),
+                            new OA\Property(property: "alternative_names", type: "array", items: new OA\Items(type: "string"), example: ["Alias"]),
+                            new OA\Property(property: "related_names", type: "array", items: new OA\Items(type: "object"), example: [["surname" => "Tester", "forename" => "Variant"]]),
+                            new OA\Property(property: "nationality", type: "string", nullable: true, example: "czech"),
+                            new OA\Property(property: "gender", type: "string", nullable: true, example: "M"),
+                            new OA\Property(property: "birth_year", type: "string", nullable: true, example: "1900"),
+                            new OA\Property(property: "death_year", type: "string", nullable: true, example: "1980"),
+                            new OA\Property(property: "related_identity_resources", type: "array", items: new OA\Items(type: "object"), example: [["title" => "Resource", "url" => "https://example.org"]]),
+                            new OA\Property(property: "viaf_id", type: "string", nullable: true, example: "123456"),
+                            new OA\Property(property: "note", type: "string", nullable: true, example: "Local person"),
+                            new OA\Property(property: "local_professions", type: "array", items: new OA\Items(type: "integer"), example: [22]),
+                            new OA\Property(property: "global_professions", type: "array", items: new OA\Items(type: "integer"), example: [394]),
+                            new OA\Property(property: "global_identity_id", type: "integer", nullable: true, example: 1),
+                        ]
+                    ),
+                    new OA\Schema(
+                        title: "Institution payload",
+                        required: ["type", "name"],
+                        properties: [
+                            new OA\Property(property: "type", type: "string", enum: ["institution"], example: "institution"),
+                            new OA\Property(property: "name", type: "string", example: "The British Library"),
+                            new OA\Property(property: "related_identity_resources", type: "array", items: new OA\Items(type: "object"), example: [["title" => "Catalog page", "url" => "https://example.org/catalog"]]),
+                            new OA\Property(property: "note", type: "string", nullable: true, example: "Institution note"),
+                            new OA\Property(property: "global_identity_id", type: "integer", nullable: true, example: null),
+                        ]
+                    ),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Identity created",
+                content: new OA\JsonContent(
+                    ref: "#/components/schemas/Identity",
+                    example: [
+                        "id" => 2457,
+                        "name" => "Tester, Local",
+                        "surname" => "Tester",
+                        "forename" => "Local",
+                        "type" => "person",
+                        "global_identity_id" => 1,
+                        "created_at" => "2026-02-18T10:00:00.000000Z",
+                        "updated_at" => "2026-02-18T10:00:00.000000Z",
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: "Unauthenticated"),
+            new OA\Response(response: 422, description: "Validation error")
+        ]
+    )]
     public function store(IdentityRequest $request)
     {
         $validated = $request->validated();
 
-        $validated['related_names'] = json_encode($validated['related_names'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $validated['related_identity_resources'] = json_encode($validated['related_identity_resources'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        // Ensure defaults are arrays if null, so Model casts handle them correctly
+        $validated['related_names'] = $validated['related_names'] ?? [];
+        $validated['related_identity_resources'] = $validated['related_identity_resources'] ?? [];
 
         unset($validated['category'], $validated['profession']);
 
@@ -60,16 +221,81 @@ class IdentityController extends Controller
 
         $this->syncRelations($identity, $request->validated());
 
-        return response()->json($identity, Response::HTTP_CREATED);
+        return new IdentityResource($identity->load(['globalIdentity']));
     }
 
+    #[OA\Put(
+        path: "/identity/{id}",
+        summary: "Update identity",
+        tags: ["Identities"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                oneOf: [
+                    new OA\Schema(
+                        title: "Person payload",
+                        required: ["type", "surname"],
+                        properties: [
+                            new OA\Property(property: "type", type: "string", enum: ["person"], example: "person"),
+                            new OA\Property(property: "surname", type: "string", example: "Tester"),
+                            new OA\Property(property: "forename", type: "string", example: "Updated"),
+                            new OA\Property(property: "general_name_modifier", type: "string", nullable: true, example: null),
+                            new OA\Property(property: "nationality", type: "string", nullable: true, example: "czech"),
+                            new OA\Property(property: "gender", type: "string", nullable: true, example: "M"),
+                            new OA\Property(property: "birth_year", type: "string", nullable: true, example: "1900"),
+                            new OA\Property(property: "death_year", type: "string", nullable: true, example: "1981"),
+                            new OA\Property(property: "note", type: "string", nullable: true, example: "Updated local person"),
+                            new OA\Property(property: "local_professions", type: "array", items: new OA\Items(type: "integer"), example: [22, 31]),
+                            new OA\Property(property: "global_professions", type: "array", items: new OA\Items(type: "integer"), example: [394]),
+                            new OA\Property(property: "global_identity_id", type: "integer", nullable: true, example: 1),
+                        ]
+                    ),
+                    new OA\Schema(
+                        title: "Institution payload",
+                        required: ["type", "name"],
+                        properties: [
+                            new OA\Property(property: "type", type: "string", enum: ["institution"], example: "institution"),
+                            new OA\Property(property: "name", type: "string", example: "The British Library (Updated)"),
+                            new OA\Property(property: "note", type: "string", nullable: true, example: "Updated institution"),
+                            new OA\Property(property: "global_identity_id", type: "integer", nullable: true, example: null),
+                        ]
+                    ),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Identity updated",
+                content: new OA\JsonContent(
+                    ref: "#/components/schemas/Identity",
+                    example: [
+                        "id" => 2457,
+                        "name" => "Tester, Updated",
+                        "surname" => "Tester",
+                        "forename" => "Updated",
+                        "type" => "person",
+                        "global_identity_id" => 1,
+                        "updated_at" => "2026-02-18T11:00:00.000000Z",
+                    ]
+                )
+            ),
+            new OA\Response(response: 404, description: "Identity not found"),
+            new OA\Response(response: 422, description: "Validation error")
+        ]
+    )]
     public function update(IdentityRequest $request, $id)
     {
         $identity = Identity::findOrFail($id);
-
         $validated = $request->validated();
-        $validated['related_names'] = json_encode($validated['related_names'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $validated['related_identity_resources'] = json_encode($validated['related_identity_resources'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        // Ensure defaults
+        $validated['related_names'] = $validated['related_names'] ?? [];
+        $validated['related_identity_resources'] = $validated['related_identity_resources'] ?? [];
 
         unset($validated['category'], $validated['profession']);
 
@@ -83,9 +309,28 @@ class IdentityController extends Controller
 
         $this->syncRelations($identity, $request->validated());
 
-        return response()->json($identity);
+        return new IdentityResource($identity);
     }
 
+    #[OA\Delete(
+        path: "/identity/{id}",
+        summary: "Delete identity",
+        tags: ["Identities"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Identity deleted",
+                content: new OA\JsonContent(
+                    properties: [new OA\Property(property: "message", type: "string", example: "Entity deleted successfully.")]
+                )
+            ),
+            new OA\Response(response: 404, description: "Identity not found")
+        ]
+    )]
     public function destroy($id)
     {
         $identity = Identity::findOrFail($id);
