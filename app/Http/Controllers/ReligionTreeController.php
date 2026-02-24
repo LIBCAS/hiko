@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Religion;
+use App\Services\PageLockService;
 use App\Services\ReligionTreeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -10,6 +11,23 @@ use Illuminate\Support\Facades\DB;
 class ReligionTreeController extends Controller
 {
     public function __construct(private ReligionTreeService $svc) {}
+
+    protected function denyByLock(Request $request)
+    {
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'global',
+            'resource_type' => 'religions_admin',
+        ], $request->user());
+
+        if ($lock['ok']) {
+            return null;
+        }
+
+        return response()->json([
+            'message' => __('hiko.page_lock_not_owned'),
+            'reason' => 'lock_not_owned',
+        ], 423);
+    }
 
     /** Lazy-load children for jsTree */
     public function tree(Request $request)
@@ -102,6 +120,10 @@ class ReligionTreeController extends Controller
 
     public function store(Request $request)
     {
+        if ($deny = $this->denyByLock($request)) {
+            return $deny;
+        }
+
         $data = $request->validate([
             'parent_id' => ['nullable', 'integer'],
         ]);
@@ -126,6 +148,10 @@ class ReligionTreeController extends Controller
 
     public function update($id, Request $request)
     {
+        if ($deny = $this->denyByLock($request)) {
+            return $deny;
+        }
+
         $node = Religion::findOrFail($id);
 
         // Validate scalars only; do slug uniqueness check manually
@@ -164,6 +190,10 @@ class ReligionTreeController extends Controller
 
     public function move($id, Request $request)
     {
+        if ($deny = $this->denyByLock($request)) {
+            return $deny;
+        }
+
         // NOTE: DnD is disabled in UI; endpoint kept hardened
         $data = $request->validate([
             'new_parent_id' => ['nullable', 'integer', 'different:id'],
@@ -185,6 +215,10 @@ class ReligionTreeController extends Controller
 
     public function destroy($id, Request $request)
     {
+        if ($deny = $this->denyByLock($request)) {
+            return $deny;
+        }
+
         $religionId = (int) $id;
 
         // 1) Only allow deleting leaves

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PageLockService;
 use App\Services\ReligionTreeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -10,6 +11,23 @@ use Stancl\Tenancy\Facades\Tenancy;
 class ReligionTranslationsController extends Controller
 {
     public function __construct(private ReligionTreeService $svc) {}
+
+    protected function denyByLock(Request $request)
+    {
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'global',
+            'resource_type' => 'religions_admin',
+        ], $request->user());
+
+        if ($lock['ok']) {
+            return null;
+        }
+
+        return response()->json([
+            'message' => __('hiko.page_lock_not_owned'),
+            'reason' => 'lock_not_owned',
+        ], 423);
+    }
 
     public function show($id)
     {
@@ -34,6 +52,10 @@ class ReligionTranslationsController extends Controller
 
     public function update($id, Request $request)
     {
+        if ($deny = $this->denyByLock($request)) {
+            return $deny;
+        }
+
         $data = $request->validate([
             'cs' => ['required', 'array'],
             'cs.name' => ['nullable', 'string', 'max:255'],

@@ -1,4 +1,9 @@
 <x-app-layout :title="$title ?? __('hiko.religions')">
+    <x-page-lock
+        scope="global"
+        resource-type="religions_admin"
+        :redirect-url="route('letters')"
+        :read-only-on-deny="true" />
     <div
         x-data="religionManager()"
         x-init="init()"
