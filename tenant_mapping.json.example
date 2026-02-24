@@ -1,0 +1,6 @@
+{
+    "prod-tenant1": "test-tenant1",
+    "prod-tenant2": "test-tenant2",
+    "prod-tenant3": "test-tenant3",
+    // ...
+}
