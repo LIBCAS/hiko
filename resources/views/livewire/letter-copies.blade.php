@@ -64,11 +64,15 @@
 
                 <div>
                     <x-label for="repository_{{ $index }}" :value="__('hiko.repository')" />
+                    @php
+                        $repoVal = is_array($item['repository'] ?? null) ? ($item['repository']['value'] ?? '') : ($item['repository'] ?? '');
+                        $repoLabel = is_array($item['repository'] ?? null) ? ($item['repository']['label'] ?? '') : ($item['repository'] ?? '');
+                    @endphp
                     <div
                         x-data="enhancedSelect({
                             url: '{{ route('locations.repository.search') }}',
-                            initialValue: '{{ $item['repository'] ?? '' }}',
-                            initialLabel: '{{ $item['repository'] ?? '' }}',
+                            initialValue: '{{ $repoVal }}',
+                            initialLabel: '{{ $repoLabel }}',
                             index: {{ $index }},
                             fieldKey: 'repository'
                         })"
@@ -154,11 +158,15 @@
 
                 <div>
                     <x-label for="archive_{{ $index }}" :value="__('hiko.archive')" />
+                    @php
+                        $archVal = is_array($item['archive'] ?? null) ? ($item['archive']['value'] ?? '') : ($item['archive'] ?? '');
+                        $archLabel = is_array($item['archive'] ?? null) ? ($item['archive']['label'] ?? '') : ($item['archive'] ?? '');
+                    @endphp
                     <div
                         x-data="enhancedSelect({
                             url: '{{ route('locations.archive.search') }}',
-                            initialValue: '{{ $item['archive'] ?? '' }}',
-                            initialLabel: '{{ $item['archive'] ?? '' }}',
+                            initialValue: '{{ $archVal }}',
+                            initialLabel: '{{ $archLabel }}',
                             index: {{ $index }},
                             fieldKey: 'archive'
                         })"
@@ -244,11 +252,15 @@
 
                 <div>
                     <x-label for="collection_{{ $index }}" :value="__('hiko.collection')" />
+                    @php
+                        $collVal = is_array($item['collection'] ?? null) ? ($item['collection']['value'] ?? '') : ($item['collection'] ?? '');
+                        $collLabel = is_array($item['collection'] ?? null) ? ($item['collection']['label'] ?? '') : ($item['collection'] ?? '');
+                    @endphp
                     <div
                         x-data="enhancedSelect({
                             url: '{{ route('locations.collection.search') }}',
-                            initialValue: '{{ $item['collection'] ?? '' }}',
-                            initialLabel: '{{ $item['collection'] ?? '' }}',
+                            initialValue: '{{ $collVal }}',
+                            initialLabel: '{{ $collLabel }}',
                             index: {{ $index }},
                             fieldKey: 'collection'
                         })"

@@ -8,6 +8,8 @@ use App\Enums\LocationType;
 use App\Models\Location;
 use App\Helpers\DateHelper;
 use App\Helpers\FormRequestHelper;
+use App\Traits\GeneratesLetterAttributes;
+use Illuminate\Support\Facades\DB;
 
 /**
  * LetterRequest handles validation rules for creating/updating letters.
@@ -15,6 +17,8 @@ use App\Helpers\FormRequestHelper;
  */
 class LetterRequest extends FormRequest
 {
+    use GeneratesLetterAttributes;
+
     /**
      * Ensure the user is authorized to manage metadata.
      */
@@ -74,15 +78,15 @@ class LetterRequest extends FormRequest
             // JSON array fields
             'copies' => ['nullable', 'array'],
             // Subfields for copies
-            'copies.*.archive'             => ['nullable', 'string', 'max:255', Rule::in(Location::query()->where('type', LocationType::Archive->value)->pluck('name')->toArray())],
-            'copies.*.collection'          => ['nullable', 'string', 'max:255', Rule::in(Location::query()->where('type', LocationType::Collection->value)->pluck('name')->toArray())],
+            'copies.*.repository' => ['nullable', $this->getLocationValidationRule('repository')],
+            'copies.*.archive'    => ['nullable', $this->getLocationValidationRule('archive')],
+            'copies.*.collection' => ['nullable', $this->getLocationValidationRule('collection')],
             'copies.*.copy'                => ['nullable', 'string', 'max:255'],
             'copies.*.l_number'            => ['nullable', 'string', 'max:255'],
             'copies.*.location_note'       => ['nullable', 'string'],
             'copies.*.manifestation_notes' => ['nullable', 'string'],
             'copies.*.ms_manifestation'    => ['nullable', 'string', 'max:10'],
             'copies.*.preservation'        => ['nullable', 'string', 'max:50'],
-            'copies.*.repository'          => ['nullable', 'string', 'max:255', Rule::in(Location::query()->where('type', LocationType::Repository->value)->pluck('name')->toArray())],
             'copies.*.signature'           => ['nullable', 'string', 'max:255'],
             'copies.*.type'                => ['nullable', 'string', 'max:50'],
 
@@ -112,11 +116,14 @@ class LetterRequest extends FormRequest
 
             // Pivot fields we do NOT store in letters table, but still validate as arrays
             'authors'      => ['nullable', 'array'],
-            'authors.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
+            'authors.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
+            // 'authors.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
             'recipients'   => ['nullable', 'array'],
-            'recipients.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
+            'recipients.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
+            // 'recipients.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
             'mentioned' => ['nullable', 'array'],
-            'mentioned.*' => ['integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
+            'mentioned.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
+            // 'mentioned.*' => ['integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
             'destinations' => ['nullable', 'array'],
             'destinations.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
             'origins'      => ['nullable', 'array'],
@@ -138,7 +145,7 @@ class LetterRequest extends FormRequest
      */
     public function attributes(): array
     {
-        return FormRequestHelper::mapAttributeLabelsFromRules($this->rules());
+        return $this->generateLetterAttributes($this->all(), $this->rules());
     }
 
     /**
@@ -295,19 +302,57 @@ class LetterRequest extends FormRequest
             return null;
         }
 
-        // Normalize authors, recipients, mentioned
-        if (in_array($field, ['authors', 'recipients', 'mentioned']) && is_array($items)) {
-            foreach ($items as &$item) {
-                if (isset($item['value'])) {
-                    // convert "local-7" or "global-13" → "7" / "13"
-                    $item['value'] = preg_replace('/\D/', '', $item['value']);
-                } else {
-                    // convert "local-7" or "global-13" → "7" / "13"
-                    $item = preg_replace('/\D/', '', $item);
+        return $items;
+    }
+
+    protected function getLocationValidationRule(string $type)
+    {
+        return function ($attribute, $value, $fail) use ($type) {
+            // Handle Array Input (from Livewire enhancedSelect)
+            if (is_array($value)) {
+                $value = $value['value'] ?? ($value['label'] ?? null);
+            }
+
+            if (empty($value)) {
+                return; // Nullable
+            }
+
+            // Check if it's an ID (local-X or global-X)
+            if (preg_match('/^(local|global)-(\d+)$/', $value, $matches)) {
+                $scope = $matches[1];
+                $id = $matches[2];
+
+                if ($scope === 'local') {
+                    $exists = DB::table(tenancy()->tenant->table_prefix . '__locations')
+                        ->where('id', $id)
+                        ->where('type', $type)
+                        ->exists();
+
+                    if (!$exists) {
+                        $fail(__('hiko.validation_id_not_found', ['id' => $value]));
+                    }
+                } elseif ($scope === 'global') {
+                    $exists = DB::table('global_locations')
+                        ->where('id', $id)
+                        ->where('type', $type)
+                        ->exists();
+
+                    if (!$exists) {
+                        $fail(__('hiko.validation_id_not_found', ['id' => $value]));
+                    }
                 }
             }
-        }
-
-        return $items;
+            // If it's a plain string (New Name), we generally allow it
+            // because the Controller will create it.
+            // OR we can enforce max length.
+            else {
+                if (strlen($value) > 255) {
+                    $fail(__('hiko.validation_max_string_length', [
+                        'attribute' => $attribute,
+                        'max' => 255,
+                    ]));
+                }
+            }
+        };
     }
 }

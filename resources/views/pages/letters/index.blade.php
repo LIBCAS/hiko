@@ -26,6 +26,11 @@
                     @endif
                 </div>
             </x-dropdown>
+
+            <a href="{{ route('letters.validation') }}"
+                class="inline-block text-sm font-semibold">
+                {{ __('hiko.input_control') }}
+            </a>
         </div>
         <div>
             <livewire:sorting-form :sortingOptions="[
@@ -38,7 +43,7 @@
                 'destination' => __('hiko.by_destination'),
                 'abstract' => __('hiko.by_abstract'),
                 'media' => __('hiko.by_media'),
-            ]" />       
+            ]" />
         </div>
     </div>
 

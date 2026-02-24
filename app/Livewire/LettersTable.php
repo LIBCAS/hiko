@@ -96,7 +96,7 @@ class LettersTable extends Component
         $query = Letter::query()
             ->select("$lettersTable.*")
             ->with([
-                'identities', 'places', 'localKeywords', 'globalKeywords', 'media', 'users'
+                'identities', 'localPlaces', 'globalPlaces', 'localKeywords', 'globalKeywords', 'media', 'users'
             ])
             ->from($lettersTable);
 
@@ -154,29 +154,60 @@ class LettersTable extends Component
         }
 
         if (!empty($filters['origin'])) {
-            $query->whereExists(function ($sub) use ($filters, $prefix) {
-                $sub->select(DB::raw(1))
-                    ->from("{$prefix}letter_place")
-                    ->join("{$prefix}places", "{$prefix}letter_place.place_id", '=', "{$prefix}places.id")
-                    ->whereColumn("{$prefix}letter_place.letter_id", "{$prefix}letters.id")
-                    ->where('role', 'origin')
-                    ->where(function ($qq) use ($filters) {
-                        $qq->where('name', 'like', '%' . $filters['origin'] . '%');
-                        for ($i = 0; $i < 50; $i++) {
-                            $qq->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(alternative_names, '$[$i]')) LIKE ?", ["%{$filters['origin']}%"]);
-                        }
-                    });
+            $query->where(function ($q) use ($filters, $prefix) {
+                // Local
+                $q->whereExists(function ($sub) use ($filters, $prefix) {
+                    $sub->select(DB::raw(1))
+                        ->from("{$prefix}letter_place")
+                        ->join("{$prefix}places", "{$prefix}letter_place.place_id", '=', "{$prefix}places.id")
+                        ->whereColumn("{$prefix}letter_place.letter_id", "{$prefix}letters.id")
+                        ->where('role', 'origin')
+                        ->where(function ($qq) use ($filters) {
+                            $qq->where('name', 'like', '%' . $filters['origin'] . '%');
+                            for ($i = 0; $i < 50; $i++) {
+                                $qq->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(alternative_names, '$[$i]')) LIKE ?", ["%{$filters['origin']}%"]);
+                            }
+                        });
+                });
+
+                // Global
+                $q->orWhereExists(function ($sub) use ($filters, $prefix) {
+                    $sub->select(DB::raw(1))
+                        ->from("{$prefix}letter_place")
+                        ->join("global_places", "{$prefix}letter_place.global_place_id", '=', "global_places.id")
+                        ->whereColumn("{$prefix}letter_place.letter_id", "{$prefix}letters.id")
+                        ->where('role', 'origin')
+                        ->where(function ($qq) use ($filters) {
+                            $qq->where('name', 'like', '%' . $filters['origin'] . '%');
+                            for ($i = 0; $i < 50; $i++) {
+                                $qq->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(alternative_names, '$[$i]')) LIKE ?", ["%{$filters['origin']}%"]);
+                            }
+                        });
+                });
             });
         }
 
         if (!empty($filters['destination'])) {
-            $query->whereExists(function ($sub) use ($filters, $prefix) {
-                $sub->select(DB::raw(1))
-                    ->from("{$prefix}letter_place")
-                    ->join("{$prefix}places", "{$prefix}letter_place.place_id", '=', "{$prefix}places.id")
-                    ->whereColumn("{$prefix}letter_place.letter_id", "{$prefix}letters.id")
-                    ->where('role', 'destination')
-                    ->where('name', 'like', '%' . $filters['destination'] . '%');
+            $query->where(function ($q) use ($filters, $prefix) {
+                // Local
+                $q->whereExists(function ($sub) use ($filters, $prefix) {
+                    $sub->select(DB::raw(1))
+                        ->from("{$prefix}letter_place")
+                        ->join("{$prefix}places", "{$prefix}letter_place.place_id", '=', "{$prefix}places.id")
+                        ->whereColumn("{$prefix}letter_place.letter_id", "{$prefix}letters.id")
+                        ->where('role', 'destination')
+                        ->where('name', 'like', '%' . $filters['destination'] . '%');
+                });
+
+                // Global
+                $q->orWhereExists(function ($sub) use ($filters, $prefix) {
+                    $sub->select(DB::raw(1))
+                        ->from("{$prefix}letter_place")
+                        ->join("global_places", "{$prefix}letter_place.global_place_id", '=', "global_places.id")
+                        ->whereColumn("{$prefix}letter_place.letter_id", "{$prefix}letters.id")
+                        ->where('role', 'destination')
+                        ->where('name', 'like', '%' . $filters['destination'] . '%');
+                });
             });
         }
 
@@ -317,10 +348,16 @@ class LettersTable extends Component
                         'label' => collect($identities['recipient'] ?? [])->pluck('name')->toArray(),
                     ],
                     [
-                        'label' => collect($places['origin'] ?? [])->pluck('name')->toArray(),
+                        'label' => collect($letter->all_origins)->map(function ($place) {
+                            $name = $place->name;
+                            return $place->type === 'global' ? "{$name} (G)" : "{$name} (L)";
+                        })->toArray(),
                     ],
                     [
-                        'label' => collect($places['destination'] ?? [])->pluck('name')->toArray(),
+                        'label' => collect($letter->all_destinations)->map(function ($place) {
+                            $name = $place->name;
+                            return $place->type === 'global' ? "{$name} (G)" : "{$name} (L)";
+                        })->toArray(),
                     ],
                     [
                         'label' => collect($letter->all_keywords)->map(function ($kw) {

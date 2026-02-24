@@ -192,19 +192,38 @@ class LetterBuilder extends Builder
     // Add place filter by role (e.g., origin, destination)
     protected function addPlaceFilter(string $type, $search): LetterBuilder
     {
-        return $this->whereHas('places', function ($query) use ($type, $search) {
-            $pivotTable = tenancy()->tenant->table_prefix . '__letter_place';
-            $placeTable = tenancy()->tenant->table_prefix . '__places';
+        return $this->where(function ($query) use ($type, $search) {
+            // Local
+            $query->whereHas('places', function ($subquery) use ($type, $search) {
+                $pivotTable = tenancy()->tenant->table_prefix . '__letter_place';
+                $placeTable = tenancy()->tenant->table_prefix . '__places';
 
-            $query->where("{$pivotTable}.role", $type);
+                $subquery->where("{$pivotTable}.role", $type);
 
-            $query->where(function ($subquery) use ($placeTable, $search) {
-                if (is_numeric($search)) {
-                    $subquery->where("{$placeTable}.id", $search);
-                } else {
-                    $subquery->where("{$placeTable}.name", 'like', '%' . $search . '%')
-                        ->orWhereRaw("LOWER({$placeTable}.alternative_names) LIKE ?", ['%' . strtolower($search) . '%']);
-                }
+                $subquery->where(function ($q) use ($placeTable, $search) {
+                    if (is_numeric($search)) {
+                        $q->where("{$placeTable}.id", $search);
+                    } else {
+                        $q->where("{$placeTable}.name", 'like', '%' . $search . '%')
+                            ->orWhereRaw("LOWER({$placeTable}.alternative_names) LIKE ?", ['%' . strtolower($search) . '%']);
+                    }
+                });
+            })
+            // Global
+            ->orWhereHas('globalPlaces', function ($subquery) use ($type, $search) {
+                $pivotTable = tenancy()->tenant->table_prefix . '__letter_place';
+                $placeTable = 'global_places';
+
+                $subquery->where("{$pivotTable}.role", $type);
+
+                $subquery->where(function ($q) use ($placeTable, $search) {
+                    if (is_numeric($search)) {
+                        $q->where("{$placeTable}.id", $search);
+                    } else {
+                        $q->where("{$placeTable}.name", 'like', '%' . $search . '%')
+                            ->orWhereRaw("LOWER({$placeTable}.alternative_names) LIKE ?", ['%' . strtolower($search) . '%']);
+                    }
+                });
             });
         });
     }

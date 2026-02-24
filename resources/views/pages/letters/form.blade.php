@@ -1,4 +1,12 @@
 <x-app-layout :title="$title">
+    @if (!empty($letter->id))
+        <x-page-lock
+            scope="tenant"
+            resource-type="letter_edit"
+            :resource-id="$letter->id"
+            :redirect-url="route('letters')"
+            :read-only-on-deny="true" />
+    @endif
     @if ($letter->id)
         <ul class="flex flex-wrap mb-6 space-x-6 text-sm">
             <li>
@@ -519,7 +527,7 @@
                 @endcan
             @endif
         </div>
-        <div class="md:w-1/2"> <livewire:ocr-upload /></div>
+        <div class="md:w-1/2"> <livewire:ocr-upload :letter-id="$letter->id" /></div>
     </div>
     @push('scripts')
         <script>
@@ -721,6 +729,107 @@
                 var iframes = document.querySelectorAll('iframe');
                 iframes.forEach(function(iframe) {
                     iframe.addEventListener('load', handleIframeLoad);
+                });
+            });
+
+            document.addEventListener('livewire:initialized', () => {
+                const isEmptyValue = (value) => {
+                    if (value === null || value === undefined) return true;
+                    if (Array.isArray(value)) return value.length === 0;
+                    if (typeof value === 'string') return value.trim() === '';
+                    return false;
+                };
+
+                const setInput = (id, value, mode = 'selected') => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+
+                    if (mode === 'empty' && !isEmptyValue(el.value)) {
+                        return;
+                    }
+
+                    el.value = value;
+                    el.dispatchEvent(new Event('input'));
+                    el.dispatchEvent(new Event('change'));
+                };
+
+                const setCheckbox = (name, value, mode = 'selected') => {
+                    const checkbox = document.querySelector(`input[name="${name}"]`);
+                    if (!checkbox || typeof value !== 'boolean') return;
+
+                    if (mode === 'empty') {
+                        // "Empty only" for booleans means apply only if unchecked and incoming is true.
+                        if (!(checkbox.checked === false && value === true)) {
+                            return;
+                        }
+                    }
+
+                    checkbox.checked = value;
+                    checkbox.dispatchEvent(new Event('change'));
+                };
+
+                const setLanguages = (values, mode = 'selected') => {
+                    const select = document.getElementById('languages');
+                    if (!select || !Array.isArray(values)) return;
+
+                    const selectedNow = Array.from(select.selectedOptions).map(opt => opt.value);
+                    if (mode === 'empty' && selectedNow.length > 0) {
+                        return;
+                    }
+
+                    Array.from(select.options).forEach((opt) => {
+                        opt.selected = values.includes(opt.value);
+                    });
+                    select.dispatchEvent(new Event('change'));
+                };
+
+                const setRecognizedText = (value, mode = 'selected') => {
+                    if (typeof value !== 'string') return;
+                    const editorDiv = document.getElementById('editor');
+                    if (!editorDiv) return;
+
+                    const qlEditor = editorDiv.querySelector('.ql-editor');
+                    const currentlyEmpty = !qlEditor || qlEditor.innerText.trim() === '';
+                    if (mode === 'empty' && !currentlyEmpty) {
+                        return;
+                    }
+
+                    if (qlEditor) {
+                        qlEditor.innerHTML = value.replace(/\n/g, '<br>');
+                    } else {
+                        editorDiv.innerHTML = value.replace(/\n/g, '<br>');
+                    }
+                };
+
+                Livewire.on('ocr-apply-snapshot', (event) => {
+                    const data = Array.isArray(event) ? event[0] : event;
+                    const fields = data.fields || {};
+                    const mode = data.mode || 'selected';
+
+                    Object.entries(fields).forEach(([key, value]) => {
+                        switch (key) {
+                            case 'date_uncertain':
+                            case 'date_approximate':
+                            case 'date_inferred':
+                            case 'date_is_range':
+                            case 'author_inferred':
+                            case 'author_uncertain':
+                            case 'recipient_inferred':
+                            case 'recipient_uncertain':
+                                setCheckbox(key, value, mode);
+                                break;
+                            case 'languages':
+                                setLanguages(value, mode);
+                                break;
+                            case 'recognized_text':
+                                setRecognizedText(value, mode);
+                                break;
+                            default:
+                                setInput(key, value, mode);
+                        }
+                    });
+
+                    alert("OCR data prepared. Selected fields were applied to the form.");
                 });
             });
         </script>

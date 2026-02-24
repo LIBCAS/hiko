@@ -5,6 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Searchable;
 use App\Builders\LetterBuilder;
+use App\Models\Identity;
+use App\Models\GlobalIdentity;
+use App\Models\Place;
+use App\Models\Keyword;
+use App\Models\GlobalKeyword;
+use App\Models\User;
+use App\Models\Manifestation;
 use League\Flysystem\FileNotFoundException;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Image\Exceptions\InvalidManipulation;
@@ -26,6 +33,57 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 
+use OpenApi\Attributes as OA;
+
+#[OA\Schema(
+    schema: "Letter",
+    required: ["id", "uuid", "created_at", "updated_at"],
+    properties: [
+        new OA\Property(property: "id", type: "integer", readOnly: true),
+        new OA\Property(property: "uuid", type: "string", format: "uuid", readOnly: true),
+        new OA\Property(property: "date_year", type: "integer", nullable: true),
+        new OA\Property(property: "date_month", type: "integer", nullable: true),
+        new OA\Property(property: "date_day", type: "integer", nullable: true),
+        new OA\Property(property: "date_marked", type: "string", nullable: true),
+        new OA\Property(property: "date_uncertain", type: "boolean"),
+        new OA\Property(property: "date_approximate", type: "boolean"),
+        new OA\Property(property: "date_inferred", type: "boolean"),
+        new OA\Property(property: "date_is_range", type: "boolean"),
+        new OA\Property(property: "date_note", type: "string", nullable: true),
+        new OA\Property(property: "range_year", type: "integer", nullable: true),
+        new OA\Property(property: "range_month", type: "integer", nullable: true),
+        new OA\Property(property: "range_day", type: "integer", nullable: true),
+        new OA\Property(property: "author_uncertain", type: "boolean"),
+        new OA\Property(property: "author_inferred", type: "boolean"),
+        new OA\Property(property: "author_note", type: "string", nullable: true),
+        new OA\Property(property: "recipient_uncertain", type: "boolean"),
+        new OA\Property(property: "recipient_inferred", type: "boolean"),
+        new OA\Property(property: "recipient_note", type: "string", nullable: true),
+        new OA\Property(property: "destination_uncertain", type: "boolean"),
+        new OA\Property(property: "destination_inferred", type: "boolean"),
+        new OA\Property(property: "destination_note", type: "string", nullable: true),
+        new OA\Property(property: "origin_uncertain", type: "boolean"),
+        new OA\Property(property: "origin_inferred", type: "boolean"),
+        new OA\Property(property: "origin_note", type: "string", nullable: true),
+        new OA\Property(property: "people_mentioned_note", type: "string", nullable: true),
+        new OA\Property(property: "copies", type: "array", items: new OA\Items(type: "object")),
+        new OA\Property(property: "related_resources", type: "array", items: new OA\Items(type: "object")),
+        new OA\Property(property: "abstract", type: "object", properties: [
+            new OA\Property(property: "cs", type: "string"),
+            new OA\Property(property: "en", type: "string")
+        ]),
+        new OA\Property(property: "explicit", type: "string", nullable: true),
+        new OA\Property(property: "incipit", type: "string", nullable: true),
+        new OA\Property(property: "copyright", type: "string", nullable: true),
+        new OA\Property(property: "languages", type: "string", nullable: true),
+        new OA\Property(property: "notes_private", type: "string", nullable: true),
+        new OA\Property(property: "notes_public", type: "string", nullable: true),
+        new OA\Property(property: "status", type: "string", enum: ["publish", "draft"]),
+        new OA\Property(property: "content", type: "string", nullable: true),
+        new OA\Property(property: "created_at", type: "string", format: "date-time", readOnly: true),
+        new OA\Property(property: "updated_at", type: "string", format: "date-time", readOnly: true)
+    ]
+)]
 class Letter extends Model implements HasMedia
 {
     use HasTranslations, InteractsWithMedia, HasFactory, Searchable;
@@ -57,7 +115,6 @@ class Letter extends Model implements HasMedia
     protected $guarded = ['id', 'uuid', 'date_computed'];
     protected $table;
     protected $casts = [
-        'copies' => 'array',
         'related_resources' => 'array',
     ];
 
@@ -133,6 +190,23 @@ class Letter extends Model implements HasMedia
         return $this->belongsToMany(
             Identity::class,
             tenancy()->tenant->table_prefix . '__identity_letter'
+        )
+        ->withPivot('position', 'role', 'marked', 'salutation')
+        ->orderBy('pivot_position', 'asc');
+    }
+
+    public function localIdentities(): BelongsToMany
+    {
+        return $this->identities();
+    }
+
+    public function globalIdentities(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            GlobalIdentity::class,
+            tenancy()->tenant->table_prefix . '__identity_letter',
+            'letter_id',
+            'global_identity_id'
         )
         ->withPivot('position', 'role', 'marked', 'salutation')
         ->orderBy('pivot_position', 'asc');
@@ -293,6 +367,51 @@ class Letter extends Model implements HasMedia
         return $this->identities()->where('role', '=', 'mentioned');
     }
 
+    public function globalAuthors(): BelongsToMany
+    {
+        return $this->globalIdentities()->where('role', '=', 'author');
+    }
+
+    public function globalRecipients(): BelongsToMany
+    {
+        return $this->globalIdentities()->where('role', '=', 'recipient');
+    }
+
+    public function globalMentioned(): BelongsToMany
+    {
+        return $this->globalIdentities()->where('role', '=', 'mentioned');
+    }
+
+    // public function getAuthorsAttribute()
+    // {
+    //     return $this->authors->concat($this->globalAuthors);
+    // }
+
+    // public function getRecipientsAttribute()
+    // {
+    //     return $this->recipients->concat($this->globalRecipients);
+    // }
+
+    // public function getMentionedAttribute()
+    // {
+    //     return $this->mentioned->concat($this->globalMentioned);
+    // }
+
+    public function getAllAuthorsAttribute()
+    {
+        return $this->authors->concat($this->globalAuthors);
+    }
+
+    public function getAllRecipientsAttribute()
+    {
+        return $this->recipients->concat($this->globalRecipients);
+    }
+
+    public function getAllMentionedAttribute()
+    {
+        return $this->mentioned->concat($this->globalMentioned);
+    }
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -300,6 +419,32 @@ class Letter extends Model implements HasMedia
             tenancy()->tenant->table_prefix . '__letter_user'
         )
         ->withPivot('letter_id', 'user_id');
+    }
+
+    public function manifestations()
+    {
+        return $this->hasMany(Manifestation::class);
+    }
+
+    // Backward compatibility accessor for 'copies'
+    // This allows existing views (index, show) to keep working without major changes yet
+    public function getCopiesAttribute()
+    {
+        return $this->manifestations->map(function ($m) {
+            return [
+                'id' => $m->id,
+                'repository' => $this->formatLocationForForm($m->repository, $m->globalRepository), // Format: ['value' => 'scope-id', 'label' => 'Name (Scope)']
+                'archive'    => $this->formatLocationForForm($m->archive, $m->globalArchive),
+                'collection' => $this->formatLocationForForm($m->collection, $m->globalCollection),
+                'signature' => $m->signature,
+                'type' => $m->type,
+                'preservation' => $m->preservation,
+                'copy' => $m->copy,
+                'l_number' => $m->l_number,
+                'manifestation_notes' => $m->manifestation_notes,
+                'location_note' => $m->location_note,
+            ];
+        })->toArray();
     }
 
     public function getPrettyDateAttribute(): string
@@ -314,20 +459,23 @@ class Letter extends Model implements HasMedia
 
     public function getNameAttribute(): string
     {
-        $identities = $this->identities->groupBy('pivot.role')->toArray();
-        $places = $this->places->groupBy('pivot.role')->toArray();
+        $authors = $this->all_authors;
+        $recipients = $this->all_recipients;
 
-        $author = $identities['author'][0] ?? [];
-        $recipient = $identities['recipient'][0] ?? [];
-        $origin = $places['origin'][0] ?? [];
-        $destination = $places['destination'][0] ?? [];
+        $origins = $this->all_origins;
+        $destinations = $this->all_destinations;
+
+        $authorName = $authors->first()?->name ?? '';
+        $recipientName = $recipients->first()?->name ?? '';
+        $originName = $origins->first()?->name ?? '';
+        $destinationName = $destinations->first()?->name ?? '';
 
         $title = "{$this->pretty_date} ";
-        $title .= $author['name'] ?? '';
-        $title .= $origin ? "({$origin['name']}) " : '';
-        $title .= ($recipient || $destination) ? '→ ' : '';
-        $title .= $recipient['name'] ?? '';
-        $title .= $destination ? "({$destination['name']}) " : '';
+        $title .= $authorName;
+        $title .= $originName ? "({$originName}) " : '';
+        $title .= ($recipientName || $destinationName) ? '→ ' : '';
+        $title .= $recipientName;
+        $title .= $destinationName ? "({$destinationName}) " : '';
 
         return $title;
     }
@@ -348,6 +496,25 @@ class Letter extends Model implements HasMedia
         }
 
         return "{$day}. {$month}. {$year}";
+    }
+
+    protected function formatLocationForForm($local, $global)
+    {
+        if ($global) {
+            return [
+                'value' => 'global-' . $global->id,
+                'label' => $global->name . ' (' . __('hiko.global') . ')',
+            ];
+        }
+
+        if ($local) {
+            return [
+                'value' => 'local-' . $local->id,
+                'label' => $local->name . ' (' . __('hiko.local') . ')',
+            ];
+        }
+
+        return null;
     }
 
     /**

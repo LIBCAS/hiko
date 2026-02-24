@@ -318,6 +318,11 @@
     @if (!empty($letter->copies) && is_array($letter->copies))
     <h2 class="text-lg font-bold">{{ __('hiko.repositories_and_versions') }}</h2>
     @foreach ($letter->copies as $c)
+        @php
+            $repositoryLabel = is_array($c['repository'] ?? null) ? ($c['repository']['label'] ?? '') : ($c['repository'] ?? '');
+            $archiveLabel = is_array($c['archive'] ?? null) ? ($c['archive']['label'] ?? '') : ($c['archive'] ?? '');
+            $collectionLabel = is_array($c['collection'] ?? null) ? ($c['collection']['label'] ?? '') : ($c['collection'] ?? '');
+        @endphp
         <table class="w-full mb-10 text-sm">
             <tbody>
                 @if ($c['l_number'])
@@ -328,27 +333,27 @@
                         </td>
                     </tr>
                 @endif
-                @if ($c['repository'])
+                @if ($repositoryLabel)
                     <tr class="align-baseline border-t border-b border-gray-200">
                         <td class="w-1/5 py-2">{{ __('hiko.repository') }}</td>
                         <td class="py-2">
-                            {{ $c['repository'] }}
+                            {{ $repositoryLabel }}
                         </td>
                     </tr>
                 @endif
-                @if ($c['archive'])
+                @if ($archiveLabel)
                     <tr class="align-baseline border-t border-b border-gray-200">
                         <td class="w-1/5 py-2">{{ __('hiko.archive') }}</td>
                         <td class="py-2">
-                            {{ $c['archive'] }}
+                            {{ $archiveLabel }}
                         </td>
                     </tr>
                 @endif
-                @if ($c['collection'])
+                @if ($collectionLabel)
                     <tr class="align-baseline border-t border-b border-gray-200">
                         <td class="w-1/5 py-2">{{ __('hiko.collection') }}</td>
                         <td class="py-2">
-                            {{ $c['collection'] }}
+                            {{ $collectionLabel }}
                         </td>
                     </tr>
                 @endif
