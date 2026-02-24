@@ -12,7 +12,7 @@
                 <div wire:key="item-{{ $index }}" class="relative">
                     <div
                         x-data="enhancedSelect({
-                            url: '{{ route($route) }}',
+                            url: '{{ route($route, $routeParams ?? []) }}',
                             initialValue: '{{ $item['value'] ?? '' }}',
                             initialLabel: '{{ $item['label'] ?? '' }}',
                             index: {{ $index }},
@@ -210,7 +210,10 @@ function enhancedSelect({ url, initialValue = '', initialLabel = '', index, fiel
         fetchOptions(query = '') {
             this.loading = true;
 
-            fetch(`${url}?search=${encodeURIComponent(query)}`)
+            const fetchUrl = new URL(url, window.location.origin);
+            fetchUrl.searchParams.set('search', query);
+
+            fetch(fetchUrl.toString())
                 .then(response => response.json())
                 .then(data => {
                     this.options = data;

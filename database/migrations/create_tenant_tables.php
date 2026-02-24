@@ -49,7 +49,12 @@ return new class extends Migration
                     $table->string('death_year')->nullable();
                     $table->longText('related_identity_resources')->nullable();
                     $table->string('viaf_id')->nullable();
+                    $table->unsignedBigInteger('global_identity_id')->nullable();
                     $table->text('note')->nullable();
+                    $table->foreign('global_identity_id')
+                        ->references('id')
+                        ->on('global_identities')
+                        ->onDelete('set null');
                 });
             }
 

@@ -4,16 +4,46 @@ namespace App\Models;
 
 use App\Enums\IdentityType;
 use App\Models\Religion;
+use App\Models\GlobalIdentity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 use Stancl\Tenancy\Facades\Tenancy;
 
+#[OA\Schema(
+    schema: "Identity",
+    required: ["name", "type"],
+    properties: [
+        new OA\Property(property: "id", type: "integer", readOnly: true),
+        new OA\Property(property: "name", type: "string"),
+        new OA\Property(property: "surname", type: "string", nullable: true),
+        new OA\Property(property: "forename", type: "string", nullable: true),
+        new OA\Property(property: "type", type: "string", enum: ["person", "institution"]),
+        new OA\Property(property: "nationality", type: "string", nullable: true),
+        new OA\Property(property: "gender", type: "string", nullable: true),
+        new OA\Property(property: "birth_year", type: "string", nullable: true),
+        new OA\Property(property: "death_year", type: "string", nullable: true),
+        new OA\Property(property: "viaf_id", type: "string", nullable: true),
+        new OA\Property(property: "note", type: "string", nullable: true),
+        new OA\Property(property: "alternative_names", type: "array", items: new OA\Items(type: "string")),
+        new OA\Property(property: "related_names", type: "array", items: new OA\Items(type: "object")),
+        new OA\Property(property: "created_at", type: "string", format: "date-time", readOnly: true),
+        new OA\Property(property: "updated_at", type: "string", format: "date-time", readOnly: true)
+    ]
+)]
 class Identity extends Model
 {
-    protected $guarded = ['id'];
     protected $table;
+
+    protected $guarded = ['id'];
+
+    protected $casts = [
+        'alternative_names' => 'array',
+        'related_names' => 'array',
+        'related_identity_resources' => 'array',
+    ];
 
     public function __construct(array $attributes = [])
     {
@@ -136,5 +166,10 @@ class Identity extends Model
     public function syncReligions(?array $ids): void
     {
         $this->religions()->sync($ids ?? []); // null => no rows (no religion)
+    }
+
+    public function globalIdentity()
+    {
+        return $this->belongsTo(GlobalIdentity::class, 'global_identity_id');
     }
 }

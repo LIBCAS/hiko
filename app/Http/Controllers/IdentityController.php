@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Identity;
+use App\Models\GlobalIdentity;
+use App\Models\MergeAuditLog;
 use App\Models\Profession;
 use App\Models\GlobalProfession;
 use App\Models\ProfessionCategory;
 use App\Http\Requests\IdentityRequest;
+use App\Services\PageLockService;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\IdentitiesExport;
 use Illuminate\Http\RedirectResponse;
@@ -18,6 +21,10 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class IdentityController extends Controller
 {
+    public function __construct(protected PageLockService $pageLocks)
+    {
+    }
+
     public function index()
     {
         $filters = request()->only([
@@ -131,6 +138,7 @@ class IdentityController extends Controller
             'professionsList' => $this->getProfessionsList(),
             'categoriesList' => $this->getCategoriesList(),
             'selectedReligions' => [],
+            'selectedGlobalIdentity' => [],
         ]);
     }
 
@@ -169,6 +177,21 @@ class IdentityController extends Controller
             'resources' => $identity->related_identity_resources,
             'relatedNames' => $identity->related_names,
             'selectedReligions' => $this->getSelectedReligions($identity),
+            'selectedGlobalIdentity' => $this->getSelectedGlobalIdentity($identity),
+        ]);
+    }
+
+    public function validation()
+    {
+        return view('pages.identities.validation', [
+            'title' => __('hiko.input_control'),
+        ]);
+    }
+
+    public function localMerge()
+    {
+        return view('pages.identities.local-merge', [
+            'title' => __('hiko.local_merging'),
         ]);
     }
 
@@ -192,10 +215,26 @@ class IdentityController extends Controller
 
     public function update(IdentityRequest $request, Identity $identity): RedirectResponse
     {
+        $lock = $this->pageLocks->assertOwned([
+            'scope' => 'tenant',
+            'resource_type' => 'identity_edit',
+            'resource_id' => (string) $identity->id,
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('identities')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
         $validated = $request->validated();
-        $validated['related_names'] = json_encode($validated['related_names'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $previousGlobalIdentityId = $identity->global_identity_id;
+        // Ensure it defaults to empty array if null, so Model casts handle it correctly
+        $validated['related_names'] = $validated['related_names'] ?? [];
 
         $identity->update($validated);
+        $this->logGlobalIdentityLinkAudit($identity, $previousGlobalIdentityId, $identity->global_identity_id, 'update');
         $this->syncRelations($identity, $validated);
         if ($validated['type'] == 'person') {
             $identity->syncReligions($request->input('religions', null));
@@ -216,9 +255,9 @@ class IdentityController extends Controller
     {
         $validated = $request->validated();
 
-        // Convert array fields to JSON strings if necessary
-        $validated['related_names'] = json_encode($validated['related_names'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $validated['related_identity_resources'] = json_encode($validated['related_identity_resources'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        // Ensure defaults are arrays if null, so Model casts handle them correctly
+        $validated['related_names'] = $validated['related_names'] ?? [];
+        $validated['related_identity_resources'] = $validated['related_identity_resources'] ?? [];
 
         // Remove non-existent columns in the identities table
         unset($validated['category'], $validated['profession']);
@@ -232,6 +271,7 @@ class IdentityController extends Controller
 
         // Create the new Identity record
         $identity = Identity::create($validated);
+        $this->logGlobalIdentityLinkAudit($identity, null, $identity->global_identity_id, 'store');
 
         // Sync professions and categories if provided
         $this->syncRelations($identity, $request->validated());
@@ -459,5 +499,67 @@ class IdentityController extends Controller
                 ? $r->path_text
                 : "{$r->path_text} — (inactive)",   // religion path with inactive note if needed
         ])->toArray();
+    }
+
+    protected function getSelectedGlobalIdentity(Identity $identity): array
+    {
+        if (empty($identity->global_identity_id)) {
+            return [];
+        }
+
+        $globalIdentity = GlobalIdentity::find($identity->global_identity_id);
+        if (!$globalIdentity) {
+            return [];
+        }
+
+        $dates = trim("{$globalIdentity->birth_year} - {$globalIdentity->death_year}");
+        $label = $globalIdentity->name . ($dates !== ' - ' ? " ({$dates})" : '');
+
+        return [
+            'value' => (int)$globalIdentity->id,
+            'label' => $label,
+        ];
+    }
+
+    protected function logGlobalIdentityLinkAudit(Identity $identity, ?int $fromGlobalIdentityId, ?int $toGlobalIdentityId, string $action): void
+    {
+        if ((int)$fromGlobalIdentityId === (int)$toGlobalIdentityId) {
+            return;
+        }
+
+        try {
+            $user = auth()->user();
+
+            MergeAuditLog::create([
+                'tenant_id' => tenancy()->tenant?->id,
+                'tenant_prefix' => tenancy()->tenant?->table_prefix,
+                'user_id' => $user?->id,
+                'user_email' => $user?->email,
+                'entity' => 'identity',
+                'operation' => 'global_link',
+                'status' => 'success',
+                'payload' => [
+                    'identity_id' => (int)$identity->id,
+                    'action' => $action,
+                    'from_global_identity_id' => $fromGlobalIdentityId,
+                    'to_global_identity_id' => $toGlobalIdentityId,
+                ],
+                'result' => [
+                    'identity_id' => (int)$identity->id,
+                    'global_identity_id' => $toGlobalIdentityId,
+                ],
+            ]);
+
+            Log::info('[IdentityGlobalLink] success', [
+                'identity_id' => (int)$identity->id,
+                'from_global_identity_id' => $fromGlobalIdentityId,
+                'to_global_identity_id' => $toGlobalIdentityId,
+                'action' => $action,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('[IdentityGlobalLink] failed to persist audit log: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
     }
 }

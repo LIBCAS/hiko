@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Services\SearchIdentity;
 use App\Http\Controllers\Controller;
 use Stancl\Tenancy\Facades\Tenancy;
+use App\Models\GlobalIdentity;
 use App\Models\GlobalProfession;
 
 class AjaxIdentityController extends Controller
@@ -24,22 +25,55 @@ class AjaxIdentityController extends Controller
             $searchFilters['type'] = $request->input('type', 'person');
         }
 
+        // Search Local Identities
         $search = new SearchIdentity;
-        $results = $search($searchFilters)
+        $localResults = $search($searchFilters)
             ->map(function ($identity) {
                 return [
                     'id' => 'local-' . $identity['id'],
                     'value' => 'local-' . $identity['id'],
-                    'label' => $identity['label'] ?? 'No Name (Local)',
+                    'label' => $identity['label'] . ' (' . __('hiko.local') . ')',
                 ];
-            })
-            ->toArray();
+            });
 
-        // If explicitly requesting professions, fetch global professions
+        // Search Global Identities (if explicitly requesting professions, skip this)
+        $globalResults = collect();
+
+        if ($request->input('type') !== 'profession') {
+            $globalQuery = GlobalIdentity::query()
+                ->select('id', 'name', 'birth_year', 'death_year');
+
+            if (!empty($searchFilters['name'])) {
+                $searchTerm = $searchFilters['name'];
+                $globalQuery->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', "%{$searchTerm}%")
+                      ->orWhereRaw("LOWER(alternative_names) LIKE ?", ["%" . mb_strtolower($searchTerm) . "%"]);
+                });
+            }
+
+            if (!empty($searchFilters['type'])) {
+                $globalQuery->where('type', $searchFilters['type']);
+            }
+
+            $globalResults = $globalQuery->limit(10)->get()->map(function ($identity) {
+                $dates = trim("{$identity->birth_year} - {$identity->death_year}");
+                $label = $identity->name . ($dates !== ' - ' ? " ({$dates})" : '');
+
+                return [
+                    'id' => 'global-' . $identity->id,
+                    'value' => 'global-' . $identity->id,
+                    'label' => $label . ' (' . __('hiko.global') . ')',
+                ];
+            });
+        }
+
+        // Search Global Professions (if type is profession)
+        $professionResults = [];
         if ($request->input('type') === 'profession') {
-            Tenancy::central(function () use (&$results, $request) {
-                $globalResults = GlobalProfession::query()
+            Tenancy::central(function () use (&$professionResults, $request) {
+                $professionResults = GlobalProfession::query()
                     ->where('name', 'like', '%' . $request->input('search') . '%')
+                    ->limit(10)
                     ->get()
                     ->map(function ($globalProfession) {
                         return [
@@ -49,11 +83,14 @@ class AjaxIdentityController extends Controller
                         ];
                     })
                     ->toArray();
-
-                $results = array_merge($results, $globalResults);
             });
         }
 
-        return $results;
+        // Merge all results: Local Identities + Global Identities + Global Professions
+        return $localResults
+            ->merge($globalResults)
+            ->merge($professionResults)
+            ->values()
+            ->toArray();
     }
 }

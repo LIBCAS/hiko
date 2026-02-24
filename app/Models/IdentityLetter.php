@@ -61,6 +61,16 @@ class IdentityLetter extends Model
     }
 
     /**
+     * Define the relationship to the GlobalIdentity model.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function globalIdentity()
+    {
+        return $this->belongsTo(GlobalIdentity::class, 'global_identity_id');
+    }
+
+    /**
      * Define the relationship to the Letter model.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

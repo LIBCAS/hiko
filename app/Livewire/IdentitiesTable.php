@@ -3,11 +3,10 @@
 namespace App\Livewire;
 
 use App\Models\Identity;
-use App\Models\GlobalProfession;
+use App\Models\GlobalIdentity;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Stancl\Tenancy\Facades\Tenancy;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class IdentitiesTable extends Component
@@ -23,11 +22,13 @@ class IdentitiesTable extends Component
         'note' => '',
         'order' => 'name',
         'religion' => null,
+        'source' => 'all',
+        'global_identity' => '',
     ];
 
     public function search()
     {
-        $this->resetPage();
+        $this->resetPage('identitiesPage');
         session()->put('identitiesTableFilters', $this->filters);
     }
 
@@ -42,23 +43,20 @@ class IdentitiesTable extends Component
             'note' => '',
             'order' => 'name',
             'religion' => null,
+            'source' => 'all',
+            'global_identity' => '',
         ];
         $this->search();
     }
 
     public function mount()
     {
-        // Load filters from session or set default values
-        $this->filters = session()->get('identitiesTableFilters', [
-            'name' => '',
-            'related_names' => '',
-            'type' => '',
-            'profession' => '',
-            'category' => '',
-            'note' => '',
-            'order' => 'name',
-            'religion' => null,
-        ]);
+        $this->filters = session()->get('identitiesTableFilters', $this->filters);
+    }
+
+    public function updatedFilters()
+    {
+        $this->search();
     }
 
     public function render()
@@ -71,199 +69,219 @@ class IdentitiesTable extends Component
         ]);
     }
 
-    protected function formatDates($identity): string
-    {
-        return trim("{$identity->birth_year} - {$identity->death_year}");
-    }
-
-    protected function formatRelatedNames($relatedNames): string
-    {
-        if (is_null($relatedNames)) {
-            return ''; // Returns an empty string if the relatedNames is equal to null
-        }
-
-        $relatedNamesArray = is_array($relatedNames) ? $relatedNames : json_decode($relatedNames, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE || !is_array($relatedNamesArray)) {
-            return ''; // Empty string in the case of the incorrect JSON
-        }
-
-        return implode(', ', array_map(
-            fn($name) =>
-            trim("{$name['surname']} {$name['forename']} {$name['general_name_modifier']}"),
-            $relatedNamesArray
-        ));
-    }
-
     protected function findIdentities(): LengthAwarePaginator
     {
         $filters = $this->filters;
-        $tenantPrefix = tenancy()->initialized ? tenancy()->tenant->table_prefix : null;
+        $source = $filters['source'] ?? 'all';
 
-        $query = Identity::with([
-            'professions.profession_category',
-            'globalProfessions.profession_category',
-        ])->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names');
-
-        $query->when($filters['name'], fn($q) => $q->where('name', 'like', "%{$filters['name']}%"));
-        $query->when($filters['related_names'], fn($q) => $q->where('related_names', 'like', "%{$filters['related_names']}%"));
-        $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
-        $query->when(
-            $this->filters['profession'] ?? null,
-            function ($q, $term) {
-                $locale = app()->getLocale();
-                $q->where(function ($sq) use ($term, $locale) {
-                    $sq->whereHas('professions', function ($qq) use ($term) {
-                        $qq->whereRaw('name LIKE ?', ['%' . $term . '%']);
-                    });
-                    $sq->orWhereHas('globalProfessions', function ($qq) use ($term, $locale) {
-                        $qq->whereRaw(
-                            "JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"')) LIKE ?",
-                            ['%' . $term . '%']
-                        );
-                    });
-                });
-            }
-        );
-
-        $query->when(isset($filters['religion']) && strlen(trim((string)$filters['religion'])) > 0, function ($q) use ($filters) {
-            $term   = trim((string) $filters['religion']);
-            $locale = app()->getLocale();
-
-            // 1) Numeric? keep exact-ID behavior (backward compatible)
-            if (ctype_digit($term)) {
-                $ids = [(int) $term];
-            } else {
-                // 2) Text: find religion(s) by translation in the current locale only
-                $needle = mb_strtolower($term, 'UTF-8');
-
-                // match on name + path_text (both case-insensitive); also leverage lower_path_text if present
-                $baseIds = DB::table('religion_translations')
-                    ->where('locale', $locale)
-                    ->where(function ($t) use ($needle) {
-                        $t->whereRaw('LOWER(name) LIKE ?', ["%{$needle}%"])
-                            ->orWhereRaw('LOWER(path_text) LIKE ?', ["%{$needle}%"])
-                            ->orWhere('lower_path_text', 'like', "%{$needle}%");
-                    })
-                    ->pluck('religion_id');
-
-                // If nothing matches in the current locale, force empty result set
-                if ($baseIds->isEmpty()) {
-                    $q->whereRaw('0 = 1');
-                    return;
-                }
-
-                // Include descendants so searching a parent like "christ" matches its "Christianity" subtree
-                $ids = DB::table('religion_closure')
-                    ->whereIn('ancestor_id', $baseIds)
-                    ->pluck('descendant_id')
-                    ->unique()
-                    ->values()
-                    ->all();
-            }
-
-            // Apply the filter via the pivot (tenant-aware relation)
-            $q->whereHas('religions', function ($qq) use ($ids) {
-                $qq->whereIn('religions.id', $ids);
-            });
-        });
-
-        $query->when($filters['category'], fn($q) => $q->where(function ($sq) use ($filters, $tenantPrefix) {
-            $sq->whereHas(
-                'professions.profession_category',
-                fn($qq) =>
-                $qq->where("{$tenantPrefix}__profession_categories.name", 'like', "%{$filters['category']}%")
-            )->orWhereHas(
-                'globalProfessions.profession_category',
-                fn($qq) =>
-                $qq->where('name', 'like', "%{$filters['category']}%")
-            );
-        }));
-
-        $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
-
-        if (in_array($filters['order'], ['name', 'birth_year', 'death_year'])) {
-            $query->orderBy($filters['order']);
-        }
-
-        $identities = $query->paginate(25, ['*'], 'identitiesPage');
-
-        // Enrich with global professions from central DB
-        if ($tenantPrefix) {
-            Tenancy::central(function () use ($identities, $tenantPrefix) {
-                $ids = $identities->pluck('id');
-                $rawMappings = DB::table("{$tenantPrefix}__identity_profession")
-                    ->whereIn('identity_id', $ids)
-                    ->whereNotNull('global_profession_id')
-                    ->get(['identity_id', 'global_profession_id']);
-
-                // Group all global profession IDs by identity ID
-                $mapping = $rawMappings->groupBy('identity_id')->map(function ($group) {
-                    return $group->pluck('global_profession_id');
-                });
-
-                // Collect all unique global profession IDs
-                $allGlobalProfessionIds = $mapping->flatten()->unique()->values();
-
-                $globalProfessions = GlobalProfession::whereIn('id', $allGlobalProfessionIds)
-                    ->with('profession_category')
-                    ->get()
-                    ->keyBy('id');
-
-                // Attach all related globalProfessions per Identity
-                foreach ($identities as $identity) {
-                    $ids = $mapping[$identity->id] ?? collect();
-                    $identity->setRelation(
-                        'globalProfessions',
-                        $ids->map(fn($id) => $globalProfessions[$id])->filter()
+        // Build Local Query
+        $localQuery = null;
+        if ($source === 'all' || $source === 'local') {
+            if (tenancy()->initialized) {
+                $prefix = tenancy()->tenant->table_prefix;
+                $localQuery = DB::table("{$prefix}__identities")
+                    ->leftJoin('global_identities', "{$prefix}__identities.global_identity_id", '=', 'global_identities.id')
+                    ->select(
+                        "{$prefix}__identities.id as id",
+                        "{$prefix}__identities.name as name",
+                        "{$prefix}__identities.type as type",
+                        "{$prefix}__identities.birth_year as birth_year",
+                        "{$prefix}__identities.death_year as death_year",
+                        "{$prefix}__identities.related_names as related_names",
+                        "{$prefix}__identities.global_identity_id as linked_global_identity_id",
+                        "global_identities.name as linked_global_identity_name",
+                        DB::raw("'local' as source")
                     );
-                }
-            });
+                $this->applyFilters($localQuery, $filters, 'local');
+            }
         }
 
-        return $identities;
+        // Build Global Query
+        $globalQuery = null;
+        if ($source === 'all' || $source === 'global') {
+            $globalQuery = DB::table('global_identities')
+                ->select(
+                    'id', 'name', 'type', 'birth_year', 'death_year', 'related_names',
+                    DB::raw('NULL as linked_global_identity_id'),
+                    DB::raw('NULL as linked_global_identity_name'),
+                    DB::raw("'global' as source")
+                );
+            $this->applyFilters($globalQuery, $filters, 'global');
+        }
+
+        // Union and Paginate
+        if ($localQuery && $globalQuery) {
+            $query = $localQuery->unionAll($globalQuery);
+        } elseif ($localQuery) {
+            $query = $localQuery;
+        } else {
+            $query = $globalQuery;
+        }
+
+        if (!$query) {
+            return new \Illuminate\Pagination\LengthAwarePaginator([], 0, 25);
+        }
+
+        $query->orderBy($filters['order']);
+        $paginator = $query->paginate(25, ['*'], 'identitiesPage');
+
+        // Hydrate Professions (Manual Eager Loading)
+        $this->hydrateProfessions($paginator->getCollection());
+
+        return $paginator;
+    }
+
+    protected function applyFilters($query, $filters, $scope)
+    {
+        $prefix = tenancy()->initialized ? tenancy()->tenant->table_prefix : null;
+        $nameColumn = $scope === 'local' ? "{$prefix}__identities.name" : 'global_identities.name';
+        $relatedNamesColumn = $scope === 'local' ? "{$prefix}__identities.related_names" : 'global_identities.related_names';
+        $typeColumn = $scope === 'local' ? "{$prefix}__identities.type" : 'global_identities.type';
+        $noteColumn = $scope === 'local' ? "{$prefix}__identities.note" : 'global_identities.note';
+
+        $query->when($filters['name'], fn($q) => $q->where($nameColumn, 'like', "%{$filters['name']}%"));
+        $query->when($filters['related_names'], fn($q) => $q->where($relatedNamesColumn, 'like', "%{$filters['related_names']}%"));
+        $query->when($filters['type'], fn($q) => $q->where($typeColumn, $filters['type']));
+        $query->when($filters['note'], fn($q) => $q->where($noteColumn, 'like', "%{$filters['note']}%"));
+        if (!empty($filters['global_identity'])) {
+            $term = trim((string)$filters['global_identity']);
+            if ($scope === 'local') {
+                $prefix = tenancy()->tenant->table_prefix;
+                $query->where(function ($q) use ($term, $prefix) {
+                    $q->where('global_identities.name', 'like', '%' . $term . '%');
+
+                    if (ctype_digit($term)) {
+                        $q->orWhere("{$prefix}__identities.global_identity_id", (int)$term);
+                    }
+                });
+            }
+        }
+
+        // Filtering by profession/category in a Union query is complex because tables differ.
+        // Simplified approach: using EXISTS subqueries
+        if ($filters['profession']) {
+            if ($scope === 'local') {
+                $prefix = tenancy()->tenant->table_prefix;
+                $query->whereExists(function ($sub) use ($filters, $prefix) {
+                    $sub->select(DB::raw(1))
+                        ->from("{$prefix}__identity_profession")
+                        ->join("{$prefix}__professions", "{$prefix}__identity_profession.profession_id", '=', "{$prefix}__professions.id")
+                        ->whereColumn("{$prefix}__identity_profession.identity_id", "{$prefix}__identities.id")
+                        ->where('name', 'like', '%' . $filters['profession'] . '%');
+                });
+            } else {
+                $query->whereExists(function ($sub) use ($filters) {
+                    $sub->select(DB::raw(1))
+                        ->from('global_identity_profession')
+                        ->join('global_professions', 'global_identity_profession.global_profession_id', '=', 'global_professions.id')
+                        ->whereColumn('global_identity_profession.global_identity_id', 'global_identities.id')
+                        ->where('name', 'like', '%' . $filters['profession'] . '%');
+                });
+            }
+        }
+    }
+
+    /**
+     * Manually attach professions to the plain object results from DB::table
+     */
+    protected function hydrateProfessions($items)
+    {
+        $localIds = $items->where('source', 'local')->pluck('id')->toArray();
+        $globalIds = $items->where('source', 'global')->pluck('id')->toArray();
+
+        // Fetch Local Professions
+        $localProfessions = [];
+        if (!empty($localIds)) {
+            $localProfessions = Identity::with(['professions.profession_category', 'globalProfessions.profession_category'])
+                ->whereIn('id', $localIds)
+                ->get()
+                ->keyBy('id');
+        }
+
+        // Fetch Global Professions
+        $globalProfessionsMap = [];
+        if (!empty($globalIds)) {
+            $globalProfessionsMap = GlobalIdentity::with(['professions.profession_category'])
+                ->whereIn('id', $globalIds)
+                ->get()
+                ->keyBy('id');
+        }
+
+        // Attach to items
+        foreach ($items as $item) {
+            $item->loaded_professions = collect();
+
+            if ($item->source === 'local' && isset($localProfessions[$item->id])) {
+                $identity = $localProfessions[$item->id];
+
+                // Add Local Professions
+                foreach ($identity->professions as $p) {
+                    $item->loaded_professions->push([
+                        'name' => $p->name,
+                        'scope' => 'Local',
+                        'link' => route('professions.edit', $p->id),
+                        'category' => $p->profession_category->name ?? __('hiko.no_attached_category'),
+                        'category_link' => $p->profession_category ? route('professions.category.edit', $p->profession_category->id) : null,
+                    ]);
+                }
+
+                // Add Global Professions linked to Local Identity
+                foreach ($identity->globalProfessions as $p) {
+                    $item->loaded_professions->push([
+                        'name' => $p->name,
+                        'scope' => 'Global',
+                        'link' => route('global.professions.edit', $p->id),
+                        'category' => $p->profession_category->name ?? __('hiko.no_attached_category'),
+                        'category_link' => $p->profession_category ? route('global.professions.category.edit', $p->profession_category->id) : null,
+                    ]);
+                }
+
+            } elseif ($item->source === 'global' && isset($globalProfessionsMap[$item->id])) {
+                $identity = $globalProfessionsMap[$item->id];
+
+                foreach ($identity->professions as $p) {
+                    $item->loaded_professions->push([
+                        'name' => $p->name,
+                        'scope' => 'Global',
+                        'link' => route('global.professions.edit', $p->id),
+                        'category' => $p->profession_category->name ?? __('hiko.no_attached_category'),
+                        'category_link' => $p->profession_category ? route('global.professions.category.edit', $p->profession_category->id) : null,
+                    ]);
+                }
+            }
+        }
     }
 
     protected function formatTableData($data): array
     {
         return [
-            'header' => [__('hiko.name'), __('hiko.type'), __('hiko.dates'), __('hiko.related_names'), __('hiko.professions') . ' | ' . __('hiko.attached_category')],
+            'header' => [
+                __('hiko.name'),
+                __('hiko.type'),
+                __('hiko.dates'),
+                __('hiko.related_names'),
+                __('hiko.professions') . ' | ' . __('hiko.attached_category'),
+                __('hiko.global_identity'),
+                __('hiko.source')
+            ],
             'rows' => $data->map(function ($identity) {
-                // Format professions with their attached categories
-                $allProfessions = collect($identity->professions ?? [])
-                    ->map(function ($profession) {
-                        $category = $profession->profession_category;
-                        return [
-                            'name' => ($profession->name ?? 'Unknown') . ' (Local)',
-                            'link' => route('professions.edit', ['profession' => $profession->id]),
-                            'category' => $category ? $category->name : __('hiko.no_attached_category'),
-                            'category_link' => $category ? route('professions.category.edit', $category->id) : null,
-                        ];
-                    })
-                    ->merge(
-                        collect($identity->globalProfessions ?? [])
-                            ->map(function ($globalProfession) {
-                                $category = $globalProfession->profession_category;
-                                return [
-                                    'name' => ($globalProfession->name ?? 'Unknown') . ' (Global)',
-                                    'link' => route('global.professions.edit', ['globalProfession' => $globalProfession->id]),
-                                    'category' => $category ? $category->name : __('hiko.no_attached_category'),
-                                    'category_link' => $category ? route('global.professions.category.edit', $category->id) : null,
-                                ];
-                            })
-                    );
+                $editRoute = $identity->source === 'global'
+                    ? route('global.identities.edit', $identity->id)
+                    : route('identities.edit', $identity->id);
 
-                // Generate HTML for professions and categories
+                // Build Professions HTML
                 $professionsHtml = '<ul class="list-disc list-inside text-gray-600 space-y-1">';
-                foreach ($allProfessions as $profession) {
-                    $professionsHtml .= "<li>";
-                    $professionsHtml .= "<a href=\"{$profession['link']}\" class=\"text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark\">{$profession['name']}</a>";
-                    if ($profession['category_link']) {
-                        $professionsHtml .= " | <a href=\"{$profession['category_link']}\" class=\"text-xs text-primary-dark border-b border-primary-light hover:border-primary-dark\">{$profession['category']}</a>";
-                    } else {
-                        $professionsHtml .= " | <span class=\"text-xs text-gray-500\">{$profession['category']}</span>";
+                if (isset($identity->loaded_professions)) {
+                    foreach ($identity->loaded_professions as $p) {
+                        $professionsHtml .= "<li>";
+                        $professionsHtml .= "<a href=\"{$p['link']}\" class=\"text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark\">{$p['name']} ({$p['scope']})</a>";
+                        if ($p['category_link']) {
+                            $professionsHtml .= " | <a href=\"{$p['category_link']}\" class=\"text-xs text-primary-dark border-b border-primary-light hover:border-primary-dark\">{$p['category']}</a>";
+                        } else {
+                            $professionsHtml .= " | <span class=\"text-xs text-gray-500\">{$p['category']}</span>";
+                        }
+                        $professionsHtml .= "</li>";
                     }
-                    $professionsHtml .= "</li>";
                 }
                 $professionsHtml .= '</ul>';
 
@@ -271,18 +289,53 @@ class IdentitiesTable extends Component
                     [
                         'component' => [
                             'args' => [
-                                'link' => route('identities.edit', ['identity' => $identity->id]),
+                                'link' => $editRoute,
                                 'label' => $identity->name,
                             ],
                             'name' => 'tables.edit-link',
                         ],
                     ],
                     ['label' => __("hiko.{$identity->type}")],
-                    ['label' => $this->formatDates($identity)],
+                    ['label' => trim("{$identity->birth_year} - {$identity->death_year}")],
                     ['label' => $this->formatRelatedNames($identity->related_names)],
                     ['label' => $professionsHtml, 'isHtml' => true],
+                    [
+                        'label' => $this->formatGlobalIdentityCell($identity),
+                        'isHtml' => true,
+                    ],
+                    [
+                        'label' => $identity->source === 'global'
+                            ? "<span class='inline-block bg-red-100 text-red-600 border border-red-200 text-xs uppercase px-2 py-1 rounded-full font-medium'>" . __('hiko.global') . "</span>"
+                            : "<span class='inline-block text-blue-600 bg-blue-100 border border-blue-200 text-xs uppercase px-2 py-1 rounded-full font-medium'>" . __('hiko.local') . "</span>",
+                        'isHtml' => true
+                    ],
                 ];
             })->toArray(),
         ];
+    }
+
+    protected function formatRelatedNames($relatedNames): string
+    {
+        if (is_null($relatedNames)) return '';
+        $relatedNamesArray = is_array($relatedNames) ? $relatedNames : json_decode($relatedNames, true);
+        if (!is_array($relatedNamesArray)) return '';
+
+        return implode(', ', array_map(
+            fn($name) => trim("{$name['surname']} {$name['forename']} {$name['general_name_modifier']}"),
+            $relatedNamesArray
+        ));
+    }
+
+    protected function formatGlobalIdentityCell($identity): string
+    {
+        if ($identity->source !== 'local' || empty($identity->linked_global_identity_id)) {
+            return '—';
+        }
+
+        $id = (int)$identity->linked_global_identity_id;
+        $name = e($identity->linked_global_identity_name ?? ('#' . $id));
+        $link = route('global.identities.edit', $id);
+
+        return "<a href=\"{$link}\" class=\"text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark\">{$name}</a>";
     }
 }

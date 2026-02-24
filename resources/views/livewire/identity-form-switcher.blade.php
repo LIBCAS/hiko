@@ -1,4 +1,11 @@
 <div>
+    @php
+        $resolvedProfessionFieldKey = $professionFieldKey ?? ($globalMode ? 'professions' : 'profession');
+        $resolvedProfessionRoute = $professionRoute ?? 'ajax.professions';
+        $resolvedProfessionRouteParams = $professionRouteParams ?? [];
+        $resolvedProfessionLabel = $professionLabel ?? ($globalMode ? __('hiko.global_profession') : __('hiko.profession'));
+    @endphp
+
     <div class="space-y-6">
         <div>
             <x-label for="type" :value="__('hiko.type')" />
@@ -71,24 +78,30 @@
                 <div class="text-red-600">{{ $message }}</div>
                 @enderror
             </div>
-            <div class="space-y-6">
-                <livewire:repeated-select
-                    :items="$selectedReligions"
-                    fieldLabel="{{ __('hiko.religion') }}"
-                    fieldKey="religions"
-                    route="ajax.religions" />
-            </div>
+            @if ($showReligions)
+                <div class="space-y-6">
+                    <livewire:repeated-select
+                        :items="$selectedReligions"
+                        fieldLabel="{{ __('hiko.religion') }}"
+                        fieldKey="religions"
+                        route="ajax.religions" />
+                </div>
+            @endif
             <div class="space-y-6">
                 <livewire:repeated-select
                     :items="$selectedProfessions"
-                    fieldLabel="{{ __('hiko.profession') }}"
-                    fieldKey="profession"
-                    route="ajax.professions" />
-                @can('manage-metadata')
-                <livewire:create-new-item-modal
-                    :route="route('professions.create')"
-                    :text="__('hiko.modal_new_profession')" />
-                @endcan
+                    :fieldLabel="$resolvedProfessionLabel"
+                    :fieldKey="$resolvedProfessionFieldKey"
+                    :route="$resolvedProfessionRoute"
+                    :routeParams="$resolvedProfessionRouteParams" />
+
+                @if ($showCreateProfessionModal)
+                    @can('manage-metadata')
+                        <livewire:create-new-item-modal
+                            :route="route('professions.create')"
+                            :text="__('hiko.modal_new_profession')" />
+                    @endcan
+                @endif
             </div>
         </div>
         @else

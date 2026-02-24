@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\IdentityType;
 use App\Models\GlobalProfession;
+use App\Models\GlobalIdentity;
 use App\Models\Identity;
 use App\Models\Profession;
 use Illuminate\Foundation\Http\FormRequest;
@@ -47,13 +48,13 @@ class IdentityRequest extends FormRequest
                             // Validate against the global table
                             Tenancy::central(function () use ($cleanProfessionId, $fail) {
                                 if (!GlobalProfession::find($cleanProfessionId)) {
-                                    $fail(__('The selected profession is not valid (Global).'));
+                                    $fail(__('hiko.profession_invalid_global'));
                                 }
                             });
                         } else {
                             // Validate against the tenant-specific table if tenancy is initialized
                             if ($isTenancyInitialized && !Profession::find($cleanProfessionId)) {
-                                $fail(__('The selected profession is not valid (Local).'));
+                                $fail(__('hiko.profession_invalid_local'));
                             }
                         }
                     }
@@ -67,6 +68,26 @@ class IdentityRequest extends FormRequest
             'religions.*' => [
                 'integer',
                 Rule::exists('religions', 'id')->where(fn($q) => $q->where('is_active', 1)),
+            ],
+            'global_identity_id' => [
+                'nullable',
+                'integer',
+                'exists:global_identities,id',
+                function ($attribute, $value, $fail) {
+                    if ($value === null || $value === '') {
+                        return;
+                    }
+
+                    $globalIdentity = GlobalIdentity::find((int)$value);
+                    if (!$globalIdentity) {
+                        $fail(__('hiko.global_identity_invalid'));
+                        return;
+                    }
+
+                    if ($this->input('type') !== $globalIdentity->type) {
+                        $fail(__('hiko.global_identity_type_mismatch'));
+                    }
+                },
             ],
         ];
     }
@@ -105,6 +126,7 @@ class IdentityRequest extends FormRequest
             'related_names' => is_array($relatedNames) ? $relatedNames : json_decode($relatedNames, true) ?? [],
             'related_identity_resources' => is_array($relatedResources) ? $relatedResources : json_decode($relatedResources, true) ?? [],
             'religions' => $religions,
+            'global_identity_id' => $this->filled('global_identity_id') ? (int)$this->input('global_identity_id') : null,
         ]);
     }
 
@@ -116,7 +138,7 @@ class IdentityRequest extends FormRequest
 
         $validator->after(function ($v) {
             if ($this->input('type') !== 'person' && $this->filled('religions')) {
-                $v->errors()->add('religions', 'Only identities of type "person" may have religions.');
+                $v->errors()->add('religions', __('hiko.identities_religions_error'));
             }
         });
     }
