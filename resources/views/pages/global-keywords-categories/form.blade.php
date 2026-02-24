@@ -1,5 +1,13 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    @if (!empty($keywordCategory->id))
+        <x-page-lock
+            scope="global"
+            resource-type="global_keyword_category_edit"
+            :resource-id="$keywordCategory->id"
+            :redirect-url="route('keywords')"
+            :read-only-on-deny="true" />
+    @endif
 
     <div class="grid grid-cols-3 gap-4 mb-4 space-y-3">
         <!-- Form Section -->

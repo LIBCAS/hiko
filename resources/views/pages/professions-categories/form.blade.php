@@ -1,5 +1,13 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    @if (!empty($professionCategory?->id))
+        <x-page-lock
+            scope="tenant"
+            resource-type="profession_category_edit"
+            :resource-id="$professionCategory->id"
+            :redirect-url="route('professions')"
+            :read-only-on-deny="true" />
+    @endif
 
     <div class="grid grid-cols-3 gap-4 mb-4 space-y-3">
         <!-- Form Section -->

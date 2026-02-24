@@ -6,6 +6,7 @@ use App\Exports\KeywordsExport;
 use App\Http\Requests\KeywordRequest;
 use App\Models\Keyword;
 use App\Models\KeywordCategory;
+use App\Services\PageLockService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
@@ -87,6 +88,19 @@ class KeywordController extends Controller
 
     public function update(KeywordRequest $request, Keyword $keyword): RedirectResponse
     {
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'tenant',
+            'resource_type' => 'keyword_edit',
+            'resource_id' => (string) $keyword->id,
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('keywords')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
         $validated = $request->validated();
 
         if ($request->failsDuplicateCheck($keyword->id)) {
@@ -142,5 +156,19 @@ class KeywordController extends Controller
                 ->back()
                 ->with('error', __('hiko.error_exporting'));
         }
+    }
+
+    public function validation()
+    {
+        return view('pages.keywords.validation', [
+            'title' => __('hiko.input_control'),
+        ]);
+    }
+
+    public function localMerge()
+    {
+        return view('pages.keywords.local-merge', [
+            'title' => __('hiko.local_keyword_merging'),
+        ]);
     }
 }

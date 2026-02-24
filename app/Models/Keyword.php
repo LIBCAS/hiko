@@ -10,6 +10,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
 use App\Builders\KeywordBuilder;
 
+use OpenApi\Attributes as OA;
+
+#[OA\Schema(
+    schema: "Keyword",
+    required: ["name"],
+    properties: [
+        new OA\Property(property: "id", type: "integer", readOnly: true),
+        new OA\Property(property: "name", type: "object", properties: [
+            new OA\Property(property: "cs", type: "string"),
+            new OA\Property(property: "en", type: "string")
+        ]),
+        new OA\Property(property: "keyword_category_id", type: "integer", nullable: true),
+        new OA\Property(property: "created_at", type: "string", format: "date-time", readOnly: true),
+        new OA\Property(property: "updated_at", type: "string", format: "date-time", readOnly: true)
+    ]
+)]
 class Keyword extends Model
 {
     use HasTranslations, HasFactory, Searchable;

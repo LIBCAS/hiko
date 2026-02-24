@@ -8,6 +8,14 @@
         <h2 class="text-l font-semibold">{{ __('hiko.no_attached_category') }}</h2>
     @endif
     <x-success-alert />
+    @if (!empty($keyword->id))
+        <x-page-lock
+            scope="tenant"
+            resource-type="keyword_edit"
+            :resource-id="$keyword->id"
+            :redirect-url="route('keywords')"
+            :read-only-on-deny="true" />
+    @endif
     <div class="grid-cols-3 grid gap-4 mb-4 space-y-3">
         <div class="max-w-sm col-span-1">
             <form x-data="similarItems({ similarNamesUrl: '{{ route('ajax.items.similar', ['model' => 'Keyword']) }}', id: '{{ $keyword->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" action="{{ $action }}" method="post"

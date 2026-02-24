@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\GlobalKeywordCategory;
+use App\Services\PageLockService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 
@@ -85,6 +86,19 @@ class GlobalKeywordCategoryController extends Controller
      */
     public function update(Request $request, GlobalKeywordCategory $globalKeywordCategory): RedirectResponse
     {
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'global',
+            'resource_type' => 'global_keyword_category_edit',
+            'resource_id' => (string) $globalKeywordCategory->id,
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('keywords')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
         $validated = $request->validate($this->rules);
 
         $updateData = [
@@ -118,5 +132,5 @@ class GlobalKeywordCategoryController extends Controller
         return redirect()
             ->route('keywords')
             ->with('success', __('hiko.removed'));
-    }   
+    }
 }

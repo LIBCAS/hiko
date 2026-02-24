@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use App\Http\Requests\ProfessionCategoryRequest;
-use App\Models\ProfessionCategory;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProfessionCategoriesExport;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use App\Models\Profession;
+use App\Http\Requests\ProfessionCategoryRequest;
 use App\Models\GlobalProfession;
+use App\Models\Profession;
+use App\Models\ProfessionCategory;
+use App\Services\PageLockService;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProfessionCategoryController extends Controller
 {
@@ -66,6 +67,19 @@ class ProfessionCategoryController extends Controller
 
     public function update(ProfessionCategoryRequest $request, ProfessionCategory $professionCategory): RedirectResponse
     {
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'tenant',
+            'resource_type' => 'profession_category_edit',
+            'resource_id' => (string) $professionCategory->id,
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('professions')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
         $validated = $request->validated();
 
         if ($request->failsDuplicateCheck($professionCategory->id)) {

@@ -1,5 +1,13 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    @if (!empty($keywordCategory->id))
+        <x-page-lock
+            scope="tenant"
+            resource-type="keyword_category_edit"
+            :resource-id="$keywordCategory->id"
+            :redirect-url="route('keywords')"
+            :read-only-on-deny="true" />
+    @endif
     <div class="grid-cols-3 grid gap-4 mb-4 space-y-3">
         <div class="max-w-sm">
             <form x-data="similarItems({ similarNamesUrl: '{{ route('ajax.items.similar', ['model' => 'KeywordCategory']) }}', id: '{{ $keywordCategory->id }}' })" x-init="$watch('search', () => findSimilarNames($data))" action="{{ $action }}" method="post"

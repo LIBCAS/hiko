@@ -1,6 +1,14 @@
 <x-app-layout :title="$title">
     <!-- Success Alert -->
     <x-success-alert />
+    @if (!empty($keyword->id))
+        <x-page-lock
+            scope="global"
+            resource-type="global_keyword_edit"
+            :resource-id="$keyword->id"
+            :redirect-url="route('keywords')"
+            :read-only-on-deny="true" />
+    @endif
 
     <!-- Main Grid Layout -->
     <div class="grid grid-cols-3 gap-4 mb-4 space-y-3">

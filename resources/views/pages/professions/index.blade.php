@@ -3,26 +3,36 @@
 
     <!-- Professions Section -->
     @can('manage-metadata')
-        <div class="flex items-center space-x-4">
-            <!-- Link for creating a local profession -->
-            <x-create-link 
-                label="{{ __('hiko.new_profession') }}" 
-                link="{{ route('professions.create') }}" 
-            />
-
-            <!-- Conditional link for creating a global profession -->
-            @can('manage-users')
-                <x-create-link 
-                    label="{{ __('hiko.new_global_profession') }}" 
-                    link="{{ route('global.professions.create') }}" 
+        <div class="flex items-center justify-between gap-4 flex-wrap mb-6">
+            <div class="flex items-center space-x-4">
+                <x-create-link
+                    label="{{ __('hiko.new_profession') }}"
+                    link="{{ route('professions.create') }}"
                 />
-            @endcan
+                @can('manage-users')
+                    <x-create-link
+                        label="{{ __('hiko.new_global_profession') }}"
+                        link="{{ route('global.professions.create') }}"
+                    />
+                @endcan
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="{{ route('professions.export') }}" class="inline-block text-sm font-semibold">
+                    {{ __('hiko.export') }}
+                </a>
+                <a href="{{ route('professions.validation') }}" class="inline-block text-sm font-semibold">
+                    {{ __('hiko.input_control') }}
+                </a>
+                <a href="{{ route('professions.local-merge') }}" class="inline-block text-sm font-semibold">
+                    {{ __('hiko.local_merging') }}
+                </a>
+                @can('manage-users')
+                    <a href="{{ route('professions.global-merge') }}" class="inline-block text-sm font-semibold">
+                        {{ __('hiko.global_merging') }}
+                    </a>
+                @endcan
+            </div>
         </div>
-
-        <!-- Export link for professions -->
-        <a href="{{ route('professions.export') }}" class="inline-block mt-3 text-sm font-semibold">
-            {{ __('hiko.export') }}
-        </a>
     @endcan
 
     <!-- Table for displaying professions -->

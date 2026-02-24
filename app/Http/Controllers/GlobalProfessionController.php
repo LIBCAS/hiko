@@ -2,19 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GlobalProfessionRequest;
+use App\Services\PageLockService;
 use App\Models\GlobalProfession;
 use App\Models\GlobalProfessionCategory;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 
 class GlobalProfessionController extends Controller
 {
-    protected array $rules = [
-        'cs' => ['required', 'string', 'max:255'],
-        'en' => ['nullable', 'string', 'max:255'],
-        'category_id' => ['nullable', 'exists:global_profession_categories,id'],
-    ];    
-
     /**
      * Display a listing of the resource.
      */
@@ -38,36 +33,36 @@ class GlobalProfessionController extends Controller
             'label' => __('hiko.create'),
             'availableCategories' => $categories,
         ]);
-    }    
+    }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(GlobalProfessionRequest $request): RedirectResponse
     {
-        $validated = $request->validate($this->rules);
-    
+        $validated = $request->validated();
+
         $professionData = [
             'name' => [
                 'cs' => $validated['cs'],
                 'en' => $validated['en'] ?? null,
             ],
-            'profession_category_id' => $validated['category_id'] ?? null,
+            'profession_category_id' => $validated['profession_category_id'] ?? null,
         ];
-    
+
         $profession = GlobalProfession::create($professionData);
-    
+
         // Handle 'action' parameter
         if ($request->input('action') === 'create') {
             return redirect()
                 ->route('global.professions.create')
                 ->with('success', __('hiko.saved'));
         }
-    
+
         return redirect()
             ->route('global.professions.edit', $profession->id)
             ->with('success', __('hiko.saved'));
-    }      
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -76,7 +71,7 @@ class GlobalProfessionController extends Controller
     {
         $categories = GlobalProfessionCategory::all();
         $globalProfession->load('profession_category');
-    
+
         return view('pages.global-professions.form', [
             'title' => __('hiko.global_profession'),
             'profession' => $globalProfession,
@@ -85,46 +80,59 @@ class GlobalProfessionController extends Controller
             'label' => __('hiko.save'),
             'availableCategories' => $categories,
         ]);
-    }    
-    
+    }
+
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, GlobalProfession $globalProfession): RedirectResponse
+    public function update(GlobalProfessionRequest $request, GlobalProfession $globalProfession): RedirectResponse
     {
-        $validated = $request->validate($this->rules);
-    
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'global',
+            'resource_type' => 'global_profession_edit',
+            'resource_id' => (string) $globalProfession->id,
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('professions')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
+        $validated = $request->validated();
+
         $updateData = [
             'name' => [
                 'cs' => $validated['cs'],
                 'en' => $validated['en'] ?? null,
             ],
-            'profession_category_id' => $validated['category_id'] ?? null,
+            'profession_category_id' => $validated['profession_category_id'] ?? null,
         ];
-    
+
         $globalProfession->update($updateData);
-    
+
         // Handle 'action' parameter
         if ($request->input('action') === 'create') {
             return redirect()
                 ->route('global.professions.create')
                 ->with('success', __('hiko.saved'));
         }
-    
+
         return redirect()
             ->route('global.professions.edit', $globalProfession->id)
             ->with('success', __('hiko.saved'));
-    }       
-    
+    }
+
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(GlobalProfession $globalProfession): RedirectResponse
     {
         $globalProfession->delete();
-    
+
         return redirect()
             ->route('professions')
             ->with('success', __('hiko.removed'));
-    }      
+    }
 }

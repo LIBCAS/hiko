@@ -6,6 +6,7 @@ use App\Exports\ProfessionsExport;
 use App\Http\Requests\ProfessionRequest;
 use App\Models\Profession;
 use App\Models\ProfessionCategory;
+use App\Services\PageLockService;
 use Illuminate\Http\RedirectResponse;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -63,6 +64,19 @@ public function store(ProfessionRequest $request): RedirectResponse
 
     public function update(ProfessionRequest $request, Profession $profession): RedirectResponse
     {
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'tenant',
+            'resource_type' => 'profession_edit',
+            'resource_id' => (string) $profession->id,
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('professions')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
         $validated = $request->validated();
 
         if ($request->failsDuplicateCheck($profession->id)) {
@@ -116,5 +130,19 @@ public function store(ProfessionRequest $request): RedirectResponse
     {
         // Export the professions to an Excel file
         return Excel::download(new ProfessionsExport, 'professions.xlsx');
+    }
+
+    public function validation()
+    {
+        return view('pages.professions.validation', [
+            'title' => __('hiko.input_control'),
+        ]);
+    }
+
+    public function localMerge()
+    {
+        return view('pages.professions.local-merge', [
+            'title' => __('hiko.local_profession_merging'),
+        ]);
     }
 }

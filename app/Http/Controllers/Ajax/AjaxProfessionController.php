@@ -6,10 +6,6 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Profession;
 use App\Models\GlobalProfession;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
-use Stancl\Tenancy\Facades\Tenancy;
-use Illuminate\Support\Facades\DB;
 
 class AjaxProfessionController extends Controller
 {
@@ -21,8 +17,37 @@ class AjaxProfessionController extends Controller
         }
 
         $locale = config('app.locale');
+        $scope = $request->query('scope', 'all');
 
-        // Force into plain Collection
+        if ($scope === 'global') {
+            return GlobalProfession::whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"'))) LIKE ?", ["%{$searchTerm}%"])
+                ->get()
+                ->map(fn($prof) => [
+                    'id' => $prof->id,
+                    'value' => $prof->id,
+                    'label' => $prof->getTranslation('name', $locale) . ' (' . __('hiko.global') . ')',
+                    'type' => __('hiko.global')
+                ])
+                ->sortBy('label')
+                ->values()
+                ->toArray();
+        }
+
+        if ($scope === 'local') {
+            return Profession::whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"'))) LIKE ?", ["%{$searchTerm}%"])
+                ->get()
+                ->map(fn($prof) => [
+                    'id' => 'local-' . $prof->id,
+                    'value' => 'local-' . $prof->id,
+                    'label' => $prof->getTranslation('name', $locale) . ' (' . __('hiko.local') . ')',
+                    'type' => __('hiko.local')
+                ])
+                ->sortBy('label')
+                ->values()
+                ->toArray();
+        }
+
+        // Default "all" scope for local identity form where both local and global are allowed.
         $tenantProfessions = collect(
             Profession::whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"'))) LIKE ?", ["%{$searchTerm}%"])
                 ->get()
@@ -49,10 +74,6 @@ class AjaxProfessionController extends Controller
                 ->toArray()
         );
 
-        return $tenantProfessions
-            ->merge($globalProfessions)
-            ->sortBy('label')
-            ->values()
-            ->toArray();
+        return $tenantProfessions->merge($globalProfessions)->sortBy('label')->values()->toArray();
     }
 }

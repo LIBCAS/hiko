@@ -1,5 +1,13 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    @if (!empty($profession?->id))
+        <x-page-lock
+            scope="global"
+            resource-type="global_profession_edit"
+            :resource-id="$profession->id"
+            :redirect-url="route('professions')"
+            :read-only-on-deny="true" />
+    @endif
 
     <div class="grid-cols-3 grid gap-4 mb-4 space-y-3">
         <div class="max-w-sm">

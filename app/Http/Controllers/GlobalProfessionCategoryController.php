@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\GlobalProfessionCategory;
+use App\Services\PageLockService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 
@@ -84,6 +85,19 @@ class GlobalProfessionCategoryController extends Controller
      */
     public function update(Request $request, GlobalProfessionCategory $globalProfessionCategory): RedirectResponse
     {
+        $lock = app(PageLockService::class)->assertOwned([
+            'scope' => 'global',
+            'resource_type' => 'global_profession_category_edit',
+            'resource_id' => (string) $globalProfessionCategory->id,
+        ], $request->user());
+
+        if (!$lock['ok']) {
+            return redirect()
+                ->route('professions')
+                ->with('success', __('hiko.page_lock_not_owned'))
+                ->with('success_sticky', true);
+        }
+
         $validated = $request->validate($this->rules);
 
         $globalProfessionCategory->update([
