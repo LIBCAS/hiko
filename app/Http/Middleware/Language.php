@@ -19,8 +19,14 @@ class Language
      */
     public function handle(Request $request, Closure $next)
     {
-        if ($request->session()->has('locale') && in_array($request->session()->get('locale'), ['cs', 'en'])) {
-            App::setLocale($request->session()->get('locale'));
+        $locale = $request->input('lang') ?? $request->header('X-Language');
+
+        if (!$locale && $request->hasSession() && $request->session()->has('locale')) {
+            $locale = $request->session()->get('locale');
+        }
+
+        if ($locale && in_array($locale, ['cs', 'en'])) {
+            App::setLocale($locale);
         }
 
         return $next($request);

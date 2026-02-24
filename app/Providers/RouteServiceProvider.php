@@ -45,8 +45,19 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function configureRateLimiting()
     {
+        // Legacy fallback (optional)
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
+        });
+
+        // High volume for GET requests
+        RateLimiter::for('api-read', function (Request $request) {
+            return Limit::perMinute(120)->by(optional($request->user())->id ?: $request->ip());
+        });
+
+        // Low volume for POST/PUT/DELETE
+        RateLimiter::for('api-write', function (Request $request) {
+            return Limit::perMinute(20)->by(optional($request->user())->id ?: $request->ip());
         });
     }
 }

@@ -47,7 +47,16 @@ if (!function_exists('computeDate')) {
 if (!function_exists('removeAccents')) {
     function removeAccents($string)
     {
-        $transliterator = Transliterator::createFromRules(':: Any-Latin; :: Latin-ASCII; :: NFD; :: [:Nonspacing Mark:] Remove; :: Lower(); :: NFC;', Transliterator::FORWARD);
+        if (!is_string($string)) {
+            return '';
+        }
+
+        static $transliterator = null;
+
+        if ($transliterator === null) {
+            $transliterator = Transliterator::createFromRules(':: Any-Latin; :: Latin-ASCII; :: NFD; :: [:Nonspacing Mark:] Remove; :: Lower(); :: NFC;', Transliterator::FORWARD);
+        }
+
         return $transliterator->transliterate($string);
     }
 }

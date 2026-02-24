@@ -8,39 +8,38 @@
         el.id = CONTAINER_ID;
         el.setAttribute('aria-live', 'polite');
         el.setAttribute('aria-atomic', 'true');
-        el.style = 'position: fixed; z-index: 9999; top: 1rem; left: 50%; transform: translateX(-50%); width: auto; max-width: 90vw;';
+        el.style = 'position: fixed; z-index: 9999; top: 1rem; right: 1rem; width: auto; max-width: 400px; display: flex; flex-direction: column; gap: 0.5rem;';
         document.body.appendChild(el);
         return el;
     }
 
     function makeToast(opts) {
         const {
-            message,    // string (used when allowHtml=false)
+            message,
             type = 'success',
             autoClose = true,
-            duration = 2500,
-            allowHtml = false,  // set true to render html
-            html = ''   // html string (used when allowHtml=true)
+            duration = 4000,
+            allowHtml = false,
+            html = ''
         } = opts || {};
 
         const container = ensureContainer();
 
         const wrap = document.createElement('div');
         wrap.className = [
-            'pointer-events-auto rounded-md mb-2 shadow px-4 py-3 text-sm flex items-start gap-2 transition-opacity',
-            type === 'success' ? 'bg-green-700 text-white'
-                : type === 'info' ? 'bg-blue-700 text-white'
-                    : type === 'warning' ? 'bg-yellow-600 text-white'
-                        : 'bg-red-700 text-white'
+            'pointer-events-auto rounded-md shadow-lg px-4 py-3 text-sm flex items-start gap-2 transition-all transform duration-300 translate-x-full',
+            type === 'success' ? 'bg-green-600 text-white'
+                : type === 'info' ? 'bg-blue-600 text-white'
+                    : type === 'warning' ? 'bg-yellow-500 text-white'
+                        : 'bg-red-600 text-white'
         ].join(' ');
-        wrap.style.opacity = '0';
 
         const body = document.createElement('div');
-        body.className = 'flex-1';
+        body.className = 'flex-1 break-words';
 
-        if (allowHtml && html) {
-            // TRUSTED HTML ONLY!
-            body.innerHTML = html;
+        // Prefer HTML content if allowHtml is true, otherwise plain text message
+        if (allowHtml) {
+            body.innerHTML = html || message; // Use message as fallback for HTML if simple string passed
         } else {
             body.textContent = message || '';
         }
@@ -48,7 +47,7 @@
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.setAttribute('aria-label', 'Close');
-        btn.className = 'ml-2 text-white/80 hover:text-white';
+        btn.className = 'ml-2 text-white/80 hover:text-white focus:outline-none';
         btn.textContent = '✕';
         btn.onclick = (e) => { e.stopPropagation(); remove(); };
 
@@ -56,28 +55,37 @@
         wrap.appendChild(btn);
         container.appendChild(wrap);
 
-        requestAnimationFrame(() => { wrap.style.opacity = '1'; });
+        // Animate in
+        requestAnimationFrame(() => {
+            wrap.classList.remove('translate-x-full');
+            wrap.classList.add('translate-x-0');
+        });
 
         let timer = null;
-        if (autoClose !== false) {
-            if (duration > 0) timer = setTimeout(remove, duration);
+        if (autoClose !== false && duration > 0) {
+            timer = setTimeout(remove, duration);
         }
 
         function remove() {
             if (timer) clearTimeout(timer);
-            wrap.style.opacity = '0';
-            setTimeout(() => wrap.parentNode && wrap.parentNode.removeChild(wrap), 200);
+            wrap.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+            }, 300);
         }
     }
 
-    window.flash = (message, type = 'success', autoClose = true, duration = 2500) =>
+    // Standard API
+    window.flash = (message, type = 'success', autoClose = true, duration = 4000) =>
         makeToast({ message, type, autoClose, duration });
 
-    window.flashHTML = (html, type = 'success', autoClose = true, duration = 2500) =>
+    // HTML API
+    window.flashHTML = (html, type = 'success', autoClose = true, duration = 4000) =>
         makeToast({ allowHtml: true, html, type, autoClose, duration });
 
-    window.flashSuccess = (msg, autoClose = true, duration = 2500) => window.flash(msg, 'success', autoClose, duration);
-    window.flashInfo = (msg, autoClose = true, duration = 2500) => window.flash(msg, 'info', autoClose, duration);
-    window.flashWarning = (msg, autoClose = true, duration = 3000) => window.flash(msg, 'warning', autoClose, duration);
+    // Helpers
+    window.flashSuccess = (msg, autoClose = true, duration = 4000) => window.flash(msg, 'success', autoClose, duration);
+    window.flashInfo = (msg, autoClose = true, duration = 4000) => window.flash(msg, 'info', autoClose, duration);
+    window.flashWarning = (msg, autoClose = true, duration = 4000) => window.flash(msg, 'warning', autoClose, duration);
     window.flashError = (msg, autoClose = true, duration = 4000) => window.flash(msg, 'error', autoClose, duration);
 })();

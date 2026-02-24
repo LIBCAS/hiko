@@ -7,10 +7,15 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\MergeController;
 use App\Http\Controllers\PlaceController;
+use App\Http\Controllers\GlobalIdentityController;
+use App\Http\Controllers\GlobalIdentityMergeController;
+use App\Http\Controllers\GlobalLocationController;
+use App\Http\Controllers\GlobalLocationMergeController;
 use App\Http\Controllers\GlobalPlaceController;
 use App\Http\Controllers\GlobalPlaceMergeController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AppInfoController;
 use App\Http\Controllers\KeywordController;
 use App\Http\Controllers\DevToolsController;
 use App\Http\Controllers\EditLinkController;
@@ -21,10 +26,12 @@ use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\ProfessionCategoryController;
 use App\Http\Controllers\GlobalProfessionController;
 use App\Http\Controllers\GlobalProfessionCategoryController;
+use App\Http\Controllers\GlobalProfessionMergeController;
 use App\Http\Controllers\LetterPreviewController;
 use App\Http\Controllers\KeywordCategoryController;
 use App\Http\Controllers\GlobalKeywordController;
 use App\Http\Controllers\GlobalKeywordCategoryController;
+use App\Http\Controllers\GlobalKeywordMergeController;
 use App\Http\Controllers\LetterComparisonController;
 use App\Http\Controllers\TenantStorageController;
 use App\Http\Controllers\ReligionTranslationsController;
@@ -33,6 +40,7 @@ use App\Http\Controllers\MergeLetterController;
 use App\Http\Controllers\Ajax\AjaxPlaceController;
 use App\Http\Controllers\Ajax\AjaxKeywordController;
 use App\Http\Controllers\Ajax\AjaxIdentityController;
+use App\Http\Controllers\Ajax\AjaxGlobalIdentityController;
 use App\Http\Controllers\Ajax\SimilarItemsController;
 use App\Http\Controllers\Ajax\SimilarNamesController;
 use App\Http\Controllers\Ajax\SimilarPlacesController;
@@ -48,6 +56,7 @@ use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use App\Http\Controllers\ReligionAdminController;
 use App\Http\Controllers\ReligionTreeController;
 use App\Http\Controllers\ReligionSearchController;
+use App\Http\Controllers\PageLockController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -63,6 +72,18 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
     Route::get('/', function () {
         return redirect()->route('letters');
     });
+
+    Route::post('/page-locks/acquire', [PageLockController::class, 'acquire'])
+        ->name('page-locks.acquire')
+        ->middleware(['auth']);
+    Route::post('/page-locks/heartbeat', [PageLockController::class, 'heartbeat'])
+        ->name('page-locks.heartbeat')
+        ->middleware(['auth']);
+    Route::post('/page-locks/release', [PageLockController::class, 'release'])
+        ->name('page-locks.release')
+        ->middleware(['auth']);
+
+
 
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])
@@ -119,6 +140,18 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
             ->name('locations.export')
             ->middleware(['auth', 'can:manage-metadata']);
 
+        Route::get('validation', [LocationController::class, 'validation'])
+            ->name('locations.validation')
+            ->middleware(['auth', 'can:view-metadata']);
+
+        Route::get('local-merge', [LocationController::class, 'localMerge'])
+            ->name('locations.local-merge')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('global-merge', GlobalLocationMergeController::class)
+            ->name('locations.global-merge')
+            ->middleware(['auth', 'can:manage-users']);
+
         Route::get('/repository/search', [LocationController::class, 'searchRepository'])
             ->name('locations.repository.search')
             ->middleware(['auth', 'can:view-metadata']);
@@ -130,6 +163,28 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('/collection/search', [LocationController::class, 'searchCollection'])
             ->name('locations.collection.search')
         ->middleware(['auth', 'can:view-metadata']);
+    });
+
+    Route::prefix('global-locations')->middleware(['auth', 'can:manage-users'])->name('global.locations.')->group(function () {
+        Route::get('create', [GlobalLocationController::class, 'create'])
+            ->name('create')
+            ->middleware('can:manage-users');
+
+        Route::get('{globalLocation}/edit', [GlobalLocationController::class, 'edit'])
+            ->name('edit')
+            ->middleware('can:manage-users');
+
+        Route::post('/', [GlobalLocationController::class, 'store'])
+            ->name('store')
+            ->middleware('can:manage-users');
+
+        Route::put('{globalLocation}', [GlobalLocationController::class, 'update'])
+            ->name('update')
+            ->middleware('can:manage-users');
+
+        Route::delete('{globalLocation}', [GlobalLocationController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('can:manage-users');
     });
 
     Route::prefix('professions')->group(function () {
@@ -160,6 +215,18 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('export', [ProfessionController::class, 'export'])
             ->name('professions.export')
             ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('validation', [ProfessionController::class, 'validation'])
+            ->name('professions.validation')
+            ->middleware(['auth', 'can:view-metadata']);
+
+        Route::get('local-merge', [ProfessionController::class, 'localMerge'])
+            ->name('professions.local-merge')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('global-merge', GlobalProfessionMergeController::class)
+            ->name('professions.global-merge')
+            ->middleware(['auth', 'can:manage-users']);
     });
 
     Route::prefix('professions/category')->group(function () {
@@ -203,7 +270,7 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
     Route::prefix('global-professions')->middleware(['auth'])->name('global.professions.')->group(function () {
         Route::get('/', [GlobalProfessionController::class, 'index'])
             ->name('index')
-            ->middleware('can:view-users');
+            ->middleware('can:view-metadata');
 
         Route::get('create', [GlobalProfessionController::class, 'create'])
             ->name('create')
@@ -229,7 +296,7 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
     Route::prefix('global-profession-categories')->middleware(['auth'])->name('global.professions.category.')->group(function () {
         Route::get('/', [GlobalProfessionCategoryController::class, 'index'])
             ->name('index')
-            ->middleware('can:view-users');
+            ->middleware('can:view-metadata');
 
         Route::get('create', [GlobalProfessionCategoryController::class, 'create'])
             ->name('create')
@@ -280,6 +347,18 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('export', [KeywordController::class, 'export'])
             ->name('keywords.export')
             ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('validation', [KeywordController::class, 'validation'])
+            ->name('keywords.validation')
+            ->middleware(['auth', 'can:view-metadata']);
+
+        Route::get('local-merge', [KeywordController::class, 'localMerge'])
+            ->name('keywords.local-merge')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('global-merge', GlobalKeywordMergeController::class)
+            ->name('keywords.global-merge')
+            ->middleware(['auth', 'can:manage-users']);
     });
 
     Route::prefix('keywords/category')->group(function () {
@@ -315,7 +394,7 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
     Route::prefix('global-keywords')->middleware(['auth'])->name('global.keywords.')->group(function () {
         Route::get('/', [GlobalKeywordController::class, 'index'])
             ->name('index')
-            ->middleware('can:view-users');
+            ->middleware('can:view-metadata');
 
         Route::get('create', [GlobalKeywordController::class, 'create'])
             ->name('create')
@@ -341,7 +420,7 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
     Route::prefix('global-keyword-categories')->middleware(['auth'])->name('global.keywords.category.')->group(function () {
         Route::get('/', [GlobalKeywordCategoryController::class, 'index'])
             ->name('index')
-            ->middleware('can:view-users');
+            ->middleware('can:view-metadata');
 
         Route::get('create', [GlobalKeywordCategoryController::class, 'create'])
             ->name('create')
@@ -460,6 +539,41 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('export', [IdentityController::class, 'export'])
             ->name('identities.export')
             ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('validation', [IdentityController::class, 'validation'])
+            ->name('identities.validation')
+            ->middleware(['auth', 'can:view-metadata']);
+
+        Route::get('local-merge', [IdentityController::class, 'localMerge'])
+            ->name('identities.local-merge')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('global-merge', GlobalIdentityMergeController::class)
+            ->name('identities.global-merge')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+    });
+
+    Route::prefix('global-identities')->middleware(['auth'])->name('global.identities.')->group(function () {
+        Route::get('create', [GlobalIdentityController::class, 'create'])
+            ->name('create')
+            ->middleware('can:manage-users');
+
+        Route::get('{globalIdentity}/edit', [GlobalIdentityController::class, 'edit'])
+            ->name('edit')
+            ->middleware('can:manage-users');
+
+        Route::post('/', [GlobalIdentityController::class, 'store'])
+            ->name('store')
+            ->middleware('can:manage-users');
+
+        Route::put('{globalIdentity}', [GlobalIdentityController::class, 'update'])
+            ->name('update')
+            ->middleware('can:manage-users');
+
+        Route::delete('{globalIdentity}', [GlobalIdentityController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('can:manage-users');
     });
 
     Route::prefix('letters')->group(function () {
@@ -506,6 +620,10 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('export', [LetterController::class, 'export'])
             ->name('letters.export')
             ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('validation', [LetterController::class, 'validation'])
+            ->name('letters.validation')
+            ->middleware(['auth', 'can:view-metadata']);
 
         Route::get('{letter}/images', [LetterController::class, 'images'])
             ->name('letters.images')
@@ -565,6 +683,10 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
 
         Route::get('identity', [AjaxIdentityController::class, '__invoke'])
             ->name('ajax.identities')
+            ->middleware(['auth', 'can:manage-metadata']);
+
+        Route::get('global-identity', [AjaxGlobalIdentityController::class, '__invoke'])
+            ->name('ajax.global.identities')
             ->middleware(['auth', 'can:manage-metadata']);
 
         Route::get('identity/similar', [SimilarNamesController::class, '__invoke'])
@@ -648,6 +770,10 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
 
     Route::get('account', AccountController::class)
         ->name('account')
+        ->middleware(['auth']);
+
+    Route::get('/app', AppInfoController::class)
+        ->name('app')
         ->middleware(['auth']);
 
     Route::post('merge', MergeController::class)
