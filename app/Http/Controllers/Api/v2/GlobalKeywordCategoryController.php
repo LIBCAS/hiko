@@ -7,6 +7,7 @@ use App\Http\Resources\KeywordCategoryResource;
 use App\Models\GlobalKeywordCategory;
 use Illuminate\Http\Request;
 
+use Symfony\Component\HttpFoundation\Response;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
@@ -96,7 +97,10 @@ class GlobalKeywordCategoryController extends Controller
         ]);
 
         $category = GlobalKeywordCategory::create($validated);
-        return new KeywordCategoryResource($category);
+
+        return (new KeywordCategoryResource($category))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     #[OA\Put(

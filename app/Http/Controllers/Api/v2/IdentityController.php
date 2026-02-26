@@ -221,7 +221,9 @@ class IdentityController extends Controller
 
         $this->syncRelations($identity, $request->validated());
 
-        return new IdentityResource($identity->load(['globalIdentity']));
+        return (new IdentityResource($identity->load(['globalIdentity'])))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     #[OA\Put(

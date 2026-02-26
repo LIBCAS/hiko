@@ -7,6 +7,7 @@ use App\Http\Requests\GlobalIdentityRequest;
 use App\Http\Resources\IdentityResource;
 use App\Models\GlobalIdentity;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
@@ -276,7 +277,9 @@ class GlobalIdentityController extends Controller
             $identity->syncReligions($request->input('religions', null));
         }
 
-        return new IdentityResource($identity->load(['professions', 'religions']));
+        return (new IdentityResource($identity->load(['professions', 'religions'])))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     #[OA\Put(

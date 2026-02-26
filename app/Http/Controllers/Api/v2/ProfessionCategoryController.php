@@ -8,6 +8,7 @@ use App\Http\Resources\ProfessionCategoryResource;
 use App\Models\ProfessionCategory;
 use Illuminate\Http\Request;
 
+use Symfony\Component\HttpFoundation\Response;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
@@ -106,7 +107,9 @@ class ProfessionCategoryController extends Controller
             ]
         ]);
 
-        return new ProfessionCategoryResource($category);
+        return (new ProfessionCategoryResource($category))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     #[OA\Put(

@@ -9,6 +9,7 @@ use App\Models\Place;
 use App\Services\PlaceService;
 use Illuminate\Http\Request;
 
+use Symfony\Component\HttpFoundation\Response;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
@@ -110,7 +111,10 @@ class PlaceController extends Controller
         }
 
         $place = $this->placeService->create($validated);
-        return new PlaceResource($place);
+
+        return (new PlaceResource($place))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     #[OA\Put(

@@ -196,7 +196,9 @@ class LetterController extends Controller
 
         Log::info('API V2: Letter created', ['letter_id' => $letter->id]);
 
-        return new LetterResource($letter);
+        return (new LetterResource($letter))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     #[OA\Put(

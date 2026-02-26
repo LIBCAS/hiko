@@ -25,6 +25,7 @@ class LetterResource extends JsonResource
         $places = $this->places->groupBy('pivot.role');
 
         return [
+            'id' => $this->id,
             'uuid' => $this->uuid,
             'dates' => [
                 'date' => $this->pretty_date,
@@ -46,6 +47,7 @@ class LetterResource extends JsonResource
         $letterAttrs = $this->getAttributes();
 
         return [
+            'id' => $this->id,
             'name' => $this->name,
             'uuid' => $this->uuid,
             'dates' => $this->getDetailedDates(),

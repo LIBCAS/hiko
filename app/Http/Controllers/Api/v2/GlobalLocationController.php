@@ -8,6 +8,7 @@ use App\Models\GlobalLocation;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+use Symfony\Component\HttpFoundation\Response;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
@@ -115,7 +116,10 @@ class GlobalLocationController extends Controller
         }
 
         $location = GlobalLocation::create($validated);
-        return new LocationResource($location);
+
+        return (new LocationResource($location))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     #[OA\Put(

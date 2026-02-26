@@ -7,6 +7,7 @@ use App\Http\Resources\KeywordResource;
 use App\Models\GlobalKeyword;
 use Illuminate\Http\Request;
 
+use Symfony\Component\HttpFoundation\Response;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
@@ -97,7 +98,10 @@ class GlobalKeywordController extends Controller
         ]);
 
         $keyword = GlobalKeyword::create($validated);
-        return new KeywordResource($keyword);
+
+        return (new KeywordResource($keyword))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     #[OA\Put(

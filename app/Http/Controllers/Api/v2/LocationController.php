@@ -8,6 +8,7 @@ use App\Models\Location;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+use Symfony\Component\HttpFoundation\Response;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
@@ -116,7 +117,10 @@ class LocationController extends Controller
         }
 
         $location = Location::create($validated);
-        return new LocationResource($location);
+
+        return (new LocationResource($location))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     #[OA\Put(

@@ -8,6 +8,7 @@ use App\Http\Resources\KeywordCategoryResource;
 use App\Models\KeywordCategory;
 use Illuminate\Http\Request;
 
+use Symfony\Component\HttpFoundation\Response;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
@@ -106,7 +107,9 @@ class KeywordCategoryController extends Controller
             ]
         ]);
 
-        return new KeywordCategoryResource($category);
+        return (new KeywordCategoryResource($category))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     #[OA\Put(

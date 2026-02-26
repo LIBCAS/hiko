@@ -8,6 +8,7 @@ use App\Http\Resources\KeywordResource;
 use App\Models\Keyword;
 use Illuminate\Http\Request;
 
+use Symfony\Component\HttpFoundation\Response;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
@@ -107,7 +108,9 @@ class KeywordController extends Controller
             'keyword_category_id' => $validated['keyword_category_id'] ?? null,
         ]);
 
-        return new KeywordResource($keyword);
+        return (new KeywordResource($keyword))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     #[OA\Put(

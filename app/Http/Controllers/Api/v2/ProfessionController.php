@@ -8,6 +8,7 @@ use App\Http\Resources\ProfessionResource;
 use App\Models\Profession;
 use Illuminate\Http\Request;
 
+use Symfony\Component\HttpFoundation\Response;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
@@ -107,7 +108,9 @@ class ProfessionController extends Controller
             'profession_category_id' => $validated['profession_category_id'] ?? null,
         ]);
 
-        return new ProfessionResource($profession);
+        return (new ProfessionResource($profession))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     #[OA\Put(

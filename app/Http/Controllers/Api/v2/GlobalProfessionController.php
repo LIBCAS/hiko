@@ -7,6 +7,7 @@ use App\Http\Resources\ProfessionResource;
 use App\Models\GlobalProfession;
 use Illuminate\Http\Request;
 
+use Symfony\Component\HttpFoundation\Response;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
@@ -97,7 +98,10 @@ class GlobalProfessionController extends Controller
         ]);
 
         $profession = GlobalProfession::create($validated);
-        return new ProfessionResource($profession);
+
+        return (new ProfessionResource($profession))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     #[OA\Put(
