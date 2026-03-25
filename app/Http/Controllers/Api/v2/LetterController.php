@@ -10,6 +10,7 @@ use App\Jobs\RegenerateNames;
 use App\Models\Letter;
 use App\Services\LetterService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
@@ -28,6 +29,11 @@ class LetterController extends Controller
     public static $maxPerPage = 500;    // Maximum number of items per page
     public static $defaultPerPage = 100; // Default number of items per page
 
+    public function __construct(LetterService $letterService)
+    {
+        $this->letterService = $letterService;
+    }
+
     #[OA\Get(
         path: "/letters",
         summary: "List letters",
@@ -38,7 +44,7 @@ class LetterController extends Controller
             new OA\Parameter(name: "per_page", in: "query", description: "Items per page", schema: new OA\Schema(type: "integer")),
             new OA\Parameter(name: "sort", in: "query", description: "Sort by field. Prefix with '-' for descending. Allowed: created_at, updated_at, date_computed, date_year, status.", schema: new OA\Schema(type: "string")),
             new OA\Parameter(name: "lang", in: "query", description: "Language (cs or en)", schema: new OA\Schema(type: "string", enum: ["cs", "en"])),
-            new OA\Parameter(name: "include", in: "query", description: "Include related resources (comma-separated). Allowed: identities,identities.localProfessions,identities.localProfessions.profession_category,identities.globalProfessions,identities.globalProfessions.profession_category,places,globalPlaces,keywords,globalKeywords,media,users", schema: new OA\Schema(type: "string")),
+            new OA\Parameter(name: "include", in: "query", description: "Include related resources (comma-separated). Allowed: identities,globalIdentities,identities.localProfessions,identities.localProfessions.profession_category,identities.globalProfessions,identities.globalProfessions.profession_category,places,globalPlaces,keywords,globalKeywords,media,users", schema: new OA\Schema(type: "string")),
             // Filters
             new OA\Parameter(name: "filter[fulltext]", in: "query", description: "Search in content (stripped)", schema: new OA\Schema(type: "string")),
             new OA\Parameter(name: "filter[id]", in: "query", description: "Filter by ID (supports partial match)", schema: new OA\Schema(type: "string")),
@@ -70,6 +76,32 @@ class LetterController extends Controller
                 response: 200,
                 description: "List of letters",
                 content: new OA\JsonContent(
+                    example: [
+                        "data" => [
+                            [
+                                "id" => 4069,
+                                "uuid" => "07032d70-f4e1-4c5f-b8bc-124f5d3ea5b5",
+                                "dates" => [
+                                    "date" => "13. 9. 1933",
+                                    "computed" => "1933-09-13",
+                                ],
+                                "signatures" => ["SIG-api-v2-live-20260302141804-3260cd3d"],
+                                "authors" => ["Local Person, Author"],
+                                "recipients" => ["Global Person, Recipient"],
+                                "origins" => ["Local Place"],
+                                "destinations" => ["Global Place"],
+                            ],
+                        ],
+                        "meta" => [
+                            "current_page" => 1,
+                            "last_page" => 3,
+                            "current_page_of_total" => "1 / 3",
+                            "per_page" => 100,
+                            "current_page_items" => "1 - 100",
+                            "total_item_count" => 235,
+                            "current_item_count" => 100,
+                        ],
+                    ],
                     properties: [
                         new OA\Property(property: "data", type: "array", items: new OA\Items(ref: "#/components/schemas/Letter")),
                         new OA\Property(property: "meta", type: "object")
@@ -101,6 +133,17 @@ class LetterController extends Controller
         $letters = QueryBuilder::for(Letter::class)
             ->allowedIncludes([
                 'identities',
+                'globalIdentities',
+                'authors',
+                'recipients',
+                'mentioned',
+                'globalAuthors',
+                'globalRecipients',
+                'globalMentioned',
+                'origins',
+                'destinations',
+                'globalOrigins',
+                'globalDestinations',
                 'identities.localProfessions',
                 'identities.localProfessions.profession_category',
                 'identities.globalProfessions',
@@ -116,7 +159,19 @@ class LetterController extends Controller
                 $query->filter($request->query('filter', []));  // Use the existing `filter()` logic in LetterBuilder
             })
             ->defaultSort($sorts)
-            ->with($includes)
+            ->with(array_merge([
+                'globalIdentities',
+                'authors',
+                'recipients',
+                'mentioned',
+                'globalAuthors',
+                'globalRecipients',
+                'globalMentioned',
+                'origins',
+                'destinations',
+                'globalOrigins',
+                'globalDestinations',
+            ], $includes))
             ->paginate($perPage, ['*'], 'page', $page)
             ->appends($request->query());
 
@@ -135,7 +190,138 @@ class LetterController extends Controller
             new OA\Response(
                 response: 200,
                 description: "Letter details",
-                content: new OA\JsonContent(ref: "#/components/schemas/Letter")
+                content: new OA\JsonContent(
+                    ref: "#/components/schemas/Letter",
+                    example: [
+                        "data" => [
+                            "id" => 4069,
+                            "uuid" => "07032d70-f4e1-4c5f-b8bc-124f5d3ea5b5",
+                            "dates" => [
+                                "date" => "13. 9. 1933",
+                                "date_range" => "21. 3. 1939",
+                            ],
+                            "date_year" => 1933,
+                            "date_month" => 9,
+                            "date_day" => 13,
+                            "date_marked" => "13.09.1933",
+                            "date_uncertain" => 0,
+                            "date_approximate" => 1,
+                            "date_inferred" => 0,
+                            "date_is_range" => 1,
+                            "date_note" => "Live API smoke test",
+                            "range_year" => 1939,
+                            "range_month" => 3,
+                            "range_day" => 21,
+                            "authors" => [
+                                [
+                                    "id" => 2483,
+                                    "scope" => "local",
+                                    "reference" => "local-2483",
+                                    "name" => "Local Person, Author",
+                                    "marked" => "Author mark",
+                                    "salutation" => null,
+                                ],
+                            ],
+                            "author_inferred" => 0,
+                            "author_uncertain" => 0,
+                            "author_note" => "Author note",
+                            "recipients" => [
+                                [
+                                    "id" => 18,
+                                    "scope" => "global",
+                                    "reference" => "global-18",
+                                    "name" => "Global Person, Recipient",
+                                    "marked" => "Recipient mark",
+                                    "salutation" => "Dear recipient",
+                                ],
+                            ],
+                            "recipient_inferred" => 1,
+                            "recipient_uncertain" => 0,
+                            "recipient_note" => "Recipient note",
+                            "origins" => [
+                                [
+                                    "id" => 181,
+                                    "scope" => "local",
+                                    "reference" => "local-181",
+                                    "name" => "Local origin",
+                                    "marked" => "Origin mark",
+                                    "salutation" => null,
+                                ],
+                            ],
+                            "origin_inferred" => 1,
+                            "origin_uncertain" => 0,
+                            "origin_note" => "Origin note",
+                            "destinations" => [
+                                [
+                                    "id" => 238,
+                                    "scope" => "global",
+                                    "reference" => "global-238",
+                                    "name" => "Global destination",
+                                    "marked" => "Destination mark",
+                                    "salutation" => null,
+                                ],
+                            ],
+                            "destination_inferred" => 0,
+                            "destination_uncertain" => 1,
+                            "destination_note" => "Destination note",
+                            "mentioned" => [
+                                [
+                                    "id" => 2484,
+                                    "scope" => "local",
+                                    "reference" => "local-2484",
+                                    "name" => "Local Person, Mentioned",
+                                    "marked" => null,
+                                    "salutation" => null,
+                                ],
+                                [
+                                    "id" => 18,
+                                    "scope" => "global",
+                                    "reference" => "global-18",
+                                    "name" => "Global Person, Mentioned",
+                                    "marked" => null,
+                                    "salutation" => null,
+                                ],
+                            ],
+                            "people_mentioned_note" => "Mentioned note",
+                            "keywords" => [
+                                [
+                                    "id" => 74,
+                                    "scope" => "local",
+                                    "reference" => "local-74",
+                                    "name_cs" => "Mistni klicove slovo",
+                                    "name_en" => "Local keyword",
+                                    "type" => "L.",
+                                ],
+                                [
+                                    "id" => 10442,
+                                    "scope" => "global",
+                                    "reference" => "global-10442",
+                                    "name_cs" => "Global klicove slovo",
+                                    "name_en" => "Global keyword",
+                                    "type" => "G.",
+                                ],
+                            ],
+                            "copies" => [
+                                [
+                                    "repository" => [
+                                        "id" => 30,
+                                        "scope" => "local",
+                                        "reference" => "local-30",
+                                        "value" => "local-30",
+                                        "label" => "Repository (Lokální)",
+                                    ],
+                                    "archive" => [
+                                        "id" => 12,
+                                        "scope" => "global",
+                                        "reference" => "global-12",
+                                        "value" => "global-12",
+                                        "label" => "Global Archive (Globální)",
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ]
+                )
             ),
             new OA\Response(response: 404, description: "Letter not found")
         ]
@@ -144,6 +330,17 @@ class LetterController extends Controller
     {
         $letter = Letter::with([
                 'identities',
+                'globalIdentities',
+                'authors',
+                'recipients',
+                'mentioned',
+                'globalAuthors',
+                'globalRecipients',
+                'globalMentioned',
+                'origins',
+                'destinations',
+                'globalOrigins',
+                'globalDestinations',
                 'identities.localProfessions',
                 'identities.localProfessions.profession_category',
                 'identities.globalProfessions',
@@ -168,7 +365,7 @@ class LetterController extends Controller
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Letter")
+            content: new OA\JsonContent(ref: "#/components/schemas/LetterUpsertRequest")
         ),
         responses: [
             new OA\Response(
@@ -183,6 +380,7 @@ class LetterController extends Controller
     public function store(LetterRequest $request)
     {
         $data = $request->validated();
+        unset($data['client_meta']);
         unset($data['copies']);
 
         $letter = Letter::create($data);
@@ -204,6 +402,7 @@ class LetterController extends Controller
     #[OA\Put(
         path: "/letter/{id}",
         summary: "Update letter",
+        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable scalar fields, [] clears relation/list fields, and client-specific extra data belongs in client_meta.",
         tags: ["Letters"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -211,7 +410,17 @@ class LetterController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Letter")
+            content: new OA\JsonContent(
+                ref: "#/components/schemas/LetterUpsertRequest",
+                example: [
+                    "origin_note" => null,
+                    "recipients" => [],
+                    "client_meta" => [
+                        "external_id" => "client-letter-2457",
+                        "sync_source" => "partner-app",
+                    ],
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -228,11 +437,14 @@ class LetterController extends Controller
         $letter = Letter::findOrFail($id);
 
         $data = $request->validated();
+        unset($data['client_meta']);
         unset($data['copies']);
 
         $letter->update($data);
 
-        $this->letterService->syncManifestations($letter, $request->input('copies', []));
+        if ($request->exists('copies')) {
+            $this->letterService->syncManifestations($letter, $request->input('copies', []));
+        }
 
         $this->attachRelated($request, $letter);
 
@@ -309,45 +521,182 @@ class LetterController extends Controller
 
     protected function attachRelated(Request $request, Letter $letter)
     {
-        $localKeywords = $request->local_keywords ?? [];
-        $letter->localKeywords()->sync($localKeywords);
+        if ($request->exists('keywords') || $request->exists('local_keywords') || $request->exists('global_keywords')) {
+            $keywordIds = $this->splitScopedIds($request->keywords ?? []);
+            $letter->localKeywords()->sync($keywordIds['local']);
+            $letter->globalKeywords()->sync($keywordIds['global']);
+        }
 
-        $globalKeywords = $request->global_keywords ?? [];
-        $letter->globalKeywords()->sync($globalKeywords);
+        if ($request->exists('authors')) {
+            $this->detachIdentityRole($letter, 'author');
+            $authorData = $this->prepareIdentityAttachmentData($request->authors, 'author');
+            $letter->identities()->attach($authorData['local']);
+            $letter->globalIdentities()->attach($authorData['global']);
+        }
 
-        $letter->identities()->detach();
-        $letter->localPlaces()->detach();
-        $letter->globalPlaces()->detach();
+        if ($request->exists('recipients')) {
+            $this->detachIdentityRole($letter, 'recipient');
+            $recipientData = $this->prepareIdentityAttachmentData($request->recipients, 'recipient', ['salutation']);
+            $letter->identities()->attach($recipientData['local']);
+            $letter->globalIdentities()->attach($recipientData['global']);
+        }
 
-        $letter->identities()->attach($this->prepareAttachmentData($request->authors, 'author'));
-        $letter->identities()->attach($this->prepareAttachmentData($request->recipients, 'recipient', ['salutation']));
+        if ($request->exists('mentioned')) {
+            $this->detachIdentityRole($letter, 'mentioned');
+            $mentionedData = $this->prepareMentionedIdentityAttachmentData($request->mentioned);
+            $letter->identities()->attach($mentionedData['local']);
+            $letter->globalIdentities()->attach($mentionedData['global']);
+        }
 
-        // Handle origins (local_origins and global_origins)
-        $this->attachPlacesToLetter($letter, $request->local_origins, 'origin', false);
-        $this->attachPlacesToLetter($letter, $request->global_origins, 'origin', true);
+        if ($request->exists('origins') || $request->exists('local_origins') || $request->exists('global_origins')) {
+            $this->detachPlaceRole($letter, 'origin');
+            $this->attachScopedPlacesToLetter($letter, $request->origins, 'origin');
+        }
 
-        // Handle destinations (local_destinations and global_destinations)
-        $this->attachPlacesToLetter($letter, $request->local_destinations, 'destination', false);
-        $this->attachPlacesToLetter($letter, $request->global_destinations, 'destination', true);
+        if ($request->exists('destinations') || $request->exists('local_destinations') || $request->exists('global_destinations')) {
+            $this->detachPlaceRole($letter, 'destination');
+            $this->attachScopedPlacesToLetter($letter, $request->destinations, 'destination');
+        }
+    }
 
-        // Ensure mentioned is an array
-        $mentioned = [];
-        if (is_array($request->mentioned)) {
-            foreach ($request->mentioned as $key => $id) {
-                // Extract numeric part from the ID (e.g., 'local-7' -> 7)
-                $numericId = preg_replace('/\D/', '', $id);
-                if (is_numeric($numericId)) {
-                    $mentioned[$numericId] = [
-                        'position' => $key,
-                        'role' => 'mentioned',
-                    ];
-                } else {
-                    Log::warning("Invalid mentioned ID: {$id}");
-                }
+    protected function detachIdentityRole(Letter $letter, string $role): void
+    {
+        $table = tenancy()->tenant->table_prefix . '__identity_letter';
+
+        DB::table($table)
+            ->where('letter_id', $letter->id)
+            ->where('role', $role)
+            ->delete();
+    }
+
+    protected function detachPlaceRole(Letter $letter, string $role): void
+    {
+        $table = tenancy()->tenant->table_prefix . '__letter_place';
+
+        DB::table($table)
+            ->where('letter_id', $letter->id)
+            ->where('role', $role)
+            ->delete();
+    }
+
+    /**
+     * @param array<int, array<string, mixed>>|null $items
+     * @return array{local: array<int, array<string, mixed>>, global: array<int, array<string, mixed>>}
+     */
+    protected function prepareIdentityAttachmentData(?array $items, string $role, array $pivotFields = []): array
+    {
+        if (!$items) {
+            return ['local' => [], 'global' => []];
+        }
+
+        $results = ['local' => [], 'global' => []];
+
+        foreach ($items as $position => $item) {
+            $rawId = $item['id'] ?? null;
+            $parsed = $this->parseIdentityReference($rawId);
+            if (!$parsed) {
+                Log::warning("Invalid pivot data for role '{$role}' at position {$position}.", ['id' => $rawId]);
+                continue;
+            }
+
+            $data = [
+                'position' => $position,
+                'role' => $role,
+                'marked' => $item['marked'] ?? null,
+            ];
+
+            foreach ($pivotFields as $field) {
+                $data[$field] = $item[$field] ?? null;
+            }
+
+            $results[$parsed['scope']][$parsed['id']] = $data;
+        }
+
+        return $results;
+    }
+
+    /**
+     * @param array<int, mixed>|null $items
+     * @return array{local: array<int, array<string, mixed>>, global: array<int, array<string, mixed>>}
+     */
+    protected function prepareMentionedIdentityAttachmentData(?array $items): array
+    {
+        if (!$items) {
+            return ['local' => [], 'global' => []];
+        }
+
+        $results = ['local' => [], 'global' => []];
+
+        foreach ($items as $position => $item) {
+            $rawId = is_array($item) ? ($item['id'] ?? null) : $item;
+            $parsed = $this->parseIdentityReference($rawId);
+            if (!$parsed) {
+                Log::warning('Invalid mentioned ID.', ['id' => $rawId]);
+                continue;
+            }
+
+            $results[$parsed['scope']][$parsed['id']] = [
+                'position' => $position,
+                'role' => 'mentioned',
+            ];
+        }
+
+        return $results;
+    }
+
+    /**
+     * @param mixed $rawId
+     * @return array{scope: 'local'|'global', id: int}|null
+     */
+    protected function parseIdentityReference(mixed $rawId): ?array
+    {
+        if (is_int($rawId)) {
+            return ['scope' => 'local', 'id' => $rawId];
+        }
+
+        if (is_string($rawId) && ctype_digit($rawId)) {
+            return ['scope' => 'local', 'id' => (int) $rawId];
+        }
+
+        if (is_string($rawId) && preg_match('/^(local|global)-(\d+)$/', $rawId, $matches)) {
+            return [
+                'scope' => $matches[1],
+                'id' => (int) $matches[2],
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $items
+     * @return array{local: array<int>, global: array<int>}
+     */
+    protected function splitScopedIds(array $items): array
+    {
+        $results = ['local' => [], 'global' => []];
+
+        foreach ($items as $item) {
+            $rawId = is_array($item) ? ($item['id'] ?? null) : $item;
+
+            if (!is_string($rawId) && !is_int($rawId)) {
+                continue;
+            }
+
+            if (is_int($rawId) || (is_string($rawId) && ctype_digit($rawId))) {
+                $results['local'][] = (int) $rawId;
+                continue;
+            }
+
+            if (preg_match('/^(local|global)-(\d+)$/', (string) $rawId, $matches)) {
+                $results[$matches[1]][] = (int) $matches[2];
             }
         }
 
-        $letter->identities()->attach($mentioned);
+        return [
+            'local' => array_values(array_unique($results['local'])),
+            'global' => array_values(array_unique($results['global'])),
+        ];
     }
 
     /**
@@ -371,6 +720,57 @@ class LetterController extends Controller
             $letter->globalPlaces()->attach($preparedData);
         } else {
             $letter->localPlaces()->attach($preparedData);
+        }
+    }
+
+    /**
+     * @param array<int, array<string, mixed>>|null $places
+     */
+    protected function attachScopedPlacesToLetter(Letter $letter, ?array $places, string $role): void
+    {
+        if (!$places) {
+            return;
+        }
+
+        $local = [];
+        $global = [];
+
+        foreach ($places as $position => $item) {
+            $rawId = $item['id'] ?? null;
+
+            if (!is_string($rawId) && !is_int($rawId)) {
+                Log::warning("Invalid place data for role '{$role}' at position {$position}.", ['id' => $rawId]);
+                continue;
+            }
+
+            if (is_int($rawId) || (is_string($rawId) && ctype_digit($rawId))) {
+                $local[(int) $rawId] = [
+                    'position' => $position,
+                    'role' => $role,
+                    'marked' => $item['marked'] ?? null,
+                ];
+                continue;
+            }
+
+            if (!preg_match('/^(local|global)-(\d+)$/', (string) $rawId, $matches)) {
+                Log::warning("Invalid place reference for role '{$role}' at position {$position}.", ['id' => $rawId]);
+                continue;
+            }
+
+            $target = $matches[1] === 'global' ? 'global' : 'local';
+            ${$target}[(int) $matches[2]] = [
+                'position' => $position,
+                'role' => $role,
+                'marked' => $item['marked'] ?? null,
+            ];
+        }
+
+        if ($local !== []) {
+            $letter->localPlaces()->attach($local);
+        }
+
+        if ($global !== []) {
+            $letter->globalPlaces()->attach($global);
         }
     }
 }

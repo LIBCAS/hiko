@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\v2\LocationController as apiV2LocationController;
 use App\Http\Controllers\Api\v2\PlaceController as apiV2PlaceController;
 use App\Http\Controllers\Api\v2\IdentityController as apiV2IdentityController;
 use App\Http\Controllers\Api\v2\GlobalIdentityController as apiV2GlobalIdentityController;
+use App\Http\Controllers\Api\v2\GlobalLocationController as apiV2GlobalLocationController;
 use App\Http\Controllers\Api\v2\GlobalPlaceController as apiV2GlobalPlaceController;
 use App\Http\Controllers\Api\v2\GlobalProfessionCategoryController as apiV2GlobalProfessionCategoryController;
 use App\Http\Controllers\Api\v2\GlobalProfessionController as apiV2GlobalProfessionController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Api\v2\ProfessionCategoryController as apiV2ProfessionC
 use App\Http\Controllers\Api\v2\ProfessionController as apiV2ProfessionController;
 use App\Http\Controllers\Api\v2\KeywordCategoryController as apiV2KeywordCategoryController;
 use App\Http\Controllers\Api\v2\KeywordController as apiV2KeywordController;
+use App\Http\Controllers\Api\v2\ReligionController as apiV2ReligionController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -106,6 +108,10 @@ Route::middleware([InitializeTenancyByDomain::class, 'auth:sanctum'])->group(fun
             Route::get('global-places', [apiV2GlobalPlaceController::class, 'index']);
             Route::get('global-place/{id}', [apiV2GlobalPlaceController::class, 'show']);
 
+            // Global Locations
+            Route::get('global-locations', [apiV2GlobalLocationController::class, 'index']);
+            Route::get('global-location/{id}', [apiV2GlobalLocationController::class, 'show']);
+
             // Places
             Route::get('places', [apiV2PlaceController::class, 'index']);
             Route::get('place/{id}', [apiV2PlaceController::class, 'show']);
@@ -150,6 +156,10 @@ Route::middleware([InitializeTenancyByDomain::class, 'auth:sanctum'])->group(fun
             // Keywords
             Route::get('keywords', [apiV2KeywordController::class, 'index']);
             Route::get('keyword/{id}', [apiV2KeywordController::class, 'show']);
+
+            // Religions
+            Route::get('religions', [apiV2ReligionController::class, 'index']);
+            Route::get('religion/{id}', [apiV2ReligionController::class, 'show']);
         });
 
         Route::middleware('throttle:api-write')->group(function () {
@@ -170,6 +180,11 @@ Route::middleware([InitializeTenancyByDomain::class, 'auth:sanctum'])->group(fun
             Route::post('global-places', [apiV2GlobalPlaceController::class, 'store'])->middleware('can:manage-users');
             Route::put('global-place/{id}', [apiV2GlobalPlaceController::class, 'update'])->middleware('can:manage-users');
             // Route::delete('global-place/{id}', [apiV2GlobalPlaceController::class, 'destroy']);
+
+            // Global Locations
+            Route::post('global-locations', [apiV2GlobalLocationController::class, 'store'])->middleware('can:manage-users');
+            Route::put('global-location/{id}', [apiV2GlobalLocationController::class, 'update'])->middleware('can:manage-users');
+            // Route::delete('global-location/{id}', [apiV2GlobalLocationController::class, 'destroy']);
 
             // Places
             Route::post('places', [apiV2PlaceController::class, 'store']);

@@ -29,6 +29,54 @@ use Stancl\Tenancy\Facades\Tenancy;
         new OA\Property(property: "note", type: "string", nullable: true),
         new OA\Property(property: "alternative_names", type: "array", items: new OA\Items(type: "string")),
         new OA\Property(property: "related_names", type: "array", items: new OA\Items(type: "object")),
+        new OA\Property(property: "global_identity_id", type: "integer", nullable: true),
+        new OA\Property(
+            property: "global_identity",
+            type: "object",
+            nullable: true,
+            properties: [
+                new OA\Property(property: "id", type: "integer"),
+                new OA\Property(property: "scope", type: "string"),
+                new OA\Property(property: "reference", type: "string"),
+                new OA\Property(property: "name", type: "string", nullable: true),
+                new OA\Property(property: "type", type: "string", nullable: true),
+                new OA\Property(property: "birth_year", type: "string", nullable: true),
+                new OA\Property(property: "death_year", type: "string", nullable: true),
+            ]
+        ),
+        new OA\Property(
+            property: "professions",
+            type: "array",
+            items: new OA\Items(
+                type: "object",
+                properties: [
+                    new OA\Property(property: "id", type: "integer"),
+                    new OA\Property(property: "scope", type: "string"),
+                    new OA\Property(property: "reference", type: "string"),
+                    new OA\Property(
+                        property: "name",
+                        type: "object",
+                        properties: [
+                            new OA\Property(property: "cs", type: "string"),
+                            new OA\Property(property: "en", type: "string"),
+                        ]
+                    ),
+                    new OA\Property(property: "category_id", type: "integer", nullable: true),
+                ]
+            )
+        ),
+        new OA\Property(
+            property: "religions",
+            type: "array",
+            items: new OA\Items(
+                properties: [
+                    new OA\Property(property: "id", type: "integer"),
+                    new OA\Property(property: "name", type: "string"),
+                    new OA\Property(property: "is_active", type: "boolean"),
+                ],
+                type: "object"
+            )
+        ),
         new OA\Property(property: "created_at", type: "string", format: "date-time", readOnly: true),
         new OA\Property(property: "updated_at", type: "string", format: "date-time", readOnly: true)
     ]

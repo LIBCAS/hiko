@@ -4,7 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use OpenApi\Attributes as OA;
 
+#[OA\Schema(
+    schema: "Religion",
+    properties: [
+        new OA\Property(property: "id", type: "integer", readOnly: true),
+        new OA\Property(property: "slug", type: "string"),
+        new OA\Property(property: "name", type: "string", description: "Localized religion name"),
+        new OA\Property(property: "path_text", type: "string", description: "Localized full path"),
+        new OA\Property(property: "is_active", type: "boolean"),
+        new OA\Property(property: "sort_order", type: "integer"),
+    ]
+)]
 class Religion extends Model
 {
     protected $table = 'religions';

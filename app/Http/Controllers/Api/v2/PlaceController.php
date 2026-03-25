@@ -89,7 +89,23 @@ class PlaceController extends Controller
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Place")
+            content: new OA\JsonContent(
+                required: ["name", "country"],
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Local place"),
+                    new OA\Property(property: "country", type: "string", example: "Czech Republic"),
+                    new OA\Property(property: "division", type: "string", nullable: true, example: "Moravia"),
+                    new OA\Property(property: "note", type: "string", nullable: true, example: "Created from external app"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "place-181"]),
+                ],
+                example: [
+                    "name" => "Local place",
+                    "country" => "Czech Republic",
+                    "division" => "Moravia",
+                    "note" => "Created from external app",
+                    "client_meta" => ["external_id" => "place-181"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -105,6 +121,7 @@ class PlaceController extends Controller
     public function store(PlaceRequest $request)
     {
         $validated = $request->validated();
+        unset($validated['client_meta']);
 
         if ($request->failsDuplicateCheck()) {
             return response()->json(['message' => __('hiko.entity_already_exists')], 409);
@@ -120,6 +137,7 @@ class PlaceController extends Controller
     #[OA\Put(
         path: "/place/{id}",
         summary: "Update place",
+        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable scalar fields, and client-specific extra data belongs in client_meta.",
         tags: ["Places"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -127,7 +145,19 @@ class PlaceController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Place")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Updated local place"),
+                    new OA\Property(property: "country", type: "string", example: "Czech Republic"),
+                    new OA\Property(property: "division", type: "string", nullable: true, example: null),
+                    new OA\Property(property: "note", type: "string", nullable: true, example: "Updated note"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "place-181"]),
+                ],
+                example: [
+                    "note" => null,
+                    "client_meta" => ["external_id" => "place-181"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -143,8 +173,16 @@ class PlaceController extends Controller
     {
         $place = Place::findOrFail($id);
         $validated = $request->validated();
+        unset($validated['client_meta']);
 
-        if ($request->failsDuplicateCheck($place->id)) {
+        if ($request->failsDuplicateCheck($place->id, $place->only([
+            'name',
+            'country',
+            'division',
+            'latitude',
+            'longitude',
+            'geoname_id',
+        ]))) {
             return response()->json(['message' => __('hiko.entity_already_exists')], 422);
         }
 

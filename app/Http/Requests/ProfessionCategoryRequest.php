@@ -2,17 +2,28 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\InteractsWithApiV2;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\ValidationException;
 use App\Models\ProfessionCategory;
 
 class ProfessionCategoryRequest extends FormRequest
 {
+    use InteractsWithApiV2;
+
     public function rules(): array
     {
+        $csRules = $this->isApiV2UpdateRequest()
+            ? ['sometimes', 'nullable', 'string', 'max:255']
+            : ['nullable', 'string', 'max:255', 'required_without:en'];
+        $enRules = $this->isApiV2UpdateRequest()
+            ? ['sometimes', 'nullable', 'string', 'max:255']
+            : ['nullable', 'string', 'max:255', 'required_without:cs'];
+
         return [
-            'cs' => ['nullable', 'string', 'max:255', 'required_without:en'],
-            'en' => ['nullable', 'string', 'max:255', 'required_without:cs'],
+            'cs' => $csRules,
+            'en' => $enRules,
+            'client_meta' => ['nullable', 'array'],
         ];
     }
 
@@ -23,10 +34,22 @@ class ProfessionCategoryRequest extends FormRequest
 
     public function prepareForValidation(): void
     {
-        $this->merge([
-            'cs' => $this->filled('cs') ? trim($this->input('cs')) : null,
-            'en' => $this->filled('en') ? trim($this->input('en')) : null,
-        ]);
+        $payload = [];
+
+        if ($this->exists('cs')) {
+            $payload['cs'] = $this->filled('cs') ? trim((string) $this->input('cs')) : null;
+        }
+
+        if ($this->exists('en')) {
+            $payload['en'] = $this->filled('en') ? trim((string) $this->input('en')) : null;
+        }
+
+        $this->merge($payload);
+    }
+
+    public function withValidator($validator): void
+    {
+        $this->validateAllowedApiV2Fields($validator, ['cs', 'en', 'client_meta']);
     }
 
     public function failsDuplicateCheck(?int $excludeId = null): bool

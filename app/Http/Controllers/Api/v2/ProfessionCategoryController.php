@@ -79,7 +79,18 @@ class ProfessionCategoryController extends Controller
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/ProfessionCategory")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Mistni profesni kategorie"),
+                    new OA\Property(property: "en", type: "string", nullable: true, example: "Local profession category"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "profession-category-82"]),
+                ],
+                example: [
+                    "cs" => "Mistni profesni kategorie",
+                    "en" => "Local profession category",
+                    "client_meta" => ["external_id" => "profession-category-82"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -115,6 +126,7 @@ class ProfessionCategoryController extends Controller
     #[OA\Put(
         path: "/profession-category/{id}",
         summary: "Update profession category",
+        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable translated fields, and client-specific extra data belongs in client_meta.",
         tags: ["Profession Categories"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -122,7 +134,17 @@ class ProfessionCategoryController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/ProfessionCategory")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Updated local profession category"),
+                    new OA\Property(property: "en", type: "string", nullable: true, example: "Updated local profession category"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "profession-category-82"]),
+                ],
+                example: [
+                    "en" => "Updated local profession category",
+                    "client_meta" => ["external_id" => "profession-category-82"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(

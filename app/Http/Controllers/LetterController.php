@@ -502,7 +502,7 @@ class LetterController extends Controller
                     $data[$field] = $item->pivot->{$field};
                 }
                 return $data;
-            });
+            })->values()->all();
 
             // Global
             $global = $letter->globalIdentities()->where('role', $role)->get()->map(function ($item) use ($pivotFields) {
@@ -514,9 +514,9 @@ class LetterController extends Controller
                     $data[$field] = $item->pivot->{$field};
                 }
                 return $data;
-            });
+            })->values()->all();
 
-            return $local->merge($global)->toArray();
+            return array_values(array_merge($local, $global));
         }
 
         // Default behavior for other fields
@@ -554,7 +554,10 @@ class LetterController extends Controller
                     ];
                 });
 
-                $selectedMeta = $localMentioned->merge($globalMentioned);
+                $selectedMeta = collect(array_merge(
+                    $localMentioned->values()->all(),
+                    $globalMentioned->values()->all()
+                ));
 
                 break;
             case 'keywords':

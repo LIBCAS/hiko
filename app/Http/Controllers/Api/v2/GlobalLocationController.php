@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\v2;
 
+use App\Http\Controllers\Api\v2\Concerns\ValidatesApiV2Writes;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LocationResource;
 use App\Models\GlobalLocation;
@@ -17,6 +18,8 @@ use OpenApi\Attributes as OA;
 )]
 class GlobalLocationController extends Controller
 {
+    use ValidatesApiV2Writes;
+
     public static int $maxPerPage = 100;
     public static int $defaultPerPage = 20;
 
@@ -51,7 +54,7 @@ class GlobalLocationController extends Controller
     }
 
     #[OA\Get(
-        path: "/global-locations/{id}",
+        path: "/global-location/{id}",
         summary: "Get global location by ID",
         tags: ["Global Locations"],
         security: [["bearerAuth" => []]],
@@ -80,7 +83,19 @@ class GlobalLocationController extends Controller
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/GlobalLocation")
+            content: new OA\JsonContent(
+                required: ["name", "type"],
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Global archive"),
+                    new OA\Property(property: "type", type: "string", enum: ["repository", "archive", "collection"], example: "archive"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "global-location-12"]),
+                ],
+                example: [
+                    "name" => "Global archive",
+                    "type" => "archive",
+                    "client_meta" => ["external_id" => "global-location-12"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -95,6 +110,10 @@ class GlobalLocationController extends Controller
     )]
     public function store(Request $request)
     {
+        if ($response = $this->rejectUnknownFields($request, ['name', 'type', 'client_meta'])) {
+            return $response;
+        }
+
         $request->merge([
             'name' => trim($request->input('name')),
             'type' => trim($request->input('type')),
@@ -103,7 +122,9 @@ class GlobalLocationController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'string', Rule::in(GlobalLocation::types())],
+            'client_meta' => ['nullable', 'array'],
         ]);
+        unset($validated['client_meta']);
 
         $exists = GlobalLocation::whereRaw('LOWER(name) = ?', [mb_strtolower($validated['name'])])
                            ->where('type', $validated['type'])
@@ -123,8 +144,9 @@ class GlobalLocationController extends Controller
     }
 
     #[OA\Put(
-        path: "/global-locations/{id}",
+        path: "/global-location/{id}",
         summary: "Update global location",
+        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable scalar fields when supported, and client-specific extra data belongs in client_meta.",
         tags: ["Global Locations"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -132,7 +154,17 @@ class GlobalLocationController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/GlobalLocation")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Updated global archive"),
+                    new OA\Property(property: "type", type: "string", enum: ["repository", "archive", "collection"], example: "archive"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "global-location-12"]),
+                ],
+                example: [
+                    "name" => "Updated global archive",
+                    "client_meta" => ["external_id" => "global-location-12"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -146,6 +178,10 @@ class GlobalLocationController extends Controller
     )]
     public function update(Request $request, $id)
     {
+        if ($response = $this->rejectUnknownFields($request, ['name', 'type', 'client_meta'])) {
+            return $response;
+        }
+
         $request->merge([
             'name' => trim($request->input('name')),
             'type' => trim($request->input('type')),
@@ -156,7 +192,9 @@ class GlobalLocationController extends Controller
         $validated = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'type' => ['sometimes', 'required', 'string', Rule::in(GlobalLocation::types())],
+            'client_meta' => ['nullable', 'array'],
         ]);
+        unset($validated['client_meta']);
 
         $name = $validated['name'] ?? $location->name;
         $type = $validated['type'] ?? $location->type;
@@ -177,7 +215,7 @@ class GlobalLocationController extends Controller
     }
 
     #[OA\Delete(
-        path: "/global-locations/{id}",
+        path: "/global-location/{id}",
         summary: "Delete global location",
         tags: ["Global Locations"],
         security: [["bearerAuth" => []]],

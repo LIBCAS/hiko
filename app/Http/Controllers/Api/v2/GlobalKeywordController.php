@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\v2;
 
+use App\Http\Controllers\Api\v2\Concerns\ValidatesApiV2Writes;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\KeywordResource;
 use App\Models\GlobalKeyword;
@@ -16,6 +17,8 @@ use OpenApi\Attributes as OA;
 )]
 class GlobalKeywordController extends Controller
 {
+    use ValidatesApiV2Writes;
+
     #[OA\Get(
         path: "/global-keywords",
         summary: "List global keywords",
@@ -78,7 +81,14 @@ class GlobalKeywordController extends Controller
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/GlobalKeyword")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Global keyword"),
+                    new OA\Property(property: "en", type: "string", nullable: true, example: "Global keyword"),
+                    new OA\Property(property: "category_id", type: "integer", nullable: true, example: 31),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "global-keyword-10442"]),
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -92,12 +102,29 @@ class GlobalKeywordController extends Controller
     )]
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|json',
-            'keyword_category_id' => 'nullable|exists:global_keyword_categories,id',
-        ]);
+        if ($response = $this->rejectUnknownFields($request, ['name', 'cs', 'en', 'category_id', 'keyword_category_id', 'client_meta'])) {
+            return $response;
+        }
 
-        $keyword = GlobalKeyword::create($validated);
+        $validated = $request->validate([
+            'name' => 'nullable',
+            'cs' => 'nullable|string|max:255|required_without_all:en,name',
+            'en' => 'nullable|string|max:255|required_without_all:cs,name',
+            'category_id' => 'nullable|exists:global_keyword_categories,id',
+            'keyword_category_id' => 'nullable|exists:global_keyword_categories,id',
+            'client_meta' => 'nullable|array',
+        ]);
+        unset($validated['client_meta']);
+
+        $name = $this->normalizeTranslatedName($request);
+        if (($name['cs'] ?? null) === null && ($name['en'] ?? null) === null) {
+            return response()->json(['message' => 'The name field is required.'], 422);
+        }
+
+        $keyword = GlobalKeyword::create([
+            'name' => $name,
+            'keyword_category_id' => $validated['category_id'] ?? $validated['keyword_category_id'] ?? null,
+        ]);
 
         return (new KeywordResource($keyword))
             ->response()
@@ -107,6 +134,7 @@ class GlobalKeywordController extends Controller
     #[OA\Put(
         path: "/global-keyword/{id}",
         summary: "Update global keyword",
+        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable translated fields, and client-specific extra data belongs in client_meta.",
         tags: ["Global Keywords"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -114,7 +142,14 @@ class GlobalKeywordController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/GlobalKeyword")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Global keyword"),
+                    new OA\Property(property: "en", type: "string", nullable: true, example: "Global keyword"),
+                    new OA\Property(property: "category_id", type: "integer", nullable: true, example: 31),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "global-keyword-10442"]),
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -130,13 +165,59 @@ class GlobalKeywordController extends Controller
     {
         $keyword = GlobalKeyword::findOrFail($id);
 
-        $validated = $request->validate([
-            'name' => 'required|json',
-            'keyword_category_id' => 'nullable|exists:global_keyword_categories,id',
-        ]);
+        if ($response = $this->rejectUnknownFields($request, ['name', 'cs', 'en', 'category_id', 'keyword_category_id', 'client_meta'])) {
+            return $response;
+        }
 
-        $keyword->update($validated);
+        $validated = $request->validate([
+            'name' => 'nullable',
+            'cs' => 'sometimes|nullable|string|max:255',
+            'en' => 'sometimes|nullable|string|max:255',
+            'category_id' => 'sometimes|nullable|exists:global_keyword_categories,id',
+            'keyword_category_id' => 'sometimes|nullable|exists:global_keyword_categories,id',
+            'client_meta' => 'nullable|array',
+        ]);
+        unset($validated['client_meta']);
+
+        $currentName = $keyword->getTranslations('name');
+        $name = $this->normalizeTranslatedName($request);
+        $name = [
+            'cs' => array_key_exists('cs', $validated) ? ($name['cs'] ?? null) : ($currentName['cs'] ?? null),
+            'en' => array_key_exists('en', $validated) ? ($name['en'] ?? null) : ($currentName['en'] ?? null),
+        ];
+
+        $keyword->update([
+            'name' => $name,
+            'keyword_category_id' => $validated['category_id'] ?? $validated['keyword_category_id'] ?? $keyword->keyword_category_id,
+        ]);
         return new KeywordResource($keyword);
+    }
+
+    private function normalizeTranslatedName(Request $request): array
+    {
+        if ($request->filled('cs') || $request->filled('en')) {
+            return [
+                'cs' => $request->filled('cs') ? trim((string) $request->input('cs')) : null,
+                'en' => $request->filled('en') ? trim((string) $request->input('en')) : null,
+            ];
+        }
+
+        $rawName = $request->input('name');
+        $decoded = is_string($rawName) ? json_decode($rawName, true) : (is_array($rawName) ? $rawName : null);
+
+        if (is_array($decoded)) {
+            return [
+                'cs' => isset($decoded['cs']) ? trim((string) $decoded['cs']) : null,
+                'en' => isset($decoded['en']) ? trim((string) $decoded['en']) : null,
+            ];
+        }
+
+        if (is_string($rawName) && trim($rawName) !== '') {
+            $value = trim($rawName);
+            return ['cs' => $value, 'en' => $value];
+        }
+
+        return ['cs' => null, 'en' => null];
     }
 
     #[OA\Delete(

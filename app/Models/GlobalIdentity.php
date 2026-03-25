@@ -28,7 +28,27 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: "related_identity_resources", type: "array", items: new OA\Items(type: "object")),
         new OA\Property(property: "alternative_names", type: "array", items: new OA\Items(type: "string")),
         new OA\Property(property: "related_names", type: "array", items: new OA\Items(type: "object")),
-        new OA\Property(property: "professions", type: "array", items: new OA\Items(type: "integer")),
+        new OA\Property(
+            property: "professions",
+            type: "array",
+            items: new OA\Items(
+                type: "object",
+                properties: [
+                    new OA\Property(property: "id", type: "integer"),
+                    new OA\Property(property: "scope", type: "string"),
+                    new OA\Property(property: "reference", type: "string"),
+                    new OA\Property(
+                        property: "name",
+                        type: "object",
+                        properties: [
+                            new OA\Property(property: "cs", type: "string"),
+                            new OA\Property(property: "en", type: "string"),
+                        ]
+                    ),
+                    new OA\Property(property: "category_id", type: "integer", nullable: true),
+                ]
+            )
+        ),
         new OA\Property(property: "religions", type: "array", items: new OA\Items(type: "integer")),
         new OA\Property(property: "created_at", type: "string", format: "date-time", readOnly: true),
         new OA\Property(property: "updated_at", type: "string", format: "date-time", readOnly: true),

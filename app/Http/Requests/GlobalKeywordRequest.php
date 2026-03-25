@@ -25,7 +25,7 @@ class GlobalKeywordRequest extends FormRequest
         $this->merge([
             'cs' => $this->filled('cs') ? trim($this->input('cs')) : null,
             'en' => $this->filled('en') ? trim($this->input('en')) : null,
-            'keyword_category_id' => $this->input('keyword_category_id', $this->input('category_id')),
+            'keyword_category_id' => $this->input('keyword_category_id', $this->input('category_id', $this->input('category'))),
         ]);
     }
 }

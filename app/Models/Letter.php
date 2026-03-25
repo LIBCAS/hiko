@@ -501,14 +501,22 @@ class Letter extends Model implements HasMedia
     protected function formatLocationForForm($local, $global)
     {
         if ($global) {
+            $id = (int) $global->id;
             return [
+                'id' => $id,
+                'scope' => 'global',
+                'reference' => "global-{$id}",
                 'value' => 'global-' . $global->id,
                 'label' => $global->name . ' (' . __('hiko.global') . ')',
             ];
         }
 
         if ($local) {
+            $id = (int) $local->id;
             return [
+                'id' => $id,
+                'scope' => 'local',
+                'reference' => "local-{$id}",
                 'value' => 'local-' . $local->id,
                 'label' => $local->name . ' (' . __('hiko.local') . ')',
             ];

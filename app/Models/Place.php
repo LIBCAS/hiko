@@ -15,6 +15,8 @@ use OpenApi\Attributes as OA;
     required: ["name"],
     properties: [
         new OA\Property(property: "id", type: "integer", readOnly: true),
+        new OA\Property(property: "scope", type: "string", example: "local", readOnly: true),
+        new OA\Property(property: "reference", type: "string", example: "local-123", readOnly: true),
         new OA\Property(property: "name", type: "string"),
         new OA\Property(property: "alternative_names", type: "array", items: new OA\Items(type: "string"), nullable: true),
         new OA\Property(property: "created_at", type: "string", format: "date-time", readOnly: true),

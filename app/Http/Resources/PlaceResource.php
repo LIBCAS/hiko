@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\GlobalPlace;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,8 +10,13 @@ class PlaceResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $scope = $this->resource instanceof GlobalPlace ? 'global' : 'local';
+        $id = (int) $this->id;
+
         return [
-            'id' => $this->id,
+            'id' => $id,
+            'scope' => $scope,
+            'reference' => "{$scope}-{$id}",
             'name' => $this->name,
             'country' => $this->country,
             'division' => $this->division,

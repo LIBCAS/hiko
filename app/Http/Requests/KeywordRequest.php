@@ -2,17 +2,31 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\InteractsWithApiV2;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Keyword;
 
 class KeywordRequest extends FormRequest
 {
+    use InteractsWithApiV2;
+
     public function rules(): array
     {
+        $nameRules = $this->isApiV2UpdateRequest()
+            ? ['sometimes', 'nullable', 'string', 'max:255']
+            : ['nullable', 'string', 'max:255', 'required_without:en'];
+        $otherNameRules = $this->isApiV2UpdateRequest()
+            ? ['sometimes', 'nullable', 'string', 'max:255']
+            : ['nullable', 'string', 'max:255', 'required_without:cs'];
+        $categoryRules = $this->isApiV2UpdateRequest()
+            ? ['sometimes', 'nullable', 'exists:' . tenancy()->tenant->table_prefix . '__keyword_categories,id']
+            : ['required', 'exists:' . tenancy()->tenant->table_prefix . '__keyword_categories,id'];
+
         return [
-            'cs' => ['nullable', 'string', 'max:255', 'required_without:en'],
-            'en' => ['nullable', 'string', 'max:255', 'required_without:cs'],
-            'keyword_category_id' => ['required', 'exists:' . tenancy()->tenant->table_prefix . '__keyword_categories,id'],
+            'cs' => $nameRules,
+            'en' => $otherNameRules,
+            'keyword_category_id' => $categoryRules,
+            'client_meta' => ['nullable', 'array'],
         ];
     }
 
@@ -23,23 +37,48 @@ class KeywordRequest extends FormRequest
 
     public function prepareForValidation(): void
     {
-        $this->merge([
-            'cs' => $this->filled('cs') ? trim($this->input('cs')) : null,
-            'en' => $this->filled('en') ? trim($this->input('en')) : null,
-            'keyword_category_id' => $this->input('category'),
+        $payload = [];
+
+        if ($this->exists('cs')) {
+            $payload['cs'] = $this->filled('cs') ? trim((string) $this->input('cs')) : null;
+        }
+
+        if ($this->exists('en')) {
+            $payload['en'] = $this->filled('en') ? trim((string) $this->input('en')) : null;
+        }
+
+        if ($this->exists('keyword_category_id') || $this->exists('category_id') || $this->exists('category')) {
+            $payload['keyword_category_id'] = $this->input('keyword_category_id', $this->input('category_id', $this->input('category')));
+        }
+
+        $this->merge($payload);
+    }
+
+    public function withValidator($validator): void
+    {
+        $this->validateAllowedApiV2Fields($validator, [
+            'cs',
+            'en',
+            'keyword_category_id',
+            'category_id',
+            'category',
+            'client_meta',
         ]);
     }
 
-    public function failsDuplicateCheck(?int $excludeId = null): bool
+    public function failsDuplicateCheck(?int $excludeId = null, ?array $fallback = null): bool
     {
+        $fallback = $fallback ?? [];
         $jsonName = [
-            'cs' => $this->input('cs'),
-            'en' => $this->input('en'),
+            'cs' => $this->input('cs', $fallback['cs'] ?? null),
+            'en' => $this->input('en', $fallback['en'] ?? null),
         ];
+
+        $categoryId = $this->input('keyword_category_id', $fallback['keyword_category_id'] ?? null);
 
         $query = Keyword::query()
             ->where('name', json_encode($jsonName))
-            ->where('keyword_category_id', $this->input('keyword_category_id'));
+            ->where('keyword_category_id', $categoryId);
 
         if ($excludeId !== null) {
             $query->where('id', '!=', $excludeId);

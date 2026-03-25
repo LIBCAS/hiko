@@ -25,7 +25,7 @@ class GlobalProfessionRequest extends FormRequest
         $this->merge([
             'cs' => $this->filled('cs') ? trim($this->input('cs')) : null,
             'en' => $this->filled('en') ? trim($this->input('en')) : null,
-            'profession_category_id' => $this->input('profession_category_id', $this->input('category_id')),
+            'profession_category_id' => $this->input('profession_category_id', $this->input('category_id', $this->input('category'))),
         ]);
     }
 }

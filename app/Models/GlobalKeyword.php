@@ -13,11 +13,13 @@ use OpenApi\Attributes as OA;
     required: ["name"],
     properties: [
         new OA\Property(property: "id", type: "integer", readOnly: true),
+        new OA\Property(property: "scope", type: "string", example: "global", readOnly: true),
+        new OA\Property(property: "reference", type: "string", example: "global-10442", readOnly: true),
         new OA\Property(property: "name", type: "object", properties: [
             new OA\Property(property: "cs", type: "string"),
             new OA\Property(property: "en", type: "string")
         ]),
-        new OA\Property(property: "keyword_category_id", type: "integer", nullable: true),
+        new OA\Property(property: "category_id", type: "integer", nullable: true),
         new OA\Property(property: "created_at", type: "string", format: "date-time", readOnly: true),
         new OA\Property(property: "updated_at", type: "string", format: "date-time", readOnly: true)
     ]

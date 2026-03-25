@@ -21,9 +21,6 @@ class LetterResource extends JsonResource
 
     protected function getBasicRecord(): array
     {
-        $identities = $this->identities->groupBy('pivot.role');
-        $places = $this->places->groupBy('pivot.role');
-
         return [
             'id' => $this->id,
             'uuid' => $this->uuid,
@@ -32,18 +29,15 @@ class LetterResource extends JsonResource
                 'computed' => $this->date_computed,
             ],
             'signatures' => $this->getSignatures(),
-            'authors' => $this->pluckNames($identities, 'author'),
-            'recipients' => $this->pluckNames($identities, 'recipient'),
-            'origins' => $this->pluckNames($places, 'origin'),
-            'destinations' => $this->pluckNames($places, 'destination'),
+            'authors' => $this->pluckRoleNames($this->collectIdentityRoleItems('author')),
+            'recipients' => $this->pluckRoleNames($this->collectIdentityRoleItems('recipient')),
+            'origins' => $this->pluckRoleNames($this->collectPlaceRoleItems('origin')),
+            'destinations' => $this->pluckRoleNames($this->collectPlaceRoleItems('destination')),
         ];
     }
 
     protected function getDetailedRecord(): array
     {
-        $identities = $this->identities->groupBy('pivot.role');
-        $allPlaces = $this->places->merge($this->globalPlaces);
-        $places = $allPlaces->groupBy('pivot.role');
         $letterAttrs = $this->getAttributes();
 
         return [
@@ -51,36 +45,44 @@ class LetterResource extends JsonResource
             'name' => $this->name,
             'uuid' => $this->uuid,
             'dates' => $this->getDetailedDates(),
-            'authors' => $this->getRoleData($identities, 'author', [
-                'inferred' => $this->author_inferred,
-                'uncertain' => $this->author_uncertain,
-                'note' => $this->author_note,
-            ]),
-            'recipients' => $this->getRoleData($identities, 'recipient', [
-                'inferred' => $this->recipient_inferred,
-                'uncertain' => $this->recipient_uncertain,
-                'note' => $this->recipient_note,
-            ]),
-            'origins' => $this->getRoleData($places, 'origin', [
-                'inferred' => $this->origin_inferred,
-                'uncertain' => $this->origin_uncertain,
-                'note' => $this->origin_note,
-            ]),
-            'destinations' => $this->getRoleData($places, 'destination', [
-                'inferred' => $this->destination_inferred,
-                'uncertain' => $this->destination_uncertain,
-                'note' => $this->destination_note,
-            ]),
-            'mentioned' => [
-                'items' => $this->pluckNames($identities, 'mentioned'),
-                'note' => $this->people_mentioned_note,
-            ],
-            'metadata' => $this->getMetadata(),
+            'date_year' => $this->date_year,
+            'date_month' => $this->date_month,
+            'date_day' => $this->date_day,
+            'date_marked' => $this->date_marked,
+            'date_uncertain' => $this->date_uncertain,
+            'date_approximate' => $this->date_approximate,
+            'date_inferred' => $this->date_inferred,
+            'date_is_range' => $this->date_is_range,
+            'date_note' => $this->date_note,
+            'range_year' => $this->range_year,
+            'range_month' => $this->range_month,
+            'range_day' => $this->range_day,
+            'authors' => $this->collectIdentityRoleItems('author'),
+            'author_inferred' => $this->author_inferred,
+            'author_uncertain' => $this->author_uncertain,
+            'author_note' => $this->author_note,
+            'recipients' => $this->collectIdentityRoleItems('recipient'),
+            'recipient_inferred' => $this->recipient_inferred,
+            'recipient_uncertain' => $this->recipient_uncertain,
+            'recipient_note' => $this->recipient_note,
+            'origins' => $this->collectPlaceRoleItems('origin'),
+            'origin_inferred' => $this->origin_inferred,
+            'origin_uncertain' => $this->origin_uncertain,
+            'origin_note' => $this->origin_note,
+            'destinations' => $this->collectPlaceRoleItems('destination'),
+            'destination_inferred' => $this->destination_inferred,
+            'destination_uncertain' => $this->destination_uncertain,
+            'destination_note' => $this->destination_note,
+            'mentioned' => $this->collectIdentityRoleItems('mentioned'),
+            'people_mentioned_note' => $this->people_mentioned_note,
             'keywords' => collect($this->localKeywords)->map(function ($keyword) {
                 $names = json_decode($keyword->getAttributes()['name'], true) ?: [];
+                $id = (int) $keyword->id;
 
                 return [
-                    'id' => $keyword->id,
+                    'id' => $id,
+                    'scope' => 'local',
+                    'reference' => "local-{$id}",
                     'name_cs' => $names['cs'] ?? '',
                     'name_en' => $names['en'] ?? '',
                     'type' => 'L.',
@@ -88,9 +90,12 @@ class LetterResource extends JsonResource
             })->merge(
                 collect($this->globalKeywords)->map(function ($keyword) {
                     $names = json_decode($keyword->getAttributes()['name'], true) ?: [];
+                    $id = (int) $keyword->id;
 
                     return [
-                        'id' => $keyword->id,
+                        'id' => $id,
+                        'scope' => 'global',
+                        'reference' => "global-{$id}",
                         'name_cs' => $names['cs'] ?? '',
                         'name_en' => $names['en'] ?? '',
                         'type' => 'G.',
@@ -126,11 +131,9 @@ class LetterResource extends JsonResource
         return collect($this->copies)->pluck('signature')->toArray();
     }
 
-    protected function pluckNames($collection, string $role): array
+    protected function pluckRoleNames(array $items): array
     {
-        return isset($collection[$role])
-            ? $collection[$role]->pluck('name')->toArray()
-            : [];
+        return array_values(array_map(fn ($item) => $item['name'] ?? '', $items));
     }
 
     protected function getDetailedDates(): array
@@ -146,35 +149,51 @@ class LetterResource extends JsonResource
         ];
     }
 
-    protected function getRoleData($collection, string $role, array $additionalData): array
+    protected function mapRoleItems($collection, string $scope): array
     {
-        return array_merge([
-            'items' => isset($collection[$role])
-                ? $collection[$role]->map(fn($item) => [
-                    'name' => $item->name,
-                    'marked' => $item->pivot->marked,
-                    'salutation' => $item->pivot->salutation ?? null,
-                ])->toArray()
-                : [],
-        ], $additionalData);
+        return collect($collection)->map(function ($item) use ($scope) {
+            $id = (int) $item->id;
+
+            return [
+                'id' => $id,
+                'scope' => $scope,
+                'reference' => "{$scope}-{$id}",
+                'name' => $item->name,
+                'marked' => $item->pivot->marked ?? null,
+                'salutation' => $item->pivot->salutation ?? null,
+            ];
+        })->values()->toArray();
     }
 
-    protected function getMetadata(): array
+    protected function collectIdentityRoleItems(string $role): array
     {
-        return [
-            'date_year' => $this->date_year,
-            'date_month' => $this->date_month,
-            'date_day' => $this->date_day,
-            'date_marked' => $this->date_marked,
-            'date_uncertain' => $this->date_uncertain,
-            'date_approximate' => $this->date_approximate,
-            'date_inferred' => $this->date_inferred,
-            'date_is_range' => $this->date_is_range,
-            'range_year' => $this->range_year,
-            'range_month' => $this->range_month,
-            'range_day' => $this->range_day,
-            'author_inferred' => $this->author_inferred,
-            'author_uncertain' => $this->author_uncertain,
-        ];
+        $local = match ($role) {
+            'author' => $this->authors,
+            'recipient' => $this->recipients,
+            'mentioned' => $this->mentioned,
+            default => collect(),
+        };
+        $global = match ($role) {
+            'author' => $this->globalAuthors,
+            'recipient' => $this->globalRecipients,
+            'mentioned' => $this->globalMentioned,
+            default => collect(),
+        };
+
+        return array_values(array_merge(
+            $this->mapRoleItems($local, 'local'),
+            $this->mapRoleItems($global, 'global')
+        ));
+    }
+
+    protected function collectPlaceRoleItems(string $role): array
+    {
+        $local = $role === 'origin' ? $this->origins : $this->destinations;
+        $global = $role === 'origin' ? $this->globalOrigins : $this->globalDestinations;
+
+        return array_values(array_merge(
+            $this->mapRoleItems($local, 'local'),
+            $this->mapRoleItems($global, 'global')
+        ));
     }
 }

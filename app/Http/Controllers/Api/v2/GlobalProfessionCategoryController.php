@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\v2;
 
+use App\Http\Controllers\Api\v2\Concerns\ValidatesApiV2Writes;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProfessionCategoryResource;
 use App\Models\GlobalProfessionCategory;
@@ -16,6 +17,8 @@ use OpenApi\Attributes as OA;
 )]
 class GlobalProfessionCategoryController extends Controller
 {
+    use ValidatesApiV2Writes;
+
     #[OA\Get(
         path: "/global-profession-categories",
         summary: "List global profession categories",
@@ -78,7 +81,18 @@ class GlobalProfessionCategoryController extends Controller
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/GlobalProfessionCategory")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Global profession category"),
+                    new OA\Property(property: "en", type: "string", nullable: true, example: "Global profession category"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "global-profession-category-35"]),
+                ],
+                example: [
+                    "cs" => "Global profession category",
+                    "en" => "Global profession category",
+                    "client_meta" => ["external_id" => "global-profession-category-35"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -92,11 +106,24 @@ class GlobalProfessionCategoryController extends Controller
     )]
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|json',
-        ]);
+        if ($response = $this->rejectUnknownFields($request, ['name', 'cs', 'en', 'client_meta'])) {
+            return $response;
+        }
 
-        $category = GlobalProfessionCategory::create($validated);
+        $validated = $request->validate([
+            'name' => 'nullable',
+            'cs' => 'nullable|string|max:255|required_without_all:en,name',
+            'en' => 'nullable|string|max:255|required_without_all:cs,name',
+            'client_meta' => 'nullable|array',
+        ]);
+        unset($validated['client_meta']);
+
+        $name = $this->normalizeTranslatedName($request);
+        if (($name['cs'] ?? null) === null && ($name['en'] ?? null) === null) {
+            return response()->json(['message' => 'The name field is required.'], 422);
+        }
+
+        $category = GlobalProfessionCategory::create(['name' => $name]);
 
         return (new ProfessionCategoryResource($category))
             ->response()
@@ -106,6 +133,7 @@ class GlobalProfessionCategoryController extends Controller
     #[OA\Put(
         path: "/global-profession-category/{id}",
         summary: "Update global profession category",
+        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable translated fields, and client-specific extra data belongs in client_meta.",
         tags: ["Global Profession Categories"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -113,7 +141,17 @@ class GlobalProfessionCategoryController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/GlobalProfessionCategory")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Updated global profession category"),
+                    new OA\Property(property: "en", type: "string", nullable: true, example: "Updated global profession category"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "global-profession-category-35"]),
+                ],
+                example: [
+                    "en" => "Updated global profession category",
+                    "client_meta" => ["external_id" => "global-profession-category-35"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -129,12 +167,54 @@ class GlobalProfessionCategoryController extends Controller
     {
         $category = GlobalProfessionCategory::findOrFail($id);
 
-        $validated = $request->validate([
-            'name' => 'required|json',
-        ]);
+        if ($response = $this->rejectUnknownFields($request, ['name', 'cs', 'en', 'client_meta'])) {
+            return $response;
+        }
 
-        $category->update($validated);
+        $validated = $request->validate([
+            'name' => 'nullable',
+            'cs' => 'sometimes|nullable|string|max:255',
+            'en' => 'sometimes|nullable|string|max:255',
+            'client_meta' => 'nullable|array',
+        ]);
+        unset($validated['client_meta']);
+
+        $currentName = $category->getTranslations('name');
+        $name = $this->normalizeTranslatedName($request);
+        $name = [
+            'cs' => array_key_exists('cs', $validated) ? ($name['cs'] ?? null) : ($currentName['cs'] ?? null),
+            'en' => array_key_exists('en', $validated) ? ($name['en'] ?? null) : ($currentName['en'] ?? null),
+        ];
+
+        $category->update(['name' => $name]);
         return new ProfessionCategoryResource($category);
+    }
+
+    private function normalizeTranslatedName(Request $request): array
+    {
+        if ($request->filled('cs') || $request->filled('en')) {
+            return [
+                'cs' => $request->filled('cs') ? trim((string) $request->input('cs')) : null,
+                'en' => $request->filled('en') ? trim((string) $request->input('en')) : null,
+            ];
+        }
+
+        $rawName = $request->input('name');
+        $decoded = is_string($rawName) ? json_decode($rawName, true) : (is_array($rawName) ? $rawName : null);
+
+        if (is_array($decoded)) {
+            return [
+                'cs' => isset($decoded['cs']) ? trim((string) $decoded['cs']) : null,
+                'en' => isset($decoded['en']) ? trim((string) $decoded['en']) : null,
+            ];
+        }
+
+        if (is_string($rawName) && trim($rawName) !== '') {
+            $value = trim($rawName);
+            return ['cs' => $value, 'en' => $value];
+        }
+
+        return ['cs' => null, 'en' => null];
     }
 
     #[OA\Delete(

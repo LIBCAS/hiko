@@ -88,7 +88,23 @@ class GlobalPlaceController extends Controller
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/GlobalPlace")
+            content: new OA\JsonContent(
+                required: ["name", "country"],
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Global place"),
+                    new OA\Property(property: "country", type: "string", example: "Czech Republic"),
+                    new OA\Property(property: "division", type: "string", nullable: true, example: "Bohemia"),
+                    new OA\Property(property: "note", type: "string", nullable: true, example: "Created from external app"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "global-place-238"]),
+                ],
+                example: [
+                    "name" => "Global place",
+                    "country" => "Czech Republic",
+                    "division" => "Bohemia",
+                    "note" => "Created from external app",
+                    "client_meta" => ["external_id" => "global-place-238"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -104,6 +120,7 @@ class GlobalPlaceController extends Controller
     public function store(GlobalPlaceRequest $request)
     {
         $validated = $request->validated();
+        unset($validated['client_meta']);
 
         if ($request->failsDuplicateCheck()) {
             return response()->json(['message' => 'Such entity already exists.'], 409);
@@ -119,6 +136,7 @@ class GlobalPlaceController extends Controller
     #[OA\Put(
         path: "/global-place/{id}",
         summary: "Update global place",
+        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable scalar fields, and client-specific extra data belongs in client_meta.",
         tags: ["Global Places"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -126,7 +144,19 @@ class GlobalPlaceController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/GlobalPlace")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Updated global place"),
+                    new OA\Property(property: "country", type: "string", example: "Czech Republic"),
+                    new OA\Property(property: "division", type: "string", nullable: true, example: null),
+                    new OA\Property(property: "note", type: "string", nullable: true, example: "Updated note"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "global-place-238"]),
+                ],
+                example: [
+                    "note" => null,
+                    "client_meta" => ["external_id" => "global-place-238"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -142,8 +172,16 @@ class GlobalPlaceController extends Controller
     {
         $place = GlobalPlace::findOrFail($id);
         $validated = $request->validated();
+        unset($validated['client_meta']);
 
-        if ($request->failsDuplicateCheck($place->id)) {
+        if ($request->failsDuplicateCheck($place->id, $place->only([
+            'name',
+            'country',
+            'division',
+            'latitude',
+            'longitude',
+            'geoname_id',
+        ]))) {
             return response()->json(['message' => 'Such entity already exists.'], 409);
         }
 

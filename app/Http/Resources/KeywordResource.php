@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\GlobalKeyword;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -11,9 +12,13 @@ class KeywordResource extends JsonResource
     {
         // Handle translatable name manually to ensure JSON structure
         $name = json_decode($this->getAttributes()['name'] ?? '{}', true);
+        $scope = $this->resource instanceof GlobalKeyword ? 'global' : 'local';
+        $id = (int) $this->id;
 
         return [
-            'id' => $this->id,
+            'id' => $id,
+            'scope' => $scope,
+            'reference' => "{$scope}-{$id}",
             'name' => [
                 'cs' => $name['cs'] ?? '',
                 'en' => $name['en'] ?? '',

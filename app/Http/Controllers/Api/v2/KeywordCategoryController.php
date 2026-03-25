@@ -79,7 +79,18 @@ class KeywordCategoryController extends Controller
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/KeywordCategory")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Mistni kategorie klicovych slov"),
+                    new OA\Property(property: "en", type: "string", nullable: true, example: "Local keyword category"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "keyword-category-70"]),
+                ],
+                example: [
+                    "cs" => "Mistni kategorie klicovych slov",
+                    "en" => "Local keyword category",
+                    "client_meta" => ["external_id" => "keyword-category-70"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -115,6 +126,7 @@ class KeywordCategoryController extends Controller
     #[OA\Put(
         path: "/keyword-category/{id}",
         summary: "Update keyword category",
+        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable translated fields, and client-specific extra data belongs in client_meta.",
         tags: ["Keyword Categories"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -122,7 +134,17 @@ class KeywordCategoryController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/KeywordCategory")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Updated local keyword category"),
+                    new OA\Property(property: "en", type: "string", nullable: true, example: "Updated local keyword category"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "keyword-category-70"]),
+                ],
+                example: [
+                    "en" => "Updated local keyword category",
+                    "client_meta" => ["external_id" => "keyword-category-70"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(

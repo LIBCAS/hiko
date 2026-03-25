@@ -3,7 +3,7 @@
 /public/storage
 /storage/*.key
 /vendor
-/docs/CONTEXT.md
+/docs/*.md
 /docs/*.pdf
 /docs/*.sql
 .env

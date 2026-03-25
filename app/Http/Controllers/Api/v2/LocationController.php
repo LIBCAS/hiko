@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\v2;
 
+use App\Http\Controllers\Api\v2\Concerns\ValidatesApiV2Writes;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LocationResource;
 use App\Models\Location;
@@ -17,6 +18,8 @@ use OpenApi\Attributes as OA;
 )]
 class LocationController extends Controller
 {
+    use ValidatesApiV2Writes;
+
     public static int $maxPerPage = 100;
     public static int $defaultPerPage = 20;
 
@@ -52,7 +55,7 @@ class LocationController extends Controller
     }
 
     #[OA\Get(
-        path: "/locations/{id}",
+        path: "/location/{id}",
         summary: "Get location by ID",
         tags: ["Locations"],
         security: [["bearerAuth" => []]],
@@ -81,7 +84,19 @@ class LocationController extends Controller
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Location")
+            content: new OA\JsonContent(
+                required: ["name", "type"],
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Repository"),
+                    new OA\Property(property: "type", type: "string", enum: ["repository", "archive", "collection"], example: "repository"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "location-42"]),
+                ],
+                example: [
+                    "name" => "Repository",
+                    "type" => "repository",
+                    "client_meta" => ["external_id" => "location-42"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -96,6 +111,10 @@ class LocationController extends Controller
     )]
     public function store(Request $request)
     {
+        if ($response = $this->rejectUnknownFields($request, ['name', 'type', 'client_meta'])) {
+            return $response;
+        }
+
         $request->merge([
             'name' => trim($request->input('name')),
             'type' => trim($request->input('type')),
@@ -104,7 +123,9 @@ class LocationController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'string', Rule::in(Location::types())],
+            'client_meta' => ['nullable', 'array'],
         ]);
+        unset($validated['client_meta']);
 
         $exists = Location::whereRaw('LOWER(name) = ?', [mb_strtolower($validated['name'])])
                           ->where('type', $validated['type'])
@@ -124,8 +145,9 @@ class LocationController extends Controller
     }
 
     #[OA\Put(
-        path: "/locations/{id}",
+        path: "/location/{id}",
         summary: "Update location",
+        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable scalar fields when supported, and client-specific extra data belongs in client_meta.",
         tags: ["Locations"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -133,7 +155,17 @@ class LocationController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Location")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Updated repository"),
+                    new OA\Property(property: "type", type: "string", enum: ["repository", "archive", "collection"], example: "repository"),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "location-42"]),
+                ],
+                example: [
+                    "name" => "Updated repository",
+                    "client_meta" => ["external_id" => "location-42"],
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -147,6 +179,10 @@ class LocationController extends Controller
     )]
     public function update(Request $request, $id)
     {
+        if ($response = $this->rejectUnknownFields($request, ['name', 'type', 'client_meta'])) {
+            return $response;
+        }
+
         $request->merge([
             'name' => trim($request->input('name')),
             'type' => trim($request->input('type')),
@@ -157,7 +193,9 @@ class LocationController extends Controller
         $validated = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'type' => ['sometimes', 'required', 'string', Rule::in(Location::types())],
+            'client_meta' => ['nullable', 'array'],
         ]);
+        unset($validated['client_meta']);
 
         $name = $validated['name'] ?? $location->name;
         $type = $validated['type'] ?? $location->type;
@@ -178,7 +216,7 @@ class LocationController extends Controller
     }
 
     #[OA\Delete(
-        path: "/locations/{id}",
+        path: "/location/{id}",
         summary: "Delete location",
         tags: ["Locations"],
         security: [["bearerAuth" => []]],

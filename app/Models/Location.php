@@ -16,6 +16,8 @@ use OpenApi\Attributes as OA;
     required: ["name", "type"],
     properties: [
         new OA\Property(property: "id", type: "integer", readOnly: true),
+        new OA\Property(property: "scope", type: "string", example: "local", readOnly: true),
+        new OA\Property(property: "reference", type: "string", example: "local-25", readOnly: true),
         new OA\Property(property: "name", type: "string"),
         new OA\Property(property: "type", type: "string", enum: ["repository", "collection", "archive"]),
         new OA\Property(property: "created_at", type: "string", format: "date-time", readOnly: true),

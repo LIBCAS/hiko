@@ -45,9 +45,10 @@ class IdentityController extends Controller
                                 "surname" => "Tester",
                                 "forename" => "Local",
                                 "type" => "person",
-                                "global_identity_id" => 1,
                                 "global_identity" => [
                                     "id" => 1,
+                                    "scope" => "global",
+                                    "reference" => "global-1",
                                     "name" => "Tester, Global",
                                     "type" => "person",
                                     "birth_year" => null,
@@ -81,6 +82,7 @@ class IdentityController extends Controller
                 'localProfessions',
                 'globalProfessions',
                 'globalIdentity',
+                'religions',
             ])
             ->paginate($perPage, ['*'], 'page', $page);
 
@@ -108,9 +110,10 @@ class IdentityController extends Controller
                         "forename" => "Local",
                         "type" => "person",
                         "nationality" => "czech",
-                        "global_identity_id" => 1,
                         "global_identity" => [
                             "id" => 1,
+                            "scope" => "global",
+                            "reference" => "global-1",
                             "name" => "Tester, Global",
                             "type" => "person",
                             "birth_year" => null,
@@ -130,8 +133,9 @@ class IdentityController extends Controller
             'localProfessions',
             'globalProfessions',
             'globalIdentity',
+            'religions',
         ])->findOrFail($id);
-        return new IdentityResource($identity->load(['globalIdentity']));
+        return new IdentityResource($identity->load(['globalIdentity', 'religions']));
     }
 
     #[OA\Post(
@@ -160,9 +164,29 @@ class IdentityController extends Controller
                             new OA\Property(property: "related_identity_resources", type: "array", items: new OA\Items(type: "object"), example: [["title" => "Resource", "url" => "https://example.org"]]),
                             new OA\Property(property: "viaf_id", type: "string", nullable: true, example: "123456"),
                             new OA\Property(property: "note", type: "string", nullable: true, example: "Local person"),
-                            new OA\Property(property: "local_professions", type: "array", items: new OA\Items(type: "integer"), example: [22]),
-                            new OA\Property(property: "global_professions", type: "array", items: new OA\Items(type: "integer"), example: [394]),
-                            new OA\Property(property: "global_identity_id", type: "integer", nullable: true, example: 1),
+                            new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "client-identity-2457"]),
+                            new OA\Property(
+                                property: "professions",
+                                type: "array",
+                                items: new OA\Items(
+                                    type: "object",
+                                    properties: [
+                                        new OA\Property(property: "id", type: "integer", example: 22),
+                                        new OA\Property(property: "scope", type: "string", enum: ["local", "global"], example: "local"),
+                                        new OA\Property(property: "reference", type: "string", readOnly: true, example: "local-22", description: "Read-only response field."),
+                                    ]
+                                )
+                            ),
+                            new OA\Property(
+                                property: "global_identity",
+                                type: "object",
+                                nullable: true,
+                                properties: [
+                                    new OA\Property(property: "id", type: "integer", example: 1),
+                                    new OA\Property(property: "scope", type: "string", enum: ["global"], example: "global"),
+                                    new OA\Property(property: "reference", type: "string", readOnly: true, example: "global-1", description: "Read-only response field."),
+                                ]
+                            ),
                         ]
                     ),
                     new OA\Schema(
@@ -173,7 +197,17 @@ class IdentityController extends Controller
                             new OA\Property(property: "name", type: "string", example: "The British Library"),
                             new OA\Property(property: "related_identity_resources", type: "array", items: new OA\Items(type: "object"), example: [["title" => "Catalog page", "url" => "https://example.org/catalog"]]),
                             new OA\Property(property: "note", type: "string", nullable: true, example: "Institution note"),
-                            new OA\Property(property: "global_identity_id", type: "integer", nullable: true, example: null),
+                            new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "client-identity-1335"]),
+                            new OA\Property(
+                                property: "global_identity",
+                                type: "object",
+                                nullable: true,
+                                properties: [
+                                    new OA\Property(property: "id", type: "integer", example: 1),
+                                    new OA\Property(property: "scope", type: "string", enum: ["global"], example: "global"),
+                                    new OA\Property(property: "reference", type: "string", readOnly: true, example: "global-1", description: "Read-only response field."),
+                                ]
+                            ),
                         ]
                     ),
                 ]
@@ -191,7 +225,13 @@ class IdentityController extends Controller
                         "surname" => "Tester",
                         "forename" => "Local",
                         "type" => "person",
-                        "global_identity_id" => 1,
+                        "global_identity" => [
+                            "id" => 1,
+                            "scope" => "global",
+                            "reference" => "global-1",
+                            "name" => "Tester, Global",
+                            "type" => "person",
+                        ],
                         "created_at" => "2026-02-18T10:00:00.000000Z",
                         "updated_at" => "2026-02-18T10:00:00.000000Z",
                     ]
@@ -204,6 +244,7 @@ class IdentityController extends Controller
     public function store(IdentityRequest $request)
     {
         $validated = $request->validated();
+        unset($validated['client_meta']);
 
         // Ensure defaults are arrays if null, so Model casts handle them correctly
         $validated['related_names'] = $validated['related_names'] ?? [];
@@ -221,7 +262,7 @@ class IdentityController extends Controller
 
         $this->syncRelations($identity, $request->validated());
 
-        return (new IdentityResource($identity->load(['globalIdentity'])))
+        return (new IdentityResource($identity->load(['globalIdentity', 'religions'])))
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
     }
@@ -229,6 +270,7 @@ class IdentityController extends Controller
     #[OA\Put(
         path: "/identity/{id}",
         summary: "Update identity",
+        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable scalar fields, [] clears relation/list fields, and client-specific extra data belongs in client_meta.",
         tags: ["Identities"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -240,7 +282,6 @@ class IdentityController extends Controller
                 oneOf: [
                     new OA\Schema(
                         title: "Person payload",
-                        required: ["type", "surname"],
                         properties: [
                             new OA\Property(property: "type", type: "string", enum: ["person"], example: "person"),
                             new OA\Property(property: "surname", type: "string", example: "Tester"),
@@ -251,19 +292,48 @@ class IdentityController extends Controller
                             new OA\Property(property: "birth_year", type: "string", nullable: true, example: "1900"),
                             new OA\Property(property: "death_year", type: "string", nullable: true, example: "1981"),
                             new OA\Property(property: "note", type: "string", nullable: true, example: "Updated local person"),
-                            new OA\Property(property: "local_professions", type: "array", items: new OA\Items(type: "integer"), example: [22, 31]),
-                            new OA\Property(property: "global_professions", type: "array", items: new OA\Items(type: "integer"), example: [394]),
-                            new OA\Property(property: "global_identity_id", type: "integer", nullable: true, example: 1),
+                            new OA\Property(
+                                property: "professions",
+                                type: "array",
+                                items: new OA\Items(
+                                    type: "object",
+                                    properties: [
+                                        new OA\Property(property: "id", type: "integer", example: 22),
+                                        new OA\Property(property: "scope", type: "string", enum: ["local", "global"], example: "local"),
+                                        new OA\Property(property: "reference", type: "string", readOnly: true, example: "local-22", description: "Read-only response field."),
+                                    ]
+                                )
+                            ),
+                            new OA\Property(
+                                property: "global_identity",
+                                type: "object",
+                                nullable: true,
+                                properties: [
+                                    new OA\Property(property: "id", type: "integer", example: 1),
+                                    new OA\Property(property: "scope", type: "string", enum: ["global"], example: "global"),
+                                    new OA\Property(property: "reference", type: "string", readOnly: true, example: "global-1", description: "Read-only response field."),
+                                ]
+                            ),
+                            new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "client-identity-1335"]),
                         ]
                     ),
                     new OA\Schema(
                         title: "Institution payload",
-                        required: ["type", "name"],
                         properties: [
                             new OA\Property(property: "type", type: "string", enum: ["institution"], example: "institution"),
                             new OA\Property(property: "name", type: "string", example: "The British Library (Updated)"),
                             new OA\Property(property: "note", type: "string", nullable: true, example: "Updated institution"),
-                            new OA\Property(property: "global_identity_id", type: "integer", nullable: true, example: null),
+                            new OA\Property(
+                                property: "global_identity",
+                                type: "object",
+                                nullable: true,
+                                properties: [
+                                    new OA\Property(property: "id", type: "integer", example: 1),
+                                    new OA\Property(property: "scope", type: "string", enum: ["global"], example: "global"),
+                                    new OA\Property(property: "reference", type: "string", readOnly: true, example: "global-1", description: "Read-only response field."),
+                                ]
+                            ),
+                            new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "client-identity-2457"]),
                         ]
                     ),
                 ]
@@ -281,7 +351,13 @@ class IdentityController extends Controller
                         "surname" => "Tester",
                         "forename" => "Updated",
                         "type" => "person",
-                        "global_identity_id" => 1,
+                        "global_identity" => [
+                            "id" => 1,
+                            "scope" => "global",
+                            "reference" => "global-1",
+                            "name" => "Tester, Global",
+                            "type" => "person",
+                        ],
                         "updated_at" => "2026-02-18T11:00:00.000000Z",
                     ]
                 )
@@ -294,14 +370,13 @@ class IdentityController extends Controller
     {
         $identity = Identity::findOrFail($id);
         $validated = $request->validated();
-
-        // Ensure defaults
-        $validated['related_names'] = $validated['related_names'] ?? [];
-        $validated['related_identity_resources'] = $validated['related_identity_resources'] ?? [];
+        unset($validated['client_meta']);
 
         unset($validated['category'], $validated['profession']);
 
-        if ($validated['type'] !== 'person') {
+        $effectiveType = $validated['type'] ?? $identity->type;
+
+        if ($effectiveType !== 'person') {
             unset($validated['surname'], $validated['forename'], $validated['general_name_modifier']);
         }
 
@@ -311,7 +386,7 @@ class IdentityController extends Controller
 
         $this->syncRelations($identity, $request->validated());
 
-        return new IdentityResource($identity);
+        return new IdentityResource($identity->load(['globalIdentity', 'religions']));
     }
 
     #[OA\Delete(
@@ -349,11 +424,36 @@ class IdentityController extends Controller
      */
     protected function syncRelations(Identity $identity, array $validated): void
     {
-        $localIds = collect($validated['local_professions'] ?? [])->map(fn($id) => (int) $id);
-        $globalIds = collect($validated['global_professions'] ?? [])->map(fn($id) => (int) $id);
+        $localIds = collect();
+        $globalIds = collect();
+        $religionIds = collect($validated['religions'] ?? [])->map(fn($id) => (int) $id);
+        $hasProfessionInput = array_key_exists('professions', $validated)
+            || array_key_exists('local_professions', $validated)
+            || array_key_exists('global_professions', $validated)
+            || array_key_exists('profession', $validated);
+        $hasReligionInput = array_key_exists('religions', $validated);
+        $hasCategoryInput = array_key_exists('category', $validated);
 
-        // Fall back to combined professions input
-        if (empty($localIds) && empty($globalIds) && !empty($validated['profession'])) {
+        if (array_key_exists('professions', $validated) && !empty($validated['professions'])) {
+            foreach ($validated['professions'] as $profession) {
+                $professionId = $profession['id'] ?? null;
+                if (!is_string($professionId)) {
+                    continue;
+                }
+
+                $isGlobal = str_starts_with($professionId, 'global-');
+                $cleanId = (int) str_replace(['global-', 'local-'], '', $professionId);
+
+                if ($isGlobal) {
+                    $globalIds->push($cleanId);
+                } else {
+                    $localIds->push($cleanId);
+                }
+            }
+        } elseif ((array_key_exists('local_professions', $validated) && !empty($validated['local_professions'])) || (array_key_exists('global_professions', $validated) && !empty($validated['global_professions']))) {
+            $localIds = collect($validated['local_professions'] ?? [])->map(fn($id) => (int) $id);
+            $globalIds = collect($validated['global_professions'] ?? [])->map(fn($id) => (int) $id);
+        } elseif (array_key_exists('profession', $validated) && !empty($validated['profession'])) {
             foreach ($validated['profession'] as $professionId) {
                 $isGlobal = str_starts_with($professionId, 'global-');
                 $cleanId = (int) str_replace(['global-', 'local-'], '', $professionId);
@@ -368,30 +468,38 @@ class IdentityController extends Controller
 
         $tenantPivotTable = tenancy()->tenant->table_prefix . '__identity_profession';
 
-        DB::transaction(function () use ($identity, $localIds, $globalIds, $tenantPivotTable) {
-            DB::table($tenantPivotTable)->where('identity_id', $identity->id)->delete();
+        DB::transaction(function () use ($identity, $localIds, $globalIds, $tenantPivotTable, $religionIds, $validated, $hasProfessionInput, $hasReligionInput, $hasCategoryInput) {
+            if ($hasProfessionInput) {
+                DB::table($tenantPivotTable)->where('identity_id', $identity->id)->delete();
 
-            if ($localIds->isNotEmpty()) {
-                $localData = $localIds->mapWithKeys(fn($id) => [$id => [
-                    'profession_id' => $id,
-                    'global_profession_id' => null,
-                    'position' => null,
-                ]])->toArray();
-                $identity->professions()->attach($localData);
+                if ($localIds->isNotEmpty()) {
+                    $localData = $localIds->mapWithKeys(fn($id) => [$id => [
+                        'profession_id' => $id,
+                        'global_profession_id' => null,
+                        'position' => null,
+                    ]])->toArray();
+                    $identity->professions()->attach($localData);
+                }
+
+                if ($globalIds->isNotEmpty()) {
+                    $globalData = $globalIds->map(fn($id) => [
+                        'identity_id' => $identity->id,
+                        'profession_id' => null,
+                        'global_profession_id' => $id,
+                        'position' => null,
+                    ])->toArray();
+                    DB::table($tenantPivotTable)->insert($globalData);
+                }
             }
 
-            if ($globalIds->isNotEmpty()) {
-                $globalData = $globalIds->map(fn($id) => [
-                    'identity_id' => $identity->id,
-                    'profession_id' => null,
-                    'global_profession_id' => $id,
-                    'position' => null,
-                ])->toArray();
-                DB::table($tenantPivotTable)->insert($globalData);
-            }
-
-            if (!empty($validated['category'])) {
+            if ($hasCategoryInput) {
                 $identity->profession_categories()->sync($validated['category']);
+            }
+
+            if (($validated['type'] ?? $identity->type) !== 'person') {
+                $identity->syncReligions([]);
+            } elseif ($hasReligionInput) {
+                $identity->syncReligions($religionIds->isNotEmpty() ? $religionIds->all() : []);
             }
         });
     }

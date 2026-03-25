@@ -79,7 +79,15 @@ class KeywordController extends Controller
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Keyword")
+            content: new OA\JsonContent(
+                required: ["category_id"],
+                properties: [
+                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Mistni klicove slovo"),
+                    new OA\Property(property: "en", type: "string", nullable: true, example: "Local keyword"),
+                    new OA\Property(property: "category_id", type: "integer", example: 64),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "keyword-74"]),
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -95,6 +103,7 @@ class KeywordController extends Controller
     public function store(KeywordRequest $request)
     {
         $validated = $request->validated();
+        unset($validated['client_meta']);
 
         if ($request->failsDuplicateCheck()) {
             return response()->json(['message' => 'Such entity already exists.'], 409);
@@ -116,6 +125,7 @@ class KeywordController extends Controller
     #[OA\Put(
         path: "/keyword/{id}",
         summary: "Update keyword",
+        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable translated fields, and client-specific extra data belongs in client_meta.",
         tags: ["Keywords"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -123,7 +133,14 @@ class KeywordController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Keyword")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Mistni klicove slovo"),
+                    new OA\Property(property: "en", type: "string", nullable: true, example: "Local keyword"),
+                    new OA\Property(property: "category_id", type: "integer", example: 64),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "keyword-74"]),
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -139,17 +156,24 @@ class KeywordController extends Controller
     {
         $keyword = Keyword::findOrFail($id);
         $validated = $request->validated();
+        unset($validated['client_meta']);
 
-        if ($request->failsDuplicateCheck($keyword->id)) {
+        $currentName = $keyword->getTranslations('name');
+
+        if ($request->failsDuplicateCheck($keyword->id, [
+            'cs' => $currentName['cs'] ?? null,
+            'en' => $currentName['en'] ?? null,
+            'keyword_category_id' => $keyword->keyword_category_id,
+        ])) {
             return response()->json(['message' => 'Such entity already exists.'], 422);
         }
 
         $keyword->update([
             'name' => [
-                'cs' => $validated['cs'],
-                'en' => $validated['en'],
+                'cs' => array_key_exists('cs', $validated) ? $validated['cs'] : ($currentName['cs'] ?? null),
+                'en' => array_key_exists('en', $validated) ? $validated['en'] : ($currentName['en'] ?? null),
             ],
-            'keyword_category_id' => $validated['keyword_category_id'] ?? null,
+            'keyword_category_id' => $validated['keyword_category_id'] ?? $keyword->keyword_category_id,
         ]);
 
         return new KeywordResource($keyword);

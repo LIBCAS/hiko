@@ -79,7 +79,15 @@ class ProfessionController extends Controller
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Profession")
+            content: new OA\JsonContent(
+                required: ["category_id"],
+                properties: [
+                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Mistni profese"),
+                    new OA\Property(property: "en", type: "string", nullable: true, example: "Local profession"),
+                    new OA\Property(property: "category_id", type: "integer", example: 82),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "profession-152"]),
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -95,6 +103,7 @@ class ProfessionController extends Controller
     public function store(ProfessionRequest $request)
     {
         $validated = $request->validated();
+        unset($validated['client_meta']);
 
         if ($request->failsDuplicateCheck()) {
             return response()->json(['message' => __('hiko.entity_already_exists')], 409);
@@ -116,6 +125,7 @@ class ProfessionController extends Controller
     #[OA\Put(
         path: "/profession/{id}",
         summary: "Update profession",
+        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable translated fields, and client-specific extra data belongs in client_meta.",
         tags: ["Professions"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -123,7 +133,14 @@ class ProfessionController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: "#/components/schemas/Profession")
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Mistni profese"),
+                    new OA\Property(property: "en", type: "string", nullable: true, example: "Local profession"),
+                    new OA\Property(property: "category_id", type: "integer", example: 82),
+                    new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "profession-152"]),
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -139,17 +156,24 @@ class ProfessionController extends Controller
     {
         $profession = Profession::findOrFail($id);
         $validated = $request->validated();
+        unset($validated['client_meta']);
 
-        if ($request->failsDuplicateCheck($profession->id)) {
+        $currentName = $profession->getTranslations('name');
+
+        if ($request->failsDuplicateCheck($profession->id, [
+            'cs' => $currentName['cs'] ?? null,
+            'en' => $currentName['en'] ?? null,
+            'profession_category_id' => $profession->profession_category_id,
+        ])) {
             return response()->json(['message' => __('hiko.entity_already_exists')], 422);
         }
 
         $profession->update([
             'name' => [
-                'cs' => $validated['cs'],
-                'en' => $validated['en'],
+                'cs' => array_key_exists('cs', $validated) ? $validated['cs'] : ($currentName['cs'] ?? null),
+                'en' => array_key_exists('en', $validated) ? $validated['en'] : ($currentName['en'] ?? null),
             ],
-            'profession_category_id' => $validated['profession_category_id'] ?? null,
+            'profession_category_id' => $validated['profession_category_id'] ?? $profession->profession_category_id,
         ]);
 
         return new ProfessionResource($profession);
