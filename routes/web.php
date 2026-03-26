@@ -483,10 +483,6 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('global-merge', [GlobalPlaceMergeController::class, 'index'])
             ->name('places.global-merge')
             ->middleware(['auth', 'can:manage-users']);
-
-        Route::post('global-merge', [GlobalPlaceMergeController::class, 'execute'])
-            ->name('places.global-merge.execute')
-            ->middleware(['auth', 'can:manage-users']);
     });
 
     Route::prefix('global-places')->middleware(['auth'])->name('global.places.')->group(function () {

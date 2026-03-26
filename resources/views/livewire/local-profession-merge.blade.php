@@ -100,6 +100,18 @@
                 </div>
                 <button @click="submitMerge" :disabled="!canMerge" class="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-black transition disabled:opacity-50 disabled:cursor-not-allowed">{{ __('hiko.merge_selected') }}</button>
             </div>
+
+            <x-local-merge-confirm-modal
+                show="confirmOpen"
+                items="confirmationItems"
+                selected-count="selectedIds.length"
+                merge-count="confirmationMergeCount"
+                move-count="confirmationMoveCount"
+                more-count="confirmationMoreCount"
+                preview-items="confirmationPreviewItems"
+                preview-note="{{ __('hiko.local_merge_auto_relations_note') }}"
+                confirm-action="executeMerge()"
+            />
         </div>
         @endforeach
     </div>
@@ -114,7 +126,8 @@
         selectedIds: items.map(i => i.id),
         allChecked: true,
         final: {},
-        mergeConfirmMsg: "{{ __('hiko.confirm_merge') }}",
+        confirmOpen: false,
+        mergeMethodLabel: "{{ __('hiko.merge') }}",
 
         get targetId() {
             if (this.selectedIds.length === 0) return null;
@@ -135,6 +148,40 @@
         get selectedItems() {
             const selectedIdsString = this.selectedIds.map(String);
             return this.items.filter(i => selectedIdsString.includes(String(i.id)));
+        },
+
+        get confirmationItems() {
+            const resultId = this.targetId;
+            const resultUrl = resultId ? `/professions/${resultId}/edit` : null;
+
+            return this.selectedItems.slice(0, {{ (int) config('merge_confirmation.summary_limit', 20) }}).map(item => ({
+                local: item.id,
+                local_url: `/professions/${item.id}/edit`,
+                method: this.mergeMethodLabel,
+                result: resultId ?? '—',
+                result_url: resultUrl,
+            }));
+        },
+
+        get confirmationMoreCount() {
+            return Math.max(this.selectedItems.length - {{ (int) config('merge_confirmation.summary_limit', 20) }}, 0);
+        },
+
+        get confirmationMergeCount() {
+            return this.selectedItems.length;
+        },
+
+        get confirmationMoveCount() {
+            return 0;
+        },
+
+        get confirmationPreviewItems() {
+            return [
+                { label: "{{ __('hiko.id') }}", value: this.targetId ?? '—' },
+                { label: 'CS', value: this.previewValue(this.final.cs) },
+                { label: 'EN', value: this.previewValue(this.final.en) },
+                { label: "{{ __('hiko.category') }}", value: this.previewValue(this.finalCategoryLabel) },
+            ];
         },
 
         get selectedHasAnyCategory() {
@@ -173,9 +220,20 @@
 
         toggleAll() { this.selectedIds = this.allChecked ? this.items.map(i => i.id) : []; },
 
+        previewValue(value) {
+            if (value === null || value === undefined || value === '') {
+                return '—';
+            }
+
+            return String(value);
+        },
+
         submitMerge() {
             if (!this.canMerge) return;
-            if (!confirm(this.mergeConfirmMsg)) return;
+            this.confirmOpen = true;
+        },
+
+        executeMerge() {
             const payload = {
                 target_id: this.targetId,
                 source_ids: this.selectedIds.filter(id => String(id) !== String(this.targetId)),

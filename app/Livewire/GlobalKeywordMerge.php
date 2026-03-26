@@ -114,6 +114,7 @@ class GlobalKeywordMerge extends Component
         $allData = $service->previewMerges($this->criteria, [
             'name_similarity_threshold' => $this->nameSimilarityThreshold,
         ], $this->filters);
+        $confirmationSummary = $this->buildConfirmationSummary($allData);
 
         $page = $this->getPage();
         $perPage = (int)config('global_keyword_merge.preview_per_page', 25);
@@ -131,6 +132,10 @@ class GlobalKeywordMerge extends Component
         return view('livewire.global-keyword-merge', [
             'previewData' => $paginator,
             'totalCount' => $allData->count(),
+            'confirmationItems' => $confirmationSummary['items'],
+            'confirmationMergeCount' => $confirmationSummary['merge_count'],
+            'confirmationMoveCount' => $confirmationSummary['move_count'],
+            'confirmationMoreCount' => $confirmationSummary['more_count'],
         ]);
     }
 
@@ -159,5 +164,39 @@ class GlobalKeywordMerge extends Component
         ], $this->filters);
 
         $this->selectedIds = $allData->pluck('local.id')->toArray();
+    }
+
+    private function buildConfirmationSummary($allData): array
+    {
+        $selectedIds = collect($this->selectedIds)->map(fn ($id) => (int) $id)->all();
+        $selected = $allData
+            ->filter(fn (array $item): bool => in_array((int) $item['local']->id, $selectedIds, true))
+            ->values();
+
+        $summaryLimit = (int) config('merge_confirmation.summary_limit', 20);
+
+        $items = $selected->take($summaryLimit)->map(function (array $item): array {
+            $local = $item['local'];
+            $global = $item['global'];
+
+            return [
+                'local' => (string) $local->id,
+                'local_url' => route('keywords.edit', $local->id),
+                'method' => $item['strategy'] === 'merge'
+                    ? __('hiko.merge') . ' · ' . ($item['reason'] ?? __('hiko.no_match'))
+                    : __('hiko.move'),
+                'result' => $global ? (string) $global->id : '—',
+                'result_url' => $global ? route('global.keywords.edit', $global->id) : null,
+            ];
+        })->toArray();
+
+        $moveCount = $selected->filter(fn (array $item): bool => ($item['strategy'] ?? null) === 'move')->count();
+
+        return [
+            'items' => $items,
+            'merge_count' => $selected->count() - $moveCount,
+            'move_count' => $moveCount,
+            'more_count' => max(0, $selected->count() - count($items)),
+        ];
     }
 }

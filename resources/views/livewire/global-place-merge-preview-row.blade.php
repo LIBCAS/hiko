@@ -1,11 +1,11 @@
 <tr class="hover:bg-gray-50" wire:key="place-row-{{ $local->id }}"
-    x-data="mergeRowData({{ $local->id }}, @js($local), @js($global), '{{ $strategy }}')">
+    x-data="mergeRowData(@js($local), @js($global), '{{ $strategy }}', @entangle("mergeAttrs.{$local->id}"))">
 
     {{-- Checkbox Column --}}
     <td class="px-3 py-4 whitespace-nowrap align-top">
         <input
             type="checkbox"
-            wire:model.live="selectedPlaces"
+            wire:model.live="selectedIds"
             value="{{ $local->id }}"
             id="place-{{ $local->id }}"
             class="rounded border-gray-300 text-primary focus:ring-primary">
@@ -18,9 +18,9 @@
             <div class="flex items-center gap-2">
                 @if($strategy === 'merge' && $global)
                     <input type="radio"
-                           :name="'attr_name_' + placeId"
+                           name="attr_name_{{ $local->id }}"
                            value="local"
-                           x-model="attrs.name"
+                           wire:model.live="mergeAttrs.{{ $local->id }}.name"
                            class="rounded-full">
                 @endif
                 <div class="flex-1">
@@ -38,9 +38,9 @@
             <div class="flex items-center gap-2">
                 @if($strategy === 'merge' && $global)
                     <input type="radio"
-                           :name="'attr_country_' + placeId"
+                           name="attr_country_{{ $local->id }}"
                            value="local"
-                           x-model="attrs.country"
+                           wire:model.live="mergeAttrs.{{ $local->id }}.country"
                            class="rounded-full">
                 @endif
                 <div class="flex-1">
@@ -55,9 +55,9 @@
             <div class="flex items-center gap-2">
                 @if($strategy === 'merge' && $global)
                     <input type="radio"
-                           :name="'attr_division_' + placeId"
+                           name="attr_division_{{ $local->id }}"
                            value="local"
-                           x-model="attrs.division"
+                           wire:model.live="mergeAttrs.{{ $local->id }}.division"
                            class="rounded-full">
                 @endif
                 <div class="flex-1">
@@ -72,9 +72,9 @@
             <div class="flex items-center gap-2">
                 @if($strategy === 'merge' && $global)
                     <input type="radio"
-                           :name="'attr_latitude_' + placeId"
+                           name="attr_latitude_{{ $local->id }}"
                            value="local"
-                           x-model="attrs.latitude"
+                           wire:model.live="mergeAttrs.{{ $local->id }}.latitude"
                            class="rounded-full">
                 @endif
                 <div class="flex-1">
@@ -89,9 +89,9 @@
             <div class="flex items-center gap-2">
                 @if($strategy === 'merge' && $global)
                     <input type="radio"
-                           :name="'attr_longitude_' + placeId"
+                           name="attr_longitude_{{ $local->id }}"
                            value="local"
-                           x-model="attrs.longitude"
+                           wire:model.live="mergeAttrs.{{ $local->id }}.longitude"
                            class="rounded-full">
                 @endif
                 <div class="flex-1">
@@ -106,9 +106,9 @@
             <div class="flex items-center gap-2">
                 @if($strategy === 'merge' && $global)
                     <input type="radio"
-                           :name="'attr_geoname_id_' + placeId"
+                           name="attr_geoname_id_{{ $local->id }}"
                            value="local"
-                           x-model="attrs.geoname_id"
+                           wire:model.live="mergeAttrs.{{ $local->id }}.geoname_id"
                            class="rounded-full">
                 @endif
                 <div class="flex-1">
@@ -145,9 +145,9 @@
                 {{-- Name --}}
                 <div class="flex items-center gap-2">
                     <input type="radio"
-                           :name="'attr_name_' + placeId"
+                           name="attr_name_{{ $local->id }}"
                            value="global"
-                           x-model="attrs.name"
+                           wire:model.live="mergeAttrs.{{ $local->id }}.name"
                            class="rounded-full">
                     <div class="flex-1">
                         <strong>{{ __('hiko.name_2') }}:</strong>
@@ -162,9 +162,9 @@
                 {{-- Country --}}
                 <div class="flex items-center gap-2">
                     <input type="radio"
-                           :name="'attr_country_' + placeId"
+                           name="attr_country_{{ $local->id }}"
                            value="global"
-                           x-model="attrs.country"
+                           wire:model.live="mergeAttrs.{{ $local->id }}.country"
                            class="rounded-full">
                     <div class="flex-1">
                         <strong>{{ __('hiko.country') }}:</strong>
@@ -175,9 +175,9 @@
                 {{-- Division --}}
                 <div class="flex items-center gap-2">
                     <input type="radio"
-                           :name="'attr_division_' + placeId"
+                           name="attr_division_{{ $local->id }}"
                            value="global"
-                           x-model="attrs.division"
+                           wire:model.live="mergeAttrs.{{ $local->id }}.division"
                            class="rounded-full">
                     <div class="flex-1">
                         <strong>{{ __('hiko.division_abbr') }}:</strong>
@@ -188,9 +188,9 @@
                 {{-- Latitude --}}
                 <div class="flex items-center gap-2">
                     <input type="radio"
-                           :name="'attr_latitude_' + placeId"
+                           name="attr_latitude_{{ $local->id }}"
                            value="global"
-                           x-model="attrs.latitude"
+                           wire:model.live="mergeAttrs.{{ $local->id }}.latitude"
                            class="rounded-full">
                     <div class="flex-1">
                         <strong>{{ __('hiko.latitude_abbr') }}:</strong>
@@ -201,9 +201,9 @@
                 {{-- Longitude --}}
                 <div class="flex items-center gap-2">
                     <input type="radio"
-                           :name="'attr_longitude_' + placeId"
+                           name="attr_longitude_{{ $local->id }}"
                            value="global"
-                           x-model="attrs.longitude"
+                           wire:model.live="mergeAttrs.{{ $local->id }}.longitude"
                            class="rounded-full">
                     <div class="flex-1">
                         <strong>{{ __('hiko.longitude_abbr') }}:</strong>
@@ -214,9 +214,9 @@
                 {{-- Geoname ID --}}
                 <div class="flex items-center gap-2">
                     <input type="radio"
-                           :name="'attr_geoname_id_' + placeId"
+                           name="attr_geoname_id_{{ $local->id }}"
                            value="global"
-                           x-model="attrs.geoname_id"
+                           wire:model.live="mergeAttrs.{{ $local->id }}.geoname_id"
                            class="rounded-full">
                     <div class="flex-1">
                         <strong>{{ __('hiko.geoname_id') }}:</strong>

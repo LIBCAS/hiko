@@ -142,6 +142,8 @@ class GlobalIdentityMerge extends Component
             }
         }
 
+        $confirmationSummary = $this->buildConfirmationSummary($allData);
+
         $page = $this->getPage();
         $perPage = (int)config('global_identity_merge.preview_per_page', 25);
 
@@ -158,6 +160,10 @@ class GlobalIdentityMerge extends Component
         return view('livewire.global-identity-merge', [
             'previewData' => $paginator,
             'totalCount' => $allData->count(),
+            'confirmationItems' => $confirmationSummary['items'],
+            'confirmationMergeCount' => $confirmationSummary['merge_count'],
+            'confirmationMoveCount' => $confirmationSummary['move_count'],
+            'confirmationMoreCount' => $confirmationSummary['more_count'],
         ]);
     }
 
@@ -186,5 +192,40 @@ class GlobalIdentityMerge extends Component
         ], $this->filters);
 
         $this->selectedIds = $allData->pluck('local.id')->map(fn($id) => (int)$id)->toArray();
+    }
+
+    private function buildConfirmationSummary($allData): array
+    {
+        $selectedIds = collect($this->selectedIds)->map(fn ($id) => (int) $id)->all();
+        $selected = $allData
+            ->filter(fn (array $item): bool => in_array((int) $item['local']->id, $selectedIds, true))
+            ->values();
+
+        $summaryLimit = (int) config('merge_confirmation.summary_limit', 20);
+
+        $items = $selected->take($summaryLimit)->map(function (array $item): array {
+            $local = $item['local'];
+            $selectedGlobalId = $this->selectedGlobalIds[(int) $local->id] ?? null;
+            $selectedGlobal = $selectedGlobalId
+                ? $item['global']?->id === (int) $selectedGlobalId
+                    ? $item['global']
+                    : \App\Models\GlobalIdentity::query()->find((int) $selectedGlobalId)
+                : null;
+
+            return [
+                'local' => (string) $local->id,
+                'local_url' => route('identities.edit', $local->id),
+                'method' => __('hiko.link_to'),
+                'result' => $selectedGlobal ? (string) $selectedGlobal->id : '—',
+                'result_url' => $selectedGlobal ? route('global.identities.edit', $selectedGlobal->id) : null,
+            ];
+        })->toArray();
+
+        return [
+            'items' => $items,
+            'merge_count' => $selected->count(),
+            'move_count' => 0,
+            'more_count' => max(0, $selected->count() - count($items)),
+        ];
     }
 }

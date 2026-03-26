@@ -152,6 +152,18 @@
                     {{ __('hiko.merge_selected') }}
                 </button>
             </div>
+
+            <x-local-merge-confirm-modal
+                show="confirmOpen"
+                items="confirmationItems"
+                selected-count="selectedIds.length"
+                merge-count="confirmationMergeCount"
+                move-count="confirmationMoveCount"
+                more-count="confirmationMoreCount"
+                preview-items="confirmationPreviewItems"
+                preview-note="{{ __('hiko.local_merge_auto_relations_note') }}"
+                confirm-action="executeMerge()"
+            />
         </div>
         @endforeach
     </div>
@@ -166,7 +178,8 @@
         selectedIds: items.map(l => l.id),
         allChecked: true,
         final: {},
-        mergeConfirmMsg: "{{ __('hiko.confirm_merge') }}",
+        confirmOpen: false,
+        mergeMethodLabel: "{{ __('hiko.merge') }}",
 
         get targetId() {
             if (this.selectedIds.length === 0) return null;
@@ -190,6 +203,44 @@
                 this.allChecked = this.selectedIds.length === this.items.length;
                 this.setFinalToTarget();
             });
+        },
+
+        get selectedItems() {
+            const selectedIdsString = this.selectedIds.map(String);
+            return this.items.filter(item => selectedIdsString.includes(String(item.id)));
+        },
+
+        get confirmationItems() {
+            const resultId = this.targetId;
+            const resultUrl = resultId ? `/locations/${resultId}/edit` : null;
+
+            return this.selectedItems.slice(0, {{ (int) config('merge_confirmation.summary_limit', 20) }}).map(item => ({
+                local: item.id,
+                local_url: `/locations/${item.id}/edit`,
+                method: this.mergeMethodLabel,
+                result: resultId ?? '—',
+                result_url: resultUrl,
+            }));
+        },
+
+        get confirmationMoreCount() {
+            return Math.max(this.selectedItems.length - {{ (int) config('merge_confirmation.summary_limit', 20) }}, 0);
+        },
+
+        get confirmationMergeCount() {
+            return this.selectedItems.length;
+        },
+
+        get confirmationMoveCount() {
+            return 0;
+        },
+
+        get confirmationPreviewItems() {
+            return [
+                { label: "{{ __('hiko.id') }}", value: this.targetId ?? '—' },
+                { label: "{{ __('hiko.name') }}", value: this.previewValue(this.final.name) },
+                { label: "{{ __('hiko.type') }}", value: this.previewValue(this.final.type) },
+            ];
         },
 
         setFinalToTarget() {
@@ -218,10 +269,20 @@
             this.selectedIds = this.allChecked ? this.items.map(l => l.id) : [];
         },
 
+        previewValue(value) {
+            if (value === null || value === undefined || value === '') {
+                return '—';
+            }
+
+            return String(value);
+        },
+
         submitMerge() {
             if (this.selectedIds.length < 2) return;
-            if (!confirm(this.mergeConfirmMsg)) return;
+            this.confirmOpen = true;
+        },
 
+        executeMerge() {
             const payload = {
                 target_id: this.targetId,
                 source_ids: this.selectedIds.filter(id => String(id) !== String(this.targetId)),

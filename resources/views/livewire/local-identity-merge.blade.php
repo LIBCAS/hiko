@@ -243,6 +243,18 @@
                         {{ __('hiko.merge_selected') }}
                     </button>
                 </div>
+
+                <x-local-merge-confirm-modal
+                    show="confirmOpen"
+                    items="confirmationItems"
+                    selected-count="selectedIds.length"
+                    merge-count="confirmationMergeCount"
+                    move-count="confirmationMoveCount"
+                    more-count="confirmationMoreCount"
+                    preview-items="confirmationPreviewItems"
+                    preview-note="{{ __('hiko.local_identity_merge_preview_note') }}"
+                    confirm-action="executeMerge()"
+                />
             </div>
             @endforeach
         </div>
@@ -259,7 +271,8 @@
         allChecked: true,
         final: {},
         isInstitution: isInstitution,
-        mergeConfirmMsg: "{{ __('hiko.confirm_merge') }}",
+        confirmOpen: false,
+        mergeMethodLabel: "{{ __('hiko.merge') }}",
 
         get targetId() {
             if (this.selectedIds.length === 0) return null;
@@ -281,6 +294,61 @@
             this.$watch('selectedIds', () => {
                 this.allChecked = this.selectedIds.length === this.items.length;
             });
+        },
+
+        get selectedItems() {
+            const selectedIdsString = this.selectedIds.map(String);
+            return this.items.filter(item => selectedIdsString.includes(String(item.id)));
+        },
+
+        get confirmationItems() {
+            const resultId = this.targetId;
+            const resultUrl = resultId ? `/identities/${resultId}/edit` : null;
+
+            return this.selectedItems.slice(0, {{ (int) config('merge_confirmation.summary_limit', 20) }}).map(item => ({
+                local: item.id,
+                local_url: `/identities/${item.id}/edit`,
+                method: this.mergeMethodLabel,
+                result: resultId ?? '—',
+                result_url: resultUrl,
+            }));
+        },
+
+        get confirmationMoreCount() {
+            return Math.max(this.selectedItems.length - {{ (int) config('merge_confirmation.summary_limit', 20) }}, 0);
+        },
+
+        get confirmationMergeCount() {
+            return this.selectedItems.length;
+        },
+
+        get confirmationMoveCount() {
+            return 0;
+        },
+
+        get confirmationPreviewItems() {
+            if (this.isInstitution) {
+                return [
+                    { label: "{{ __('hiko.id') }}", value: this.targetId ?? '—' },
+                    { label: "{{ __('hiko.name_2') }}", value: this.previewValue(this.final.name) },
+                    { label: "{{ __('hiko.type') }}", value: this.previewValue(this.final.type) },
+                    { label: "{{ __('hiko.viafid') }}", value: this.previewValue(this.final.viaf_id) },
+                ];
+            }
+
+            return [
+                { label: "{{ __('hiko.id') }}", value: this.targetId ?? '—' },
+                { label: "{{ __('hiko.surname_abbr') }}", value: this.previewValue(this.final.surname) },
+                { label: "{{ __('hiko.forename_abbr') }}", value: this.previewValue(this.final.forename) },
+                { label: "{{ __('hiko.type') }}", value: this.previewValue(this.final.type) },
+                { label: "{{ __('hiko.nationality') }}", value: this.previewValue(this.final.nationality) },
+                { label: "{{ __('hiko.gender') }}", value: this.previewValue(this.final.gender) },
+                { label: "{{ __('hiko.birth_year') }}", value: this.previewValue(this.final.birth_year) },
+                { label: "{{ __('hiko.death_year') }}", value: this.previewValue(this.final.death_year) },
+                { label: "{{ __('hiko.viafid') }}", value: this.previewValue(this.final.viaf_id) },
+                { label: "{{ __('hiko.professions') }}", value: `{{ __('hiko.selected_from_record') }}`.replace(':id', this.previewValue(this.final.selected_profession_source_id)) },
+                { label: "{{ __('hiko.religions') }}", value: `{{ __('hiko.selected_from_record') }}`.replace(':id', this.previewValue(this.final.selected_religion_source_id)) },
+            ];
         },
 
         setFinalToTarget() {
@@ -315,10 +383,24 @@
             this.selectedIds = this.allChecked ? this.items.map(i => i.id) : [];
         },
 
+        previewValue(value) {
+            if (Array.isArray(value)) {
+                return value.length ? value.join(', ') : '—';
+            }
+
+            if (value === null || value === undefined || value === '') {
+                return '—';
+            }
+
+            return String(value);
+        },
+
         submitMerge() {
             if (this.selectedIds.length < 2) return;
-            if (!confirm(this.mergeConfirmMsg)) return;
+            this.confirmOpen = true;
+        },
 
+        executeMerge() {
             const payload = {
                 target_id: this.targetId,
                 source_ids: this.selectedIds.filter(id => String(id) !== String(this.targetId)),

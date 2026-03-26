@@ -174,6 +174,7 @@ class GlobalLocationMerge extends Component
         ];
         $allData = $service->previewMerges($this->criteria, $options, $this->filters);
         $totalCount = $allData->count();
+        $confirmationSummary = $this->buildConfirmationSummary($allData);
 
         $page = $this->getPage();
         $perPage = 25;
@@ -186,7 +187,45 @@ class GlobalLocationMerge extends Component
 
         return view('livewire.global-location-merge', [
             'previewData' => $paginator,
-            'totalCount' => $totalCount
+            'totalCount' => $totalCount,
+            'confirmationItems' => $confirmationSummary['items'],
+            'confirmationMergeCount' => $confirmationSummary['merge_count'],
+            'confirmationMoveCount' => $confirmationSummary['move_count'],
+            'confirmationMoreCount' => $confirmationSummary['more_count'],
         ]);
+    }
+
+    private function buildConfirmationSummary($allData): array
+    {
+        $summaryLimit = (int) config('merge_confirmation.summary_limit', 20);
+        $selectedIds = collect($this->selectedIds)->map(fn ($id) => (int) $id)->all();
+        $selected = $allData
+            ->filter(fn (array $item): bool => in_array((int) $item['local']->id, $selectedIds, true))
+            ->values();
+
+        $items = $selected->take($summaryLimit)->map(function (array $item): array {
+            $local = $item['local'];
+            $global = $item['global'];
+            $method = $item['strategy'] === 'merge'
+                ? __('hiko.merge') . ' · ' . ($item['reason'] ?? __('hiko.exact_match'))
+                : __('hiko.move');
+
+            return [
+                'local' => (string) $local->id,
+                'local_url' => route('locations.edit', $local->id),
+                'method' => $method,
+                'result' => $global ? (string) $global->id : '—',
+                'result_url' => $global ? route('global.locations.edit', $global->id) : null,
+            ];
+        })->toArray();
+
+        $moveCount = $selected->filter(fn (array $item): bool => ($item['strategy'] ?? null) === 'move')->count();
+
+        return [
+            'items' => $items,
+            'merge_count' => $selected->count() - $moveCount,
+            'move_count' => $moveCount,
+            'more_count' => max(0, $selected->count() - count($items)),
+        ];
     }
 }

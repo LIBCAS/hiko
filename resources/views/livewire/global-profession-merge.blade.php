@@ -1,4 +1,4 @@
-<div x-data="{ showConfig: true }">
+<div x-data="{ showConfig: true, confirmOpen: false }">
     <div x-show="showConfig" x-transition class="bg-white shadow rounded-lg p-6 mb-6 relative">
         <button @click="showConfig = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600" title="{{ __('hiko.hide_configuration') }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
@@ -50,7 +50,7 @@
 
     <div class="mb-4 flex justify-between items-center">
         <div class="text-sm text-gray-600">{{ __('hiko.selected_count', ['count' => count($selectedIds)]) }}</div>
-        <button wire:click="execute" wire:confirm="{{ __('hiko.confirm_merge') }}" wire:loading.attr="disabled" class="px-4 py-2 bg-primary text-white rounded hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors duration-150">
+        <button type="button" @click="confirmOpen = true" wire:loading.attr="disabled" @disabled(count($selectedIds) === 0) class="px-4 py-2 bg-primary text-white rounded hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors duration-150">
             <svg wire:loading class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
             {{ __('hiko.execute_merge') }}
         </button>
@@ -106,4 +106,14 @@
     </div>
 
     <div class="mt-4">{{ $previewData->links() }}</div>
+
+<x-global-merge-confirm-modal
+    wire:key="global-profession-confirm-{{ md5(json_encode($confirmationItems)) }}-{{ count($selectedIds) }}-{{ $confirmationMoreCount }}"
+    show="confirmOpen"
+    :items="$confirmationItems"
+    :selected-count="count($selectedIds)"
+    :merge-count="$confirmationMergeCount"
+    :move-count="$confirmationMoveCount"
+    :more-count="$confirmationMoreCount"
+/>
 </div>

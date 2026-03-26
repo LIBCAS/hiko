@@ -243,6 +243,18 @@
                     {{ __('hiko.merge_selected') }}
                 </button>
             </div>
+
+            <x-local-merge-confirm-modal
+                show="confirmOpen"
+                items="confirmationItems"
+                selected-count="selectedIds.length"
+                merge-count="confirmationMergeCount"
+                move-count="confirmationMoveCount"
+                more-count="confirmationMoreCount"
+                preview-items="confirmationPreviewItems"
+                preview-note="{{ __('hiko.local_merge_auto_relations_note') }}"
+                confirm-action="executeMerge()"
+            />
         </div>
         @endforeach
     </div>
@@ -256,7 +268,8 @@
         selectedIds: items.map(p => p.id),
         allChecked: true,
         final: {},
-        mergeConfirmMsg: "{{ __('hiko.confirm_merge') }}",
+        confirmOpen: false,
+        mergeMethodLabel: "{{ __('hiko.merge') }}",
 
         // Calculate earliest created_at from selected IDs
         get targetId() {
@@ -284,6 +297,51 @@
             });
         },
 
+        get selectedItems() {
+            const selectedIdsString = this.selectedIds.map(String);
+            return this.items.filter(item => selectedIdsString.includes(String(item.id)));
+        },
+
+        get confirmationItems() {
+            const resultId = this.targetId;
+            const resultUrl = resultId ? `/places/${resultId}/edit` : null;
+
+            return this.selectedItems.slice(0, {{ (int) config('merge_confirmation.summary_limit', 20) }}).map(item => ({
+                local: item.id,
+                local_url: `/places/${item.id}/edit`,
+                method: this.mergeMethodLabel,
+                result: resultId ?? '—',
+                result_url: resultUrl,
+            }));
+        },
+
+        get confirmationMoreCount() {
+            return Math.max(this.selectedItems.length - {{ (int) config('merge_confirmation.summary_limit', 20) }}, 0);
+        },
+
+        get confirmationMergeCount() {
+            return this.selectedItems.length;
+        },
+
+        get confirmationMoveCount() {
+            return 0;
+        },
+
+        get confirmationPreviewItems() {
+            return [
+                { label: "{{ __('hiko.id') }}", value: this.targetId ?? '—' },
+                { label: "{{ __('hiko.name_2') }}", value: this.previewValue(this.final.name) },
+                { label: "{{ __('hiko.additional_name') }}", value: this.previewValue(this.final.additional_name) },
+                { label: "{{ __('hiko.country') }}", value: this.previewValue(this.final.country) },
+                { label: "{{ __('hiko.division') }}", value: this.previewValue(this.final.division) },
+                { label: "{{ __('hiko.latitude') }}", value: this.previewValue(this.final.latitude) },
+                { label: "{{ __('hiko.longitude') }}", value: this.previewValue(this.final.longitude) },
+                { label: "{{ __('hiko.alternative_names') }}", value: this.previewValue(this.final.alternative_names) },
+                { label: "{{ __('hiko.note') }}", value: this.previewValue(this.final.note) },
+                { label: "{{ __('hiko.geoname_id') }}", value: this.previewValue(this.final.geoname_id) },
+            ];
+        },
+
         setFinalToTarget() {
             if (this.items.length > 0) {
                 // Default to the oldest item
@@ -306,10 +364,24 @@
             this.selectedIds = this.allChecked ? this.items.map(p => p.id) : [];
         },
 
+        previewValue(value) {
+            if (Array.isArray(value)) {
+                return value.length ? value.join(', ') : '—';
+            }
+
+            if (value === null || value === undefined || value === '') {
+                return '—';
+            }
+
+            return String(value);
+        },
+
         submitMerge() {
             if (this.selectedIds.length < 2) return;
-            if (!confirm(this.mergeConfirmMsg)) return;
+            this.confirmOpen = true;
+        },
 
+        executeMerge() {
             const payload = {
                 target_id: this.targetId,
                 source_ids: this.selectedIds.filter(id => String(id) !== String(this.targetId)),
