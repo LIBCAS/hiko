@@ -38,6 +38,6 @@ return [
         'location_global_merge' => 'manage-users',
         'global_location_edit' => 'manage-users',
 
-        'religions_admin' => 'manage-metadata',
+        'religions_admin' => 'manage-users',
     ],
 ];

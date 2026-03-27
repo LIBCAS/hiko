@@ -30,6 +30,7 @@
             let isReadOnly = false;
             let lostHandled = false;
             let recoveringMissing = false;
+            let isSubmitting = false;
 
             const holderName = (lock) => lock?.locked_by_user_name || lock?.locked_by_user_email || 'Unknown user';
 
@@ -223,7 +224,7 @@
             };
 
             const release = () => {
-                if (isReadOnly) {
+                if (isReadOnly || isSubmitting) {
                     return;
                 }
                 fetch(config.release_url, {
@@ -242,6 +243,12 @@
                     }),
                 }).catch(() => {});
             };
+
+            document.addEventListener('submit', (event) => {
+                if (event.target instanceof HTMLFormElement) {
+                    isSubmitting = true;
+                }
+            }, true);
 
             window.addEventListener('pagehide', release);
             window.addEventListener('beforeunload', release);
