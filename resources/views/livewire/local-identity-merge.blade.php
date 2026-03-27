@@ -127,6 +127,7 @@
                                     <th class="px-2 py-2">{{ __('hiko.name_2') }}</th> {{-- Název --}}
                                     <th class="px-2 py-2">{{ __('hiko.type') }}</th>
                                     <th class="px-2 py-2">{{ __('hiko.viafid') }}</th>
+                                    <th class="px-2 py-2">{{ __('hiko.global_identity_id_abbr') }}</th>
                                 @else
                                     {{-- Person Columns --}}
                                     <th class="px-2 py-2">{{ __('hiko.surname_abbr') }}</th>
@@ -139,6 +140,7 @@
                                     <th class="px-2 py-2">{{ __('hiko.viafid') }}</th>
                                     <th class="px-2 py-2">{{ __('hiko.professions') }}</th>
                                     <th class="px-2 py-2">{{ __('hiko.religions') }}</th>
+                                    <th class="px-2 py-2">{{ __('hiko.global_identity_id_abbr') }}</th>
                                 @endif
                             </tr>
                         </thead>
@@ -169,6 +171,22 @@
                                             @click="final.viaf_id = item.viaf_id"
                                             :class="final.viaf_id === item.viaf_id ? 'bg-yellow-100 font-bold' : ''">
                                             <span x-text="item.viaf_id || '—'"></span>
+                                        </td>
+                                        <td class="px-2 py-2 text-center cursor-pointer align-top"
+                                            @click="final.selected_global_identity_source_id = item.id"
+                                            :class="final.selected_global_identity_source_id === item.id ? 'bg-yellow-100' : ''">
+                                            <template x-if="item.global_identity_id">
+                                                <a
+                                                    :href="`/global-identities/${item.global_identity_id}/edit`"
+                                                    @click.stop
+                                                    target="_blank"
+                                                    class="text-primary hover:underline"
+                                                    x-text="item.global_identity_id"
+                                                ></a>
+                                            </template>
+                                            <template x-if="!item.global_identity_id">
+                                                <span>&mdash;</span>
+                                            </template>
                                         </td>
                                     @else
                                         {{-- Person Rows --}}
@@ -203,6 +221,24 @@
                                                 <span x-show="item.religions_list.length === 0">—</span>
                                             </ul>
                                         </td>
+
+                                        {{-- Global Identity --}}
+                                        <td class="px-2 py-2 text-center cursor-pointer align-top"
+                                            @click="final.selected_global_identity_source_id = item.id"
+                                            :class="final.selected_global_identity_source_id === item.id ? 'bg-yellow-100' : ''">
+                                            <template x-if="item.global_identity_id">
+                                                <a
+                                                    :href="`/global-identities/${item.global_identity_id}/edit`"
+                                                    @click.stop
+                                                    target="_blank"
+                                                    class="text-primary hover:underline"
+                                                    x-text="item.global_identity_id"
+                                                ></a>
+                                            </template>
+                                            <template x-if="!item.global_identity_id">
+                                                <span>&mdash;</span>
+                                            </template>
+                                        </td>
                                     @endif
                                 </tr>
                             </template>
@@ -210,12 +246,15 @@
                             {{-- RESULT ROW --}}
                             <tr class="bg-orange-50 font-bold border-t-2 border-primary">
                                 <td class="px-2 py-2 text-center">{{ __('hiko.result_abbr') }}</td>
-                                <td></td> {{-- ID placeholder --}}
+                                <td class="px-2 py-2 bg-yellow-50 text-center" x-text="targetId ?? '—'"></td>
 
                                 @if($isInstitution)
                                     <td class="px-2 py-2 bg-yellow-50" x-text="final.name"></td>
                                     <td class="px-2 py-2 bg-yellow-50" x-text="final.type"></td>
                                     <td class="px-2 py-2 bg-yellow-50" x-text="final.viaf_id"></td>
+                                    <td class="px-2 py-2 bg-yellow-50 text-center text-gray-500 italic text-[10px]">
+                                        <span x-text="finalGlobalIdentityId"></span>
+                                    </td>
                                 @else
                                     <td class="px-2 py-2 bg-yellow-50" x-text="final.surname"></td>
                                     <td class="px-2 py-2 bg-yellow-50" x-text="final.forename"></td>
@@ -231,6 +270,9 @@
                                     <td class="px-2 py-2 bg-yellow-50 text-gray-500 italic text-[10px]">
                                         (ID: <span x-text="final.selected_religion_source_id"></span>)
                                     </td>
+                                    <td class="px-2 py-2 bg-yellow-50 text-center text-gray-500 italic text-[10px]">
+                                        <span x-text="finalGlobalIdentityId"></span>
+                                    </td>
                                 @endif
                             </tr>
                         </tbody>
@@ -238,7 +280,12 @@
                 </div>
 
                 <div class="bg-gray-50 px-4 py-3 flex justify-between items-center border-t border-gray-200">
-                    <span class="text-xs text-gray-500" x-show="selectedIds.length < 2">{{ __('hiko.select_at_least_two') }}</span>
+                    <div class="text-xs text-gray-500">
+                        <span x-show="selectedIds.length < 2" class="text-red-600 font-bold">{{ __('hiko.select_at_least_two') }}</span>
+                        <span x-show="selectedIds.length >= 2">
+                            {{ __('hiko.merged_identity_id') }}: <span class="font-mono font-bold" x-text="targetId"></span>
+                        </span>
+                    </div>
                     <button @click="submitMerge" :disabled="selectedIds.length < 2" class="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-black transition disabled:opacity-50">
                         {{ __('hiko.merge_selected') }}
                     </button>
@@ -333,6 +380,7 @@
                     { label: "{{ __('hiko.name_2') }}", value: this.previewValue(this.final.name) },
                     { label: "{{ __('hiko.type') }}", value: this.previewValue(this.final.type) },
                     { label: "{{ __('hiko.viafid') }}", value: this.previewValue(this.final.viaf_id) },
+                    { label: "{{ __('hiko.global_identity_id_abbr') }}", value: `{{ __('hiko.selected_from_record') }}`.replace(':id', this.previewValue(this.final.selected_global_identity_source_id)) },
                 ];
             }
 
@@ -348,6 +396,7 @@
                 { label: "{{ __('hiko.viafid') }}", value: this.previewValue(this.final.viaf_id) },
                 { label: "{{ __('hiko.professions') }}", value: `{{ __('hiko.selected_from_record') }}`.replace(':id', this.previewValue(this.final.selected_profession_source_id)) },
                 { label: "{{ __('hiko.religions') }}", value: `{{ __('hiko.selected_from_record') }}`.replace(':id', this.previewValue(this.final.selected_religion_source_id)) },
+                { label: "{{ __('hiko.global_identity_id_abbr') }}", value: `{{ __('hiko.selected_from_record') }}`.replace(':id', this.previewValue(this.final.selected_global_identity_source_id)) },
             ];
         },
 
@@ -361,6 +410,7 @@
                         name: t.name,
                         type: t.type,
                         viaf_id: t.viaf_id,
+                        selected_global_identity_source_id: t.id,
                     };
                 } else {
                     this.final = {
@@ -373,10 +423,18 @@
                         death_year: t.death_year,
                         viaf_id: t.viaf_id,
                         selected_profession_source_id: t.id,
-                        selected_religion_source_id: t.id
+                        selected_religion_source_id: t.id,
+                        selected_global_identity_source_id: t.id
                     };
                 }
             }
+        },
+
+        get finalGlobalIdentityId() {
+            const sourceId = String(this.final.selected_global_identity_source_id ?? '');
+            const source = this.items.find(item => String(item.id) === sourceId);
+
+            return source?.global_identity_id ?? '—';
         },
 
         toggleAll() {

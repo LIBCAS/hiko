@@ -17,6 +17,10 @@ class LocalIdentityMergeRequest extends FormRequest
     {
         $tenantPrefix = tenancy()->tenant->table_prefix;
         $table = $tenantPrefix . '__identities';
+        $mergeIds = array_values(array_filter(array_merge(
+            [$this->input('target_id')],
+            $this->input('source_ids', [])
+        ), fn($id) => $id !== null && $id !== ''));
 
         $isPerson = $this->input('attributes.type') === 'person';
 
@@ -43,8 +47,9 @@ class LocalIdentityMergeRequest extends FormRequest
             'attributes.viaf_id' => ['nullable', 'string', 'max:255'],
 
             // For complex relations, send the ID of the identity whose relations we want to keep, nullable because identities of type 'institution' do not use these relations
-            'attributes.selected_profession_source_id' => ['nullable', 'integer', "exists:{$table},id"],
-            'attributes.selected_religion_source_id' => ['nullable', 'integer', "exists:{$table},id"],
+            'attributes.selected_profession_source_id' => ['nullable', 'integer', "exists:{$table},id", Rule::in($mergeIds)],
+            'attributes.selected_religion_source_id' => ['nullable', 'integer', "exists:{$table},id", Rule::in($mergeIds)],
+            'attributes.selected_global_identity_source_id' => ['nullable', 'integer', "exists:{$table},id", Rule::in($mergeIds)],
         ];
     }
 }

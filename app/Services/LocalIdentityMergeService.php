@@ -20,7 +20,7 @@ class LocalIdentityMergeService
         // 1. Fetch Identities with Relations needed for the UI
         $identities = Identity::query()
             ->with(['professions', 'globalProfessions', 'religions'])
-            ->select(['id', 'name', 'surname', 'forename', 'birth_year', 'death_year', 'viaf_id', 'created_at', 'type', 'nationality', 'gender'])
+            ->select(['id', 'name', 'surname', 'forename', 'birth_year', 'death_year', 'viaf_id', 'global_identity_id', 'created_at', 'type', 'nationality', 'gender'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -254,6 +254,12 @@ class LocalIdentityMergeService
                 $updateData['note'] = implode(' | ', array_unique($mergedNotes));
                 $updateData['general_name_modifier'] = implode('; ', array_unique($mergedGenNameModifiers));
 
+                if (array_key_exists('selected_global_identity_source_id', $data['attributes'])) {
+                    $globalIdentitySourceId = $data['attributes']['selected_global_identity_source_id'];
+                    $globalIdentitySource = $allIdentities->firstWhere('id', (int) $globalIdentitySourceId);
+                    $updateData['global_identity_id'] = $globalIdentitySource?->global_identity_id;
+                }
+
                 // Update Target Main Record
                 $target->update($updateData);
 
@@ -331,6 +337,9 @@ class LocalIdentityMergeService
                     'selected_profession_source_id' => isset($data['attributes']['selected_profession_source_id'])
                         ? (int)$data['attributes']['selected_profession_source_id']
                         : null,
+                    'selected_global_identity_source_id' => isset($data['attributes']['selected_global_identity_source_id'])
+                        ? (int)$data['attributes']['selected_global_identity_source_id']
+                        : null,
                     'merged_count' => count($data['source_ids']),
                 ];
             });
@@ -354,6 +363,7 @@ class LocalIdentityMergeService
         // Keep selected source IDs only for religions/professions.
         $payload['attributes']['selected_religion_source_id'] = $data['attributes']['selected_religion_source_id'] ?? null;
         $payload['attributes']['selected_profession_source_id'] = $data['attributes']['selected_profession_source_id'] ?? null;
+        $payload['attributes']['selected_global_identity_source_id'] = $data['attributes']['selected_global_identity_source_id'] ?? null;
         unset(
             $payload['attributes']['religions_list'],
             $payload['attributes']['professions_list'],
