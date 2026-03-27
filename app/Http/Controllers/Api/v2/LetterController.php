@@ -381,11 +381,12 @@ class LetterController extends Controller
     {
         $data = $request->validated();
         unset($data['client_meta']);
+        $copiesData = $data['copies'] ?? [];
         unset($data['copies']);
 
         $letter = Letter::create($data);
 
-        $this->letterService->syncManifestations($letter, $request->input('copies', []));
+        $this->letterService->syncManifestations($letter, $copiesData);
 
         $this->attachRelated($request, $letter);
 
@@ -438,12 +439,13 @@ class LetterController extends Controller
 
         $data = $request->validated();
         unset($data['client_meta']);
+        $copiesData = $data['copies'] ?? [];
         unset($data['copies']);
 
         $letter->update($data);
 
         if ($request->exists('copies')) {
-            $this->letterService->syncManifestations($letter, $request->input('copies', []));
+            $this->letterService->syncManifestations($letter, $copiesData);
         }
 
         $this->attachRelated($request, $letter);

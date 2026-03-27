@@ -133,7 +133,7 @@
                     <div>
                         <x-label for="date_marked" :value="__('hiko.date_marked')" />
                         <x-input id="date_marked" class="block w-full mt-1" type="text" name="date_marked"
-                            :value="old('date_day', $letter->date_marked)" />
+                            :value="old('date_marked', $letter->date_marked)" />
                         @error('date_marked')
                             <div class="text-red-600">{{ $message }}</div>
                         @enderror
@@ -151,9 +151,9 @@
                             {{ __('hiko.date_inferred_help') }}
                         </small>
                     </div>
-                    <div x-data="{ isRange: {{ var_export(boolval(old('date_day', $letter->date_is_range)), true) }} }">
+                    <div x-data="{ isRange: {{ var_export(boolval(old('date_is_range', $letter->date_is_range)), true) }} }">
                         <x-checkbox name="date_is_range" label="{{ __('hiko.date_is_range') }}" x-model="isRange"
-                            :checked="boolval(old('date_day', $letter->date_is_range))" />
+                            :checked="boolval(old('date_is_range', $letter->date_is_range))" />
                         <div class="flex space-x-6">
                             <div x-show="isRange">
                                 <x-label for="range_year" :value="__('hiko.year') . ' 2'" />

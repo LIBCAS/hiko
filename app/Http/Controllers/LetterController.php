@@ -67,11 +67,12 @@ class LetterController extends Controller
         // Validated data contains 'copies' array.
         // We must exclude it from the Letter create, as it's not a column anymore.
         $data = $request->validated();
+        $copiesData = $data['copies'] ?? [];
         unset($data['copies']);
 
         $letter = Letter::create($data);
 
-        $this->letterService->syncManifestations($letter, $request->input('copies', []));
+        $this->letterService->syncManifestations($letter, $copiesData);
 
         $this->attachRelated($request, $letter);
 
@@ -123,11 +124,12 @@ class LetterController extends Controller
         $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';
 
         $data = $request->validated();
+        $copiesData = $data['copies'] ?? [];
         unset($data['copies']);
 
         $letter->update($data);
 
-        $this->letterService->syncManifestations($letter, $request->input('copies', []));
+        $this->letterService->syncManifestations($letter, $copiesData);
 
         $this->attachRelated($request, $letter);
 

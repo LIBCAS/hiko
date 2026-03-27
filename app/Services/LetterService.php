@@ -13,11 +13,13 @@ class LetterService
      * Handles resolving Location names to IDs (Local only for now).
      *
      * @param Letter $letter
-     * @param array $copiesData Array of copies from the request
+     * @param array|null $copiesData Array of copies from the request
      * @return void
      */
-    public function syncManifestations(Letter $letter, array $copiesData): void
+    public function syncManifestations(Letter $letter, ?array $copiesData): void
     {
+        $copiesData ??= [];
+
         DB::transaction(function () use ($letter, $copiesData) {
             $letter->manifestations()->delete();
 
