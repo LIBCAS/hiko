@@ -3,8 +3,9 @@
 namespace App\Livewire;
 
 use Livewire\Component;
-use App\Models\Location;
 use App\Models\Letter;
+use App\Models\GlobalLocation;
+use App\Models\Location;
 
 /**
  * A Livewire component that manages the "copies" array within a Letter record.
@@ -43,20 +44,25 @@ class LetterCopies extends Component
         $this->copyValues = $this->getCopyValues();
         $this->locations = $this->getLocations();
 
-        // If a Letter was passed in, we assign $this->copies to whatever is stored in the DB.
-        // Because in the Letter model we cast "copies" => "array", it should already be an array.
-        if ($letter) {
+        // Prefer flashed old input so validation errors keep user-entered rows.
+        if (session()->hasOldInput()) {
+            $this->copies = request()->old('copies', []);
+        }
+        // If an existing Letter was passed in, load its stored manifestations.
+        elseif ($letter && $letter->exists) {
             $this->copies = $letter->copies ?? [];
         }
-        // If no letter was passed (create scenario), try old() or default to empty array.
+        // Create scenario with no old input.
         else {
-            $this->copies = request()->old('copies', []);
+            $this->copies = [];
         }
 
         // Ensure it's always an array
         if (!is_array($this->copies)) {
             $this->copies = [];
         }
+
+        $this->copies = $this->normalizeCopyLocationSelections($this->copies);
     }
 
     /**
@@ -115,5 +121,73 @@ class LetterCopies extends Component
             ->get()
             ->groupBy('type')
             ->toArray();
+    }
+
+    protected function normalizeCopyLocationSelections(array $copies): array
+    {
+        return array_map(function ($copy) {
+            if (!is_array($copy)) {
+                return $copy;
+            }
+
+            foreach (['repository', 'archive', 'collection'] as $field) {
+                $copy[$field] = $this->normalizeLocationSelection($copy[$field] ?? null);
+            }
+
+            return $copy;
+        }, $copies);
+    }
+
+    protected function normalizeLocationSelection(mixed $selection): mixed
+    {
+        if (is_array($selection)) {
+            $value = $selection['value'] ?? null;
+
+            if (empty($value)) {
+                return $selection;
+            }
+
+            if (!empty($selection['label'])) {
+                return $selection;
+            }
+
+            return [
+                'value' => $value,
+                'label' => $this->resolveLocationLabel($value),
+            ];
+        }
+
+        if (!is_string($selection) || $selection === '') {
+            return $selection;
+        }
+
+        if (!preg_match('/^(local|global)-\d+$/', $selection)) {
+            return $selection;
+        }
+
+        return [
+            'value' => $selection,
+            'label' => $this->resolveLocationLabel($selection),
+        ];
+    }
+
+    protected function resolveLocationLabel(string $selection): string
+    {
+        if (!preg_match('/^(local|global)-(\d+)$/', $selection, $matches)) {
+            return $selection;
+        }
+
+        $scope = $matches[1];
+        $id = (int) $matches[2];
+
+        $location = $scope === 'global'
+            ? GlobalLocation::find($id)
+            : Location::find($id);
+
+        if (!$location) {
+            return $selection;
+        }
+
+        return $location->name . ' (' . __('hiko.' . $scope) . ')';
     }
 }

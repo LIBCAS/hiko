@@ -36,10 +36,12 @@ class RelatedResources extends Component
      */
     public function mount(Letter $letter = null)
     {
-        if ($letter) {
+        if (session()->hasOldInput()) {
+            $this->resources = request()->old('related_resources', []);
+        } elseif ($letter && $letter->exists) {
             $this->resources = $letter->related_resources ?? [];
         } else {
-            $this->resources = request()->old('related_resources', []);
+            $this->resources = [];
         }
     
         if (!is_array($this->resources)) {

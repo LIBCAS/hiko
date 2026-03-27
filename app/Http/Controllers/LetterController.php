@@ -7,8 +7,13 @@ use App\Exports\PalladioCharacterExport;
 use App\Http\Requests\LetterRequest;
 use App\Jobs\RegenerateNames;
 use App\Models\Letter;
+use App\Models\GlobalIdentity;
+use App\Models\GlobalKeyword;
+use App\Models\GlobalPlace;
 use App\Models\Identity;
+use App\Models\Keyword;
 use App\Models\Language;
+use App\Models\Place;
 use App\Services\LetterService;
 use App\Services\PageLockService;
 use Illuminate\Http\RedirectResponse;
@@ -206,19 +211,170 @@ class LetterController extends Controller
 
     protected function viewData(Letter $letter)
     {
+        $hasOldInput = session()->hasOldInput();
+
         return [
             'letter' => $letter,
-            'selectedAuthors' => $this->getSelectedMetaFields($letter, 'authors', ['marked']),
-            'selectedRecipients' => $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
-            'selectedOrigins' => $this->getSelectedMetaFields($letter, 'origins', ['marked']),
-            'selectedDestinations' => $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
-            'selectedKeywords' => $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
-            'selectedMentioned' => $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
+            'selectedAuthors' => $hasOldInput
+                ? $this->getSelectedMetaFieldsFromOld('authors', ['marked'])
+                : $this->getSelectedMetaFields($letter, 'authors', ['marked']),
+            'selectedRecipients' => $hasOldInput
+                ? $this->getSelectedMetaFieldsFromOld('recipients', ['marked', 'salutation'])
+                : $this->getSelectedMetaFields($letter, 'recipients', ['marked', 'salutation']),
+            'selectedOrigins' => $hasOldInput
+                ? $this->getSelectedMetaFieldsFromOld('origins', ['marked'])
+                : $this->getSelectedMetaFields($letter, 'origins', ['marked']),
+            'selectedDestinations' => $hasOldInput
+                ? $this->getSelectedMetaFieldsFromOld('destinations', ['marked'])
+                : $this->getSelectedMetaFields($letter, 'destinations', ['marked']),
+            'selectedKeywords' => $hasOldInput
+                ? $this->getSelectedMetaFromOld('keywords')
+                : $this->getSelectedMeta($letter, 'Keyword', 'keywords'),
+            'selectedMentioned' => $hasOldInput
+                ? $this->getSelectedMetaFromOld('mentioned')
+                : $this->getSelectedMeta($letter, 'Identity', 'mentioned'),
             'languages' => collect(Language::all())->pluck('name'),
-            'selectedLanguages' => request()->old('languages')
-                ? (array) request()->old('languages')
-                : explode(';', $letter->languages),
+            'selectedLanguages' => $hasOldInput
+                ? (array) request()->old('languages', [])
+                : ($letter->languages ? explode(';', $letter->languages) : []),
         ];
+    }
+
+    protected function getSelectedMetaFieldsFromOld(string $fieldKey, array $pivotFields): array
+    {
+        $items = request()->old($fieldKey, []);
+
+        if (!is_array($items)) {
+            return [];
+        }
+
+        return array_values(array_map(function ($item) use ($fieldKey, $pivotFields) {
+            $item = is_array($item) ? $item : ['value' => $item];
+            $value = $item['value'] ?? '';
+
+            $resolvedLabel = match ($fieldKey) {
+                'authors', 'recipients' => $this->resolveIdentitySelectionLabel($value),
+                'origins', 'destinations' => $this->resolvePlaceSelectionLabel($value),
+                default => '',
+            };
+
+            $result = [
+                'value' => $value,
+                'label' => $resolvedLabel ?: ($item['label'] ?? ''),
+            ];
+
+            foreach ($pivotFields as $field) {
+                $result[$field] = $item[$field] ?? null;
+            }
+
+            return $result;
+        }, array_values($items)));
+    }
+
+    protected function getSelectedMetaFromOld(string $fieldKey): array
+    {
+        $items = request()->old($fieldKey, []);
+
+        if (!is_array($items)) {
+            return [];
+        }
+
+        $selected = array_map(function ($item) use ($fieldKey) {
+            $value = is_array($item) ? ($item['value'] ?? '') : $item;
+
+            if (empty($value)) {
+                return null;
+            }
+
+            $resolvedLabel = match ($fieldKey) {
+                'keywords' => $this->resolveKeywordSelectionLabel($value),
+                'mentioned' => $this->resolveIdentitySelectionLabel($value),
+                default => '',
+            };
+
+            return [
+                'value' => $value,
+                'label' => $resolvedLabel ?: (is_array($item) ? ($item['label'] ?? $value) : $value),
+            ];
+        }, array_values($items));
+
+        return array_values(array_filter($selected));
+    }
+
+    protected function resolveIdentitySelectionLabel(?string $value): string
+    {
+        [$scope, $id] = $this->parseScopedSelectionValue($value);
+
+        if (!$scope || !$id) {
+            return '';
+        }
+
+        $identity = $scope === 'global'
+            ? GlobalIdentity::find($id)
+            : Identity::find($id);
+
+        if (!$identity) {
+            return '';
+        }
+
+        return $identity->name . ' (' . __('hiko.' . $scope) . ')';
+    }
+
+    protected function resolvePlaceSelectionLabel(?string $value): string
+    {
+        [$scope, $id] = $this->parseScopedSelectionValue($value);
+
+        if (!$scope || !$id) {
+            return '';
+        }
+
+        $place = $scope === 'global'
+            ? GlobalPlace::find($id)
+            : Place::find($id);
+
+        if (!$place) {
+            return '';
+        }
+
+        $labelParts = [$place->name];
+
+        if (!empty($place->division)) {
+            $labelParts[] = $place->division;
+        }
+
+        if (!empty($place->country)) {
+            $labelParts[] = $place->country;
+        }
+
+        return implode(', ', array_filter($labelParts)) . ' (' . __('hiko.' . $scope) . ')';
+    }
+
+    protected function resolveKeywordSelectionLabel(?string $value): string
+    {
+        [$scope, $id] = $this->parseScopedSelectionValue($value);
+
+        if (!$scope || !$id) {
+            return '';
+        }
+
+        $keyword = $scope === 'global'
+            ? GlobalKeyword::find($id)
+            : Keyword::find($id);
+
+        if (!$keyword) {
+            return '';
+        }
+
+        return $keyword->getTranslation('name', config('app.locale')) . ' (' . __('hiko.' . $scope) . ')';
+    }
+
+    protected function parseScopedSelectionValue(?string $value): array
+    {
+        if (!is_string($value) || !preg_match('/^(local|global)-(\d+)$/', $value, $matches)) {
+            return [null, null];
+        }
+
+        return [$matches[1], (int) $matches[2]];
     }
 
     protected function attachRelated(Request $request, Letter $letter)
