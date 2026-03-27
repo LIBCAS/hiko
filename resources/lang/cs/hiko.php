@@ -675,7 +675,7 @@ return [
     'global_profession_merge_step_3' => 'Spusťte proces pro vybrané záznamy.',
     'global_identity_merging' => 'Identity - propojování lokálních s globálními',
     'global_identity_merging_criteria_description' => 'Vyberte kritéria pro návrhy propojení lokálních a globálních identit.',
-    'global_identity_merge_step_1' => 'Nastavte kritéria a práh podobnosti pro párování.',
+    'global_identity_merge_step_1' => 'Nastavte kritéria a práh podobnosti pro párování. Následně se zobrazí lokální identity s navrženými globálními identitami pro propojení.',
     'global_identity_merge_step_2' => 'Zkontrolujte navržená propojení a případně upravte výběr globální identity.',
     'global_identity_merge_step_3' => 'Spusťte propojení pro vybrané lokální identity.',
     'identities_global_link_success' => 'Propojování s globálními identitami dokončeno. Propojeno: :linked.',

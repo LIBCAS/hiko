@@ -30,6 +30,17 @@ class GlobalKeywordMergeService
             );
         }
 
+        if (!empty($filters['category'])) {
+            $categoryTerm = mb_strtolower(trim((string)$filters['category']));
+
+            $localKeywords->whereHas('keyword_category', function ($query) use ($locale, $categoryTerm) {
+                $query->whereRaw(
+                    "LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"'))) LIKE ?",
+                    ["%{$categoryTerm}%"]
+                );
+            });
+        }
+
         $preview = collect();
 
         foreach ($localKeywords->get() as $local) {

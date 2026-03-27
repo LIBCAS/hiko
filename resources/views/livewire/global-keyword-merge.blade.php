@@ -42,6 +42,11 @@
             <input type="text" wire:model.live.debounce.500ms="filters.name" class="text-sm w-full border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" placeholder="{{ __('hiko.search') }}...">
         </div>
 
+        <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">{{ __('hiko.category') }}</label>
+            <input type="text" wire:model.live.debounce.500ms="filters.category" class="text-sm w-full border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" placeholder="{{ __('hiko.search') }}...">
+        </div>
+
         <div>
             <label class="block text-xs font-bold text-gray-700 uppercase mb-1">{{ __('hiko.method') }}</label>
             <select wire:model.live="filters.strategy" class="text-sm border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 w-40">

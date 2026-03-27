@@ -673,7 +673,7 @@ return [
     'global_profession_merge_step_3' => 'Execute process for selected records.',
     'global_identity_merging' => 'Identities - linking local to global',
     'global_identity_merging_criteria_description' => 'Select criteria to suggest links between local and global identities.',
-    'global_identity_merge_step_1' => 'Choose criteria and similarity threshold for matching.',
+    'global_identity_merge_step_1' => 'Choose criteria and similarity threshold for matching. The list will show suggested links between local and global identities based on the selected criteria.',
     'global_identity_merge_step_2' => 'Review suggested links and adjust global identity selections if needed.',
     'global_identity_merge_step_3' => 'Execute linking for selected local identities.',
     'identities_global_link_success' => 'Global identity linking finished. Linked: :linked.',

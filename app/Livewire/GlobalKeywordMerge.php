@@ -13,6 +13,7 @@ class GlobalKeywordMerge extends Component
 
     public array $filters = [
         'name' => '',
+        'category' => '',
         'strategy' => 'all',
     ];
 
