@@ -332,6 +332,7 @@ return [
     'correspondence' => 'Korespondence',
     'compare_date_computed' => 'Porovnat vypočítané datum',
     'loading' => 'Načítání...',
+    'uploading' => 'Nahrávání',
     'similarity' => 'Podobnost',
     'upload_document' => 'Nahrát přílohy',
     'recognize_text' => 'Rozpoznat text',

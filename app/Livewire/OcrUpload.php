@@ -151,7 +151,6 @@ class OcrUpload extends Component
             }
 
             session()->flash('message', __('hiko.ocr_processing_completed_successfully'));
-            $this->reset(['photos']);
             $this->resetValidation();
         } catch (Exception $e) {
             $this->persistSnapshot([

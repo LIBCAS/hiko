@@ -1,4 +1,13 @@
-<div class="p-6 bg-white rounded-lg shadow-lg" x-data="dropzoneComponent()" x-init="showButtons = false">
+<div
+    class="p-6 bg-white rounded-lg shadow-lg"
+    x-data="dropzoneComponent()"
+    x-init="showButtons = false"
+    x-on:livewire-upload-start="isUploading = true; uploadProgress = 0"
+    x-on:livewire-upload-progress="isUploading = true; uploadProgress = $event.detail.progress"
+    x-on:livewire-upload-finish="isUploading = false; uploadProgress = 100"
+    x-on:livewire-upload-error="isUploading = false; uploadProgress = 0"
+    x-on:livewire-upload-cancel="isUploading = false; uploadProgress = 0"
+>
     @if (session()->has('message'))
         <div class="mb-4 p-4 text-green-700 bg-green-100 rounded">{{ session('message') }}</div>
     @endif
@@ -81,15 +90,28 @@
             </select>
         </div>
 
-        <div class="flex space-x-4" x-show="showButtons">
+        <div class="space-y-3" x-show="showButtons">
+            <div x-show="isUploading" class="space-y-2">
+                <div class="flex items-center justify-between text-xs text-gray-500">
+                    <span>{{ __('hiko.uploading') }}...</span>
+                    <span x-text="uploadProgress + '%'"></span>
+                </div>
+                <div class="w-full h-2 bg-gray-200 rounded">
+                    <div class="h-2 bg-primary rounded transition-all duration-150" :style="'width: ' + uploadProgress + '%'"></div>
+                </div>
+            </div>
+
+            <div class="flex space-x-4">
             <button
                 type="submit"
                 class="flex-1 relative flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-primary rounded hover:bg-black disabled:opacity-50"
+                :disabled="isUploading || files.length === 0"
                 wire:loading.attr="disabled"
-                wire:target="uploadAndProcess"
+                wire:target="photos,uploadAndProcess"
                 aria-busy="{{ $isProcessing ? 'true' : 'false' }}"
             >
-                <span wire:loading.remove wire:target="uploadAndProcess">{{ __('hiko.recognize_text') }}</span>
+                <span x-show="!isUploading" wire:loading.remove wire:target="uploadAndProcess">{{ __('hiko.recognize_text') }}</span>
+                <span x-show="isUploading" class="flex justify-center items-center">{{ __('hiko.uploading') }}...</span>
                 <span wire:loading wire:target="uploadAndProcess" class="flex justify-center items-center">
                     <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -97,6 +119,7 @@
                     </svg>
                 </span>
             </button>
+            </div>
         </div>
     </form>
 
@@ -403,6 +426,16 @@
             files: [],
             dataTransfer: new DataTransfer(),
             showButtons: false,
+            isUploading: false,
+            uploadProgress: 0,
+            isDuplicate(file) {
+                return this.files.some(existing =>
+                    existing.name === file.name
+                    && existing.size === file.size
+                    && existing.type === file.type
+                    && existing.lastModified === file.lastModified
+                );
+            },
             handleFiles(event) {
                 const selectedFiles = Array.from(event.dataTransfer ? event.dataTransfer.files : event.target.files);
                 if (selectedFiles.length + this.files.length > 100) {
@@ -431,6 +464,10 @@
                         return;
                     }
 
+                    if (this.isDuplicate(file)) {
+                        return;
+                    }
+
                     if (file.type.startsWith('image/')) {
                         file.preview = URL.createObjectURL(file);
                     }
@@ -442,6 +479,8 @@
                 this.$refs.fileInput.files = this.dataTransfer.files;
                 this.$wire.set('photos', this.dataTransfer.files);
                 this.showButtons = this.files.length > 0;
+                this.uploadProgress = 0;
+                this.$refs.fileInput.value = null;
             },
             removeFile(index) {
                 this.files.splice(index, 1);
@@ -450,6 +489,10 @@
                 this.$refs.fileInput.files = this.dataTransfer.files;
                 this.$wire.set('photos', this.dataTransfer.files);
                 this.showButtons = this.files.length > 0;
+                if (this.files.length === 0) {
+                    this.isUploading = false;
+                    this.uploadProgress = 0;
+                }
             }
         };
     }

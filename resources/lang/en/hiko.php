@@ -330,6 +330,7 @@ return [
     'correspondence' => 'Correspondence',
     'compare_date_computed' => 'Compare computed date',
     'loading' => 'Loading...',
+    'uploading' => 'Uploading',
     'similarity' => 'Similarity',
     'upload_document' => 'Upload attachments',
     'recognize_text' => 'Recognize text',
