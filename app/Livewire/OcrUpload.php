@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Letter;
+use App\Models\Language;
 use App\Models\OcrSnapshot;
 use App\Services\DocumentService;
 use Exception;
@@ -372,6 +373,49 @@ class OcrUpload extends Component
             return null;
         };
 
+        $resolveLanguages = function (array $meta): array {
+            $value = $meta['Jazyk'] ?? $meta["Jazyk (array of codes like 'cs', 'de')"] ?? null;
+
+            if (is_null($value)) {
+                return [];
+            }
+
+            $codes = [];
+
+            if (is_array($value)) {
+                $codes = $value;
+            } elseif (is_string($value)) {
+                $trimmed = trim($value);
+
+                if ($trimmed === '') {
+                    return [];
+                }
+
+                $decoded = json_decode($trimmed, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $codes = $decoded;
+                } else {
+                    $codes = preg_split('/[\s,;|]+/', $trimmed) ?: [];
+                }
+            } else {
+                return [];
+            }
+
+            $languageMap = Language::all()
+                ->mapWithKeys(function ($language) {
+                    return [Str::lower((string) $language->code) => (string) $language->name];
+                });
+
+            return collect($codes)
+                ->map(fn($code) => Str::lower(trim((string) $code)))
+                ->filter()
+                ->map(fn($code) => $languageMap->get($code))
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+        };
+
         $mapped = [
             'date_year' => $get($metadata, 'Rok'),
             'date_month' => $get($metadata, 'Měsíc'),
@@ -387,6 +431,7 @@ class OcrUpload extends Component
             'incipit' => $get($metadata, 'Incipit'),
             'explicit' => $get($metadata, 'Explicit'),
             'copyright' => $get($metadata, 'Copyright'),
+            'languages' => $resolveLanguages($metadata),
             'date_uncertain' => $resolveBool($metadata, 'Datum je nejisté', 'Datum je nejisté (bool)'),
             'date_approximate' => $resolveBool($metadata, 'Datum je přibližné', 'Datum je přibližné (bool)'),
             'date_inferred' => $resolveBool($metadata, 'Datum je odvozené', 'Datum je odvozené (bool)'),
@@ -493,7 +538,7 @@ class OcrUpload extends Component
 
     private function filterCopyableMappedFields(array $mapped): array
     {
-        $blockedKeys = ['recognized_text', 'languages'];
+        $blockedKeys = ['recognized_text'];
 
         return array_filter(
             $mapped,

@@ -194,6 +194,8 @@
                 'Místo odeslání je odvozené (bool)' => 'origin_inferred',
                 'Místo odeslání je nejisté' => 'origin_uncertain',
                 'Místo odeslání je nejisté (bool)' => 'origin_uncertain',
+                'Jazyk' => 'languages',
+                "Jazyk (array of codes like 'cs', 'de')" => 'languages',
             ];
             $rawLabelTranslations = [
                 'Rok' => __('hiko.year'),
@@ -231,6 +233,7 @@
                 'Místo určení je nejisté' => __('hiko.destination_uncertain'),
                 'Místo určení je nejisté (bool)' => __('hiko.destination_uncertain'),
                 'Jazyk' => __('hiko.language'),
+                "Jazyk (array of codes like 'cs', 'de')" => __('hiko.language'),
                 'Abstrakt CS' => __('hiko.abstract') . ' CS',
                 'Abstrakt EN' => __('hiko.abstract') . ' EN',
                 'Incipit' => __('hiko.incipit'),
@@ -324,6 +327,7 @@
                             'Místo určení je nejisté',
                             'Místo určení je nejisté (bool)',
                             'Jazyk',
+                            "Jazyk (array of codes like 'cs', 'de')",
                             'Abstrakt CS',
                             'Abstrakt EN',
                             'Incipit',

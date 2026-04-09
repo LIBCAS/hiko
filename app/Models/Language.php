@@ -15,11 +15,21 @@ class Language extends Model
     {
         $languages = json_decode(file_get_contents(resource_path() . '/data/languages.json'), true);
 
-        return collect(array_values($languages))->map(function ($item, $index) {
-            return [
-                'id' => $index,
-                'name' => $item['name'],
-            ];
-        })->toArray();
+        return collect($languages)
+            ->map(function ($item, $code) {
+                return [
+                    'code' => $code,
+                    'name' => $item['name'],
+                ];
+            })
+            ->values()
+            ->map(function ($item, $index) {
+                return [
+                    'id' => $index,
+                    'code' => $item['code'],
+                    'name' => $item['name'],
+                ];
+            })
+            ->toArray();
     }
 }

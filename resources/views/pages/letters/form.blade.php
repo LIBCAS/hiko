@@ -779,10 +779,20 @@
                         return;
                     }
 
-                    Array.from(select.options).forEach((opt) => {
-                        opt.selected = values.includes(opt.value);
-                    });
-                    select.dispatchEvent(new Event('change'));
+                    const choicesInstance = window.choicesSelectors?.[select.id];
+
+                    if (choicesInstance) {
+                        choicesInstance.removeActiveItems();
+                        values.forEach((value) => {
+                            choicesInstance.setChoiceByValue(value);
+                        });
+                    } else {
+                        Array.from(select.options).forEach((opt) => {
+                            opt.selected = values.includes(opt.value);
+                        });
+                    }
+
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
                 };
 
                 const setRecognizedText = (value, mode = 'selected') => {

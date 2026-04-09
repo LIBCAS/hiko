@@ -1,15 +1,22 @@
 import Choices from 'choices.js'
 
 window.ajaxChoicesSelectors = {};
+window.choicesSelectors = {};
 
 window.choices = (data) => {
     return {
         initSelect: () => {
-            return new Choices(data.element, {
+            const select = new Choices(data.element, {
                 allowHTML: true,
                 removeItemButton: true,
                 searchResultLimit: 1000,
             })
+
+            if (data.element.id) {
+                window.choicesSelectors[data.element.id] = select
+            }
+
+            return select
         },
     }
 }
