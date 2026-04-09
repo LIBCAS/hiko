@@ -700,6 +700,7 @@ return [
     'sync_already_running' => 'A synchronization process is already running.',
     'sync_success' => 'Synchronization completed successfully.',
     'sync_failed' => 'Synchronization failed.',
+    'sync_failed_with_message' => 'Synchronization failed: :message',
     'no_sync_history_found' => 'No synchronization history found.',
     'profession_invalid_global' => 'The selected profession is not valid (Global).',
     'profession_invalid_local' => 'The selected profession is not valid (Local).',

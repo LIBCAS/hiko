@@ -32,12 +32,21 @@
             @forelse($history as $log)
                 <li class="px-4 py-4 flex items-center justify-between hover:bg-gray-50">
                     <div class="flex items-center">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                            {{ $log->status === 'completed' ? 'bg-green-100 text-green-800' : ($log->status === 'running' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800') }}">
-                            {{ ucfirst(__('hiko.' . $log->status)) }}
-                        </span>
-                        <span class="ml-3 text-sm text-gray-900">{{ $log->user_email }}</span>
-                        <span class="ml-3 text-sm text-gray-500">{{ $log->created_at->format('d.m.Y H:i') }}</span>
+                        <div>
+                            <div>
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    {{ $log->status === 'completed' ? 'bg-green-100 text-green-800' : ($log->status === 'running' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800') }}">
+                                    {{ ucfirst(__('hiko.' . $log->status)) }}
+                                </span>
+                                <span class="ml-3 text-sm text-gray-900">{{ $log->user_email }}</span>
+                                <span class="ml-3 text-sm text-gray-500">{{ $log->created_at->format('d.m.Y H:i') }}</span>
+                            </div>
+                            @if($log->message)
+                                <div class="mt-1 text-sm text-gray-500 normal-case break-words">
+                                    {{ $log->message }}
+                                </div>
+                            @endif
+                        </div>
                     </div>
                     <div class="text-sm text-gray-500">
                         {{ $log->duration_seconds ? $log->duration_seconds . 's' : '-' }}

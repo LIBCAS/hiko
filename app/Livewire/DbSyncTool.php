@@ -6,6 +6,7 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Artisan;
 use App\Models\AppSyncHistory;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class DbSyncTool extends Component
 {
@@ -40,7 +41,7 @@ class DbSyncTool extends Component
 
         // Create History Record (This acts as our "lock")
         $log = AppSyncHistory::create([
-            'user_name' => Auth::user()->name,
+            'user_email' => Auth::user()?->email,
             'status' => 'running',
             'message' => 'Started...',
         ]);
@@ -54,9 +55,6 @@ class DbSyncTool extends Component
             // Use --yes to skip confirmation prompt
             $exitCode = Artisan::call('db:sync-prod', ['--yes' => true]);
 
-            // Optional: Capture command output if needed for debugging
-            // $output = Artisan::output();
-
             $duration = round(microtime(true) - $startTime);
 
             if ($exitCode === 0) {
@@ -68,13 +66,18 @@ class DbSyncTool extends Component
 
                 $this->dispatch('alert', ['type' => 'success', 'message' => __('hiko.sync_success')]);
             } else {
+                $message = $this->commandFailureMessage($exitCode);
+
                 $log->update([
                     'status' => 'failed',
-                    'message' => 'Command returned exit code: ' . $exitCode,
+                    'message' => $message,
                     'duration_seconds' => $duration
                 ]);
 
-                $this->dispatch('alert', ['type' => 'error', 'message' => __('hiko.sync_failed')]);
+                $this->dispatch('alert', [
+                    'type' => 'error',
+                    'message' => __('hiko.sync_failed_with_message', ['message' => $message]),
+                ]);
             }
 
         } catch (\Exception $e) {
@@ -90,5 +93,16 @@ class DbSyncTool extends Component
         } finally {
             $this->isSyncing = false;
         }
+    }
+
+    private function commandFailureMessage(int $exitCode): string
+    {
+        $output = trim(Artisan::output());
+
+        if ($output !== '') {
+            return Str::limit($output, 1000);
+        }
+
+        return 'Command returned exit code: ' . $exitCode;
     }
 }

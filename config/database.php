@@ -141,6 +141,10 @@ return [
             'prefix' => '',
             'strict' => true,
             'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                \PDO::ATTR_TIMEOUT => env('PROD_DB_TIMEOUT', 5),
+                \PDO::MYSQL_ATTR_SSL_CA => env('PROD_MYSQL_ATTR_SSL_CA'),
+            ]) : [],
         ],
 
     ],

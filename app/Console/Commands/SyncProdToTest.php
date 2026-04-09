@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Command to sync Global tables and Mapped Tenant tables
@@ -83,11 +84,18 @@ class SyncProdToTest extends Command
         $startTime = microtime(true);
 
         try {
-            $prodDb = DB::connection('production_sync')->getDatabaseName();
-            $localDb = DB::connection('local_sync')->getDatabaseName();
+            $prodConnection = DB::connection('production_sync');
+            $localConnection = DB::connection('local_sync');
+
+            $prodConnection->getPdo();
+            $localConnection->getPdo();
+
+            $prodDb = $prodConnection->getDatabaseName();
+            $localDb = $localConnection->getDatabaseName();
             Log::info("SYNC START. Prod DB: [{$prodDb}], Local DB: [{$localDb}]");
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             Log::error("SYNC ERROR: Could not connect to databases. " . $e->getMessage());
+            $this->error("Could not connect to databases. " . $e->getMessage());
             return 1;
         }
 
@@ -101,7 +109,7 @@ class SyncProdToTest extends Command
             $this->info("Sync completed in {$duration} seconds.");
             Log::info("SYNC COMPLETED in {$duration} seconds.");
 
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             Log::error("SYNC EXCEPTION: " . $e->getMessage());
             $this->error($e->getMessage());
             return 1;

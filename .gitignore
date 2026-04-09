@@ -27,4 +27,6 @@ storage/app/google-cloud/
 /database/export
 /database/import
 adminer-x.php
+.codex
+/.codex
 HELP.md

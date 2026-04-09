@@ -702,6 +702,7 @@ return [
     'sync_already_running' => 'Synchronizace již probíhá.',
     'sync_success' => 'Synchronizace dokončena úspěšně.',
     'sync_failed' => 'Synchronizace selhala.',
+    'sync_failed_with_message' => 'Synchronizace selhala: :message',
     'no_sync_history_found' => 'Žádné předchozí záznamy nebyly nalezeny',
     'profession_invalid_global' => 'Vybraná profese není platná (Globální).',
     'profession_invalid_local' => 'Vybraná profese není platná (Lokální).',

@@ -21,7 +21,9 @@
         </div>
 
         @can('manage-users')
-            <livewire:db-sync-tool />
+            @if(!app()->environment('production'))
+                <livewire:db-sync-tool />
+            @endif
         @endcan
     </div>
 </x-app-layout>
