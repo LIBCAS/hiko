@@ -90,8 +90,8 @@
             </select>
         </div>
 
-        <div class="space-y-3" x-show="showButtons">
-            <div x-show="isUploading" class="space-y-2">
+        <div class="space-y-3" x-show="showButtons" x-cloak>
+            <div x-show="isUploading" x-cloak class="space-y-2">
                 <div class="flex items-center justify-between text-xs text-gray-500">
                     <span>{{ __('hiko.uploading') }}...</span>
                     <span x-text="uploadProgress + '%'"></span>
@@ -110,8 +110,8 @@
                 wire:target="photos,uploadAndProcess"
                 aria-busy="{{ $isProcessing ? 'true' : 'false' }}"
             >
-                <span x-show="!isUploading" wire:loading.remove wire:target="uploadAndProcess">{{ __('hiko.recognize_text') }}</span>
-                <span x-show="isUploading" class="flex justify-center items-center">{{ __('hiko.uploading') }}...</span>
+                <span x-show="!isUploading" x-cloak wire:loading.remove wire:target="uploadAndProcess">{{ __('hiko.recognize_text') }}</span>
+                <span x-show="isUploading" x-cloak class="flex justify-center items-center">{{ __('hiko.uploading') }}...</span>
                 <span wire:loading wire:target="uploadAndProcess" class="flex justify-center items-center">
                     <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
