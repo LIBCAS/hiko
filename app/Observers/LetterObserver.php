@@ -48,6 +48,10 @@ class LetterObserver
      */
     protected function attachEditorAndHistory(Letter $letter, string $event): void
     {
+        if ($letter->skipAutomaticHistory) {
+            return;
+        }
+
         $user = Auth::user();
         $name = $user?->name ?? 'system';
 

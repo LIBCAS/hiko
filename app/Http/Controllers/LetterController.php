@@ -18,6 +18,7 @@ use App\Services\LetterService;
 use App\Services\PageLockService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -474,7 +475,7 @@ class LetterController extends Controller
         $this->attachRelatedEntities('mentioned', 'mentioned', $sourceLetter, $duplicatedLetter);
 
         $duplicatedLetter->languages = $sourceLetter->languages;
-        $duplicatedLetter->save();
+        $duplicatedLetter->saveQuietly();
     }
 
     protected function attachRelatedEntities(string $fieldKey, string $role, Letter $sourceLetter, Letter $duplicatedLetter)
@@ -759,9 +760,20 @@ class LetterController extends Controller
     {
         // Copy main letter fields
         $duplicate = $letter->replicate();
+        $duplicate->uuid = null;
+        $duplicate->history = null;
+        $duplicate->skipAutomaticHistory = true;
         $duplicate->save();
 
         $this->duplicateRelatedEntities($letter, $duplicate);
+
+        $user = Auth::user();
+        $duplicate->history = now()->format('Y-m-d H:i:s') . ' – ' . ($user?->name ?? 'system') . ': dupli. #' . $letter->id;
+        $duplicate->saveQuietly();
+
+        if ($user) {
+            $duplicate->users()->syncWithoutDetaching([$user->id]);
+        }
 
         RegenerateNames::dispatch($duplicate->authors()->get());
         RegenerateNames::dispatch($duplicate->recipients()->get());

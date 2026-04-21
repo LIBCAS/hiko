@@ -89,6 +89,12 @@ class Letter extends Model implements HasMedia
     use HasTranslations, InteractsWithMedia, HasFactory, Searchable;
 
     /**
+     * Transient runtime flag used to bypass automatic observer history writes
+     * for the duplication workflow.
+     */
+    public bool $skipAutomaticHistory = false;
+
+    /**
     * Constructor sets the table name with tenant prefix if tenancy is initialized.
     */
     public function __construct(array $attributes = [])
