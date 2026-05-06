@@ -3,7 +3,11 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\LetterController;
+use App\Models\GlobalPlace;
 use App\Models\Letter;
+use App\Models\Location;
+use App\Models\Manifestation;
+use App\Models\OcrSnapshot;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\LetterService;
@@ -31,7 +35,7 @@ class LetterDuplicationHistoryTest extends TestCase
         ));
 
         tenancy()->initialize(new Tenant([
-            'id' => 'test-tenant',
+            'id' => 1,
             'table_prefix' => 'test',
         ]));
 
@@ -105,12 +109,14 @@ class LetterDuplicationHistoryTest extends TestCase
 
         Schema::connection('tenant')->create('test__identity_letter', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('identity_id');
+            $table->unsignedBigInteger('identity_id')->nullable();
+            $table->unsignedBigInteger('global_identity_id')->nullable();
             $table->unsignedBigInteger('letter_id');
             $table->string('role', 100)->nullable();
             $table->integer('position')->nullable();
             $table->text('marked')->nullable();
             $table->text('salutation')->nullable();
+            $table->timestamps();
         });
 
         Schema::connection('tenant')->create('test__letter_user', function (Blueprint $table) {
@@ -119,10 +125,133 @@ class LetterDuplicationHistoryTest extends TestCase
             $table->unsignedBigInteger('user_id');
             $table->unique(['letter_id', 'user_id']);
         });
+
+        Schema::connection('tenant')->create('test__locations', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+            $table->string('name');
+            $table->string('type');
+        });
+
+        Schema::connection('tenant')->create('test__places', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+            $table->string('name');
+            $table->string('country')->nullable();
+            $table->string('division')->nullable();
+        });
+
+        Schema::connection('tenant')->create('test__keywords', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+            $table->json('name')->nullable();
+        });
+
+        Schema::connection('tenant')->create('test__test__keywords', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+            $table->json('name')->nullable();
+        });
+
+        Schema::connection('tenant')->create('test__letter_place', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('letter_id');
+            $table->unsignedBigInteger('place_id')->nullable();
+            $table->unsignedBigInteger('global_place_id')->nullable();
+            $table->string('role', 100);
+            $table->integer('position')->nullable();
+            $table->text('marked')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::connection('tenant')->create('test__keyword_letter', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('keyword_id')->nullable();
+            $table->unsignedBigInteger('global_keyword_id')->nullable();
+            $table->unsignedBigInteger('letter_id');
+            $table->timestamps();
+        });
+
+        Schema::connection('tenant')->create('test__test__keyword_letter', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('keyword_id')->nullable();
+            $table->unsignedBigInteger('global_keyword_id')->nullable();
+            $table->unsignedBigInteger('letter_id');
+            $table->timestamps();
+        });
+
+        Schema::connection('tenant')->create('test__manifestations', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('letter_id');
+            $table->unsignedBigInteger('repository_id')->nullable();
+            $table->unsignedBigInteger('archive_id')->nullable();
+            $table->unsignedBigInteger('collection_id')->nullable();
+            $table->unsignedBigInteger('global_repository_id')->nullable();
+            $table->unsignedBigInteger('global_archive_id')->nullable();
+            $table->unsignedBigInteger('global_collection_id')->nullable();
+            $table->string('signature')->nullable();
+            $table->string('type')->nullable();
+            $table->string('preservation')->nullable();
+            $table->string('copy')->nullable();
+            $table->string('l_number')->nullable();
+            $table->text('manifestation_notes')->nullable();
+            $table->text('location_note')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('global_places', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+            $table->string('name');
+            $table->string('country')->nullable();
+            $table->string('division')->nullable();
+            $table->json('alternative_names')->nullable();
+        });
+
+        Schema::create('global_keywords', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+            $table->json('name')->nullable();
+        });
+
+        Schema::create('ocr_snapshots', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('tenant_id')->nullable();
+            $table->string('tenant_prefix')->nullable();
+            $table->unsignedBigInteger('letter_id')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('user_email')->nullable();
+            $table->string('provider', 50);
+            $table->string('model', 100);
+            $table->string('status', 30)->default('success');
+            $table->json('source_files')->nullable();
+            $table->longText('recognized_text')->nullable();
+            $table->json('metadata')->nullable();
+            $table->json('mapped_fields')->nullable();
+            $table->text('request_prompt')->nullable();
+            $table->text('raw_response')->nullable();
+            $table->text('error_message')->nullable();
+            $table->timestamp('applied_at')->nullable();
+            $table->unsignedBigInteger('applied_by_user_id')->nullable();
+            $table->string('apply_mode', 30)->nullable();
+            $table->json('applied_field_keys')->nullable();
+            $table->timestamps();
+        });
     }
 
     protected function tearDown(): void
     {
+        Schema::dropIfExists('ocr_snapshots');
+        Schema::dropIfExists('global_keywords');
+        Schema::dropIfExists('global_places');
+        Schema::connection('tenant')->dropIfExists('test__manifestations');
+        Schema::connection('tenant')->dropIfExists('test__test__keyword_letter');
+        Schema::connection('tenant')->dropIfExists('test__keyword_letter');
+        Schema::connection('tenant')->dropIfExists('test__letter_place');
+        Schema::connection('tenant')->dropIfExists('test__test__keywords');
+        Schema::connection('tenant')->dropIfExists('test__keywords');
+        Schema::connection('tenant')->dropIfExists('test__places');
+        Schema::connection('tenant')->dropIfExists('test__locations');
         Schema::connection('tenant')->dropIfExists('test__letter_user');
         Schema::connection('tenant')->dropIfExists('test__identity_letter');
         Schema::connection('tenant')->dropIfExists('test__identities');
@@ -227,5 +356,151 @@ class LetterDuplicationHistoryTest extends TestCase
 
         $this->assertStringStartsWith($originalHistory . "\n", (string) $freshLetter->history);
         $this->assertSame(2, substr_count((string) $freshLetter->history, "\n") + 1);
+    }
+
+    public function test_duplicate_copies_manifestations_to_new_letter(): void
+    {
+        $user = User::withoutEvents(fn () => User::factory()->create(['name' => 'Admin Testovaci']));
+        $this->actingAs($user);
+
+        $repository = Location::create([
+            'name' => 'Repository A',
+            'type' => 'repository',
+        ]);
+        $archive = Location::create([
+            'name' => 'Archive A',
+            'type' => 'archive',
+        ]);
+        $collection = Location::create([
+            'name' => 'Collection A',
+            'type' => 'collection',
+        ]);
+
+        $source = $this->createLetter();
+
+        Manifestation::create([
+            'letter_id' => $source->id,
+            'repository_id' => $repository->id,
+            'archive_id' => $archive->id,
+            'collection_id' => $collection->id,
+            'signature' => 'SIG-42',
+            'type' => 'original',
+            'preservation' => 'good',
+            'copy' => 'manuscript',
+            'l_number' => 'L-42',
+            'manifestation_notes' => 'Copied manifestation notes',
+            'location_note' => 'Copied location note',
+        ]);
+
+        $controller = new class(app(LetterService::class)) extends LetterController {
+            protected function duplicateRelatedEntities(Letter $sourceLetter, Letter $duplicatedLetter)
+            {
+                // Keep the test focused on manifestation duplication.
+            }
+        };
+
+        $controller->duplicate(Request::create('/letters/' . $source->id . '/duplicate', 'GET'), $source);
+
+        $duplicate = Letter::query()->whereKeyNot($source->id)->latest('id')->firstOrFail();
+        $manifestations = $duplicate->manifestations()->get();
+
+        $this->assertCount(1, $manifestations);
+
+        $manifestation = $manifestations->first();
+
+        $this->assertSame($repository->id, $manifestation->repository_id);
+        $this->assertSame($archive->id, $manifestation->archive_id);
+        $this->assertSame($collection->id, $manifestation->collection_id);
+        $this->assertSame('SIG-42', $manifestation->signature);
+        $this->assertSame('original', $manifestation->type);
+        $this->assertSame('good', $manifestation->preservation);
+        $this->assertSame('manuscript', $manifestation->copy);
+        $this->assertSame('L-42', $manifestation->l_number);
+        $this->assertSame('Copied manifestation notes', $manifestation->manifestation_notes);
+        $this->assertSame('Copied location note', $manifestation->location_note);
+        $this->assertSame($duplicate->id, $manifestation->letter_id);
+    }
+
+    public function test_duplicate_copies_global_destinations_to_new_letter(): void
+    {
+        $user = User::withoutEvents(fn () => User::factory()->create(['name' => 'Admin Testovaci']));
+        $this->actingAs($user);
+
+        $destination = GlobalPlace::create([
+            'name' => 'Vienna',
+            'country' => 'Austria',
+        ]);
+
+        $source = $this->createLetter();
+        $source->globalPlaces()->attach($destination->id, [
+            'role' => 'destination',
+            'position' => 0,
+            'marked' => 'Wien',
+        ]);
+
+        $controller = app(LetterController::class);
+        $controller->duplicate(Request::create('/letters/' . $source->id . '/duplicate', 'GET'), $source);
+
+        $duplicate = Letter::query()->whereKeyNot($source->id)->latest('id')->firstOrFail();
+        $duplicatedDestinations = $duplicate->globalDestinations()->get();
+
+        $this->assertCount(1, $duplicatedDestinations);
+        $this->assertSame($destination->id, $duplicatedDestinations->first()->id);
+        $this->assertSame('Wien', $duplicatedDestinations->first()->pivot->marked);
+    }
+
+    public function test_duplicate_copies_ocr_snapshots_to_new_letter_and_resets_apply_audit(): void
+    {
+        $user = User::withoutEvents(fn () => User::factory()->create([
+            'name' => 'Admin Testovaci',
+            'email' => 'admin@example.com',
+        ]));
+        $this->actingAs($user);
+
+        $source = $this->createLetter();
+
+        OcrSnapshot::create([
+            'tenant_id' => 1,
+            'tenant_prefix' => 'test',
+            'letter_id' => $source->id,
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'provider' => 'openai',
+            'model' => 'gpt-4o',
+            'status' => 'success',
+            'source_files' => ['scan-1.jpg'],
+            'recognized_text' => 'Recognized text',
+            'metadata' => ['date' => '1901-02-03'],
+            'mapped_fields' => ['date_year' => 1901, 'content' => 'Recognized text'],
+            'request_prompt' => 'Prompt body',
+            'raw_response' => 'Raw response',
+            'error_message' => null,
+            'applied_at' => now(),
+            'applied_by_user_id' => $user->id,
+            'apply_mode' => 'overwrite',
+            'applied_field_keys' => ['content'],
+        ]);
+
+        $controller = app(LetterController::class);
+        $controller->duplicate(Request::create('/letters/' . $source->id . '/duplicate', 'GET'), $source);
+
+        $duplicate = Letter::query()->whereKeyNot($source->id)->latest('id')->firstOrFail();
+        $snapshots = OcrSnapshot::query()
+            ->where('letter_id', $duplicate->id)
+            ->where('tenant_prefix', 'test')
+            ->get();
+
+        $this->assertCount(1, $snapshots);
+
+        $snapshot = $snapshots->first();
+
+        $this->assertSame('Recognized text', $snapshot->recognized_text);
+        $this->assertSame(['date' => '1901-02-03'], $snapshot->metadata);
+        $this->assertSame(['date_year' => 1901, 'content' => 'Recognized text'], $snapshot->mapped_fields);
+        $this->assertSame(['scan-1.jpg'], $snapshot->source_files);
+        $this->assertNull($snapshot->applied_at);
+        $this->assertNull($snapshot->applied_by_user_id);
+        $this->assertNull($snapshot->apply_mode);
+        $this->assertNull($snapshot->applied_field_keys);
     }
 }

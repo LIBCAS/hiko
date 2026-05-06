@@ -19,6 +19,7 @@ use App\Services\PageLockService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -465,17 +466,40 @@ class LetterController extends Controller
         $duplicatedLetter->localKeywords()->sync($sourceLetter->localKeywords->pluck('id')->toArray());
         $duplicatedLetter->globalKeywords()->sync($sourceLetter->globalKeywords->pluck('id')->toArray());
 
-        $duplicatedLetter->identities()->detach();
-        $duplicatedLetter->places()->detach();
-
-        $this->attachRelatedEntities('authors', 'author', $sourceLetter, $duplicatedLetter);
-        $this->attachRelatedEntities('recipients', 'recipient', $sourceLetter, $duplicatedLetter);
-        $this->attachRelatedEntities('origins', 'origin', $sourceLetter, $duplicatedLetter);
-        $this->attachRelatedEntities('destinations', 'destination', $sourceLetter, $duplicatedLetter);
-        $this->attachRelatedEntities('mentioned', 'mentioned', $sourceLetter, $duplicatedLetter);
+        $this->duplicatePivotRows(
+            tenancy()->tenant->table_prefix . '__identity_letter',
+            $sourceLetter->id,
+            $duplicatedLetter->id
+        );
+        $this->duplicatePivotRows(
+            tenancy()->tenant->table_prefix . '__letter_place',
+            $sourceLetter->id,
+            $duplicatedLetter->id
+        );
 
         $duplicatedLetter->languages = $sourceLetter->languages;
         $duplicatedLetter->saveQuietly();
+    }
+
+    protected function duplicatePivotRows(string $table, int $sourceLetterId, int $duplicatedLetterId): void
+    {
+        $rows = DB::table($table)
+            ->where('letter_id', $sourceLetterId)
+            ->get()
+            ->map(function ($row) use ($duplicatedLetterId) {
+                $payload = (array) $row;
+                unset($payload['id']);
+                $payload['letter_id'] = $duplicatedLetterId;
+
+                return $payload;
+            })
+            ->all();
+
+        if ($rows === []) {
+            return;
+        }
+
+        DB::table($table)->insert($rows);
     }
 
     protected function attachRelatedEntities(string $fieldKey, string $role, Letter $sourceLetter, Letter $duplicatedLetter)
@@ -764,6 +788,9 @@ class LetterController extends Controller
         $duplicate->history = null;
         $duplicate->skipAutomaticHistory = true;
         $duplicate->save();
+
+        $this->letterService->duplicateManifestations($letter, $duplicate);
+        $this->letterService->duplicateOcrSnapshots($letter, $duplicate);
 
         $this->duplicateRelatedEntities($letter, $duplicate);
 
