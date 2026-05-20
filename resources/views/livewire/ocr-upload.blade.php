@@ -150,11 +150,15 @@
         $hasRawData = !empty($ocrText) || count(array_filter($metadata)) > 0;
         $selectedSnapshot = collect($snapshots)->firstWhere('id', $selectedSnapshotId);
         $snapshotFields = $selectedSnapshot['mapped_fields'] ?? $transientMappedFields;
+        if (!empty($ocrText) && empty($snapshotFields['content'])) {
+            $snapshotFields = ['content' => $ocrText] + $snapshotFields;
+        }
     @endphp
 
     @if ($hasRawData)
         @php
             $mappedFieldKeys = array_keys($snapshotFields);
+            $fullTextIsMapped = in_array('content', $mappedFieldKeys, true);
             $rawToMappedField = [
                 'Rok' => 'date_year',
                 'Měsíc' => 'date_month',
@@ -268,7 +272,21 @@
 
             <div>
                 <div class="mb-2 flex items-center justify-between">
-                    <h2 class="text-lg font-bold">{{ __('hiko.full_text') }}</h2>
+                    <div class="flex items-center gap-2">
+                        @if ($fullTextIsMapped)
+                            <input id="ocr-full-text-content" type="checkbox" wire:model="selectedFields" value="content" class="rounded border-gray-300">
+                        @endif
+                        <h2 class="text-lg font-bold">
+                            @if ($fullTextIsMapped)
+                                <label for="ocr-full-text-content" class="cursor-pointer">{{ __('hiko.full_text') }}</label>
+                            @else
+                                {{ __('hiko.full_text') }}
+                            @endif
+                        </h2>
+                        @if ($fullTextIsMapped && (($fieldDiffs['content'] ?? false) === true))
+                            <span class="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-800">{{ __('hiko.ocr_differs') }}</span>
+                        @endif
+                    </div>
                     @if ($hasMappableData)
                         <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
                             <input type="checkbox" wire:model.live="selectAllMappedFields" class="rounded border-gray-300">

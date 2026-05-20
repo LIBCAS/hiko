@@ -201,12 +201,12 @@ class OcrUpload extends Component
         }
 
         $this->selectedSnapshotId = $snapshotId;
-        $mapped = $this->filterCopyableMappedFields($snapshot->mapped_fields ?? []);
+        $this->ocrText = (string) ($snapshot->recognized_text ?? '');
+        $this->metadata = $snapshot->metadata ?? [];
+        $mapped = $this->filterCopyableMappedFields($snapshot->mapped_fields ?? [], $this->ocrText);
         $this->selectedFields = array_keys($mapped);
         $this->selectAllMappedFields = !empty($mapped);
         $this->fieldDiffs = $this->computeDiffs($mapped);
-        $this->ocrText = (string) ($snapshot->recognized_text ?? '');
-        $this->metadata = $snapshot->metadata ?? [];
     }
 
     public function updatedSelectedFields(): void
@@ -232,9 +232,12 @@ class OcrUpload extends Component
                 return;
             }
 
-            $mapped = $this->filterCopyableMappedFields($snapshot->mapped_fields ?? []);
+            $mapped = $this->filterCopyableMappedFields(
+                $snapshot->mapped_fields ?? [],
+                (string) ($snapshot->recognized_text ?? '')
+            );
         } else {
-            $mapped = $this->filterCopyableMappedFields($this->transientMappedFields);
+            $mapped = $this->filterCopyableMappedFields($this->transientMappedFields, $this->ocrText);
             if (empty($mapped)) {
                 $this->addError('selectedSnapshotId', __('hiko.no_snapshot_selected'));
                 return;
@@ -253,6 +256,8 @@ class OcrUpload extends Component
             $this->addError('selectedFields', __('hiko.no_fields_selected'));
             return;
         }
+
+        $this->resetErrorBag('selectedFields');
 
         if ($snapshot) {
             $snapshot->update([
@@ -417,6 +422,7 @@ class OcrUpload extends Component
         };
 
         $mapped = [
+            'content' => $recognizedText,
             'date_year' => $get($metadata, 'Rok'),
             'date_month' => $get($metadata, 'Měsíc'),
             'date_day' => $get($metadata, 'Den'),
@@ -491,6 +497,7 @@ class OcrUpload extends Component
             'author_uncertain' => (bool) $letter->author_uncertain,
             'recipient_inferred' => (bool) $letter->recipient_inferred,
             'recipient_uncertain' => (bool) $letter->recipient_uncertain,
+            'content' => trim((string) ($letter->content_stripped ?: strip_tags((string) $letter->content))),
         ];
     }
 
@@ -530,15 +537,23 @@ class OcrUpload extends Component
     {
         if ($this->selectedSnapshotId) {
             $selectedSnapshot = collect($this->snapshots)->firstWhere('id', $this->selectedSnapshotId);
-            return $this->filterCopyableMappedFields($selectedSnapshot['mapped_fields'] ?? []);
+            return $this->filterCopyableMappedFields(
+                $selectedSnapshot['mapped_fields'] ?? [],
+                (string) ($selectedSnapshot['recognized_text'] ?? '')
+            );
         }
 
-        return $this->filterCopyableMappedFields($this->transientMappedFields);
+        return $this->filterCopyableMappedFields($this->transientMappedFields, $this->ocrText);
     }
 
-    private function filterCopyableMappedFields(array $mapped): array
+    private function filterCopyableMappedFields(array $mapped, ?string $recognizedText = null): array
     {
         $blockedKeys = ['recognized_text'];
+        $recognizedText = trim((string) $recognizedText);
+
+        if ($recognizedText !== '' && empty($mapped['content'])) {
+            $mapped = ['content' => $recognizedText] + $mapped;
+        }
 
         return array_filter(
             $mapped,
@@ -570,6 +585,7 @@ class OcrUpload extends Component
             'status' => $snapshot->status,
             'created_at' => optional($snapshot->created_at)?->format('Y-m-d H:i:s'),
             'mapped_fields' => $snapshot->mapped_fields ?? [],
+            'recognized_text' => (string) ($snapshot->recognized_text ?? ''),
         ])->all();
     }
 

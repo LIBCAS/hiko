@@ -101,6 +101,8 @@ class LetterRequest extends FormRequest
             // 'abstract_cs' / 'abstract_en' are combined later, see prepareForValidation.
 
             // Simple text fields
+            'content'    => ['nullable', 'string'],
+            'content_stripped' => ['nullable', 'string'],
             'explicit'   => ['nullable', 'string', 'max:255'],
             'incipit'    => ['nullable', 'string', 'max:255'],
             'copyright'  => ['nullable', 'string'],

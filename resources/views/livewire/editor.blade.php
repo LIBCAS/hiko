@@ -1,6 +1,5 @@
 <div class="flex-1">
-    <form x-data="editor()" x-init="initEditor();
-    window.livewire.on('saved', () => { initEditor() })" class="bg-white">
+    <form x-data="editor()" x-init="initEditor()" class="bg-white">
         <div id="editor" class="w-full max-w-full font-sans text-base prose">
             {!! $letter->content !!}
         </div>

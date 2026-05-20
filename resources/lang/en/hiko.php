@@ -351,6 +351,7 @@ return [
     'ocr_apply_empty_only' => 'Apply all empty fields only',
     'ocr_apply_overwrite' => 'Overwrite all selected fields',
     'ocr_apply_snapshot_button' => 'Apply to form',
+    'ocr_data_prepared' => 'OCR data prepared. Selected fields were applied to the form.',
     'ocr_differs' => 'differs',
     'no_snapshot_selected' => 'No OCR snapshot selected.',
     'no_fields_selected' => 'Select at least one field to apply.',

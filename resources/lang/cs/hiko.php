@@ -353,6 +353,7 @@ return [
     'ocr_apply_empty_only' => 'Použít pouze do prázdných polí',
     'ocr_apply_overwrite' => 'Přepsat všechna vybraná pole',
     'ocr_apply_snapshot_button' => 'Použít do formuláře',
+    'ocr_data_prepared' => 'OCR data jsou připravena. Vybraná pole byla použita ve formuláři.',
     'ocr_differs' => 'liší se',
     'no_snapshot_selected' => 'Není vybraný žádný OCR snímek.',
     'no_fields_selected' => 'Vyberte alespoň jedno pole pro použití.',

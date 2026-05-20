@@ -79,6 +79,11 @@
                         {{ __('hiko.status') }}
                     </a>
                 </li>
+                <li class="border-t border-primary-light">
+                    <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-full-text">
+                        {{ __('hiko.full_text') }}
+                    </a>
+                </li>
                 @can('delete-metadata')
                     <li class="border-t border-primary-light">
                         <a class="block w-full px-3 py-1 hover:bg-gray-200" href="#a-approval">
@@ -95,7 +100,7 @@
                     <x-form-errors />
                 </div>
             @endif
-            <form action="{{ $action }}" method="post" class="space-y-6 md:-mt-6" autocomplete="off">
+            <form id="letter-form" action="{{ $action }}" method="post" class="space-y-6 md:-mt-6" autocomplete="off">
                 @csrf
                 @isset($method)
                     @method($method)
@@ -507,6 +512,58 @@
                     @enderror
                 </fieldset>
                 <div class="h-1"></div>
+                <div
+                    id="a-full-text"
+                    class="rounded border border-gray-200 bg-white"
+                    x-data="{
+                        expanded: false,
+                        initialized: false,
+                        initFullTextEditor() {
+                            if (this.initialized) return;
+
+                            this.initialized = true;
+                            document.getElementById('letter-form-content-editor').innerHTML = document.getElementById('content').value || '';
+                            window.letterFormFullTextEditor = editor('#letter-form-content-editor');
+                            window.letterFormFullTextEditor.initEditor();
+                        },
+                        toggleFullTextEditor() {
+                            this.expanded = !this.expanded;
+                            if (this.expanded) {
+                                requestAnimationFrame(() => this.initFullTextEditor());
+                            }
+                        }
+                    }"
+                >
+                    <button
+                        type="button"
+                        class="flex w-full items-center justify-between px-3 py-2 text-left text-lg font-semibold hover:bg-gray-50"
+                        x-on:click="toggleFullTextEditor()"
+                        x-bind:aria-expanded="expanded ? 'true' : 'false'"
+                    >
+                        <span>{{ __('hiko.full_text') }}</span>
+                        <span aria-hidden="true" x-text="expanded ? '−' : '+'"></span>
+                    </button>
+                    <div
+                        class="space-y-3 border-t border-gray-200 p-3"
+                        style="display: none;"
+                        x-bind:style="expanded ? '' : 'display: none;'"
+                    >
+                        <textarea id="content" name="content" class="hidden">{{ old('content', $letter->content) }}</textarea>
+                        <textarea id="content_stripped" name="content_stripped" class="hidden">{{ old('content_stripped', $letter->content_stripped) }}</textarea>
+                        <div>
+                            <div id="letter-form-content-editor" class="w-full max-w-full font-sans text-base prose min-h-72">
+                                {!! old('content', $letter->content) !!}
+                            </div>
+                        </div>
+                        @error('content')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                        @error('content_stripped')
+                            <div class="text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="h-1"></div>
                 <x-button-simple class="w-full" onclick="preventLeaving = false" name="action" value="edit">
                     {{ $label }}
                 </x-button-simple>
@@ -587,6 +644,24 @@
                     // Add listener for form submission
                     form.addEventListener('submit', markFormAsUnchanged);
                 });
+
+                window.syncLetterFormFullText = function() {
+                    const editor = window.letterFormFullTextEditor;
+                    const content = document.getElementById('content');
+                    const contentStripped = document.getElementById('content_stripped');
+
+                    if (!editor || !content || !contentStripped) {
+                        return;
+                    }
+
+                    content.value = editor.getContent();
+                    contentStripped.value = editor.getPlainText();
+                };
+
+                const letterForm = document.getElementById('letter-form');
+                if (letterForm) {
+                    letterForm.addEventListener('submit', window.syncLetterFormFullText);
+                }
 
                 // Handle buttons that should bypass the warning
                 // Save buttons
@@ -795,22 +870,38 @@
                     select.dispatchEvent(new Event('change', { bubbles: true }));
                 };
 
-                const setRecognizedText = (value, mode = 'selected') => {
+                const setFullText = (value, mode = 'selected') => {
                     if (typeof value !== 'string') return;
-                    const editorDiv = document.getElementById('editor');
-                    if (!editorDiv) return;
 
-                    const qlEditor = editorDiv.querySelector('.ql-editor');
-                    const currentlyEmpty = !qlEditor || qlEditor.innerText.trim() === '';
-                    if (mode === 'empty' && !currentlyEmpty) {
+                    const content = document.getElementById('content');
+                    const contentStripped = document.getElementById('content_stripped');
+                    if (!content || !contentStripped) return;
+
+                    const editor = window.letterFormFullTextEditor;
+                    const currentPlainText = editor
+                        ? editor.getPlainText()
+                        : contentStripped.value;
+
+                    if (mode === 'empty' && !isEmptyValue(currentPlainText)) {
                         return;
                     }
 
-                    if (qlEditor) {
-                        qlEditor.innerHTML = value.replace(/\n/g, '<br>');
+                    if (editor) {
+                        editor.setPlainText(value);
+                        window.syncLetterFormFullText();
                     } else {
-                        editorDiv.innerHTML = value.replace(/\n/g, '<br>');
+                        const escapeHtml = (text) => text
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#039;');
+
+                        content.value = '<p>' + escapeHtml(value).replace(/\n/g, '<br>') + '</p>';
+                        contentStripped.value = value.replace(/(\r\n|\n|\r)/g, ' ');
                     }
+
+                    content.dispatchEvent(new Event('change', { bubbles: true }));
                 };
 
                 Livewire.on('ocr-apply-snapshot', (event) => {
@@ -834,16 +925,23 @@
                                 setLanguages(value, mode);
                                 break;
                             case 'recognized_text':
-                                setRecognizedText(value, mode);
+                            case 'content':
+                                setFullText(value, mode);
                                 break;
                             default:
                                 setInput(key, value, mode);
                         }
                     });
 
-                    alert("OCR data prepared. Selected fields were applied to the form.");
+                    alert(@json(__('hiko.ocr_data_prepared')));
                 });
             });
         </script>
+    @endpush
+    @push('styles')
+        <link rel="stylesheet" href="{{ asset('dist/editor.css') }}">
+    @endpush
+    @push('scripts')
+        <script src="{{ asset('dist/editor.js') }}"></script>
     @endpush
 </x-app-layout>
