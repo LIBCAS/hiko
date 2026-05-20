@@ -28,7 +28,7 @@ class OcrUpload extends Component
     public string $ocrText = '';
     public array $metadata = [];
     public array $uploadedFiles = [];
-    public string $selectedModel = DocumentService::MODEL_GEMINI_FLASH_2;   // Selected by default
+    public string $selectedModel = DocumentService::MODEL_OPENAI_GPT55;   // Selected by default
     public string $applyMode = self::APPLY_SELECTED;
     public ?int $selectedSnapshotId = null;
     public array $snapshots = [];
@@ -81,7 +81,7 @@ class OcrUpload extends Component
         $requestPrompt = '';
         $rawResponse = '';
         $provider = 'openai';
-        $modelName = 'gpt-4o';
+        $modelName = DocumentService::apiModelName($this->selectedModel);
         $this->uploadedFiles = [];
 
         try {
@@ -626,12 +626,12 @@ class OcrUpload extends Component
 
     private function providerLabel(string $modelKey): string
     {
-        return $modelKey === DocumentService::MODEL_GEMINI_FLASH_2 ? 'gemini' : 'openai';
+        return DocumentService::providerFromModel($modelKey);
     }
 
     private function modelLabel(string $modelKey): string
     {
-        return $modelKey === DocumentService::MODEL_GEMINI_FLASH_2 ? 'gemini-2.0-flash' : 'gpt-4o';
+        return DocumentService::apiModelName($modelKey);
     }
 
     private function truncate(?string $value): ?string
