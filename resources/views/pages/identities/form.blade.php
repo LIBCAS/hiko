@@ -10,104 +10,114 @@
             :read-only-on-deny="true" />
     @endif
 
-    <form x-data="identityForm({
-        type: '{{ $identity->type ? $identity->type : 'person' }}',
-        similarNamesUrl: '{{ route('ajax.identities.similar') }}',
-        id: '{{ $identity->id }}',
-        surname: '{{ $identity->surname }}',
-        name: '{{ $identity->name }}',
-        forename: '{{ $identity->forename }}'
-    })" x-init="$watch('fullName', () => findSimilarNames($data))" action="{{ $action }}" method="post"
-        class="max-w-lg space-y-6">
-        @csrf
-        @isset($method)
-            @method($method)
-        @endisset
-
-        <livewire:identity-form-switcher
-            :types="$types"
-            :identityType="$selectedType"
-            :identity="$identity"
-            :selectedProfessions="$selectedProfessions"
-            :selectedCategories="$selectedCategories"
-            :selectedReligions="$selectedReligions" />
-
-        <div x-data="globalIdentityLinkSelect({
-            searchUrl: '{{ route('ajax.global.identities') }}',
-            initialValue: '{{ old('global_identity_id', $selectedGlobalIdentity['value'] ?? '') }}',
-            initialLabel: @js($selectedGlobalIdentity['label'] ?? ''),
-        })" class="space-y-2">
-            <x-label for="global_identity_search" :value="__('hiko.global_identity')" />
-            <input type="hidden" name="global_identity_id" x-model="selectedValue">
-
-            <div class="relative">
-                <x-input id="global_identity_search" type="text" class="block w-full mt-1" x-model="searchQuery"
-                    x-on:focus="openDropdown()" x-on:input="openDropdown()"
-                    x-on:keydown.arrow-down.prevent="highlightNext()"
-                    x-on:keydown.arrow-up.prevent="highlightPrev()"
-                    x-on:keydown.enter.prevent="selectHighlighted()" x-on:keydown.escape="isOpen = false"
-                    autocomplete="off" :placeholder="__('hiko.search') . '...'" />
-
-                <button x-show="selectedValue || searchQuery" type="button"
-                    class="absolute inset-y-0 right-0 flex items-center p-2 text-gray-400 hover:text-gray-700"
-                    x-on:click="clearSelection()">×</button>
-
-                <div x-show="isOpen" @click.away="isOpen = false"
-                    class="absolute z-50 mt-1 w-full rounded-md bg-white shadow-lg max-h-60 overflow-y-auto py-1 text-sm ring-1 ring-black ring-opacity-5">
-                    <div x-show="loading" class="p-2 text-center text-gray-500">{{ __('hiko.loading') }}</div>
-                    <div x-show="!loading && options.length === 0" class="p-2 text-center text-gray-500">{{ __('hiko.no_results') }}</div>
-                    <template x-for="(option, idx) in options" :key="option.value">
-                        <div x-on:click="selectOption(option)" x-on:mouseenter="highlightedIndex = idx"
-                            class="cursor-pointer px-3 py-2"
-                            :class="{ 'bg-primary text-white': highlightedIndex === idx }">
-                            <span x-text="option.label"></span>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            @error('global_identity_id')
-                <div class="text-red-600">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <livewire:related-identity-resources :resources="$identity->related_identity_resources" />
-
-        <div>
-            <x-label for="note" :value="__('hiko.note')" />
-            <x-textarea name="note" id="note" rows="3"
-                class="block w-full mt-1" style="min-height: 90px;">{{ old('note', $identity->note) }}</x-textarea>
-            @error('note')
-                <div class="text-red-600">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <x-button-simple class="w-full" name="action" value="edit">
-            {{ $label }}
-        </x-button-simple>
-
-        <x-button-inverted class="w-full text-black bg-white" name="action" value="create">
-            {{ $label }} {{ __('hiko.and_create_new') }}
-        </x-button-inverted>
-    </form>
-
-    @if ($canMerge)
-        <x-merge-form :oldId="$identity->id" model="identity" route="{{ route('ajax.identities') }}" />
-    @endif
-
-    @can('delete-metadata')
-        @if ($canRemove)
-            <form x-data="{ form: $el }" action="{{ route('identities.destroy', $identity->id) }}" method="post"
+    <div class="grid gap-4 mb-4 md:grid-cols-2">
+        <div class="min-w-0">
+            <form x-data="identityForm({
+                type: '{{ $identity->type ? $identity->type : 'person' }}',
+                similarNamesUrl: '{{ route('ajax.identities.similar') }}',
+                id: '{{ $identity->id }}',
+                surname: '{{ $identity->surname }}',
+                name: '{{ $identity->name }}',
+                forename: '{{ $identity->forename }}'
+            })" x-init="$watch('fullName', () => findSimilarNames($data))" action="{{ $action }}" method="post"
                 class="max-w-lg space-y-6">
                 @csrf
-                @method('DELETE')
-                <x-button-danger type="button" class="w-full"
-                    x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
-                    {{ __('hiko.remove') }}
-                </x-button-danger>
+                @isset($method)
+                    @method($method)
+                @endisset
+
+                <livewire:identity-form-switcher
+                    :types="$types"
+                    :identityType="$selectedType"
+                    :identity="$identity"
+                    :selectedProfessions="$selectedProfessions"
+                    :selectedCategories="$selectedCategories"
+                    :selectedReligions="$selectedReligions" />
+
+                <div x-data="globalIdentityLinkSelect({
+                    searchUrl: '{{ route('ajax.global.identities') }}',
+                    initialValue: '{{ old('global_identity_id', $selectedGlobalIdentity['value'] ?? '') }}',
+                    initialLabel: @js($selectedGlobalIdentity['label'] ?? ''),
+                })" class="space-y-2">
+                    <x-label for="global_identity_search" :value="__('hiko.global_identity')" />
+                    <input type="hidden" name="global_identity_id" x-model="selectedValue">
+
+                    <div class="relative">
+                        <x-input id="global_identity_search" type="text" class="block w-full mt-1" x-model="searchQuery"
+                            x-on:focus="openDropdown()" x-on:input="openDropdown()"
+                            x-on:keydown.arrow-down.prevent="highlightNext()"
+                            x-on:keydown.arrow-up.prevent="highlightPrev()"
+                            x-on:keydown.enter.prevent="selectHighlighted()" x-on:keydown.escape="isOpen = false"
+                            autocomplete="off" :placeholder="__('hiko.search') . '...'" />
+
+                        <button x-show="selectedValue || searchQuery" type="button"
+                            class="absolute inset-y-0 right-0 flex items-center p-2 text-gray-400 hover:text-gray-700"
+                            x-on:click="clearSelection()">×</button>
+
+                        <div x-show="isOpen" @click.away="isOpen = false"
+                            class="absolute z-50 mt-1 w-full rounded-md bg-white shadow-lg max-h-60 overflow-y-auto py-1 text-sm ring-1 ring-black ring-opacity-5">
+                            <div x-show="loading" class="p-2 text-center text-gray-500">{{ __('hiko.loading') }}</div>
+                            <div x-show="!loading && options.length === 0" class="p-2 text-center text-gray-500">{{ __('hiko.no_results') }}</div>
+                            <template x-for="(option, idx) in options" :key="option.value">
+                                <div x-on:click="selectOption(option)" x-on:mouseenter="highlightedIndex = idx"
+                                    class="cursor-pointer px-3 py-2"
+                                    :class="{ 'bg-primary text-white': highlightedIndex === idx }">
+                                    <span x-text="option.label"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    @error('global_identity_id')
+                        <div class="text-red-600">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <livewire:related-identity-resources :resources="$identity->related_identity_resources" />
+
+                <div>
+                    <x-label for="note" :value="__('hiko.note')" />
+                    <x-textarea name="note" id="note" rows="3"
+                        class="block w-full mt-1" style="min-height: 90px;">{{ old('note', $identity->note) }}</x-textarea>
+                    @error('note')
+                        <div class="text-red-600">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <x-button-simple class="w-full" name="action" value="edit">
+                    {{ $label }}
+                </x-button-simple>
+
+                <x-button-inverted class="w-full text-black bg-white" name="action" value="create">
+                    {{ $label }} {{ __('hiko.and_create_new') }}
+                </x-button-inverted>
             </form>
+
+            <!-- @if ($canMerge)
+                <x-merge-form :oldId="$identity->id" model="identity" route="{{ route('ajax.identities') }}" />
+            @endif -->
+
+            @can('delete-metadata')
+                @if ($canRemove)
+                    <form x-data="{ form: $el }" action="{{ route('identities.destroy', $identity->id) }}" method="post"
+                        class="w-full mt-8">
+                        @csrf
+                        @method('DELETE')
+                        <x-button-danger type="button" class="w-full"
+                            x-on:click.prevent="if (confirm('{{ __('hiko.confirm_remove') }}')) form.submit()">
+                            {{ __('hiko.remove') }}
+                        </x-button-danger>
+                    </form>
+                @endif
+            @endcan
+        </div>
+
+        @if ($identity->id)
+            <div class="min-w-0">
+                @include('pages.identities.partials.letter-usage', ['letters' => $identity->letters])
+            </div>
         @endif
-    @endcan
+    </div>
 
     @push('scripts')
         <script>

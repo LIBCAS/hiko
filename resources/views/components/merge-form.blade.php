@@ -3,7 +3,7 @@
         class="inline-flex items-center p-3 text-sm font-semibold text-primary hover:underline">
         <x-icons.inbox-in class="h-4 mr-2" /><span>{{ __('hiko.merge') }}</span>
     </button>
-    <span x-show="open" x-transition.duration.500ms>
+    <div x-show="open" x-transition.duration.500ms>
         <form x-data="{ form: $el }" action="{{ route('merge') }}" method="post" class="px-3 pb-3 space-y-6">
             @csrf
             @method('POST')
@@ -19,7 +19,7 @@
                 {{ __('hiko.merge') }}
             </x-button-danger>
         </form>
-    </span>
+    </div>
 </div>
 
 @push('scripts')

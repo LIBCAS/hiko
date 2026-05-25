@@ -56,6 +56,17 @@ class GlobalIdentityController extends Controller
 
     public function edit(GlobalIdentity $globalIdentity): View
     {
+        $globalIdentity->load([
+            'letters.authors:id,name',
+            'letters.recipients:id,name',
+            'letters.globalAuthors:id,name',
+            'letters.globalRecipients:id,name',
+            'letters.origins:id,name',
+            'letters.destinations:id,name',
+            'letters.globalOrigins:id,name',
+            'letters.globalDestinations:id,name',
+        ]);
+
         return view('pages.global-identities.form', [
             'title' => __('hiko.identity') . ': ' . $globalIdentity->id . ' (' . __('hiko.global') . ')',
             'method' => 'PUT',

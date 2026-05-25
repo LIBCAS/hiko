@@ -159,10 +159,12 @@ class Identity extends Model
     public function letters(): BelongsToMany
     {
         $pivotTable = tenancy()->initialized
-            ? tenancy()->tenant->table_prefix . '__keyword_letter'
-            : 'keyword_letter';
+            ? tenancy()->tenant->table_prefix . '__identity_letter'
+            : 'identity_letter';
 
-        return $this->belongsToMany(Letter::class, $pivotTable, 'keyword_id', 'letter_id');
+        return $this->belongsToMany(Letter::class, $pivotTable, 'identity_id', 'letter_id')
+            ->withPivot('role', 'position', 'marked', 'salutation')
+            ->orderByPivot('position', 'asc');
     }
 
     public function scopeSearch($query, $filters)

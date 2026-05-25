@@ -144,6 +144,17 @@ class IdentityController extends Controller
 
     public function edit(Identity $identity)
     {
+        $identity->load([
+            'letters.authors:id,name',
+            'letters.recipients:id,name',
+            'letters.globalAuthors:id,name',
+            'letters.globalRecipients:id,name',
+            'letters.origins:id,name',
+            'letters.destinations:id,name',
+            'letters.globalOrigins:id,name',
+            'letters.globalDestinations:id,name',
+        ]);
+
         // Log raw values before processing
         Log::info('Raw related_names:', ['related_names' => $identity->related_names]);
         Log::info('Raw related_identity_resources:', ['related_identity_resources' => $identity->related_identity_resources]);
