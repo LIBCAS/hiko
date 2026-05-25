@@ -18,12 +18,12 @@ class IdentitiesTable extends Component
         'related_names' => '',
         'type' => '',
         'profession' => '',
-        'category' => '',
         'note' => '',
         'order' => 'name',
         'religion' => null,
         'source' => 'all',
         'global_identity' => '',
+        'admin_notes' => '',
     ];
 
     public function search()
@@ -39,19 +39,22 @@ class IdentitiesTable extends Component
             'related_names' => '',
             'type' => '',
             'profession' => '',
-            'category' => '',
             'note' => '',
             'order' => 'name',
             'religion' => null,
             'source' => 'all',
             'global_identity' => '',
+            'admin_notes' => '',
         ];
         $this->search();
     }
 
     public function mount()
     {
-        $this->filters = session()->get('identitiesTableFilters', $this->filters);
+        $this->filters = array_replace(
+            $this->filters,
+            array_intersect_key(session()->get('identitiesTableFilters', []), $this->filters)
+        );
     }
 
     public function updatedFilters()
@@ -73,6 +76,7 @@ class IdentitiesTable extends Component
     {
         $filters = $this->filters;
         $source = $filters['source'] ?? 'all';
+        $hasGlobalIdentityFilter = trim((string)($filters['global_identity'] ?? '')) !== '';
 
         // Build Local Query
         $localQuery = null;
@@ -98,7 +102,7 @@ class IdentitiesTable extends Component
 
         // Build Global Query
         $globalQuery = null;
-        if ($source === 'all' || $source === 'global') {
+        if (($source === 'all' || $source === 'global') && !$hasGlobalIdentityFilter) {
             $globalQuery = DB::table('global_identities')
                 ->select(
                     'id', 'name', 'type', 'birth_year', 'death_year', 'related_names',
@@ -138,11 +142,21 @@ class IdentitiesTable extends Component
         $relatedNamesColumn = $scope === 'local' ? "{$prefix}__identities.related_names" : 'global_identities.related_names';
         $typeColumn = $scope === 'local' ? "{$prefix}__identities.type" : 'global_identities.type';
         $noteColumn = $scope === 'local' ? "{$prefix}__identities.note" : 'global_identities.note';
+        $adminNotes = trim((string)($filters['admin_notes'] ?? ''));
 
         $query->when($filters['name'], fn($q) => $q->where($nameColumn, 'like', "%{$filters['name']}%"));
         $query->when($filters['related_names'], fn($q) => $q->where($relatedNamesColumn, 'like', "%{$filters['related_names']}%"));
         $query->when($filters['type'], fn($q) => $q->where($typeColumn, $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where($noteColumn, 'like', "%{$filters['note']}%"));
+
+        if ($adminNotes !== '') {
+            if ($scope === 'global') {
+                $query->where('global_identities.admin_notes', 'like', "%{$adminNotes}%");
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
+
         if (!empty($filters['global_identity'])) {
             $term = trim((string)$filters['global_identity']);
             if ($scope === 'local') {
@@ -157,28 +171,105 @@ class IdentitiesTable extends Component
             }
         }
 
-        // Filtering by profession/category in a Union query is complex because tables differ.
-        // Simplified approach: using EXISTS subqueries
+        if (!empty($filters['religion'])) {
+            $this->applyReligionFilter($query, $scope, trim((string)$filters['religion']));
+        }
+
         if ($filters['profession']) {
+            $profession = trim((string)$filters['profession']);
+
             if ($scope === 'local') {
                 $prefix = tenancy()->tenant->table_prefix;
-                $query->whereExists(function ($sub) use ($filters, $prefix) {
-                    $sub->select(DB::raw(1))
-                        ->from("{$prefix}__identity_profession")
-                        ->join("{$prefix}__professions", "{$prefix}__identity_profession.profession_id", '=', "{$prefix}__professions.id")
-                        ->whereColumn("{$prefix}__identity_profession.identity_id", "{$prefix}__identities.id")
-                        ->where('name', 'like', '%' . $filters['profession'] . '%');
+
+                $query->where(function ($q) use ($profession, $prefix) {
+                    $q->whereExists(function ($sub) use ($profession, $prefix) {
+                        $sub->select(DB::raw(1))
+                            ->from("{$prefix}__identity_profession")
+                            ->join("{$prefix}__professions", "{$prefix}__identity_profession.profession_id", '=', "{$prefix}__professions.id")
+                            ->whereColumn("{$prefix}__identity_profession.identity_id", "{$prefix}__identities.id");
+
+                        $this->whereTranslatableNameLike($sub, "{$prefix}__professions", $profession);
+                    })->orWhereExists(function ($sub) use ($profession, $prefix) {
+                        $sub->select(DB::raw(1))
+                            ->from("{$prefix}__identity_profession")
+                            ->join('global_professions', "{$prefix}__identity_profession.global_profession_id", '=', 'global_professions.id')
+                            ->whereColumn("{$prefix}__identity_profession.identity_id", "{$prefix}__identities.id");
+
+                        $this->whereTranslatableNameLike($sub, 'global_professions', $profession);
+                    });
                 });
             } else {
-                $query->whereExists(function ($sub) use ($filters) {
+                $query->whereExists(function ($sub) use ($profession) {
                     $sub->select(DB::raw(1))
                         ->from('global_identity_profession')
                         ->join('global_professions', 'global_identity_profession.global_profession_id', '=', 'global_professions.id')
-                        ->whereColumn('global_identity_profession.global_identity_id', 'global_identities.id')
-                        ->where('name', 'like', '%' . $filters['profession'] . '%');
+                        ->whereColumn('global_identity_profession.global_identity_id', 'global_identities.id');
+
+                    $this->whereTranslatableNameLike($sub, 'global_professions', $profession);
                 });
             }
         }
+    }
+
+    protected function applyReligionFilter($query, string $scope, string $term): void
+    {
+        $like = '%' . mb_strtolower($term) . '%';
+
+        if ($scope === 'local') {
+            $prefix = tenancy()->tenant->table_prefix;
+            $identityTable = "{$prefix}__identities";
+            $pivotTable = "{$prefix}__identity_religion";
+
+            $query->whereExists(function ($sub) use ($identityTable, $pivotTable, $like, $term) {
+                $sub->select(DB::raw(1))
+                    ->from("{$pivotTable} as identity_religion")
+                    ->join('religions', 'identity_religion.religion_id', '=', 'religions.id')
+                    ->leftJoin('religion_translations', 'religion_translations.religion_id', '=', 'religions.id')
+                    ->whereColumn('identity_religion.identity_id', "{$identityTable}.id");
+
+                $this->whereReligionLike($sub, $like, $term);
+            });
+
+            return;
+        }
+
+        $query->whereExists(function ($sub) use ($like, $term) {
+            $sub->select(DB::raw(1))
+                ->from('global_identity_religion')
+                ->join('religions', 'global_identity_religion.religion_id', '=', 'religions.id')
+                ->leftJoin('religion_translations', 'religion_translations.religion_id', '=', 'religions.id')
+                ->whereColumn('global_identity_religion.global_identity_id', 'global_identities.id');
+
+            $this->whereReligionLike($sub, $like, $term);
+        });
+    }
+
+    protected function whereReligionLike($query, string $like, string $term): void
+    {
+        $query->where(function ($q) use ($like, $term) {
+            $q->whereRaw('LOWER(religions.name) LIKE ?', [$like])
+                ->orWhereRaw('LOWER(religions.path_text) LIKE ?', [$like])
+                ->orWhereRaw('LOWER(religions.lower_path_text) LIKE ?', [$like])
+                ->orWhereRaw('LOWER(religion_translations.name) LIKE ?', [$like])
+                ->orWhereRaw('LOWER(religion_translations.path_text) LIKE ?', [$like])
+                ->orWhereRaw('LOWER(religion_translations.lower_path_text) LIKE ?', [$like]);
+
+            if (ctype_digit($term)) {
+                $q->orWhere('religions.id', (int)$term);
+            }
+        });
+    }
+
+    protected function whereTranslatableNameLike($query, string $table, string $term): void
+    {
+        $like = '%' . mb_strtolower($term) . '%';
+        $wrappedTable = '`' . str_replace('`', '``', $table) . '`';
+
+        $query->where(function ($q) use ($like, $wrappedTable) {
+            $q->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT({$wrappedTable}.`name`, '$.\"cs\"'))) LIKE ?", [$like])
+                ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT({$wrappedTable}.`name`, '$.\"en\"'))) LIKE ?", [$like])
+                ->orWhereRaw("LOWER({$wrappedTable}.`name`) LIKE ?", [$like]);
+        });
     }
 
     /**

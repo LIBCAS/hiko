@@ -10,6 +10,7 @@ return [
         'identity_edit' => 'manage-metadata',
         'identity_local_merge' => 'manage-metadata',
         'identity_global_merge' => 'manage-users',
+        'identity_strict_global_merge' => 'manage-users',
         'global_identity_edit' => 'manage-users',
 
         'letter_edit' => 'manage-metadata',

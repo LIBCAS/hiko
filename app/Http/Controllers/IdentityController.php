@@ -302,7 +302,24 @@ class IdentityController extends Controller
 
     public function export(): BinaryFileResponse
     {
-        return Excel::download(new IdentitiesExport, 'identities.xlsx');
+        $filterKeys = [
+            'name',
+            'related_names',
+            'type',
+            'profession',
+            'note',
+            'order',
+            'religion',
+            'source',
+            'global_identity',
+            'admin_notes',
+        ];
+
+        $filters = request()->has('_current_filters')
+            ? request()->only($filterKeys)
+            : session()->get('identitiesTableFilters', []);
+
+        return Excel::download(new IdentitiesExport($filters), 'identities.xlsx');
     }
 
     protected function syncRelations(Identity $identity, array $validated)

@@ -4,36 +4,172 @@ namespace App\Exports;
 
 use App\Models\GlobalIdentity;
 use App\Models\Identity;
+use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\FromCollection;
 
 class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
 {
+    protected array $filters = [
+        'name' => '',
+        'related_names' => '',
+        'type' => '',
+        'profession' => '',
+        'note' => '',
+        'order' => 'name',
+        'religion' => null,
+        'source' => 'all',
+        'global_identity' => '',
+        'admin_notes' => '',
+    ];
+
+    public function __construct(array $filters = [])
+    {
+        $this->filters = array_replace(
+            $this->filters,
+            array_intersect_key($filters, $this->filters)
+        );
+    }
+
     public function collection()
     {
-        // Get Local Identities
-        $localIdentities = Identity::with([
-            'professions',
-            'globalProfessions',
-            'profession_categories'
-        ])->get()->map(function ($identity) {
-            $identity->source_type = 'Local';
-            return $identity;
-        });
+        $source = in_array($this->filters['source'] ?? 'all', ['all', 'local', 'global'], true)
+            ? $this->filters['source']
+            : 'all';
+        $hasGlobalIdentityFilter = trim((string)($this->filters['global_identity'] ?? '')) !== '';
+        $hasAdminNotesFilter = trim((string)($this->filters['admin_notes'] ?? '')) !== '';
 
-        // Get Global Identities
-        $globalIdentities = GlobalIdentity::with([
-            'professions', // Note: GlobalIdentity model uses 'professions' for global_identity_profession
-        ])->get()->map(function ($identity) {
-            $identity->source_type = 'Global';
-            // Polyfill globalProfessions property to match local structure for mapping below
-            $identity->globalProfessions = $identity->professions;
-            return $identity;
-        });
+        $localIdentities = collect();
+        if (($source === 'all' || $source === 'local') && !$hasAdminNotesFilter && tenancy()->initialized) {
+            $localIdentities = $this->applyLocalFilters(Identity::with([
+                'professions',
+                'globalProfessions',
+                'profession_categories'
+            ]))->get()->map(function ($identity) {
+                $identity->source_type = 'Local';
+                return $identity;
+            });
+        }
 
-        // Merge
-        return $localIdentities->merge($globalIdentities);
+        $globalIdentities = collect();
+        if (($source === 'all' || $source === 'global') && !$hasGlobalIdentityFilter) {
+            $globalIdentities = $this->applyGlobalFilters(GlobalIdentity::with([
+                'professions', // Note: GlobalIdentity model uses 'professions' for global_identity_profession
+            ]))->get()->map(function ($identity) {
+                $identity->source_type = 'Global';
+                // Polyfill globalProfessions property to match local structure for mapping below
+                $identity->globalProfessions = $identity->professions;
+                return $identity;
+            });
+        }
+
+        return $localIdentities
+            ->toBase()
+            ->concat($globalIdentities)
+            ->values();
+    }
+
+    protected function applyLocalFilters(Builder $query): Builder
+    {
+        $filters = $this->filters;
+
+        $query->when($filters['name'], fn($q) => $q->where('name', 'like', "%{$filters['name']}%"));
+        $query->when($filters['related_names'], fn($q) => $q->where('related_names', 'like', "%{$filters['related_names']}%"));
+        $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
+        $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
+
+        if (!empty($filters['global_identity'])) {
+            $term = trim((string)$filters['global_identity']);
+            $query->where(function ($q) use ($term) {
+                $q->whereHas('globalIdentity', fn($sub) => $sub->where('name', 'like', "%{$term}%"));
+
+                if (ctype_digit($term)) {
+                    $q->orWhere('global_identity_id', (int)$term);
+                }
+            });
+        }
+
+        if (!empty($filters['religion'])) {
+            $this->applyReligionFilter($query, trim((string)$filters['religion']));
+        }
+
+        if (!empty($filters['profession'])) {
+            $term = trim((string)$filters['profession']);
+            $query->where(function ($q) use ($term) {
+                $q->whereHas('professions', fn($sub) => $this->whereTranslatableNameLike($sub, $term))
+                    ->orWhereHas('globalProfessions', fn($sub) => $this->whereTranslatableNameLike($sub, $term));
+            });
+        }
+
+        return $this->applyOrder($query);
+    }
+
+    protected function applyGlobalFilters(Builder $query): Builder
+    {
+        $filters = $this->filters;
+
+        $query->when($filters['name'], fn($q) => $q->where('name', 'like', "%{$filters['name']}%"));
+        $query->when($filters['related_names'], fn($q) => $q->where('related_names', 'like', "%{$filters['related_names']}%"));
+        $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
+        $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
+
+        if (!empty($filters['admin_notes'])) {
+            $adminNotes = trim((string)$filters['admin_notes']);
+            $query->where('admin_notes', 'like', "%{$adminNotes}%");
+        }
+
+        if (!empty($filters['religion'])) {
+            $this->applyReligionFilter($query, trim((string)$filters['religion']));
+        }
+
+        if (!empty($filters['profession'])) {
+            $term = trim((string)$filters['profession']);
+            $query->whereHas('professions', fn($sub) => $this->whereTranslatableNameLike($sub, $term));
+        }
+
+        return $this->applyOrder($query);
+    }
+
+    protected function applyReligionFilter(Builder $query, string $term): void
+    {
+        $like = '%' . mb_strtolower($term) . '%';
+
+        $query->whereHas('religions', function ($q) use ($like, $term) {
+            $q->leftJoin('religion_translations', 'religion_translations.religion_id', '=', 'religions.id')
+                ->where(function ($religionQuery) use ($like, $term) {
+                    $religionQuery->whereRaw('LOWER(religions.name) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(religions.path_text) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(religions.lower_path_text) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(religion_translations.name) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(religion_translations.path_text) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(religion_translations.lower_path_text) LIKE ?', [$like]);
+
+                    if (ctype_digit($term)) {
+                        $religionQuery->orWhere('religions.id', (int)$term);
+                    }
+                });
+        });
+    }
+
+    protected function whereTranslatableNameLike(Builder $query, string $term): void
+    {
+        $like = '%' . mb_strtolower($term) . '%';
+
+        $query->where(function ($q) use ($like) {
+            $q->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"cs\"'))) LIKE ?", [$like])
+                ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"en\"'))) LIKE ?", [$like])
+                ->orWhereRaw('LOWER(name) LIKE ?', [$like]);
+        });
+    }
+
+    protected function applyOrder(Builder $query): Builder
+    {
+        if (in_array($this->filters['order'] ?? '', ['name', 'birth_year', 'death_year'], true)) {
+            return $query->orderBy($this->filters['order']);
+        }
+
+        return $query;
     }
 
     public function headings(): array
@@ -53,6 +189,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
             'categories',
             'viaf_id',
             'note',
+            'admin_notes',
             'source'
         ];
     }
@@ -100,6 +237,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
             implode('|', $categories),
             $identity->viaf_id,
             $identity->note,
+            $identity->source_type === 'Global' ? $identity->admin_notes : '',
             $identity->source_type,
         ];
     }

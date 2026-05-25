@@ -62,6 +62,10 @@ class GlobalIdentity extends Model
 
     protected $guarded = ['id'];
 
+    protected $hidden = [
+        'admin_notes',
+    ];
+
     protected $casts = [
         'alternative_names' => 'array',
         'related_names' => 'array',

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\GlobalIdentity;
 use App\Models\Identity;
 use App\Models\MergeAuditLog;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -16,17 +17,7 @@ class GlobalIdentityMergeService
             return collect();
         }
 
-        $localIdentities = Identity::query()->whereNull('global_identity_id');
-
-        if (!empty($filters['name'])) {
-            $localIdentities->where('name', 'like', '%' . trim((string)$filters['name']) . '%');
-        }
-
-        if (!empty($filters['type']) && $filters['type'] !== 'all') {
-            $localIdentities->where('type', $filters['type']);
-        }
-
-        return $localIdentities
+        return $this->localIdentityPreviewQuery($filters)
             ->orderBy('name')
             ->get()
             ->map(function (Identity $local) use ($criteria, $options) {
@@ -40,6 +31,47 @@ class GlobalIdentityMergeService
                 ];
             })
             ->values();
+    }
+
+    public function previewLinksPage(array $criteria, array $options = [], array $filters = [], int $page = 1, int $perPage = 25): LengthAwarePaginator
+    {
+        if (!tenancy()->initialized) {
+            return new \Illuminate\Pagination\LengthAwarePaginator(
+                collect(),
+                0,
+                $perPage,
+                $page,
+                ['path' => request()->url()]
+            );
+        }
+
+        $paginator = $this->localIdentityPreviewQuery($filters)
+            ->orderBy('name')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $globalsByType = $this->loadCandidateGlobalsByType($paginator->getCollection());
+
+        $paginator->setCollection(
+            $paginator->getCollection()
+                ->map(function (Identity $local) use ($criteria, $options, $globalsByType) {
+                    $suggested = $this->findBestGlobalMatchInCollection(
+                        $local,
+                        $globalsByType->get($local->type, collect()),
+                        $criteria,
+                        $options
+                    );
+
+                    return [
+                        'local' => $local,
+                        'strategy' => 'link',
+                        'global' => $suggested['global'],
+                        'reason' => $suggested['reason'],
+                    ];
+                })
+                ->values()
+        );
+
+        return $paginator;
     }
 
     public function executeLinks(array $selectedIds, array $selectedGlobalIds, array $criteria, array $options = []): array
@@ -126,12 +158,17 @@ class GlobalIdentityMergeService
 
     private function findBestGlobalMatch(Identity $local, array $criteria, array $options = []): array
     {
-        $threshold = (int)($options['name_similarity_threshold'] ?? 80);
-        $useSimilarity = in_array('name_similarity', $criteria, true);
-
         $globals = GlobalIdentity::query()
             ->where('type', $local->type)
             ->get();
+
+        return $this->findBestGlobalMatchInCollection($local, $globals, $criteria, $options);
+    }
+
+    private function findBestGlobalMatchInCollection(Identity $local, Collection $globals, array $criteria, array $options = []): array
+    {
+        $threshold = (int)($options['name_similarity_threshold'] ?? 80);
+        $useSimilarity = in_array('name_similarity', $criteria, true);
 
         $localName = $this->normalizeString($local->name);
         $localSurname = $this->normalizeString($local->surname);
@@ -158,12 +195,7 @@ class GlobalIdentityMergeService
                     similar_text($localFull, $globalFull, $pctFull);
                 }
 
-                $pctSurname = 0.0;
-                if ($localSurname !== '' && $globalSurname !== '') {
-                    similar_text($localSurname, $globalSurname, $pctSurname);
-                }
-
-                $pct = max($pctName, $pctFull, $pctSurname);
+                $pct = max($pctName, $pctFull);
                 if ($pct >= $threshold && $pct > $bestPct) {
                     $bestPct = $pct;
                     $best = $global;
@@ -186,6 +218,64 @@ class GlobalIdentityMergeService
             'global' => null,
             'reason' => __('hiko.no_match'),
         ];
+    }
+
+    private function localIdentityPreviewQuery(array $filters)
+    {
+        $localIdentities = Identity::query()->whereNull('global_identity_id');
+
+        if (!empty($filters['name'])) {
+            $localIdentities->where('name', 'like', '%' . trim((string)$filters['name']) . '%');
+        }
+
+        if (!empty($filters['type']) && $filters['type'] !== 'all') {
+            $localIdentities->where('type', $filters['type']);
+        }
+
+        return $localIdentities;
+    }
+
+    private function loadCandidateGlobalsByType(Collection $localIdentities): Collection
+    {
+        $patterns = $localIdentities
+            ->map(function (Identity $identity): ?array {
+                $prefix = mb_substr(trim((string)$identity->name), 0, 3);
+
+                if ($identity->type === null || mb_strlen($prefix) < 2) {
+                    return null;
+                }
+
+                return [
+                    'type' => $identity->type,
+                    'prefix' => $this->escapeLike($prefix) . '%',
+                ];
+            })
+            ->filter()
+            ->unique(fn(array $pattern): string => $pattern['type'] . ':' . $pattern['prefix'])
+            ->values();
+
+        if ($patterns->isEmpty()) {
+            return collect();
+        }
+
+        return GlobalIdentity::query()
+            ->select('id', 'name', 'surname', 'forename', 'type', 'birth_year', 'death_year')
+            ->where(function ($query) use ($patterns) {
+                foreach ($patterns as $pattern) {
+                    $query->orWhere(function ($query) use ($pattern) {
+                        $query
+                            ->where('type', $pattern['type'])
+                            ->where('name', 'like', $pattern['prefix']);
+                    });
+                }
+            })
+            ->get()
+            ->groupBy('type');
+    }
+
+    private function escapeLike(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
     }
 
     private function normalizeString(?string $value): string

@@ -21,7 +21,7 @@ class GlobalIdentityMerge extends Component
 
     public array $selectedIds = [];
     public array $selectedGlobalIds = [];
-    public bool $selectAll = true;
+    public bool $selectAll = false;
     public bool $isProcessing = false;
 
     public function mount(): void
@@ -31,7 +31,6 @@ class GlobalIdentityMerge extends Component
             $this->criteria[] = 'type';
         }
         $this->nameSimilarityThreshold = (int)config('global_identity_merge.name_similarity_threshold', 80);
-        $this->updateSelection();
     }
 
     public function updatedFilters(): void
@@ -131,35 +130,32 @@ class GlobalIdentityMerge extends Component
     public function render()
     {
         $service = app(GlobalIdentityMergeService::class);
-        $allData = $service->previewLinks($this->criteria, [
-            'name_similarity_threshold' => $this->nameSimilarityThreshold,
-        ], $this->filters);
+        $page = $this->getPage();
+        $perPage = (int)config('global_identity_merge.preview_per_page', 25);
 
-        foreach ($allData as $item) {
+        $previewData = $service->previewLinksPage($this->criteria, [
+            'name_similarity_threshold' => $this->nameSimilarityThreshold,
+        ], $this->filters, $page, $perPage);
+
+        foreach ($previewData->getCollection() as $item) {
             $localId = (int)$item['local']->id;
             if (!array_key_exists($localId, $this->selectedGlobalIds) && !empty($item['global'])) {
                 $this->selectedGlobalIds[$localId] = (int)$item['global']->id;
             }
         }
 
-        $confirmationSummary = $this->buildConfirmationSummary($allData);
+        if ($this->selectAll) {
+            $this->selectedIds = $previewData->getCollection()
+                ->pluck('local.id')
+                ->map(fn($id) => (int)$id)
+                ->toArray();
+        }
 
-        $page = $this->getPage();
-        $perPage = (int)config('global_identity_merge.preview_per_page', 25);
-
-        $items = $allData->slice(($page - 1) * $perPage, $perPage)->values();
-
-        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
-            $items,
-            $allData->count(),
-            $perPage,
-            $page,
-            ['path' => request()->url()]
-        );
+        $confirmationSummary = $this->buildConfirmationSummary($previewData->getCollection());
 
         return view('livewire.global-identity-merge', [
-            'previewData' => $paginator,
-            'totalCount' => $allData->count(),
+            'previewData' => $previewData,
+            'totalCount' => $previewData->total(),
             'confirmationItems' => $confirmationSummary['items'],
             'confirmationMergeCount' => $confirmationSummary['merge_count'],
             'confirmationMoveCount' => $confirmationSummary['move_count'],
@@ -187,11 +183,11 @@ class GlobalIdentityMerge extends Component
         }
 
         $service = app(GlobalIdentityMergeService::class);
-        $allData = $service->previewLinks($this->criteria, [
+        $previewData = $service->previewLinksPage($this->criteria, [
             'name_similarity_threshold' => $this->nameSimilarityThreshold,
-        ], $this->filters);
+        ], $this->filters, $this->getPage(), (int)config('global_identity_merge.preview_per_page', 25));
 
-        $this->selectedIds = $allData->pluck('local.id')->map(fn($id) => (int)$id)->toArray();
+        $this->selectedIds = $previewData->getCollection()->pluck('local.id')->map(fn($id) => (int)$id)->toArray();
     }
 
     private function buildConfirmationSummary($allData): array

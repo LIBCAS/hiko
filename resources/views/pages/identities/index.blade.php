@@ -9,7 +9,18 @@
                 @endcan
             </div>
             <div class="flex items-center gap-4">
-                <a href="{{ route('identities.export') }}" class="inline-block text-sm font-semibold">
+                <a
+                    href="{{ route('identities.export') }}"
+                    class="inline-block text-sm font-semibold"
+                    onclick="
+                        const exportUrl = new URL(this.href);
+                        exportUrl.search = '';
+                        exportUrl.searchParams.set('_current_filters', '1');
+                        document.querySelectorAll('[data-identity-filter]').forEach((field) => {
+                            exportUrl.searchParams.set(field.dataset.identityFilter, field.value ?? '');
+                        });
+                        this.href = exportUrl.toString();
+                    ">
                     {{ __('hiko.export') }}
                 </a>
                 <a href="{{ route('identities.validation') }}" class="inline-block text-sm font-semibold">
@@ -21,6 +32,11 @@
                 <a href="{{ route('identities.global-merge') }}" class="inline-block text-sm font-semibold">
                     {{ __('hiko.global_merging') }}
                 </a>
+                @can('manage-users')
+                    <a href="{{ route('identities.global-strict-merge') }}" class="inline-block text-sm font-semibold">
+                        {{ __('hiko.strict_global_merging') }}
+                    </a>
+                @endcan
             </div>
         </div>
     @endcan

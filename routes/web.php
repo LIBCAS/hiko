@@ -9,6 +9,7 @@ use App\Http\Controllers\MergeController;
 use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\GlobalIdentityController;
 use App\Http\Controllers\GlobalIdentityMergeController;
+use App\Http\Controllers\GlobalIdentityStrictMergeController;
 use App\Http\Controllers\GlobalLocationController;
 use App\Http\Controllers\GlobalLocationMergeController;
 use App\Http\Controllers\GlobalPlaceController;
@@ -548,6 +549,14 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
             ->name('identities.global-merge')
             ->middleware(['auth', 'can:manage-metadata']);
 
+        Route::get('global-strict-merge', [GlobalIdentityStrictMergeController::class, 'index'])
+            ->name('identities.global-strict-merge')
+            ->middleware(['auth', 'can:manage-users']);
+
+        Route::get('global-strict-merge/preview', [GlobalIdentityStrictMergeController::class, 'preview'])
+            ->name('identities.global-strict-merge.preview')
+            ->middleware(['auth', 'can:manage-users']);
+
     });
 
     Route::prefix('global-identities')->middleware(['auth'])->name('global.identities.')->group(function () {
@@ -748,8 +757,12 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         Route::get('build-index', [DevToolsController::class, 'buildSearchIndex'])
             ->middleware(['auth', 'can:debug']);
 
-        Route::get('symlink', [DevToolsController::class, 'symlink'])
-            ->middleware(['auth', 'can:debug']);
+        // Route::get('symlink', [DevToolsController::class, 'symlink'])
+        //     ->middleware(['auth', 'can:debug']);
+
+        // Route::get('copy-local-identities-to-global', [DevToolsController::class, 'copyLocalIdentitiesToGlobal'])
+        //     ->name('dev.copy-local-identities-to-global')
+        //     ->middleware(['auth', 'can:debug']);
     });
 
     Route::get('/tenant-storage/{path}', [TenantStorageController::class, 'show'])
