@@ -9,9 +9,8 @@
                 @endcan
             </div>
             <div class="flex items-center gap-4">
-                <a
+                <x-loading-link
                     href="{{ route('identities.export') }}"
-                    class="inline-block text-sm font-semibold"
                     onclick="
                         const exportUrl = new URL(this.href);
                         exportUrl.search = '';
@@ -22,20 +21,20 @@
                         this.href = exportUrl.toString();
                     ">
                     {{ __('hiko.export') }}
-                </a>
-                <a href="{{ route('identities.validation') }}" class="inline-block text-sm font-semibold">
+                </x-loading-link>
+                <x-loading-link href="{{ route('identities.validation') }}">
                     {{ __('hiko.input_control') }}
-                </a>
-                <a href="{{ route('identities.local-merge') }}" class="inline-block text-sm font-semibold">
+                </x-loading-link>
+                <x-loading-link href="{{ route('identities.local-merge') }}">
                     {{ __('hiko.local_merging') }}
-                </a>
-                <a href="{{ route('identities.global-merge') }}" class="inline-block text-sm font-semibold">
+                </x-loading-link>
+                <x-loading-link href="{{ route('identities.global-merge') }}">
                     {{ __('hiko.global_merging') }}
-                </a>
+                </x-loading-link>
                 @can('manage-users')
-                    <a href="{{ route('identities.global-strict-merge') }}" class="inline-block text-sm font-semibold">
+                    <x-loading-link href="{{ route('identities.global-strict-merge') }}">
                         {{ __('hiko.strict_global_merging') }}
-                    </a>
+                    </x-loading-link>
                 @endcan
             </div>
         </div>

@@ -24,15 +24,7 @@
         </button>
     </div>
 
-    <div class="mb-4 flex justify-between items-center">
-        <div class="text-sm text-gray-600">{{ __('hiko.selected_count', ['count' => count($selectedIds)]) }}</div>
-        <button type="button" wire:click="preview" @disabled(count($selectedIds) < 2)
-            class="px-4 py-2 bg-primary text-white rounded hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed">
-            {{ __('hiko.preview_merge') }}
-        </button>
-    </div>
-
-    <div class="bg-white shadow overflow-hidden border border-gray-200 sm:rounded-lg">
+    <div class="mb-6 bg-white shadow overflow-hidden border border-gray-200 sm:rounded-lg">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
@@ -79,5 +71,13 @@
         </table>
     </div>
 
-    <div class="mt-4">{{ $identities->links() }}</div>
+    <div class="mb-6 flex justify-between items-center">
+        <div class="text-sm text-gray-600">{{ __('hiko.selected_count', ['count' => count($selectedIds)]) }}</div>
+        <button type="button" wire:click="preview" @disabled(count($selectedIds) < 2)
+            class="px-4 py-2 bg-primary text-white rounded hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed">
+            {{ __('hiko.preview_merge') }}
+        </button>
+    </div>
+
+    <div class="mt-12">{{ $identities->links() }}</div>
 </div>

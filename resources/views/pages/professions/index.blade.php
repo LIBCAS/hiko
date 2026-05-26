@@ -17,19 +17,19 @@
                 @endcan
             </div>
             <div class="flex items-center gap-4">
-                <a href="{{ route('professions.export') }}" class="inline-block text-sm font-semibold">
+                <x-loading-link href="{{ route('professions.export') }}">
                     {{ __('hiko.export') }}
-                </a>
-                <a href="{{ route('professions.validation') }}" class="inline-block text-sm font-semibold">
+                </x-loading-link>
+                <x-loading-link href="{{ route('professions.validation') }}">
                     {{ __('hiko.input_control') }}
-                </a>
-                <a href="{{ route('professions.local-merge') }}" class="inline-block text-sm font-semibold">
+                </x-loading-link>
+                <x-loading-link href="{{ route('professions.local-merge') }}">
                     {{ __('hiko.local_merging') }}
-                </a>
+                </x-loading-link>
                 @can('manage-users')
-                    <a href="{{ route('professions.global-merge') }}" class="inline-block text-sm font-semibold">
+                    <x-loading-link href="{{ route('professions.global-merge') }}">
                         {{ __('hiko.global_merging') }}
-                    </a>
+                    </x-loading-link>
                 @endcan
             </div>
         </div>

@@ -9,19 +9,19 @@
                 @endcan
             </div>
             <div class="flex items-center gap-4">
-                <a href="{{ route('locations.export') }}" class="inline-block text-sm font-semibold">
+                <x-loading-link href="{{ route('locations.export') }}">
                     {{ __('hiko.export') }}
-                </a>
-                <a href="{{ route('locations.validation') }}" class="inline-block text-sm font-semibold">
+                </x-loading-link>
+                <x-loading-link href="{{ route('locations.validation') }}">
                     {{ __('hiko.input_control') }}
-                </a>
-                <a href="{{ route('locations.local-merge') }}" class="inline-block text-sm font-semibold">
+                </x-loading-link>
+                <x-loading-link href="{{ route('locations.local-merge') }}">
                     {{ __('hiko.local_merging') }}
-                </a>
+                </x-loading-link>
                 @can('manage-users')
-                    <a href="{{ route('locations.global-merge') }}" class="inline-block text-sm font-semibold">
+                    <x-loading-link href="{{ route('locations.global-merge') }}">
                         {{ __('hiko.global_merging') }}
-                    </a>
+                    </x-loading-link>
                 @endcan
             </div>
         </div>
