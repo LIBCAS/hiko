@@ -76,7 +76,7 @@ use OpenApi\Attributes as OA;
                 type: "object",
                 properties: [
                     new OA\Property(property: "id", type: "integer", example: 2483),
-                    new OA\Property(property: "scope", type: "string", enum: ["local", "global"], example: "local"),
+                    new OA\Property(property: "scope", type: "string", enum: ["local"], example: "local"),
                     new OA\Property(property: "reference", type: "string", readOnly: true, example: "local-2483", description: "Read-only response field. Write requests use id + scope."),
                     new OA\Property(property: "marked", type: "string", nullable: true, example: "Author api-v2-live-20260302111619-ac68433c"),
                 ]
@@ -88,11 +88,11 @@ use OpenApi\Attributes as OA;
             items: new OA\Items(
                 type: "object",
                 properties: [
-                    new OA\Property(property: "id", type: "integer", example: 18),
-                    new OA\Property(property: "scope", type: "string", enum: ["local", "global"], example: "global"),
-                    new OA\Property(property: "reference", type: "string", readOnly: true, example: "global-18", description: "Read-only response field. Write requests use id + scope."),
-                    new OA\Property(property: "marked", type: "string", nullable: true, example: "Global recipient api-v2-live-20260302111619-ac68433c"),
-                    new OA\Property(property: "salutation", type: "string", nullable: true, example: "Dear global recipient"),
+                    new OA\Property(property: "id", type: "integer", example: 2484),
+                    new OA\Property(property: "scope", type: "string", enum: ["local"], example: "local"),
+                    new OA\Property(property: "reference", type: "string", readOnly: true, example: "local-2484", description: "Read-only response field. Write requests use id + scope."),
+                    new OA\Property(property: "marked", type: "string", nullable: true, example: "Recipient api-v2-live-20260302111619-ac68433c"),
+                    new OA\Property(property: "salutation", type: "string", nullable: true, example: "Dear recipient"),
                 ]
             )
         ),
@@ -103,7 +103,7 @@ use OpenApi\Attributes as OA;
                 type: "object",
                 properties: [
                     new OA\Property(property: "id", type: "integer", example: 2484),
-                    new OA\Property(property: "scope", type: "string", enum: ["local", "global"], example: "local"),
+                    new OA\Property(property: "scope", type: "string", enum: ["local"], example: "local"),
                     new OA\Property(property: "reference", type: "string", readOnly: true, example: "local-2484", description: "Read-only response field. Write requests use id + scope."),
                 ]
             )
@@ -860,12 +860,12 @@ class LetterRequest extends FormRequest
                 $scope = $matches[1];
                 $id = (int) $matches[2];
 
-                if ($scope === 'local') {
-                    $exists = DB::table($localTable)->where('id', $id)->exists();
-                } else {
-                    $exists = DB::table('global_identities')->where('id', $id)->exists();
+                if ($scope !== 'local') {
+                    $fail(__('hiko.validation_global_identity_letter_assignment'));
+                    return;
                 }
 
+                $exists = DB::table($localTable)->where('id', $id)->exists();
                 if (!$exists) {
                     $fail(__('hiko.validation_id_not_found', ['id' => $value]));
                 }

@@ -623,6 +623,7 @@ return [
     'back_to_letters' => 'Zpět na dopisy',
 
     'validation_id_not_found' => ':id neexistuje',
+    'validation_global_identity_letter_assignment' => 'Globální identity nelze přiřazovat přímo k dopisům. Vyberte lokální identitu propojenou s globální identitou.',
     'validation_max_string_length' => ':attribute překračuje maximální délku řetězce z :max znaků',
 
     'new_global_location' => 'Nové globální místo uložení',

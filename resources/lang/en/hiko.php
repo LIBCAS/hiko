@@ -621,6 +621,7 @@ return [
     'back_to_letters' => 'Back to Letters',
 
     'validation_id_not_found' => ':id does not exist',
+    'validation_global_identity_letter_assignment' => 'Global identities cannot be assigned directly to letters. Select a local identity linked to the global identity instead.',
     'validation_max_string_length' => ':attribute exceeds maximum length of :max characters',
 
     'new_global_location' => 'New Global Location',

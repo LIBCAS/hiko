@@ -11,6 +11,7 @@ class LetterMetaField extends Component
     public string $route;
     public string $label;
     public string $fieldKey;
+    public array $extraParams = [];
 
     public function mount($items = [])
     {

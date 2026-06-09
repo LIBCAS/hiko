@@ -226,7 +226,7 @@ class LetterApiShapeTest extends TestCase
         $this->assertArrayHasKey('unexpected_field', $errors);
     }
 
-    public function test_letter_controller_accepts_unified_mentioned_objects(): void
+    public function test_letter_controller_skips_global_identity_references_for_letter_roles(): void
     {
         $controller = new TestApiV2LetterController(app(\App\Services\LetterService::class));
 
@@ -242,12 +242,7 @@ class LetterApiShapeTest extends TestCase
                     'role' => 'mentioned',
                 ],
             ],
-            'global' => [
-                18 => [
-                    'position' => 1,
-                    'role' => 'mentioned',
-                ],
-            ],
+            'global' => [],
         ], $data);
     }
 

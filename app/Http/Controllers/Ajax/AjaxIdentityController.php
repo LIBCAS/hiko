@@ -39,7 +39,7 @@ class AjaxIdentityController extends Controller
         // Search Global Identities (if explicitly requesting professions, skip this)
         $globalResults = collect();
 
-        if ($request->input('type') !== 'profession') {
+        if (!$request->boolean('localOnly') && $request->input('type') !== 'profession') {
             $globalQuery = GlobalIdentity::query()
                 ->select('id', 'name', 'birth_year', 'death_year');
 

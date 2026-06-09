@@ -204,7 +204,7 @@
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.author') }}
                     </legend>
-                    <livewire:letter-meta-field :items="$selectedAuthors" fieldKey="authors" route="ajax.identities"
+                    <livewire:letter-meta-field :items="$selectedAuthors" fieldKey="authors" route="ajax.identities" :extraParams="['localOnly' => true]"
                         :label="__('hiko.author_name')" :fields="[['label' => __('hiko.name_marked'), 'key' => 'marked']]" />
                     <livewire:create-new-item-modal :route="route('identities.create')" :text="__('hiko.modal_new_identity')" />
                     <div>
@@ -233,7 +233,7 @@
                     <legend class="text-lg font-semibold">
                         {{ __('hiko.recipient') }}
                     </legend>
-                    <livewire:letter-meta-field :items="$selectedRecipients" fieldKey="recipients" route="ajax.identities"
+                    <livewire:letter-meta-field :items="$selectedRecipients" fieldKey="recipients" route="ajax.identities" :extraParams="['localOnly' => true]"
                         :label="__('hiko.recipient_name')" :fields="[
                             ['label' => __('hiko.name_marked'), 'key' => 'marked'],
                             ['label' => __('hiko.salutation'), 'key' => 'salutation'],
@@ -393,7 +393,8 @@
                                 url: '{{ route('ajax.identities') }}',
                                 element: $el,
                                 extraParams: {
-                                    allTypes: true
+                                    allTypes: true,
+                                    localOnly: true
                                 }
                             })"
                             x-init="initSelect()"

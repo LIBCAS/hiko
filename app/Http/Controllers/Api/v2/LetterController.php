@@ -87,7 +87,7 @@ class LetterController extends Controller
                                 ],
                                 "signatures" => ["SIG-api-v2-live-20260302141804-3260cd3d"],
                                 "authors" => ["Local Person, Author"],
-                                "recipients" => ["Global Person, Recipient"],
+                                "recipients" => ["Local Person, Recipient"],
                                 "origins" => ["Local Place"],
                                 "destinations" => ["Global Place"],
                             ],
@@ -227,10 +227,10 @@ class LetterController extends Controller
                             "author_note" => "Author note",
                             "recipients" => [
                                 [
-                                    "id" => 18,
-                                    "scope" => "global",
-                                    "reference" => "global-18",
-                                    "name" => "Global Person, Recipient",
+                                    "id" => 2485,
+                                    "scope" => "local",
+                                    "reference" => "local-2485",
+                                    "name" => "Local Person, Recipient",
                                     "marked" => "Recipient mark",
                                     "salutation" => "Dear recipient",
                                 ],
@@ -274,10 +274,10 @@ class LetterController extends Controller
                                     "salutation" => null,
                                 ],
                                 [
-                                    "id" => 18,
-                                    "scope" => "global",
-                                    "reference" => "global-18",
-                                    "name" => "Global Person, Mentioned",
+                                    "id" => 2486,
+                                    "scope" => "local",
+                                    "reference" => "local-2486",
+                                    "name" => "Local Person, Mentioned 2",
                                     "marked" => null,
                                     "salutation" => null,
                                 ],
@@ -601,6 +601,15 @@ class LetterController extends Controller
                 continue;
             }
 
+            if ($parsed['scope'] === 'global') {
+                Log::warning('Skipped direct global identity assignment to letter through API.', [
+                    'role' => $role,
+                    'position' => $position,
+                    'id' => $rawId,
+                ]);
+                continue;
+            }
+
             $data = [
                 'position' => $position,
                 'role' => $role,
@@ -634,6 +643,14 @@ class LetterController extends Controller
             $parsed = $this->parseIdentityReference($rawId);
             if (!$parsed) {
                 Log::warning('Invalid mentioned ID.', ['id' => $rawId]);
+                continue;
+            }
+
+            if ($parsed['scope'] === 'global') {
+                Log::warning('Skipped direct global mentioned identity assignment to letter through API.', [
+                    'position' => $position,
+                    'id' => $rawId,
+                ]);
                 continue;
             }
 

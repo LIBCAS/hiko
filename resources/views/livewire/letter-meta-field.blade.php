@@ -8,6 +8,7 @@
                         x-data="ajaxChoices({
                             url: '{{ route($route) }}',
                             element: document.getElementById('{{ $fieldKey . '-' . $loop->index }}'),
+                            extraParams: @js($extraParams),
                             change: (data) => { $dispatch('item-value-changed', { index: {{ $loop->index }}, data: data }); }
                         })"
                         x-init="initSelect()"

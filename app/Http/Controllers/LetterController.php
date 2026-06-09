@@ -414,7 +414,7 @@ class LetterController extends Controller
     }
 
     /**
-     * Helper to attach mixed Local/Global identities.
+     * Helper to attach local identities.
      */
     protected function attachMixedIdentities(Letter $letter, ?array $items, string $role, array $extraFields = [])
     {
@@ -423,7 +423,6 @@ class LetterController extends Controller
         }
 
         $localSync = [];
-        $globalSync = [];
 
         foreach ($items as $index => $item) {
             // Check if item is just an ID string (legacy/simple) or array structure
@@ -432,6 +431,15 @@ class LetterController extends Controller
             // Check prefix
             $isGlobal = str_starts_with($value, 'global-');
             $cleanId = (int) str_replace(['global-', 'local-'], '', $value);
+
+            if ($isGlobal) {
+                Log::warning('Skipped direct global identity assignment to letter.', [
+                    'letter_id' => $letter->id,
+                    'role' => $role,
+                    'value' => $value,
+                ]);
+                continue;
+            }
 
             if ($cleanId > 0) {
                 $pivotData = [
@@ -444,20 +452,12 @@ class LetterController extends Controller
                     $pivotData[$field] = $item[$field] ?? null;
                 }
 
-                if ($isGlobal) {
-                    $globalSync[$cleanId] = $pivotData;
-                } else {
-                    $localSync[$cleanId] = $pivotData;
-                }
+                $localSync[$cleanId] = $pivotData;
             }
         }
 
         if (!empty($localSync)) {
             $letter->identities()->attach($localSync);
-        }
-
-        if (!empty($globalSync)) {
-            $letter->globalIdentities()->attach($globalSync);
         }
     }
 

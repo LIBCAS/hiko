@@ -118,13 +118,14 @@ class LetterRequest extends FormRequest
 
             // Pivot fields we do NOT store in letters table, but still validate as arrays
             'authors'      => ['nullable', 'array'],
-            'authors.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
+            'authors.*.value' => ['nullable', $this->getLocalIdentitySelectionValidationRule()],
             // 'authors.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
             'recipients'   => ['nullable', 'array'],
-            'recipients.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
+            'recipients.*.value' => ['nullable', $this->getLocalIdentitySelectionValidationRule()],
             // 'recipients.*.value' => ['nullable', 'integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
             'mentioned' => ['nullable', 'array'],
-            'mentioned.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
+            'mentioned.*' => ['nullable', $this->getLocalIdentitySelectionValidationRule()],
+            'mentioned.*.value' => ['nullable', $this->getLocalIdentitySelectionValidationRule()],
             // 'mentioned.*' => ['integer', 'exists:' . tenancy()->tenant->table_prefix . '__identities,id'],
             'destinations' => ['nullable', 'array'],
             'destinations.*.value' => ['nullable', 'regex:/^(local|global)-\d+$/'],
@@ -140,6 +141,23 @@ class LetterRequest extends FormRequest
             'global_keywords' => ['sometimes', 'array'],
             'global_keywords.*' => ['integer', 'exists:global_keywords,id'],
         ];
+    }
+
+    protected function getLocalIdentitySelectionValidationRule(): \Closure
+    {
+        return function ($attribute, $value, $fail) {
+            if (is_array($value)) {
+                return;
+            }
+
+            if ($value === null || $value === '') {
+                return;
+            }
+
+            if (!is_string($value) || !preg_match('/^local-\d+$/', $value)) {
+                $fail(__('hiko.validation_global_identity_letter_assignment'));
+            }
+        };
     }
 
     /**
