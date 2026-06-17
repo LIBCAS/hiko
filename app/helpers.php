@@ -44,6 +44,17 @@ if (!function_exists('computeDate')) {
     }
 }
 
+if (!function_exists('hikoAppName')) {
+    function hikoAppName(?string $locale = null): string
+    {
+        if (function_exists('tenancy') && tenancy()->initialized && tenancy()->tenant) {
+            return tenancy()->tenant->displayName($locale ?? app()->getLocale());
+        }
+
+        return trim(__('hiko.correspondence') . ' ' . config('app.name'));
+    }
+}
+
 if (!function_exists('removeAccents')) {
     function removeAccents($string)
     {

@@ -715,6 +715,9 @@ return [
     'no_match' => 'Bez shody',
 
     'application_info' => 'O aplikaci',
+    'application_name_settings' => 'Název aplikace',
+    'application_name_cs' => 'Český název aplikace',
+    'application_name_en' => 'Anglický název aplikace',
     'specifications' => 'Specifikace',
     'app_version' => 'Verze aplikace',
     'database_sync' => 'Synchronizace databáze',

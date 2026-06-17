@@ -40,4 +40,46 @@ class Tenant extends BaseTenant
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
+
+    public static function getCustomColumns(): array
+    {
+        return [
+            'id',
+            'name',
+            'table_prefix',
+            'main_character',
+            'metadata_default_locale',
+            'version',
+            'show_watermark',
+            'public_url',
+            'created_at',
+            'updated_at',
+        ];
+    }
+
+    public function displayName(?string $locale = null): string
+    {
+        $locale = in_array($locale, ['cs', 'en'], true) ? $locale : app()->getLocale();
+        $displayNames = $this->applicationDisplayNames();
+
+        if (!empty($displayNames[$locale])) {
+            return $displayNames[$locale];
+        }
+
+        return trim(trans('hiko.correspondence', [], $locale) . ' ' . $this->name);
+    }
+
+    public function applicationDisplayNames(): array
+    {
+        return [
+            'cs' => $this->getAttribute('application_name_cs'),
+            'en' => $this->getAttribute('application_name_en'),
+        ];
+    }
+
+    public function setApplicationDisplayNames(string $cs, string $en): void
+    {
+        $this->setAttribute('application_name_cs', $cs);
+        $this->setAttribute('application_name_en', $en);
+    }
 }

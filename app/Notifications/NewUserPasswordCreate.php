@@ -34,7 +34,7 @@ class NewUserPasswordCreate extends Notification
 
         return (new MailMessage)
             ->subject(__('hiko.new_account'))
-            ->line(__('hiko.new_account_created', ['name' => config('app.name')]))
+            ->line(__('hiko.new_account_created', ['name' => hikoAppName()]))
             ->action(__('hiko.set_password'), $url)
             ->line(__('hiko.password_expiration', ['count' => config('auth.passwords.' . config('auth.defaults.passwords') . '.expire')]))
             ->line(__('hiko.password_expired'))

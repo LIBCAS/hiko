@@ -2,7 +2,7 @@
     {{-- Header --}}
     @slot('header')
         @component('mail::header', ['url' => config('app.url')])
-            {{ __('hiko.correspondence') }} {{ config('app.name') }}
+            {{ hikoAppName() }}
         @endcomponent
     @endslot
 

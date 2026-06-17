@@ -785,6 +785,10 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         ->name('app')
         ->middleware(['auth']);
 
+    Route::post('/app/application-name', [AppInfoController::class, 'updateApplicationName'])
+        ->name('app.application-name.update')
+        ->middleware(['auth', 'can:manage-users']);
+
     Route::post('merge', MergeController::class)
         ->name('merge')
         ->middleware(['auth', 'can:manage-metadata']);

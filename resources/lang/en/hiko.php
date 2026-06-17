@@ -713,6 +713,9 @@ return [
     'no_match' => 'No match',
 
     'application_info' => 'About the application',
+    'application_name_settings' => 'Application name',
+    'application_name_cs' => 'Czech application name',
+    'application_name_en' => 'English application name',
     'specifications' => 'Specifications',
     'app_version' => 'Application version',
     'database_sync' => 'Database synchronization',

@@ -3,7 +3,7 @@
         <div class="flex items-center">
             <a href="{{ route('letters') }}" class="font-semibold">
                 <h1 class="text-xl">
-                    {{ $title }} | {{ __('hiko.correspondence') }} {{ config('app.name') }}
+                    {{ $title }} | {{ hikoAppName() }}
                 </h1>
             </a>
         </div>

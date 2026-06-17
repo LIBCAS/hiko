@@ -21,6 +21,57 @@
         </div>
 
         @can('manage-users')
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+                <div class="p-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">
+                        {{ __('hiko.application_name_settings') }}
+                    </h3>
+                </div>
+                <form method="POST" action="{{ route('app.application-name.update') }}" class="border-t border-gray-200 px-4 py-5 sm:p-6">
+                    @csrf
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="application_name_cs" class="block text-sm font-medium text-gray-700">
+                                {{ __('hiko.application_name_cs') }}
+                            </label>
+                            <input
+                                id="application_name_cs"
+                                name="application_name_cs"
+                                type="text"
+                                value="{{ old('application_name_cs', $applicationNames['cs'] ?? $tenant->displayName('cs')) }}"
+                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring-primary"
+                                required
+                            >
+                            @error('application_name_cs')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="application_name_en" class="block text-sm font-medium text-gray-700">
+                                {{ __('hiko.application_name_en') }}
+                            </label>
+                            <input
+                                id="application_name_en"
+                                name="application_name_en"
+                                type="text"
+                                value="{{ old('application_name_en', $applicationNames['en'] ?? $tenant->displayName('en')) }}"
+                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring-primary"
+                                required
+                            >
+                            @error('application_name_en')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <x-button-simple>
+                        {{ __('hiko.save') }}
+                    </x-button-simple>
+                </form>
+            </div>
+
             @if(!app()->environment('production'))
                 <livewire:db-sync-tool />
             @endif
