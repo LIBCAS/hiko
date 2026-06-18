@@ -23,6 +23,20 @@
     @include('pages.inter-tenant-transfers.partials.letters-table')
 
     <div class="mt-8 grid gap-6 lg:grid-cols-2">
+        @php
+            $localEditRoutes = [
+                'identities' => 'identities.edit',
+                'places' => 'places.edit',
+                'keywords' => 'keywords.edit',
+                'locations' => 'locations.edit',
+            ];
+            $globalEditRoutes = [
+                'identities' => 'global.identities.edit',
+                'places' => 'global.places.edit',
+                'keywords' => 'global.keywords.edit',
+                'locations' => 'global.locations.edit',
+            ];
+        @endphp
         @foreach (['identities', 'places', 'keywords', 'locations'] as $type)
             <section>
                 <h2 class="mb-2 text-lg font-semibold">{{ __('hiko.' . $type) }}</h2>
@@ -35,7 +49,15 @@
                                 $name = $translations[app()->getLocale()] ?? $translations['cs'] ?? $translations['en'] ?? $entity->name;
                             }
                         @endphp
-                        <li class="px-3 py-2">#{{ $entity->id }} {{ $name }} <span class="text-gray-500">({{ __('hiko.local') }})</span></li>
+                        @php
+                            $path = route($localEditRoutes[$type], $entity->id, false);
+                            $url = $sourceDomain ? request()->getScheme() . '://' . $sourceDomain . $path : $path;
+                        @endphp
+                        <li class="px-3 py-2">
+                            <a href="{{ $url }}" target="_blank"
+                                class="font-mono font-semibold text-primary-dark hover:underline">#{{ $entity->id }}</a>
+                            {{ $name }} <span class="text-gray-500">({{ __('hiko.local') }})</span>
+                        </li>
                     @empty
                     @endforelse
                     @forelse ($payload['global_dependencies'][$type] as $entity)
@@ -46,7 +68,15 @@
                                 $name = $translations[app()->getLocale()] ?? $translations['cs'] ?? $translations['en'] ?? $entity->name;
                             }
                         @endphp
-                        <li class="px-3 py-2">#{{ $entity->id }} {{ $name }} <span class="text-gray-500">({{ __('hiko.global') }})</span></li>
+                        @php
+                            $path = route($globalEditRoutes[$type], $entity->id, false);
+                            $url = $sourceDomain ? request()->getScheme() . '://' . $sourceDomain . $path : $path;
+                        @endphp
+                        <li class="px-3 py-2">
+                            <a href="{{ $url }}" target="_blank"
+                                class="font-mono font-semibold text-primary-dark hover:underline">#{{ $entity->id }}</a>
+                            {{ $name }} <span class="text-gray-500">({{ __('hiko.global') }})</span>
+                        </li>
                     @empty
                         @if ($payload['dependencies'][$type]->isEmpty())
                             <li class="px-3 py-2 text-gray-500">{{ __('hiko.no_results') }}</li>
