@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\InterTenantDependencyCopyService;
 use App\Services\InterTenantLetterTransferData;
+use App\Services\InterTenantLetterTransferService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -292,6 +293,72 @@ class InterTenantDependencyCopyServiceTest extends TestCase
             [1 => 'local-41'],
             $this->service->identityAutoMappings($payload, $this->target)
         );
+    }
+
+    public function test_it_saves_intentional_blanks_and_clears_stale_saved_mappings_when_restored(): void
+    {
+        DB::connection('mysql')->table('source__identities')->insert([
+            [
+                'id' => 1,
+                'name' => 'Intentionally cleared',
+                'type' => 'person',
+                'global_identity_id' => 101,
+            ],
+            [
+                'id' => 2,
+                'name' => 'Saved target',
+                'type' => 'person',
+                'global_identity_id' => 102,
+            ],
+        ]);
+        DB::connection('mysql')->table('source__identity_letter')->insert([
+            ['letter_id' => 10, 'identity_id' => 1],
+            ['letter_id' => 10, 'identity_id' => 2],
+        ]);
+        DB::connection('mysql')->table('target__identities')->insert([
+            'id' => 42,
+            'name' => 'Saved target',
+            'type' => 'person',
+            'global_identity_id' => 102,
+        ]);
+
+        $service = new InterTenantLetterTransferService(new InterTenantLetterTransferData());
+        $saved = $service->saveDraftMappings(
+            $this->transfer,
+            $this->target,
+            [
+                'identities' => [
+                    1 => '',
+                    2 => 'local-42',
+                ],
+            ]
+        );
+
+        $this->assertSame('', $saved['identities'][1]);
+        $this->assertSame('local-42', $saved['identities'][2]);
+        $this->assertSame($saved, $this->transfer->fresh()->mappings);
+
+        $payload = (new InterTenantLetterTransferData())->load($this->source, [10]);
+        $validRestore = $service->restoreDraftMappings(
+            $payload['dependencies'],
+            $this->target,
+            $saved
+        );
+        $this->assertSame('', $validRestore['mappings']['identities'][1]);
+        $this->assertSame('local-42', $validRestore['mappings']['identities'][2]);
+        $this->assertSame([], $validRestore['warnings']);
+
+        DB::connection('mysql')->table('target__identities')->where('id', 42)->delete();
+        $restored = $service->restoreDraftMappings(
+            $payload['dependencies'],
+            $this->target,
+            $saved
+        );
+
+        $this->assertSame('', $restored['mappings']['identities'][1]);
+        $this->assertSame('', $restored['mappings']['identities'][2]);
+        $this->assertCount(1, $restored['warnings']);
+        $this->assertStringContainsString('#42', $restored['warnings'][0]);
     }
 
     private function createTenant(string $name, string $prefix): Tenant

@@ -6,6 +6,17 @@
         <div class="mb-5 border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">{{ session('error') }}</div>
     @endif
 
+    @if (!empty($mappingWarnings))
+        <div class="mb-5 border border-yellow-400 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
+            <p class="font-semibold">{{ __('hiko.transfer_saved_mappings_invalid') }}</p>
+            <ul class="mt-2 list-disc pl-5">
+                @foreach ($mappingWarnings as $warning)
+                    <li>{{ $warning }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <dl class="mb-8 grid gap-4 border-y border-gray-200 py-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
         <div><dt class="text-gray-500">{{ __('hiko.source_tenant') }}</dt><dd class="font-semibold">{{ $transfer->sourceTenant->displayName() }}</dd></div>
         <div><dt class="text-gray-500">{{ __('hiko.target_tenant') }}</dt><dd class="font-semibold">{{ $transfer->targetTenant->displayName() }}</dd></div>
@@ -108,8 +119,15 @@
                                                 @endif
                                             </td>
                                             <td class="px-3 py-2">
+                                                @php
+                                                    $hasSavedMappings = is_array($transfer->mappings);
+                                                    $savedValue = $savedMappings[$type][$entity->id] ?? '';
+                                                    $defaultValue = $hasSavedMappings
+                                                        ? $savedValue
+                                                        : ($type === 'identities' ? ($identityAutoMappings[$entity->id] ?? null) : null);
+                                                @endphp
                                                 <x-transfer-mapping-input :type="$type" :sourceId="$entity->id" :transferId="$transfer->id"
-                                                    :defaultValue="$type === 'identities' ? ($identityAutoMappings[$entity->id] ?? null) : null"
+                                                    :defaultValue="$defaultValue"
                                                     :copyEnabled="in_array($type, ['places', 'keywords', 'locations'], true)"
                                                     :locationType="$type === 'locations' ? $entity->type : null"
                                                     :sourceType="$type === 'identities' ? $entity->type : null" />
@@ -159,9 +177,16 @@
                     </section>
                 @endif
 
-                <button class="bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-black">
-                    {{ __('hiko.approve_and_copy') }}
-                </button>
+                <div class="flex flex-wrap gap-3">
+                    <button type="submit"
+                        formaction="{{ route('inter-tenant-transfers.save-mappings', $transfer) }}"
+                        class="border border-primary px-4 py-2 text-sm font-semibold text-primary-dark hover:bg-primary hover:text-white">
+                        {{ __('hiko.save_for_later') }}
+                    </button>
+                    <button type="submit" class="bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-black">
+                        {{ __('hiko.approve_and_copy') }}
+                    </button>
+                </div>
             </form>
 
             <form method="POST" action="{{ route('inter-tenant-transfers.reject', $transfer) }}" class="mt-10 border-t border-gray-200 pt-6">

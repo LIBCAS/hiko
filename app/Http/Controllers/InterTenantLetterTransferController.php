@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ApproveInterTenantLetterTransferRequest;
 use App\Http\Requests\RejectInterTenantLetterTransferRequest;
+use App\Http\Requests\SaveInterTenantLetterTransferMappingsRequest;
 use App\Http\Requests\StoreInterTenantTransferRequest;
 use App\Models\InterTenantTransferRequest;
 use App\Models\Tenant;
@@ -90,7 +91,8 @@ class InterTenantLetterTransferController extends Controller
     public function show(
         InterTenantTransferRequest $transfer,
         InterTenantLetterTransferData $data,
-        InterTenantDependencyCopyService $copyService
+        InterTenantDependencyCopyService $copyService,
+        InterTenantLetterTransferService $transferService
     )
     {
         $tenantId = (int) tenancy()->tenant->id;
@@ -111,6 +113,18 @@ class InterTenantLetterTransferController extends Controller
         $identityAutoMappings = $payload && $tenantId === (int) $transfer->target_tenant_id
             ? $copyService->identityAutoMappings($payload, tenancy()->tenant)
             : [];
+        $savedMappings = [];
+        $mappingWarnings = [];
+
+        if ($payload && $tenantId === (int) $transfer->target_tenant_id && is_array($transfer->mappings)) {
+            $restored = $transferService->restoreDraftMappings(
+                $payload['dependencies'],
+                tenancy()->tenant,
+                $transfer->mappings
+            );
+            $savedMappings = $restored['mappings'];
+            $mappingWarnings = $restored['warnings'];
+        }
 
         return view('pages.inter-tenant-transfers.show', [
             'title' => __('hiko.transfer_request') . ' #' . $transfer->id,
@@ -121,6 +135,8 @@ class InterTenantLetterTransferController extends Controller
             'sourceDomain' => $transfer->sourceTenant->domains->first()?->domain,
             'targetDomain' => $transfer->targetTenant->domains->first()?->domain,
             'identityAutoMappings' => $identityAutoMappings,
+            'savedMappings' => $savedMappings,
+            'mappingWarnings' => $mappingWarnings,
         ]);
     }
 
@@ -197,6 +213,29 @@ class InterTenantLetterTransferController extends Controller
 
         return redirect()->route('inter-tenant-transfers.show', $transfer)
             ->with('success', __('hiko.transfer_completed'));
+    }
+
+    public function saveMappings(
+        SaveInterTenantLetterTransferMappingsRequest $request,
+        InterTenantTransferRequest $transfer,
+        InterTenantLetterTransferService $service
+    ) {
+        abort_unless((int) $transfer->target_tenant_id === (int) tenancy()->tenant->id, 403);
+
+        try {
+            $service->saveDraftMappings(
+                $transfer,
+                tenancy()->tenant,
+                (array) $request->validated('mappings', [])
+            );
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('inter-tenant-transfers.show', $transfer)
+            ->with('success', __('hiko.transfer_mappings_saved'));
     }
 
     public function reject(RejectInterTenantLetterTransferRequest $request, InterTenantTransferRequest $transfer)

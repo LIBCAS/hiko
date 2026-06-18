@@ -14,8 +14,77 @@ use Throwable;
 
 class InterTenantLetterTransferService
 {
+    private const MAPPING_TYPES = ['identities', 'places', 'keywords', 'locations'];
+
     public function __construct(private InterTenantLetterTransferData $data)
     {
+    }
+
+    public function saveDraftMappings(
+        InterTenantTransferRequest $request,
+        Tenant $targetTenant,
+        array $mappings
+    ): array {
+        if (!$request->isPending() || (int) $request->target_tenant_id !== (int) $targetTenant->id) {
+            throw new RuntimeException(__('hiko.transfer_not_approvable'));
+        }
+
+        $sourceTenant = $request->sourceTenant()->firstOrFail();
+        $payload = $this->data->load($sourceTenant, $request->source_record_ids);
+        $draft = $this->validateDraftMappings($payload['dependencies'], $targetTenant, $mappings);
+
+        DB::connection('mysql')->transaction(function () use ($request, $draft) {
+            $lockedRequest = InterTenantTransferRequest::query()
+                ->whereKey($request->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (!$lockedRequest->isPending()) {
+                throw new RuntimeException(__('hiko.transfer_not_approvable'));
+            }
+
+            $lockedRequest->update(['mappings' => $draft]);
+        });
+
+        return $draft;
+    }
+
+    public function restoreDraftMappings(
+        $dependencies,
+        Tenant $targetTenant,
+        array $mappings
+    ): array {
+        $restored = $this->emptyDraftMappings($dependencies);
+        $warnings = [];
+
+        foreach (self::MAPPING_TYPES as $type) {
+            $provided = is_array($mappings[$type] ?? null) ? $mappings[$type] : [];
+
+            foreach ($dependencies[$type] as $source) {
+                if (!array_key_exists($source->id, $provided)) {
+                    continue;
+                }
+
+                $value = trim((string) $provided[$source->id]);
+                if ($value === '') {
+                    $restored[$type][(int) $source->id] = '';
+                    continue;
+                }
+
+                try {
+                    $this->validateMappingReference($type, $source, $targetTenant, $value);
+                    $restored[$type][(int) $source->id] = $value;
+                } catch (RuntimeException $e) {
+                    $restored[$type][(int) $source->id] = '';
+                    $warnings[] = $e->getMessage();
+                }
+            }
+        }
+
+        return [
+            'mappings' => $restored,
+            'warnings' => array_values(array_unique($warnings)),
+        ];
     }
 
     public function approve(
@@ -138,48 +207,93 @@ class InterTenantLetterTransferService
 
     private function validateMappings($dependencies, Tenant $targetTenant, array $mappings): array
     {
-        $targetPrefix = $targetTenant->table_prefix . '__';
         $normalized = [];
 
-        foreach (['identities', 'places', 'keywords', 'locations'] as $type) {
+        foreach (self::MAPPING_TYPES as $type) {
             $sourceRecords = $dependencies[$type];
             $provided = $mappings[$type] ?? [];
             $normalized[$type] = [];
 
             foreach ($sourceRecords as $source) {
-                $reference = $this->parseMappingReference($provided[$source->id] ?? null);
-                if (!$reference || ($type === 'identities' && $reference['scope'] !== 'local')) {
-                    throw new RuntimeException(__('hiko.transfer_mapping_missing', [
-                        'type' => __('hiko.' . $type),
-                        'id' => $source->id,
-                    ]));
-                }
-
-                $table = $reference['scope'] === 'global'
-                    ? 'global_' . $type
-                    : "{$targetPrefix}{$type}";
-                $targetId = $reference['id'];
-                $target = DB::connection('mysql')->table($table)->where('id', $targetId)->first();
-                if (!$target) {
-                    throw new RuntimeException(__('hiko.transfer_mapping_target_missing', [
-                        'type' => __('hiko.' . $type),
-                        'id' => $targetId,
-                    ]));
-                }
-
-                if ($type === 'locations' && $source->type !== $target->type) {
-                    throw new RuntimeException(__('hiko.transfer_location_type_mismatch'));
-                }
-
-                if ($type === 'identities' && $source->type !== $target->type) {
-                    throw new RuntimeException(__('hiko.transfer_identity_type_mismatch'));
-                }
-
-                $normalized[$type][(int) $source->id] = $reference;
+                $normalized[$type][(int) $source->id] = $this->validateMappingReference(
+                    $type,
+                    $source,
+                    $targetTenant,
+                    $provided[$source->id] ?? null
+                );
             }
         }
 
         return $normalized;
+    }
+
+    private function validateDraftMappings($dependencies, Tenant $targetTenant, array $mappings): array
+    {
+        $draft = $this->emptyDraftMappings($dependencies);
+
+        foreach (self::MAPPING_TYPES as $type) {
+            $provided = is_array($mappings[$type] ?? null) ? $mappings[$type] : [];
+
+            foreach ($dependencies[$type] as $source) {
+                $value = trim((string) ($provided[$source->id] ?? ''));
+                if ($value !== '') {
+                    $this->validateMappingReference($type, $source, $targetTenant, $value);
+                }
+
+                $draft[$type][(int) $source->id] = $value;
+            }
+        }
+
+        return $draft;
+    }
+
+    private function emptyDraftMappings($dependencies): array
+    {
+        $draft = [];
+
+        foreach (self::MAPPING_TYPES as $type) {
+            $draft[$type] = $dependencies[$type]
+                ->mapWithKeys(fn ($source) => [(int) $source->id => ''])
+                ->all();
+        }
+
+        return $draft;
+    }
+
+    private function validateMappingReference(
+        string $type,
+        object $source,
+        Tenant $targetTenant,
+        mixed $value
+    ): array {
+        $reference = $this->parseMappingReference($value);
+        if (!$reference || ($type === 'identities' && $reference['scope'] !== 'local')) {
+            throw new RuntimeException(__('hiko.transfer_mapping_missing', [
+                'type' => __('hiko.' . $type),
+                'id' => $source->id,
+            ]));
+        }
+
+        $table = $reference['scope'] === 'global'
+            ? 'global_' . $type
+            : "{$targetTenant->table_prefix}__{$type}";
+        $target = DB::connection('mysql')->table($table)->where('id', $reference['id'])->first();
+        if (!$target) {
+            throw new RuntimeException(__('hiko.transfer_mapping_target_missing', [
+                'type' => __('hiko.' . $type),
+                'id' => $reference['id'],
+            ]));
+        }
+
+        if ($type === 'locations' && $source->type !== $target->type) {
+            throw new RuntimeException(__('hiko.transfer_location_type_mismatch'));
+        }
+
+        if ($type === 'identities' && $source->type !== $target->type) {
+            throw new RuntimeException(__('hiko.transfer_identity_type_mismatch'));
+        }
+
+        return $reference;
     }
 
     private function parseMappingReference(mixed $value): ?array

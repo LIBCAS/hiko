@@ -6,6 +6,7 @@ use App\Http\Requests\GlobalPlaceMergeRequest;
 use App\Http\Requests\GlobalPlaceRequest;
 use App\Http\Requests\ApproveInterTenantLetterTransferRequest;
 use App\Http\Requests\RejectInterTenantLetterTransferRequest;
+use App\Http\Requests\SaveInterTenantLetterTransferMappingsRequest;
 use App\Http\Requests\StoreInterTenantLetterTransferRequest;
 use PHPUnit\Framework\TestCase;
 
@@ -93,6 +94,7 @@ class AuthorizationRulesTest extends TestCase
         foreach ([
             StoreInterTenantLetterTransferRequest::class,
             ApproveInterTenantLetterTransferRequest::class,
+            SaveInterTenantLetterTransferMappingsRequest::class,
             RejectInterTenantLetterTransferRequest::class,
         ] as $requestClass) {
             $authorized = $requestClass::create('/inter-tenant-transfers', 'POST');
