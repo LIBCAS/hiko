@@ -101,6 +101,11 @@ class InterTenantLetterTransferServiceTest extends TestCase
             'requested_by_user_id' => 3,
             'requested_by_name' => 'Source Admin',
             'source_record_ids' => [15],
+            'result' => [
+                'dependency_copies' => [
+                    ['type' => 'places', 'source_id' => 7, 'target_id' => 22],
+                ],
+            ],
         ]);
         $request->setConnection('mysql');
         $request->save();
@@ -133,6 +138,7 @@ class InterTenantLetterTransferServiceTest extends TestCase
         $request->refresh();
         $this->assertSame(InterTenantTransferRequest::STATUS_COMPLETED, $request->status);
         $this->assertSame(1, $request->result['letter_count']);
+        $this->assertSame(7, $request->result['dependency_copies'][0]['source_id']);
         $this->assertSame(1926, $request->final_snapshot['letters'][0]['date_year']);
     }
 

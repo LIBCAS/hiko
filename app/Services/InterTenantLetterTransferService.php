@@ -93,11 +93,11 @@ class InterTenantLetterTransferService
                     $createdMediaDirectories
                 );
 
-                $result = [
+                $result = array_merge($lockedRequest->result ?? [], [
                     'letter_id_map' => $letterIdMap,
                     'letter_count' => count($letterIdMap),
                     'media_count' => $payload['media']->count(),
-                ];
+                ]);
 
                 $lockedRequest->update([
                     'status' => InterTenantTransferRequest::STATUS_COMPLETED,

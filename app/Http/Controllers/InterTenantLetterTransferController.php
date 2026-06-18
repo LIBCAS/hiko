@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ApproveInterTenantLetterTransferRequest;
+use App\Http\Requests\RejectInterTenantLetterTransferRequest;
+use App\Http\Requests\StoreInterTenantTransferRequest;
 use App\Models\InterTenantTransferRequest;
 use App\Models\Tenant;
+use App\Services\InterTenantDependencyCopyService;
 use App\Services\InterTenantLetterTransferData;
 use App\Services\InterTenantLetterTransferService;
 use App\Services\LetterFilterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Throwable;
-use App\Http\Requests\ApproveInterTenantLetterTransferRequest;
-use App\Http\Requests\RejectInterTenantLetterTransferRequest;
-use App\Http\Requests\StoreInterTenantLetterTransferRequest;
 
 class InterTenantLetterTransferController extends Controller
 {
@@ -86,7 +87,11 @@ class InterTenantLetterTransferController extends Controller
             ->with('success', __('hiko.transfer_requested'));
     }
 
-    public function show(InterTenantTransferRequest $transfer, InterTenantLetterTransferData $data)
+    public function show(
+        InterTenantTransferRequest $transfer,
+        InterTenantLetterTransferData $data,
+        InterTenantDependencyCopyService $copyService
+    )
     {
         $tenantId = (int) tenancy()->tenant->id;
         abort_unless(in_array($tenantId, [(int) $transfer->source_tenant_id, (int) $transfer->target_tenant_id], true), 403);
@@ -103,6 +108,10 @@ class InterTenantLetterTransferController extends Controller
             }
         }
 
+        $identityAutoMappings = $payload && $tenantId === (int) $transfer->target_tenant_id
+            ? $copyService->identityAutoMappings($payload, tenancy()->tenant)
+            : [];
+
         return view('pages.inter-tenant-transfers.show', [
             'title' => __('hiko.transfer_request') . ' #' . $transfer->id,
             'transfer' => $transfer,
@@ -111,7 +120,64 @@ class InterTenantLetterTransferController extends Controller
             'isTarget' => $tenantId === (int) $transfer->target_tenant_id,
             'sourceDomain' => $transfer->sourceTenant->domains->first()?->domain,
             'targetDomain' => $transfer->targetTenant->domains->first()?->domain,
+            'identityAutoMappings' => $identityAutoMappings,
         ]);
+    }
+
+    public function copyDependencyPreview(
+        InterTenantTransferRequest $transfer,
+        string $type,
+        int $sourceId,
+        InterTenantDependencyCopyService $service
+    ) {
+        abort_unless((int) $transfer->target_tenant_id === (int) tenancy()->tenant->id, 403);
+
+        try {
+            return response()->json(
+                $service->preview($transfer, tenancy()->tenant, $type, $sourceId)
+            );
+        } catch (Throwable $e) {
+            report($e);
+
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    public function copyDependency(
+        Request $request,
+        InterTenantTransferRequest $transfer,
+        string $type,
+        int $sourceId,
+        InterTenantDependencyCopyService $service
+    ) {
+        abort_unless((int) $transfer->target_tenant_id === (int) tenancy()->tenant->id, 403);
+        $validated = $request->validate([
+            'category_id' => ['nullable', 'integer'],
+        ]);
+
+        try {
+            $created = $service->copy(
+                $transfer,
+                tenancy()->tenant,
+                $request->user(),
+                $type,
+                $sourceId,
+                $validated['category_id'] ?? null
+            );
+            $record = DB::connection('tenant')
+                ->table(tenancy()->tenant->table_prefix . '__' . $type)
+                ->find($created['id']);
+
+            return response()->json([
+                'message' => __('hiko.transfer_dependency_copied'),
+                'option' => $this->mappingSearchResult($type, 'local', $record),
+                'action' => $created['action'],
+            ]);
+        } catch (Throwable $e) {
+            report($e);
+
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 
     public function approve(

@@ -108,7 +108,9 @@
                                                 @endif
                                             </td>
                                             <td class="px-3 py-2">
-                                                <x-transfer-mapping-input :type="$type" :sourceId="$entity->id"
+                                                <x-transfer-mapping-input :type="$type" :sourceId="$entity->id" :transferId="$transfer->id"
+                                                    :defaultValue="$type === 'identities' ? ($identityAutoMappings[$entity->id] ?? null) : null"
+                                                    :copyEnabled="in_array($type, ['places', 'keywords', 'locations'], true)"
                                                     :locationType="$type === 'locations' ? $entity->type : null"
                                                     :sourceType="$type === 'identities' ? $entity->type : null" />
                                             </td>

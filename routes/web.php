@@ -91,6 +91,10 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
             Route::post('/', [InterTenantLetterTransferController::class, 'store'])->name('store');
             Route::get('/mapping-search/{type}', [InterTenantLetterTransferController::class, 'searchMapping'])->name('mapping-search');
             Route::get('/{transfer}', [InterTenantLetterTransferController::class, 'show'])->name('show');
+            Route::get('/{transfer}/dependencies/{type}/{sourceId}/copy-preview', [InterTenantLetterTransferController::class, 'copyDependencyPreview'])
+                ->name('copy-dependency.preview');
+            Route::post('/{transfer}/dependencies/{type}/{sourceId}/copy', [InterTenantLetterTransferController::class, 'copyDependency'])
+                ->name('copy-dependency.store');
             Route::post('/{transfer}/approve', [InterTenantLetterTransferController::class, 'approve'])->name('approve');
             Route::post('/{transfer}/reject', [InterTenantLetterTransferController::class, 'reject'])->name('reject');
             Route::post('/{transfer}/cancel', [InterTenantLetterTransferController::class, 'cancel'])->name('cancel');
