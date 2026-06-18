@@ -4,6 +4,9 @@ namespace Tests\Unit;
 
 use App\Http\Requests\GlobalPlaceMergeRequest;
 use App\Http\Requests\GlobalPlaceRequest;
+use App\Http\Requests\ApproveInterTenantLetterTransferRequest;
+use App\Http\Requests\RejectInterTenantLetterTransferRequest;
+use App\Http\Requests\StoreInterTenantLetterTransferRequest;
 use PHPUnit\Framework\TestCase;
 
 class AuthorizationRulesTest extends TestCase
@@ -70,5 +73,35 @@ class AuthorizationRulesTest extends TestCase
         $this->assertStringContainsString("Route::put('global-profession/{id}', [apiV2GlobalProfessionController::class, 'update'])->middleware('can:manage-users');", $contents);
         $this->assertStringContainsString("Route::post('global-keywords', [apiV2GlobalKeywordController::class, 'store'])->middleware('can:manage-users');", $contents);
         $this->assertStringContainsString("Route::put('global-keyword/{id}', [apiV2GlobalKeywordController::class, 'update'])->middleware('can:manage-users');", $contents);
+    }
+
+    public function test_inter_tenant_transfer_requests_require_manage_users_ability(): void
+    {
+        $authorizedUser = new class {
+            public function hasAbility(string $ability): bool
+            {
+                return $ability === 'manage-users';
+            }
+        };
+        $unauthorizedUser = new class {
+            public function hasAbility(string $ability): bool
+            {
+                return false;
+            }
+        };
+
+        foreach ([
+            StoreInterTenantLetterTransferRequest::class,
+            ApproveInterTenantLetterTransferRequest::class,
+            RejectInterTenantLetterTransferRequest::class,
+        ] as $requestClass) {
+            $authorized = $requestClass::create('/inter-tenant-transfers', 'POST');
+            $authorized->setUserResolver(fn () => $authorizedUser);
+            $this->assertTrue($authorized->authorize());
+
+            $unauthorized = $requestClass::create('/inter-tenant-transfers', 'POST');
+            $unauthorized->setUserResolver(fn () => $unauthorizedUser);
+            $this->assertFalse($unauthorized->authorize());
+        }
     }
 }

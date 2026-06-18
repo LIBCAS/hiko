@@ -35,6 +35,14 @@
                         {{ __('hiko.application_info') }}
                     </a>
                 </div>
+                @can('manage-users')
+                    <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
+                        <a href="{{ route('inter-tenant-transfers.index') }}"
+                            class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
+                            {{ __('hiko.inter_tenant_transfers') }}
+                        </a>
+                    </div>
+                @endcan
                 <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
@@ -88,6 +96,12 @@
                 class="block py-2 pl-3 pr-4 border-l-4 hover:bg-primary hover:bg-opacity-10 @if (request()->routeIs('app')) border-primary-light bg-primary bg-opacity-5 @else border-transparent @endif ">
                 {{ __('hiko.application_info') }}
             </a>
+            @can('manage-users')
+                <a href="{{ route('inter-tenant-transfers.index') }}"
+                    class="block py-2 pl-3 pr-4 border-l-4 hover:bg-primary hover:bg-opacity-10 @if (request()->routeIs('inter-tenant-transfers.*')) border-primary-light bg-primary bg-opacity-5 @else border-transparent @endif">
+                    {{ __('hiko.inter_tenant_transfers') }}
+                </a>
+            @endcan
         </div>
         <div class="pt-4 pb-1 border-t border-gray-200">
             <span> {{ Auth::user()->name }} </span>

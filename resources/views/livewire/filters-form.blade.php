@@ -18,7 +18,8 @@
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.id') }}</span>
-                <x-input wire:model.live.debounce.1000ms="filters.id" class="w-full px-2 text-sm" type="text" />
+                <x-input wire:model.live.debounce.1000ms="filters.id" class="w-full px-2 text-sm" type="text"
+                    placeholder="{{ __('hiko.letter_ids_placeholder') }}" />
             </label>
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.signature') }}</span>

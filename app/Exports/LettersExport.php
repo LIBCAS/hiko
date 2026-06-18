@@ -12,9 +12,14 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use App\Services\LetterFilterService;
 
 class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, WithChunkReading, ShouldAutoSize
 {
+    public function __construct(private array $filters = [])
+    {
+    }
+
     /**
      * Define the query to retrieve letters with necessary relationships.
      *
@@ -22,7 +27,7 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, W
      */
     public function query()
     {
-        return Letter::query()->with([
+        return app(LetterFilterService::class)->filteredQuery($this->filters, [
             'authors',
             'recipients',
             'origins',

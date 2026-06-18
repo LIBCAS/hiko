@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Support\Str;
+use App\Services\LetterFilterService;
 
 class LettersTable extends Component
 {
@@ -18,13 +18,7 @@ class LettersTable extends Component
 
     protected $listeners = ['filtersChanged', 'sortingChanged', 'removeFilter', 'resetLettersTablePage'];
 
-    protected array $allowedFilters = [
-        'id', 'signature', 'author', 'recipient',
-        'origin', 'destination', 'repository', 'archive', 'collection',
-        'keyword', 'mentioned', 'content_stripped', 'abstract',
-        'languages', 'notes_private', 'media', 'status', 'approval', 'editor',
-        'after', 'before'
-    ];
+    protected array $allowedFilters = LetterFilterService::ALLOWED_FILTERS;
 
     protected array $allowedSorting = [
         'id', 'updated_at', 'author', 'recipient', 'origin', 'destination', 'media', 'date_computed', 'abstract'
@@ -91,178 +85,12 @@ class LettersTable extends Component
     protected function findLetters(): LengthAwarePaginator
     {
         $tenantPrefix = tenancy()->initialized ? tenancy()->tenant->table_prefix . '__' : '';
-        $lettersTable = "{$tenantPrefix}letters";
-
-        $query = Letter::query()
-            ->select("$lettersTable.*")
-            ->with([
+        $query = app(LetterFilterService::class)->filteredQuery($this->filters, [
                 'identities', 'localPlaces', 'globalPlaces', 'localKeywords', 'globalKeywords', 'media', 'users'
-            ])
-            ->from($lettersTable);
-
-        $this->applyFilters($query, $tenantPrefix);
+            ]);
         $this->applySorting($query, $tenantPrefix);
 
         return $query->paginate(25);
-    }
-
-    protected function applyFilters($query, $prefix)
-    {
-        $filters = $this->filters;
-
-        if (!empty($filters['id'])) {
-            $query->where("{$prefix}letters.id", $filters['id']);
-        }
-
-        foreach (['repository', 'archive', 'collection', 'signature'] as $field) {
-            if (!empty($filters[$field])) {
-                $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(copies, '$[*].{$field}'))) LIKE ?", ['%' . strtolower($filters[$field]) . '%']);
-            }
-        }
-
-        if (!empty($filters['author'])) {
-            $query->whereExists(function ($sub) use ($filters, $prefix) {
-                $sub->select(DB::raw(1))
-                    ->from("{$prefix}identity_letter")
-                    ->join("{$prefix}identities", "{$prefix}identity_letter.identity_id", '=', "{$prefix}identities.id")
-                    ->whereColumn("{$prefix}identity_letter.letter_id", "{$prefix}letters.id")
-                    ->where('role', 'author')
-                    ->where('name', 'like', '%' . $filters['author'] . '%');
-            });
-        }
-
-        if (!empty($filters['recipient'])) {
-            $query->whereExists(function ($sub) use ($filters, $prefix) {
-                $sub->select(DB::raw(1))
-                    ->from("{$prefix}identity_letter")
-                    ->join("{$prefix}identities", "{$prefix}identity_letter.identity_id", '=', "{$prefix}identities.id")
-                    ->whereColumn("{$prefix}identity_letter.letter_id", "{$prefix}letters.id")
-                    ->where('role', 'recipient')
-                    ->where('name', 'like', '%' . $filters['recipient'] . '%');
-            });
-        }
-
-        if (!empty($filters['mentioned'])) {
-            $query->whereExists(function ($sub) use ($filters, $prefix) {
-                $sub->select(DB::raw(1))
-                    ->from("{$prefix}identity_letter")
-                    ->join("{$prefix}identities", "{$prefix}identity_letter.identity_id", '=', "{$prefix}identities.id")
-                    ->whereColumn("{$prefix}identity_letter.letter_id", "{$prefix}letters.id")
-                    ->where('role', 'mentioned')
-                    ->where('name', 'like', '%' . $filters['mentioned'] . '%');
-            });
-        }
-
-        if (!empty($filters['origin'])) {
-            $query->where(function ($q) use ($filters, $prefix) {
-                // Local
-                $q->whereExists(function ($sub) use ($filters, $prefix) {
-                    $sub->select(DB::raw(1))
-                        ->from("{$prefix}letter_place")
-                        ->join("{$prefix}places", "{$prefix}letter_place.place_id", '=', "{$prefix}places.id")
-                        ->whereColumn("{$prefix}letter_place.letter_id", "{$prefix}letters.id")
-                        ->where('role', 'origin')
-                        ->where(function ($qq) use ($filters) {
-                            $qq->where('name', 'like', '%' . $filters['origin'] . '%');
-                            for ($i = 0; $i < 50; $i++) {
-                                $qq->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(alternative_names, '$[$i]')) LIKE ?", ["%{$filters['origin']}%"]);
-                            }
-                        });
-                });
-
-                // Global
-                $q->orWhereExists(function ($sub) use ($filters, $prefix) {
-                    $sub->select(DB::raw(1))
-                        ->from("{$prefix}letter_place")
-                        ->join("global_places", "{$prefix}letter_place.global_place_id", '=', "global_places.id")
-                        ->whereColumn("{$prefix}letter_place.letter_id", "{$prefix}letters.id")
-                        ->where('role', 'origin')
-                        ->where(function ($qq) use ($filters) {
-                            $qq->where('name', 'like', '%' . $filters['origin'] . '%');
-                            for ($i = 0; $i < 50; $i++) {
-                                $qq->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(alternative_names, '$[$i]')) LIKE ?", ["%{$filters['origin']}%"]);
-                            }
-                        });
-                });
-            });
-        }
-
-        if (!empty($filters['destination'])) {
-            $query->where(function ($q) use ($filters, $prefix) {
-                // Local
-                $q->whereExists(function ($sub) use ($filters, $prefix) {
-                    $sub->select(DB::raw(1))
-                        ->from("{$prefix}letter_place")
-                        ->join("{$prefix}places", "{$prefix}letter_place.place_id", '=', "{$prefix}places.id")
-                        ->whereColumn("{$prefix}letter_place.letter_id", "{$prefix}letters.id")
-                        ->where('role', 'destination')
-                        ->where('name', 'like', '%' . $filters['destination'] . '%');
-                });
-
-                // Global
-                $q->orWhereExists(function ($sub) use ($filters, $prefix) {
-                    $sub->select(DB::raw(1))
-                        ->from("{$prefix}letter_place")
-                        ->join("global_places", "{$prefix}letter_place.global_place_id", '=', "global_places.id")
-                        ->whereColumn("{$prefix}letter_place.letter_id", "{$prefix}letters.id")
-                        ->where('role', 'destination')
-                        ->where('name', 'like', '%' . $filters['destination'] . '%');
-                });
-            });
-        }
-
-        foreach (['content_stripped', 'abstract', 'notes_private', 'languages'] as $field) {
-            if (!empty($filters[$field])) {
-                $query->whereRaw("LOWER({$prefix}letters.$field) LIKE ?", ['%' . strtolower($filters[$field]) . '%']);
-            }
-        }
-
-        if (!empty($filters['keyword'])) {
-            $query->where(function ($q) use ($filters) {
-                $q->whereHas('localKeywords', function ($sub) use ($filters) {
-                    $sub->where('name->cs', 'like', '%' . $filters['keyword'] . '%')
-                        ->orWhere('name->en', 'like', '%' . $filters['keyword'] . '%');
-                })
-                ->orWhereHas('globalKeywords', function ($sub) use ($filters) {
-                    $sub->where('name->cs', 'like', '%' . $filters['keyword'] . '%')
-                        ->orWhere('name->en', 'like', '%' . $filters['keyword'] . '%');
-                });
-            });
-        }
-
-        // if (!empty($filters['languages'])) {
-        //     $query->whereJsonContains('languages', $filters['languages']);
-        // }
-
-        if (!empty($filters['media'])) {
-            if ($filters['media'] === '1') {
-                $query->has('media');
-            } elseif ($filters['media'] === '0') {
-                $query->doesntHave('media');
-            }
-        }
-
-        if (!empty($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-
-        if (isset($filters['approval']) && $filters['approval'] !== '') {
-            $query->where('approval', $filters['approval']);
-        }
-
-        if (!empty($filters['after'])) {
-            $query->whereDate('date_computed', '>=', $filters['after']);
-        }
-
-        if (!empty($filters['before'])) {
-            $query->whereDate('date_computed', '<=', $filters['before']);
-        }
-
-        if (auth()->check() && !empty($filters['editor']) && $filters['editor'] === auth()->user()->name) {
-            $query->whereHas('users', fn($q) => $q->where('name', 'like', auth()->user()->name));
-        } elseif (!empty($filters['editor'])) {
-            $query->whereHas('users', fn($q) => $q->where('name', 'like', '%' . $filters['editor'] . '%'));
-        }
     }
 
     protected function applySorting($query, $prefix)

@@ -58,6 +58,7 @@ use App\Http\Controllers\ReligionAdminController;
 use App\Http\Controllers\ReligionTreeController;
 use App\Http\Controllers\ReligionSearchController;
 use App\Http\Controllers\PageLockController;
+use App\Http\Controllers\InterTenantLetterTransferController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -80,6 +81,20 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
     Route::post('/page-locks/heartbeat', [PageLockController::class, 'heartbeat'])
         ->name('page-locks.heartbeat')
         ->middleware(['auth']);
+
+    Route::prefix('inter-tenant-transfers')
+        ->name('inter-tenant-transfers.')
+        ->middleware(['auth', 'can:manage-users'])
+        ->group(function () {
+            Route::get('/', [InterTenantLetterTransferController::class, 'index'])->name('index');
+            Route::get('/preview/{targetTenant}', [InterTenantLetterTransferController::class, 'preview'])->name('preview');
+            Route::post('/', [InterTenantLetterTransferController::class, 'store'])->name('store');
+            Route::get('/mapping-search/{type}', [InterTenantLetterTransferController::class, 'searchMapping'])->name('mapping-search');
+            Route::get('/{transfer}', [InterTenantLetterTransferController::class, 'show'])->name('show');
+            Route::post('/{transfer}/approve', [InterTenantLetterTransferController::class, 'approve'])->name('approve');
+            Route::post('/{transfer}/reject', [InterTenantLetterTransferController::class, 'reject'])->name('reject');
+            Route::post('/{transfer}/cancel', [InterTenantLetterTransferController::class, 'cancel'])->name('cancel');
+        });
     Route::post('/page-locks/release', [PageLockController::class, 'release'])
         ->name('page-locks.release')
         ->middleware(['auth']);

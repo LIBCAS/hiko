@@ -1,5 +1,8 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    @if (session('error'))
+        <x-error-alert>{{ session('error') }}</x-error-alert>
+    @endif
     <div class="flex items-center justify-between gap-4 flex-wrap mb-6">
         <div class="flex items-center gap-4">
             @can('manage-metadata')
@@ -26,6 +29,19 @@
                     @endif
                 </div>
             </x-dropdown>
+
+            @can('manage-users')
+                <x-dropdown label="{{ __('hiko.copy_to') }}" class="font-semibold" :alignRight="false">
+                    <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
+                        @foreach ($transferTenants as $tenant)
+                            <a href="{{ route('inter-tenant-transfers.preview', $tenant) }}"
+                                class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
+                                {{ $tenant->displayName() }}
+                            </a>
+                        @endforeach
+                    </div>
+                </x-dropdown>
+            @endcan
 
             <a href="{{ route('letters.validation') }}"
                 class="inline-block text-sm font-semibold">

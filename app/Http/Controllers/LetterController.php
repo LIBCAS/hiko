@@ -24,6 +24,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Models\Tenant;
+use App\Services\LetterFilterService;
 
 /**
  * LetterController handles all CRUD operations for the "letters" table,
@@ -49,6 +51,12 @@ class LetterController extends Controller
             'mainCharacter' => config('hiko.main_character')
                 ? optional(Identity::find(config('hiko.main_character')))->value('surname')
                 : null,
+            'transferTenants' => auth()->user()->can('manage-users')
+                ? Tenant::query()
+                    ->whereKeyNot(tenancy()->tenant->id)
+                    ->orderBy('name')
+                    ->get()
+                : collect(),
         ]);
     }
 
@@ -193,9 +201,12 @@ class LetterController extends Controller
     /**
      * Example of exporting Letters to an Excel file.
      */
-    public function export(): BinaryFileResponse
+    public function export(Request $request): BinaryFileResponse
     {
-        return Excel::download(new LettersExport, 'letters.xlsx');
+        return Excel::download(
+            new LettersExport($request->only(LetterFilterService::ALLOWED_FILTERS)),
+            'letters.xlsx'
+        );
     }
 
     /**
