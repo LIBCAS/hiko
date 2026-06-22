@@ -9,19 +9,10 @@ class LocalIdentityGlobalCopyService
 {
     public const NOTE_SEPARATOR = "\n\n===\n\n";
 
-    private const DUPLICATE_FIELDS = [
-        'name',
+    private const MATCH_NAME_FIELDS = [
         'surname',
         'forename',
-        'general_name_modifier',
-        'alternative_names',
-        'related_names',
         'type',
-        'nationality',
-        'gender',
-        'birth_year',
-        'death_year',
-        'related_identity_resources',
     ];
 
     private const COPY_FIELDS = [
@@ -41,7 +32,7 @@ class LocalIdentityGlobalCopyService
         'note',
     ];
 
-    private array $globalIdentityIdsByKey = [];
+    private array $globalIdentityCandidatesByNameKey = [];
 
     private int $nextDryRunId = -1;
 
@@ -51,7 +42,8 @@ class LocalIdentityGlobalCopyService
         $tenantPrefixes = $this->tenantPrefixes($options['tenants'] ?? []);
         $chunkSize = max(1, (int)($options['chunk'] ?? 500));
 
-        $this->loadGlobalIdentityKeys();
+        $this->nextDryRunId = -1;
+        $this->loadGlobalIdentityCandidates();
 
         $totals = $this->emptyStats();
         $totals['tenants_total'] = count($tenantPrefixes);
@@ -70,6 +62,194 @@ class LocalIdentityGlobalCopyService
         }
 
         return $totals;
+    }
+
+    public function reset(array $options = []): array
+    {
+        $dryRun = (bool)($options['dry_run'] ?? false);
+        $type = $this->normalizeResetType($options['type'] ?? null);
+        $globalIdentityIds = Schema::hasTable('global_identities')
+            ? DB::table('global_identities')
+                ->when($type !== null, fn($query) => $query->where('type', $type))
+                ->pluck('id')
+                ->map(fn($id) => (int)$id)
+                ->all()
+            : [];
+
+        return array_merge(
+            ['type' => $type],
+            $this->deleteGlobalIdentities($globalIdentityIds, $dryRun)
+        );
+    }
+
+    public function removeUndatedDuplicateGroups(array $options = []): array
+    {
+        $dryRun = (bool)($options['dry_run'] ?? false);
+        $groups = Schema::hasTable('global_identities')
+            ? DB::table('global_identities')
+                ->select(['id', 'name', 'type', 'birth_year', 'death_year'])
+                ->orderBy('id')
+                ->get()
+                ->groupBy(fn($identity) => json_encode([
+                    'name' => $identity->name,
+                    'type' => $identity->type,
+                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
+            : collect();
+
+        $fullyUndatedGroups = $groups->filter(function ($group) {
+            return $group->count() > 1
+                && $group->every(fn($identity) => $this->isBlankDate($identity->birth_year)
+                    && $this->isBlankDate($identity->death_year));
+        });
+        $uniqueUndatedRecords = $groups
+            ->filter(fn($group) => $group->count() === 1)
+            ->flatten(1)
+            ->filter(fn($identity) => $this->isBlankDate($identity->birth_year)
+                && $this->isBlankDate($identity->death_year));
+
+        $globalIdentityIds = $fullyUndatedGroups
+            ->flatten(1)
+            ->pluck('id')
+            ->merge($uniqueUndatedRecords->pluck('id'))
+            ->map(fn($id) => (int)$id)
+            ->unique()
+            ->values()
+            ->all();
+
+        return array_merge(
+            [
+                'duplicate_groups' => $fullyUndatedGroups->count(),
+                'unique_undated_records' => $uniqueUndatedRecords->count(),
+            ],
+            $this->deleteGlobalIdentities($globalIdentityIds, $dryRun)
+        );
+    }
+
+    public function removeAllUndatedGlobalIdentities(array $options = []): array
+    {
+        $dryRun = (bool)($options['dry_run'] ?? false);
+        $globalIdentityIds = Schema::hasTable('global_identities')
+            ? DB::table('global_identities')
+                ->select(['id', 'birth_year', 'death_year'])
+                ->orderBy('id')
+                ->get()
+                ->filter(fn($identity) => $this->isBlankDate($identity->birth_year)
+                    && $this->isBlankDate($identity->death_year))
+                ->pluck('id')
+                ->map(fn($id) => (int)$id)
+                ->values()
+                ->all()
+            : [];
+
+        return array_merge(
+            ['strict' => true],
+            $this->deleteGlobalIdentities($globalIdentityIds, $dryRun)
+        );
+    }
+
+    private function deleteGlobalIdentities(array $globalIdentityIds, bool $dryRun): array
+    {
+        $tenantPrefixes = $this->tenantPrefixes();
+        $stats = [
+            'dry_run' => $dryRun,
+            'local_identity_links' => 0,
+            'identity_letter_links' => 0,
+            'global_identity_professions' => 0,
+            'global_identity_religions' => 0,
+            'global_identity_keywords' => 0,
+            'global_identities' => count($globalIdentityIds),
+        ];
+
+        if ($globalIdentityIds !== []) {
+            foreach ($tenantPrefixes as $tenantPrefix) {
+                $identitiesTable = "{$tenantPrefix}__identities";
+                $identityLetterTable = "{$tenantPrefix}__identity_letter";
+
+                if (Schema::hasTable($identitiesTable) && Schema::hasColumn($identitiesTable, 'global_identity_id')) {
+                    $stats['local_identity_links'] += DB::table($identitiesTable)
+                        ->whereIn('global_identity_id', $globalIdentityIds)
+                        ->count();
+                }
+
+                if (Schema::hasTable($identityLetterTable) && Schema::hasColumn($identityLetterTable, 'global_identity_id')) {
+                    $stats['identity_letter_links'] += DB::table($identityLetterTable)
+                        ->whereIn('global_identity_id', $globalIdentityIds)
+                        ->count();
+                }
+            }
+
+            foreach ([
+                'global_identity_profession' => ['global_identity_professions', 'global_identity_id'],
+                'global_identity_religion' => ['global_identity_religions', 'global_identity_id'],
+                'global_identity_keyword' => ['global_identity_keywords', 'identity_id'],
+            ] as $table => [$stat, $foreignKey]) {
+                if (Schema::hasTable($table)) {
+                    $stats[$stat] = DB::table($table)
+                        ->whereIn($foreignKey, $globalIdentityIds)
+                        ->count();
+                }
+            }
+        }
+
+        if (!$dryRun && $globalIdentityIds !== []) {
+            DB::transaction(function () use ($tenantPrefixes, $globalIdentityIds) {
+                foreach ($tenantPrefixes as $tenantPrefix) {
+                    $identitiesTable = "{$tenantPrefix}__identities";
+                    $identityLetterTable = "{$tenantPrefix}__identity_letter";
+
+                    if (Schema::hasTable($identitiesTable) && Schema::hasColumn($identitiesTable, 'global_identity_id')) {
+                        DB::table($identitiesTable)
+                            ->whereIn('global_identity_id', $globalIdentityIds)
+                            ->update(['global_identity_id' => null]);
+                    }
+
+                    if (Schema::hasTable($identityLetterTable) && Schema::hasColumn($identityLetterTable, 'global_identity_id')) {
+                        DB::table($identityLetterTable)
+                            ->whereIn('global_identity_id', $globalIdentityIds)
+                            ->update(['global_identity_id' => null]);
+                    }
+                }
+
+                foreach ([
+                    'global_identity_keyword' => 'identity_id',
+                    'global_identity_profession' => 'global_identity_id',
+                    'global_identity_religion' => 'global_identity_id',
+                ] as $table => $foreignKey) {
+                    if (Schema::hasTable($table)) {
+                        DB::table($table)->whereIn($foreignKey, $globalIdentityIds)->delete();
+                    }
+                }
+
+                if (Schema::hasTable('global_identities')) {
+                    DB::table('global_identities')->whereIn('id', $globalIdentityIds)->delete();
+                }
+            });
+        }
+
+        $this->globalIdentityCandidatesByNameKey = [];
+
+        return $stats;
+    }
+
+    private function isBlankDate(mixed $value): bool
+    {
+        $value = trim((string)$value);
+
+        return $value === '' || $value === '0';
+    }
+
+    private function normalizeResetType(mixed $type): ?string
+    {
+        $type = trim((string)$type);
+        if ($type === '') {
+            return null;
+        }
+
+        if (!in_array($type, ['person', 'institution'], true)) {
+            throw new \InvalidArgumentException('Reset type must be person or institution.');
+        }
+
+        return $type;
     }
 
     public function tenantPrefixes(array $requestedTenants = []): array
@@ -125,7 +305,7 @@ class LocalIdentityGlobalCopyService
         $identity = (array)$identity;
 
         return json_encode(
-            collect(self::DUPLICATE_FIELDS)
+            collect(self::MATCH_NAME_FIELDS)
                 ->mapWithKeys(fn($field) => [$field => $this->normalizeForDuplicateKey($identity[$field] ?? null)])
                 ->all(),
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
@@ -145,7 +325,7 @@ class LocalIdentityGlobalCopyService
             return null;
         }
 
-        return $value;
+        return $trimmed;
     }
 
     private function processTenant(string $tenantPrefix, bool $dryRun, int $chunkSize): array
@@ -174,8 +354,24 @@ class LocalIdentityGlobalCopyService
             foreach ($localIdentities as $localIdentity) {
                 $stats['local_seen']++;
 
-                $key = $this->duplicateKey($localIdentity);
-                $globalIdentityId = $this->globalIdentityIdsByKey[$key] ?? null;
+                if (($localIdentity->type ?? null) !== 'person') {
+                    $stats['local_skipped_non_person']++;
+                    continue;
+                }
+
+                if (($localIdentity->global_identity_id ?? null) !== null) {
+                    $stats['local_already_linked']++;
+                    continue;
+                }
+
+                $eligibleForMatching = $this->isEligibleForMatching($localIdentity);
+                if (!$eligibleForMatching) {
+                    $stats['local_incomplete_match_data']++;
+                }
+
+                $globalIdentityId = $eligibleForMatching
+                    ? $this->findCompatibleGlobalIdentityId($localIdentity, $stats)
+                    : null;
                 $created = false;
 
                 if ($globalIdentityId === null) {
@@ -185,10 +381,17 @@ class LocalIdentityGlobalCopyService
                         ? $this->nextDryRunId--
                         : $this->createGlobalIdentity($localIdentity, $tenantPrefix);
 
-                    $this->globalIdentityIdsByKey[$key] = $globalIdentityId;
+                    $this->addGlobalIdentityCandidate($globalIdentityId, $localIdentity);
                 } else {
                     $stats['global_matched']++;
-                    $this->appendNote($globalIdentityId, $localIdentity->note ?? null, $dryRun, $stats);
+                    $this->mergeMatchedMetadata($globalIdentityId, $localIdentity, $dryRun, $stats);
+                    $this->appendNote(
+                        $globalIdentityId,
+                        $localIdentity->note ?? null,
+                        $this->sourceTag($tenantPrefix, (int)$localIdentity->id),
+                        $dryRun,
+                        $stats
+                    );
                     $this->appendAdminNote($globalIdentityId, $this->sourceTag($tenantPrefix, (int)$localIdentity->id), $dryRun, $stats);
                 }
 
@@ -206,21 +409,24 @@ class LocalIdentityGlobalCopyService
         return $stats;
     }
 
-    private function loadGlobalIdentityKeys(): void
+    private function loadGlobalIdentityCandidates(): void
     {
-        $this->globalIdentityIdsByKey = [];
+        $this->globalIdentityCandidatesByNameKey = [];
 
         if (!Schema::hasTable('global_identities')) {
             return;
         }
 
         DB::table('global_identities')
-            ->select(array_merge(['id'], self::DUPLICATE_FIELDS))
+            ->select(array_merge(['id', 'birth_year', 'death_year'], self::MATCH_NAME_FIELDS))
             ->orderBy('id')
             ->chunk(1000, function ($globalIdentities) {
                 foreach ($globalIdentities as $globalIdentity) {
-                    $key = $this->duplicateKey($globalIdentity);
-                    $this->globalIdentityIdsByKey[$key] ??= (int)$globalIdentity->id;
+                    if (!$this->isEligibleForMatching($globalIdentity)) {
+                        continue;
+                    }
+
+                    $this->addGlobalIdentityCandidate((int)$globalIdentity->id, $globalIdentity);
                 }
             });
     }
@@ -232,6 +438,13 @@ class LocalIdentityGlobalCopyService
             ->mapWithKeys(fn($field) => [$field => $localIdentity->{$field} ?? null])
             ->all();
 
+        $data['gender'] = $this->normalizeGender($data['gender'] ?? null);
+        $data['birth_year'] = $this->normalizeForDuplicateKey($data['birth_year'] ?? null);
+        $data['death_year'] = $this->normalizeForDuplicateKey($data['death_year'] ?? null);
+        $data['note'] = $this->formatSourceNote(
+            $this->sourceTag($tenantPrefix, (int)$localIdentity->id),
+            $data['note'] ?? null
+        );
         $data['created_at'] = $localIdentity->created_at ?? $now;
         $data['updated_at'] = $localIdentity->updated_at ?? $now;
         $data['admin_notes'] = $this->sourceTag($tenantPrefix, (int)$localIdentity->id);
@@ -239,9 +452,15 @@ class LocalIdentityGlobalCopyService
         return (int)DB::table('global_identities')->insertGetId($data);
     }
 
-    private function appendNote(int $globalIdentityId, ?string $note, bool $dryRun, array &$stats): void
+    private function appendNote(
+        int $globalIdentityId,
+        ?string $note,
+        string $sourceTag,
+        bool $dryRun,
+        array &$stats
+    ): void
     {
-        $note = $this->normalizeTextValue($note);
+        $note = $this->formatSourceNote($sourceTag, $note);
         if ($note === null) {
             return;
         }
@@ -273,6 +492,75 @@ class LocalIdentityGlobalCopyService
             ]);
 
         $stats['notes_updated']++;
+    }
+
+    private function mergeMatchedMetadata(int $globalIdentityId, object $localIdentity, bool $dryRun, array &$stats): void
+    {
+        $this->enrichGlobalIdentityCandidateDates($globalIdentityId, $localIdentity);
+
+        if ($globalIdentityId < 1) {
+            $stats['metadata_updated']++;
+            return;
+        }
+
+        $globalIdentity = DB::table('global_identities')->where('id', $globalIdentityId)->first();
+        if (!$globalIdentity) {
+            return;
+        }
+
+        $updates = [];
+        $updates['general_name_modifier'] = $this->mergeDelimitedValues(
+            $globalIdentity->general_name_modifier ?? null,
+            $localIdentity->general_name_modifier ?? null,
+            '; '
+        );
+        $updates['nationality'] = $this->mergeDelimitedValues(
+            $globalIdentity->nationality ?? null,
+            $localIdentity->nationality ?? null,
+            ', ',
+            '/[,|;]+/'
+        );
+        $updates['related_names'] = $this->mergeJsonArrays(
+            $globalIdentity->related_names ?? null,
+            $localIdentity->related_names ?? null
+        );
+        $updates['related_identity_resources'] = $this->mergeJsonArrays(
+            $globalIdentity->related_identity_resources ?? null,
+            $localIdentity->related_identity_resources ?? null
+        );
+        $updates['birth_year'] = $this->fillMissingValue(
+            $globalIdentity->birth_year ?? null,
+            $localIdentity->birth_year ?? null
+        );
+        $updates['death_year'] = $this->fillMissingValue(
+            $globalIdentity->death_year ?? null,
+            $localIdentity->death_year ?? null
+        );
+
+        $existingGender = $this->normalizeGender($globalIdentity->gender ?? null);
+        $localGender = $this->normalizeGender($localIdentity->gender ?? null);
+        if ($existingGender === null && $localGender !== null) {
+            $updates['gender'] = $localGender;
+        } elseif ($existingGender !== null && $localGender !== null && $existingGender !== $localGender) {
+            $stats['gender_conflicts']++;
+        } elseif (($globalIdentity->gender ?? null) !== $existingGender) {
+            $updates['gender'] = $existingGender;
+        }
+
+        $updates = collect($updates)
+            ->filter(fn($value, $field) => $value !== ($globalIdentity->{$field} ?? null))
+            ->all();
+
+        if ($updates === []) {
+            return;
+        }
+
+        if (!$dryRun) {
+            $updates['updated_at'] = now();
+            DB::table('global_identities')->where('id', $globalIdentityId)->update($updates);
+        }
+
+        $stats['metadata_updated']++;
     }
 
     private function appendAdminNote(int $globalIdentityId, string $sourceTag, bool $dryRun, array &$stats): void
@@ -433,6 +721,181 @@ class LocalIdentityGlobalCopyService
         return $trimmed === '' ? null : $trimmed;
     }
 
+    private function isEligibleForMatching(object|array $identity): bool
+    {
+        $identity = (array)$identity;
+
+        return ($identity['type'] ?? null) === 'person'
+            && $this->normalizeForDuplicateKey($identity['surname'] ?? null) !== null
+            && (
+                $this->normalizeForDuplicateKey($identity['birth_year'] ?? null) !== null
+                || $this->normalizeForDuplicateKey($identity['death_year'] ?? null) !== null
+            );
+    }
+
+    private function findCompatibleGlobalIdentityId(object $identity, array &$stats): ?int
+    {
+        $nameKey = $this->duplicateKey($identity);
+        $matches = collect($this->globalIdentityCandidatesByNameKey[$nameKey] ?? [])
+            ->mapWithKeys(function (array $candidate, int $id) use ($identity) {
+                $score = $this->dateCompatibilityScore($candidate, $identity);
+
+                return $score > 0 ? [$id => $score] : [];
+            });
+
+        if ($matches->isEmpty()) {
+            return null;
+        }
+
+        $bestScore = $matches->max();
+        $bestIds = $matches->filter(fn(int $score) => $score === $bestScore)->keys();
+
+        if ($bestIds->count() !== 1) {
+            $stats['ambiguous_date_matches']++;
+            return null;
+        }
+
+        return (int)$bestIds->first();
+    }
+
+    private function dateCompatibilityScore(object|array $left, object|array $right): int
+    {
+        $left = (array)$left;
+        $right = (array)$right;
+        $matchingKnownDates = 0;
+
+        foreach (['birth_year', 'death_year'] as $field) {
+            $leftValue = $this->normalizeForDuplicateKey($left[$field] ?? null);
+            $rightValue = $this->normalizeForDuplicateKey($right[$field] ?? null);
+
+            if ($leftValue !== null && $rightValue !== null) {
+                if ($leftValue !== $rightValue) {
+                    return 0;
+                }
+
+                $matchingKnownDates++;
+            }
+        }
+
+        return $matchingKnownDates;
+    }
+
+    private function addGlobalIdentityCandidate(int $globalIdentityId, object|array $identity): void
+    {
+        if (!$this->isEligibleForMatching($identity)) {
+            return;
+        }
+
+        $identity = (array)$identity;
+        $this->globalIdentityCandidatesByNameKey[$this->duplicateKey($identity)][$globalIdentityId] = [
+            'birth_year' => $this->normalizeForDuplicateKey($identity['birth_year'] ?? null),
+            'death_year' => $this->normalizeForDuplicateKey($identity['death_year'] ?? null),
+        ];
+    }
+
+    private function enrichGlobalIdentityCandidateDates(int $globalIdentityId, object|array $identity): void
+    {
+        $nameKey = $this->duplicateKey($identity);
+        if (!isset($this->globalIdentityCandidatesByNameKey[$nameKey][$globalIdentityId])) {
+            return;
+        }
+
+        foreach (['birth_year', 'death_year'] as $field) {
+            $current = $this->globalIdentityCandidatesByNameKey[$nameKey][$globalIdentityId][$field] ?? null;
+            $incoming = $this->normalizeForDuplicateKey(((array)$identity)[$field] ?? null);
+
+            if ($current === null && $incoming !== null) {
+                $this->globalIdentityCandidatesByNameKey[$nameKey][$globalIdentityId][$field] = $incoming;
+            }
+        }
+    }
+
+    private function fillMissingValue(?string $existing, ?string $incoming): ?string
+    {
+        return $this->normalizeForDuplicateKey($existing)
+            ?? $this->normalizeForDuplicateKey($incoming);
+    }
+
+    private function normalizeGender(?string $gender): ?string
+    {
+        $gender = $this->normalizeTextValue($gender);
+        if ($gender === null) {
+            return null;
+        }
+
+        return match (mb_strtolower($gender)) {
+            'm', 'male', 'muž', 'muz' => 'M',
+            'f', 'female', 'žena', 'zena' => 'F',
+            default => $gender,
+        };
+    }
+
+    private function formatSourceNote(string $sourceTag, ?string $note): ?string
+    {
+        $note = $this->normalizeTextValue($note);
+
+        return $note === null ? null : "[{$sourceTag}]: {$note}";
+    }
+
+    private function mergeDelimitedValues(
+        ?string $existing,
+        ?string $incoming,
+        string $outputSeparator,
+        string $splitPattern = '/[;]+/'
+    ): ?string {
+        $values = [];
+        $seen = [];
+
+        foreach ([$existing, $incoming] as $value) {
+            foreach (preg_split($splitPattern, (string)$value) ?: [] as $part) {
+                $part = trim($part);
+                if ($part === '') {
+                    continue;
+                }
+
+                $key = mb_strtolower($part);
+                if (isset($seen[$key])) {
+                    continue;
+                }
+
+                $seen[$key] = true;
+                $values[] = $part;
+            }
+        }
+
+        return $values === [] ? null : implode($outputSeparator, $values);
+    }
+
+    private function mergeJsonArrays(mixed $existing, mixed $incoming): ?string
+    {
+        $items = [];
+        $seen = [];
+
+        foreach ([$existing, $incoming] as $value) {
+            if (is_string($value)) {
+                $value = json_decode($value, true);
+            }
+
+            if (!is_array($value)) {
+                continue;
+            }
+
+            foreach ($value as $item) {
+                $key = json_encode($item, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                if ($key === false || isset($seen[$key])) {
+                    continue;
+                }
+
+                $seen[$key] = true;
+                $items[] = $item;
+            }
+        }
+
+        return $items === []
+            ? null
+            : json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
     private function splitNotes(?string $note): array
     {
         $note = $this->normalizeTextValue($note);
@@ -470,8 +933,14 @@ class LocalIdentityGlobalCopyService
             'tenants_processed' => 0,
             'missing_identity_table' => 0,
             'local_seen' => 0,
+            'local_skipped_non_person' => 0,
+            'local_already_linked' => 0,
+            'local_incomplete_match_data' => 0,
             'global_created' => 0,
             'global_matched' => 0,
+            'metadata_updated' => 0,
+            'gender_conflicts' => 0,
+            'ambiguous_date_matches' => 0,
             'notes_updated' => 0,
             'admin_notes_updated' => 0,
             'professions_inserted' => 0,

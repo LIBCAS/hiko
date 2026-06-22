@@ -783,6 +783,18 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         // Route::get('copy-local-identities-to-global', [DevToolsController::class, 'copyLocalIdentitiesToGlobal'])
         //     ->name('dev.copy-local-identities-to-global')
         //     ->middleware(['auth', 'can:debug']);
+
+        // Route::get('reset-local-identities-to-global', [DevToolsController::class, 'resetLocalIdentitiesToGlobal'])
+        //     ->name('dev.reset-local-identities-to-global')
+        //     ->middleware(['auth', 'can:debug']);
+
+        // Route::get('remove-undated-duplicate-global-identities', [DevToolsController::class, 'removeUndatedDuplicateGlobalIdentities'])
+        //     ->name('dev.remove-undated-duplicate-global-identities')
+        //     ->middleware(['auth', 'can:debug']);
+
+        // Route::get('remove-all-undated-global-identities', [DevToolsController::class, 'removeAllUndatedGlobalIdentities'])
+        //     ->name('dev.remove-all-undated-global-identities')
+        //     ->middleware(['auth', 'can:debug']);
     });
 
     Route::get('/tenant-storage/{path}', [TenantStorageController::class, 'show'])

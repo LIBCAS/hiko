@@ -87,4 +87,69 @@ class DevToolsController extends Controller
             ]),
         ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
+
+    public function resetLocalIdentitiesToGlobal(Request $request, LocalIdentityGlobalCopyService $service)
+    {
+        @set_time_limit(0);
+
+        $dryRun = $request->boolean('dry_run', true);
+        if (!$dryRun && $request->query('confirm') !== 'reset-local-identities-to-global') {
+            abort(400, 'Real reset requires confirm=reset-local-identities-to-global. Dry-run is the default.');
+        }
+
+        $type = trim((string)$request->query('type', ''));
+        if ($type !== '' && !in_array($type, ['person', 'institution'], true)) {
+            abort(422, 'The type parameter must be person or institution.');
+        }
+
+        $stats = $service->reset([
+            'dry_run' => $dryRun,
+            'type' => $type === '' ? null : $type,
+        ]);
+
+        return response()->json([
+            'dry_run' => $dryRun,
+            'type' => $type === '' ? null : $type,
+            'stats' => $stats,
+            'warning' => $type === ''
+                ? 'This operation unlinks all local/global identity references and deletes all global identity data.'
+                : "This operation unlinks and deletes global identity data of type {$type}.",
+        ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    public function removeUndatedDuplicateGlobalIdentities(Request $request, LocalIdentityGlobalCopyService $service)
+    {
+        @set_time_limit(0);
+
+        $dryRun = $request->boolean('dry_run', true);
+        if (!$dryRun && $request->query('confirm') !== 'remove-undated-duplicate-global-identities') {
+            abort(400, 'Real cleanup requires confirm=remove-undated-duplicate-global-identities. Dry-run is the default.');
+        }
+
+        $stats = $service->removeUndatedDuplicateGroups(['dry_run' => $dryRun]);
+
+        return response()->json([
+            'dry_run' => $dryRun,
+            'stats' => $stats,
+            'warning' => 'This operation removes fully undated duplicate name/type groups and unique fully undated global identities.',
+        ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    public function removeAllUndatedGlobalIdentities(Request $request, LocalIdentityGlobalCopyService $service)
+    {
+        @set_time_limit(0);
+
+        $dryRun = $request->boolean('dry_run', true);
+        if (!$dryRun && $request->query('confirm') !== 'remove-all-undated-global-identities') {
+            abort(400, 'Real strict cleanup requires confirm=remove-all-undated-global-identities. Dry-run is the default.');
+        }
+
+        $stats = $service->removeAllUndatedGlobalIdentities(['dry_run' => $dryRun]);
+
+        return response()->json([
+            'dry_run' => $dryRun,
+            'stats' => $stats,
+            'warning' => 'Strict cleanup removes every global identity with both dates unknown, including records in mixed name/type groups.',
+        ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
 }
