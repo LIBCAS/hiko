@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ApproveInterTenantLetterTransferRequest;
 use App\Http\Requests\RejectInterTenantLetterTransferRequest;
 use App\Http\Requests\SaveInterTenantLetterTransferMappingsRequest;
-use App\Http\Requests\StoreInterTenantTransferRequest;
+use App\Http\Requests\StoreInterTenantLetterTransferRequest;
 use App\Models\InterTenantTransferRequest;
 use App\Models\Tenant;
 use App\Services\InterTenantDependencyCopyService;
