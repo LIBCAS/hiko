@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ApiLetterController;
 use App\Http\Controllers\Api\FacetsController;
 use App\Http\Controllers\Api\v2\AuthController;
 use App\Http\Controllers\Api\v2\DatabaseSyncController;
+use App\Http\Controllers\Api\v2\DatabaseTenantController;
 use App\Http\Controllers\Api\v2\LetterController as apiV2LetterController;
 use App\Http\Controllers\Api\v2\LocationController as apiV2LocationController;
 use App\Http\Controllers\Api\v2\PlaceController as apiV2PlaceController;
@@ -96,6 +97,9 @@ Route::middleware([InitializeTenancyByDomain::class, 'auth:sanctum'])->group(fun
     Route::prefix('v2')->group(function () {
 
         Route::middleware('throttle:api-read')->group(function () {
+            // Current tenant database
+            Route::get('database', DatabaseTenantController::class);
+
             // Letters
             Route::get('letters', [apiV2LetterController::class, 'index']);
             Route::get('letter/{id}', [apiV2LetterController::class, 'show']);

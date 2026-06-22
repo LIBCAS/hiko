@@ -149,12 +149,12 @@ class LetterResource extends JsonResource
         ];
     }
 
-    protected function mapRoleItems($collection, string $scope): array
+    protected function mapRoleItems($collection, string $scope, bool $includeLinkedGlobalIdentity = false): array
     {
-        return collect($collection)->map(function ($item) use ($scope) {
+        return collect($collection)->map(function ($item) use ($scope, $includeLinkedGlobalIdentity) {
             $id = (int) $item->id;
 
-            return [
+            $data = [
                 'id' => $id,
                 'scope' => $scope,
                 'reference' => "{$scope}-{$id}",
@@ -162,6 +162,23 @@ class LetterResource extends JsonResource
                 'marked' => $item->pivot->marked ?? null,
                 'salutation' => $item->pivot->salutation ?? null,
             ];
+
+            if ($includeLinkedGlobalIdentity && $scope === 'local') {
+                $globalIdentity = $item->globalIdentity ?? null;
+                $globalIdentityId = $globalIdentity?->id ?? $item->global_identity_id ?? null;
+
+                $data['global_identity'] = $globalIdentityId ? [
+                    'id' => (int) $globalIdentityId,
+                    'scope' => 'global',
+                    'reference' => 'global-' . (int) $globalIdentityId,
+                    'name' => $globalIdentity?->name,
+                    'type' => $globalIdentity?->type,
+                    'birth_year' => $globalIdentity?->birth_year,
+                    'death_year' => $globalIdentity?->death_year,
+                ] : null;
+            }
+
+            return $data;
         })->values()->toArray();
     }
 
@@ -181,8 +198,8 @@ class LetterResource extends JsonResource
         };
 
         return array_values(array_merge(
-            $this->mapRoleItems($local, 'local'),
-            $this->mapRoleItems($global, 'global')
+            $this->mapRoleItems($local, 'local', true),
+            $this->mapRoleItems($global, 'global', true)
         ));
     }
 

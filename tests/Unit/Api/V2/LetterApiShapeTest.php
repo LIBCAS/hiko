@@ -67,7 +67,19 @@ class LetterApiShapeTest extends TestCase
 
             public function __construct()
             {
-                $this->authors = collect([$this->makeRoleItem(2483, 'Local Person, Author', 'Author mark')]);
+                $this->authors = collect([$this->makeRoleItem(
+                    2483,
+                    'Local Person, Author',
+                    'Author mark',
+                    null,
+                    (object) [
+                        'id' => 1,
+                        'name' => 'Global Person, Author',
+                        'type' => 'person',
+                        'birth_year' => '1900',
+                        'death_year' => '1980',
+                    ]
+                )]);
                 $this->recipients = collect();
                 $this->mentioned = collect([$this->makeRoleItem(2484, 'Local Person, Mentioned', null)]);
                 $this->globalAuthors = collect();
@@ -94,17 +106,33 @@ class LetterApiShapeTest extends TestCase
                 return collect();
             }
 
-            private function makeRoleItem(int $id, string $name, ?string $marked, ?string $salutation = null): object
+            private function makeRoleItem(
+                int $id,
+                string $name,
+                ?string $marked,
+                ?string $salutation = null,
+                ?object $globalIdentity = null
+            ): object
             {
-                return new class($id, $name, $marked, $salutation) {
+                return new class($id, $name, $marked, $salutation, $globalIdentity) {
                     public int $id;
                     public string $name;
                     public object $pivot;
+                    public ?int $global_identity_id;
+                    public ?object $globalIdentity;
 
-                    public function __construct(int $id, string $name, ?string $marked, ?string $salutation)
+                    public function __construct(
+                        int $id,
+                        string $name,
+                        ?string $marked,
+                        ?string $salutation,
+                        ?object $globalIdentity
+                    )
                     {
                         $this->id = $id;
                         $this->name = $name;
+                        $this->globalIdentity = $globalIdentity;
+                        $this->global_identity_id = $globalIdentity?->id;
                         $this->pivot = (object) [
                             'marked' => $marked,
                             'salutation' => $salutation,
@@ -138,8 +166,12 @@ class LetterApiShapeTest extends TestCase
 
         $this->assertIsArray($data['authors']);
         $this->assertSame('local-2483', $data['authors'][0]['reference']);
+        $this->assertSame('global-1', $data['authors'][0]['global_identity']['reference']);
+        $this->assertNull($data['mentioned'][0]['global_identity']);
         $this->assertArrayNotHasKey('items', $data['authors']);
         $this->assertSame('Global Person, Recipient', $data['recipients'][0]['name']);
+        $this->assertArrayNotHasKey('global_identity', $data['recipients'][0]);
+        $this->assertArrayNotHasKey('global_identity', $data['origins'][0]);
         $this->assertTrue($data['recipient_inferred']);
         $this->assertSame('Recipient note', $data['recipient_note']);
         $this->assertSame('Mentioned note', $data['people_mentioned_note']);

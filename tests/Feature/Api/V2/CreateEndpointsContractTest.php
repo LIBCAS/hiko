@@ -264,4 +264,23 @@ class CreateEndpointsContractTest extends TestCase
         $this->assertStringNotContainsString('"global_identity_id" => 1', $globalIdentityController);
         $this->assertStringContainsString('"reference" => "local-1335"', $globalIdentityController);
     }
+
+    public function test_v2_exposes_database_names_and_letter_local_identity_global_links(): void
+    {
+        $routesApi = file_get_contents(base_path('routes/api.php'));
+        $databaseTenantController = file_get_contents(base_path('app/Http/Controllers/Api/v2/DatabaseTenantController.php'));
+        $letterResource = file_get_contents(base_path('app/Http/Resources/LetterResource.php'));
+        $letterController = file_get_contents(base_path('app/Http/Controllers/Api/v2/LetterController.php'));
+
+        $this->assertStringContainsString("Route::get('database', DatabaseTenantController::class);", $routesApi);
+        $this->assertStringContainsString("'name_cs' => \$tenant->displayName('cs')", $databaseTenantController);
+        $this->assertStringContainsString("'name_en' => \$tenant->displayName('en')", $databaseTenantController);
+        $this->assertStringContainsString("'main_character' =>", $databaseTenantController);
+        $this->assertStringContainsString("'created_at' => \$tenant->created_at?->toISOString()", $databaseTenantController);
+        $this->assertStringContainsString("'updated_at' => \$tenant->updated_at?->toISOString()", $databaseTenantController);
+        $this->assertStringContainsString("\$data['global_identity']", $letterResource);
+        $this->assertStringContainsString("'authors.globalIdentity'", $letterController);
+        $this->assertStringContainsString("'recipients.globalIdentity'", $letterController);
+        $this->assertStringContainsString("'mentioned.globalIdentity'", $letterController);
+    }
 }

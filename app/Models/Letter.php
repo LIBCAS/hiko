@@ -36,6 +36,35 @@ use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
+    schema: "LinkedGlobalIdentity",
+    properties: [
+        new OA\Property(property: "id", type: "integer"),
+        new OA\Property(property: "scope", type: "string", enum: ["global"]),
+        new OA\Property(property: "reference", type: "string", example: "global-1"),
+        new OA\Property(property: "name", type: "string", nullable: true),
+        new OA\Property(property: "type", type: "string", nullable: true),
+        new OA\Property(property: "birth_year", type: "string", nullable: true),
+        new OA\Property(property: "death_year", type: "string", nullable: true),
+    ]
+)]
+#[OA\Schema(
+    schema: "LetterIdentityRoleItem",
+    properties: [
+        new OA\Property(property: "id", type: "integer"),
+        new OA\Property(property: "scope", type: "string", enum: ["local", "global"]),
+        new OA\Property(property: "reference", type: "string", example: "local-2483"),
+        new OA\Property(property: "name", type: "string"),
+        new OA\Property(property: "marked", type: "string", nullable: true),
+        new OA\Property(property: "salutation", type: "string", nullable: true),
+        new OA\Property(
+            property: "global_identity",
+            ref: "#/components/schemas/LinkedGlobalIdentity",
+            nullable: true,
+            description: "Linked global identity for local role items. Omitted for directly global role items."
+        ),
+    ]
+)]
+#[OA\Schema(
     schema: "Letter",
     required: ["id", "uuid", "created_at", "updated_at"],
     properties: [
@@ -66,6 +95,9 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: "origin_inferred", type: "boolean"),
         new OA\Property(property: "origin_note", type: "string", nullable: true),
         new OA\Property(property: "people_mentioned_note", type: "string", nullable: true),
+        new OA\Property(property: "authors", type: "array", items: new OA\Items(ref: "#/components/schemas/LetterIdentityRoleItem")),
+        new OA\Property(property: "recipients", type: "array", items: new OA\Items(ref: "#/components/schemas/LetterIdentityRoleItem")),
+        new OA\Property(property: "mentioned", type: "array", items: new OA\Items(ref: "#/components/schemas/LetterIdentityRoleItem")),
         new OA\Property(property: "copies", type: "array", items: new OA\Items(type: "object")),
         new OA\Property(property: "related_resources", type: "array", items: new OA\Items(type: "object")),
         new OA\Property(property: "abstract", type: "object", properties: [

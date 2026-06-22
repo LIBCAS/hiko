@@ -384,6 +384,13 @@ class LiveCreateEndpointsCurlTest extends TestCase
         $this->assertGreaterThan(0, $localPersonAuthorId);
         $this->assertGreaterThan(0, $localPersonMentionedId);
         $this->assertGreaterThan(0, $letterId);
+
+        $this->assertDatabaseTenantViaApi();
+        $this->assertLetterLocalIdentityGlobalLinkViaApi(
+            $letterId,
+            $localPersonAuthorId,
+            $globalPersonIdentityId
+        );
     }
 
     /**
@@ -728,5 +735,49 @@ class LiveCreateEndpointsCurlTest extends TestCase
                 '- Result: identity `' . $identityId . '` currently has `' . count($religions) . '` religion links.' . PHP_EOL . PHP_EOL
             );
         }
+    }
+
+    private function assertDatabaseTenantViaApi(): void
+    {
+        $response = $this->curlJson('GET', '/database');
+        $this->assertSame(
+            200,
+            $response['status'],
+            "database expected HTTP 200 from {$response['url']}. Raw response: {$response['raw']}"
+        );
+
+        $this->assertIsString($response['json']['data']['name_cs'] ?? null);
+        $this->assertIsString($response['json']['data']['name_en'] ?? null);
+        $this->assertNotSame('', trim($response['json']['data']['name_cs']));
+        $this->assertNotSame('', trim($response['json']['data']['name_en']));
+        $this->assertArrayHasKey('main_character', $response['json']['data']);
+        $this->assertArrayHasKey('created_at', $response['json']['data']);
+        $this->assertArrayHasKey('updated_at', $response['json']['data']);
+    }
+
+    private function assertLetterLocalIdentityGlobalLinkViaApi(
+        int $letterId,
+        int $localIdentityId,
+        int $globalIdentityId
+    ): void {
+        $response = $this->curlJson('GET', "/letter/{$letterId}");
+        $this->assertSame(
+            200,
+            $response['status'],
+            "letter {$letterId} expected HTTP 200 from {$response['url']}. Raw response: {$response['raw']}"
+        );
+
+        $authors = $response['json']['data']['authors'] ?? $response['json']['authors'] ?? [];
+        $author = collect($authors)->first(
+            fn ($item) => is_array($item)
+                && ($item['reference'] ?? null) === "local-{$localIdentityId}"
+        );
+
+        $this->assertIsArray($author, "Local author was not found. Raw response: {$response['raw']}");
+        $this->assertSame(
+            "global-{$globalIdentityId}",
+            $author['global_identity']['reference'] ?? null,
+            "Local author should expose its linked global identity. Raw response: {$response['raw']}"
+        );
     }
 }
