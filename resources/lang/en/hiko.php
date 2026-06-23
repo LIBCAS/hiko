@@ -78,6 +78,8 @@ return [
     'export' => 'Export',
     'attached_category' => 'Parent category',
     'no_attached_category' => 'No parent category is currently attached',
+    'missing_cs_name' => 'Missing Czech name',
+    'missing_en_name' => 'Missing English name',
     'no_related_resources' => 'No related sources',
     'no_copies' => 'No manifestations and locations',
     'attached_persons_count' => 'Persons and institutions',

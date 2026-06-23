@@ -177,14 +177,16 @@ class KeywordCategoriesTable extends Component
                     return [
                         ['label' => 'N/A'],
                         ['label' => 'N/A'],
-                        ['label' => 'No CS name'],
-                        ['label' => 'No EN name'],
+                        ['label' => __('hiko.missing_cs_name')],
+                        ['label' => __('hiko.missing_en_name')],
                     ];
                 }
 
                 // Access translations
-                $csName = $cat->getTranslation('name', 'cs') ?? 'No CS name';
-                $enName = $cat->getTranslation('name', 'en') ?? 'No EN name';
+                $csName = trim((string) $cat->getTranslation('name', 'cs', false));
+                $enName = trim((string) $cat->getTranslation('name', 'en', false));
+                $csName = $csName !== '' ? $csName : __('hiko.missing_cs_name');
+                $enName = $enName !== '' ? $enName : __('hiko.missing_en_name');
 
                 // Source label
                 $sourceLabel = $category->source === 'local'

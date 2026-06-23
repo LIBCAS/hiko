@@ -90,6 +90,8 @@ return [
     'export' => 'Exportovat',
     'attached_category' => 'Nadřazená kategorie',
     'no_attached_category' => 'Žádná nadřazená kategorie',
+    'missing_cs_name' => 'Chybí český název',
+    'missing_en_name' => 'Chybí anglický název',
     'no_related_resources' => 'Žádné související zdroje',
     'no_copies' => 'Žádné manifestace a uložení',
     'attached_persons_count' => 'Lidé a instituce',

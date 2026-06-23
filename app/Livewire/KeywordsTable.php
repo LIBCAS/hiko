@@ -332,14 +332,16 @@ class KeywordsTable extends Component
                     return null; // Skip if keyword not found
                 }
 
-                $csName = $keyword->getTranslation('name', 'cs') ?? 'No CS name';
-                $enName = $keyword->getTranslation('name', 'en') ?? 'No EN name';
+                $csName = trim((string) $keyword->getTranslation('name', 'cs', false));
+                $enName = trim((string) $keyword->getTranslation('name', 'en', false));
+                $csName = $csName !== '' ? $csName : __('hiko.missing_cs_name');
+                $enName = $enName !== '' ? $enName : __('hiko.missing_en_name');
                 $sourceLabel = $kw->source === 'local'
                     ? "<span class='inline-block text-blue-600 bg-blue-100 border border-blue-200 text-xs uppercase px-2 py-1 rounded-full font-medium'>" . __('hiko.local') . "</span>"
                     : "<span class='inline-block bg-red-100 text-red-600 border border-red-200 text-xs uppercase px-2 py-1 rounded-full font-medium'>" . __('hiko.global') . "</span>";
 
                 $categoryDisplay = $keyword->keyword_category
-                    ? $keyword->keyword_category->getTranslation('name', 'cs') ?? ''
+                    ? $keyword->keyword_category->getTranslation('name', 'cs', false) ?? ''
                     : "<span class='text-red-600'>" . __('hiko.no_attached_category') . "</span>";
 
                 $editLink = [
