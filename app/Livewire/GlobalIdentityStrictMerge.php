@@ -14,9 +14,12 @@ class GlobalIdentityStrictMerge extends Component
         'name' => '',
         'type' => 'all',
         'admin_notes' => '',
+        'duplicates_only' => false,
     ];
 
     public array $selectedIds = [];
+
+    public ?array $localIdentityPreview = null;
 
     public function updatedFilters(): void
     {
@@ -29,8 +32,33 @@ class GlobalIdentityStrictMerge extends Component
             'name' => '',
             'type' => 'all',
             'admin_notes' => '',
+            'duplicates_only' => false,
         ];
         $this->resetPage('globalIdentitiesPage');
+    }
+
+    public function toggleDuplicatesOnly(): void
+    {
+        $this->filters['duplicates_only'] = !($this->filters['duplicates_only'] ?? false);
+        $this->resetPage('globalIdentitiesPage');
+    }
+
+    public function showLocalIdentityPreview(string $reference): void
+    {
+        $this->localIdentityPreview = app(GlobalIdentityStrictMergeService::class)
+            ->getLocalIdentityPreview($reference);
+
+        if ($this->localIdentityPreview === null) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => __('hiko.local_identity_preview_unavailable'),
+            ]);
+        }
+    }
+
+    public function closeLocalIdentityPreview(): void
+    {
+        $this->localIdentityPreview = null;
     }
 
     public function preview()
@@ -126,5 +154,10 @@ class GlobalIdentityStrictMerge extends Component
     {
         $service = app(GlobalIdentityStrictMergeService::class);
         return $service->formatAdminNotes($adminNotes);
+    }
+
+    public function adminNoteReferences(string|null $adminNotes): array
+    {
+        return app(GlobalIdentityStrictMergeService::class)->adminNoteReferences($adminNotes);
     }
 }

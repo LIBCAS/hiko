@@ -107,6 +107,20 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
 
         Schema::create('hiko-test__identities', function (Blueprint $table) {
             $table->id();
+            $table->string('name')->nullable();
+            $table->string('surname')->nullable();
+            $table->string('forename')->nullable();
+            $table->string('general_name_modifier')->nullable();
+            $table->text('alternative_names')->nullable();
+            $table->text('related_names')->nullable();
+            $table->string('type')->nullable();
+            $table->string('nationality')->nullable();
+            $table->string('gender')->nullable();
+            $table->string('birth_year')->nullable();
+            $table->string('death_year')->nullable();
+            $table->text('related_identity_resources')->nullable();
+            $table->string('viaf_id')->nullable();
+            $table->text('note')->nullable();
             $table->unsignedBigInteger('global_identity_id')->nullable();
         });
 
@@ -303,5 +317,90 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
             ))->first()['key']],
             []
         );
+    }
+
+    #[Test]
+    public function selection_query_can_show_only_duplicate_name_and_type_records(): void
+    {
+        $duplicateIds = [];
+        foreach (['1889', '1890'] as $birthYear) {
+            $duplicateIds[] = GlobalIdentity::query()->create([
+                'name' => 'Vrba, Jan',
+                'surname' => 'Vrba',
+                'forename' => 'Jan',
+                'type' => 'person',
+                'birth_year' => $birthYear,
+            ])->id;
+        }
+
+        GlobalIdentity::query()->create([
+            'name' => 'Vrba, Jan',
+            'type' => 'institution',
+        ]);
+        GlobalIdentity::query()->create([
+            'name' => 'Unique, Jan',
+            'surname' => 'Unique',
+            'forename' => 'Jan',
+            'type' => 'person',
+        ]);
+
+        $ids = app(GlobalIdentityStrictMergeService::class)
+            ->getSelectionQuery(['duplicates_only' => true])
+            ->pluck('id')
+            ->map(fn($id) => (int)$id)
+            ->all();
+
+        sort($duplicateIds);
+        sort($ids);
+        $this->assertSame($duplicateIds, $ids);
+    }
+
+    #[Test]
+    public function it_loads_a_validated_local_identity_preview_without_relations(): void
+    {
+        DB::table('tenants')->insert(['table_prefix' => 'hiko-test']);
+        DB::table('hiko-test__identities')->insert([
+            'id' => 7,
+            'name' => 'Vrba, Jan',
+            'surname' => 'Vrba',
+            'forename' => 'Jan',
+            'general_name_modifier' => 'Dr.',
+            'alternative_names' => json_encode(['Johann Vrba']),
+            'related_names' => json_encode([[
+                'surname' => 'Vrbová',
+                'forename' => 'Jana',
+                'general_name_modifier' => '',
+            ]]),
+            'type' => 'person',
+            'nationality' => 'Czech',
+            'gender' => 'M',
+            'birth_year' => '1889',
+            'death_year' => '1961',
+            'related_identity_resources' => json_encode([[
+                'title' => 'VIAF',
+                'link' => 'https://viaf.org/123',
+            ]]),
+            'viaf_id' => '123',
+            'note' => 'Local note',
+        ]);
+
+        $service = app(GlobalIdentityStrictMergeService::class);
+        $preview = $service->getLocalIdentityPreview('hiko-test#7');
+
+        $this->assertSame('hiko-test#7', $preview['reference']);
+        $this->assertSame('Vrba, Jan', $preview['name']);
+        $this->assertSame(['Johann Vrba'], $preview['alternative_names']);
+        $this->assertSame('https://hiko-test.historicka-korespondence.cz/identities/7/edit', $preview['edit_url']);
+        $this->assertNull($service->getLocalIdentityPreview('missing#7'));
+        $this->assertNull($service->getLocalIdentityPreview('../bad#7'));
+    }
+
+    #[Test]
+    public function it_parses_only_safe_admin_note_references(): void
+    {
+        $references = app(GlobalIdentityStrictMergeService::class)
+            ->adminNoteReferences('hiko-test#7, invalid, ../bad#2, tgm#15');
+
+        $this->assertSame(['hiko-test#7', 'tgm#15'], array_column($references, 'reference'));
     }
 }

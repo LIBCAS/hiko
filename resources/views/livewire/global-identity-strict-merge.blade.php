@@ -19,6 +19,11 @@
             <input type="text" wire:model.live.debounce.500ms="filters.admin_notes" class="text-sm w-full border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" placeholder="{{ __('hiko.search') }}...">
         </div>
 
+        <button type="button" wire:click="toggleDuplicatesOnly"
+            class="px-4 py-2 text-sm font-medium border rounded {{ $filters['duplicates_only'] ? 'bg-primary text-white border-primary' : 'bg-white border-gray-300 hover:bg-gray-50' }}">
+            {{ __('hiko.show_possible_duplicates_only') }}
+        </button>
+
         <button type="button" wire:click="resetFilters" class="px-4 py-2 text-sm font-medium bg-white border border-gray-300 rounded hover:bg-gray-50">
             {{ __('hiko.reset_filters') }}
         </button>
@@ -60,7 +65,24 @@
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{{ $identity->gender ?? '—' }}</td>
                         <td class="px-4 py-3 text-sm text-gray-700">{!! $this->formatRelatedNamesList($identity->related_names) !!}</td>
                         <td class="px-4 py-3 text-sm text-gray-700">{!! $this->formatProfessionsList($identity) !!}</td>
-                        <td class="px-4 py-3 text-sm text-gray-700 whitespace-pre-wrap">{!! $this->formatAdminNotes($identity->admin_notes) !!}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">
+                            @php($adminReferences = $this->adminNoteReferences($identity->admin_notes))
+                            @if($adminReferences)
+                                <ul class="list-disc list-outside ml-5 text-gray-600 space-y-1">
+                                    @foreach($adminReferences as $reference)
+                                        <li>
+                                            <button type="button"
+                                                wire:click="showLocalIdentityPreview('{{ $reference['reference'] }}')"
+                                                class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">
+                                                {{ $reference['reference'] }}
+                                            </button>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                {!! $this->formatAdminNotes($identity->admin_notes) !!}
+                            @endif
+                        </td>
                     </tr>
                 @empty
                     <tr>
@@ -80,4 +102,84 @@
     </div>
 
     <div class="mt-12">{{ $identities->links() }}</div>
+
+    @if($localIdentityPreview)
+        <div class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-gray-900 bg-opacity-60 p-4">
+            <div class="w-full max-w-3xl rounded-lg bg-white shadow-xl">
+                <div class="flex items-start justify-between border-b border-gray-200 px-6 py-4">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">{{ __('hiko.local_identity_preview') }}</h2>
+                        <p class="mt-1 text-sm text-gray-500">{{ $localIdentityPreview['reference'] }}</p>
+                    </div>
+                    <button type="button" wire:click="closeLocalIdentityPreview" class="p-2 text-gray-400 hover:text-gray-700" aria-label="{{ __('hiko.close') }}">✕</button>
+                </div>
+
+                <div class="grid grid-cols-1 gap-x-6 gap-y-4 px-6 py-5 sm:grid-cols-2">
+                    @foreach([
+                        __('hiko.name') => $localIdentityPreview['name'] ?? null,
+                        __('hiko.type') => isset($localIdentityPreview['type']) ? __("hiko.{$localIdentityPreview['type']}") : null,
+                        __('hiko.surname') => $localIdentityPreview['surname'] ?? null,
+                        __('hiko.forename') => $localIdentityPreview['forename'] ?? null,
+                        __('hiko.general_name_modifier') => $localIdentityPreview['general_name_modifier'] ?? null,
+                        __('hiko.dates') => trim(($localIdentityPreview['birth_year'] ?? '') . ' – ' . ($localIdentityPreview['death_year'] ?? ''), ' –'),
+                        __('hiko.nationality') => $localIdentityPreview['nationality'] ?? null,
+                        __('hiko.gender') => $localIdentityPreview['gender'] ?? null,
+                        'VIAF' => $localIdentityPreview['viaf_id'] ?? null,
+                    ] as $label => $value)
+                        <div>
+                            <div class="text-xs font-bold uppercase text-gray-500">{{ $label }}</div>
+                            <div class="mt-1 text-sm text-gray-900">{{ filled($value) ? $value : '—' }}</div>
+                        </div>
+                    @endforeach
+
+                    <div class="sm:col-span-2">
+                        <div class="text-xs font-bold uppercase text-gray-500">{{ __('hiko.related_names') }}</div>
+                        <div class="mt-1 text-sm text-gray-900">{!! $this->formatRelatedNamesList($localIdentityPreview['related_names'] ?? []) !!}</div>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <div class="text-xs font-bold uppercase text-gray-500">{{ __('hiko.alternative_names') }}</div>
+                        <div class="mt-1 text-sm text-gray-900">
+                            {{ collect($localIdentityPreview['alternative_names'] ?? [])->map(fn($value) => is_scalar($value) ? (string)$value : json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))->filter()->implode(', ') ?: '—' }}
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <div class="text-xs font-bold uppercase text-gray-500">{{ __('hiko.related_identity_resources') }}</div>
+                        <div class="mt-1 space-y-1 text-sm text-gray-900">
+                            @forelse($localIdentityPreview['related_identity_resources'] ?? [] as $resource)
+                                <div>
+                                    @php($resourceLink = is_array($resource) ? trim((string)($resource['link'] ?? '')) : '')
+                                    @if($resourceLink !== '' && (str_starts_with($resourceLink, 'https://') || str_starts_with($resourceLink, 'http://')))
+                                        <a href="{{ $resource['link'] }}" target="_blank" rel="noopener" class="text-primary hover:underline">
+                                            {{ $resource['title'] ?? $resource['link'] }}
+                                        </a>
+                                    @else
+                                        {{ is_array($resource) ? json_encode($resource, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : $resource }}
+                                    @endif
+                                </div>
+                            @empty
+                                —
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <div class="text-xs font-bold uppercase text-gray-500">{{ __('hiko.note') }}</div>
+                        <div class="mt-1 whitespace-pre-wrap text-sm text-gray-900">{{ $localIdentityPreview['note'] ?? '—' }}</div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
+                    <button type="button" wire:click="closeLocalIdentityPreview" class="rounded border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50">
+                        {{ __('hiko.close') }}
+                    </button>
+                    <a href="{{ $localIdentityPreview['edit_url'] }}" target="_blank" rel="noopener"
+                        class="rounded bg-primary px-4 py-2 text-sm text-white hover:bg-black">
+                        {{ __('hiko.open_local_identity') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

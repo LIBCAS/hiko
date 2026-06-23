@@ -93,7 +93,37 @@ class GlobalIdentityStrictMergeService
             $query->where('admin_notes', 'like', '%' . $term . '%');
         }
 
+        if (!empty($filters['duplicates_only'])) {
+            $query->whereExists(function ($duplicates) {
+                $duplicates
+                    ->selectRaw('1')
+                    ->from('global_identities as duplicate_global_identities')
+                    ->whereColumn('duplicate_global_identities.name', 'global_identities.name')
+                    ->whereColumn('duplicate_global_identities.type', 'global_identities.type')
+                    ->whereColumn('duplicate_global_identities.id', '<>', 'global_identities.id');
+            });
+        }
+
         return $query->orderBy('name')->orderBy('id');
+    }
+
+    public function adminNoteReferences(string|null $adminNotes): array
+    {
+        return collect(explode(',', (string)$adminNotes))
+            ->map(fn($note) => trim($note))
+            ->filter(fn($note) => preg_match('/^[A-Za-z0-9_-]+#\d+$/', $note) === 1)
+            ->map(function ($note) {
+                [$tenantKey, $id] = explode('#', $note, 2);
+
+                return [
+                    'reference' => $note,
+                    'tenant_key' => $tenantKey,
+                    'id' => (int)$id,
+                    'url' => "https://{$tenantKey}.historicka-korespondence.cz/identities/{$id}/edit",
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     public function formatAdminNotes(string|null $adminNotes): string
@@ -106,19 +136,64 @@ class GlobalIdentityStrictMergeService
             return e($adminNotes);
         }
 
-        $items = collect(explode(',', (string)$adminNotes))
-            ->map(fn($note) => trim($note))
-            ->filter(fn($note) => str_contains($note, '#'))
-            ->map(function ($note) {
-                [$tenantKey, $id] = explode('#', $note, 2);
-                $tenantKey = trim($tenantKey);
-                $id = trim($id);
-                $url = "https://{$tenantKey}.historicka-korespondence.cz/identities/{$id}/edit";
-                return '<li><a href="' . e($url) . '" target="_blank" class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">' . e($note) . '</a></li>';
+        $items = collect($this->adminNoteReferences($adminNotes))
+            ->map(function (array $reference) {
+                return '<li><a href="' . e($reference['url']) . '" target="_blank" class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">' . e($reference['reference']) . '</a></li>';
             })
             ->implode('');
 
         return '<ul class="list-disc list-inside text-gray-600 space-y-1">' . $items . '</ul>';
+    }
+
+    public function getLocalIdentityPreview(string $reference): ?array
+    {
+        if (preg_match('/^([A-Za-z0-9_-]+)#(\d+)$/', trim($reference), $matches) !== 1) {
+            return null;
+        }
+
+        $tenantKey = $matches[1];
+        $identityId = (int)$matches[2];
+        $tenantExists = Schema::hasTable('tenants')
+            && DB::table('tenants')->where('table_prefix', $tenantKey)->exists();
+        $table = "{$tenantKey}__identities";
+
+        if (!$tenantExists || !Schema::hasTable($table)) {
+            return null;
+        }
+
+        $columns = collect([
+            'id',
+            'name',
+            'surname',
+            'forename',
+            'general_name_modifier',
+            'alternative_names',
+            'related_names',
+            'type',
+            'nationality',
+            'gender',
+            'birth_year',
+            'death_year',
+            'related_identity_resources',
+            'viaf_id',
+            'note',
+        ])->filter(fn(string $column) => Schema::hasColumn($table, $column))->all();
+
+        $identity = DB::table($table)->select($columns)->where('id', $identityId)->first();
+        if (!$identity) {
+            return null;
+        }
+
+        $data = (array)$identity;
+        foreach (['alternative_names', 'related_names', 'related_identity_resources'] as $field) {
+            $data[$field] = $this->decodeJsonValue($data[$field] ?? null);
+        }
+
+        $data['reference'] = "{$tenantKey}#{$identityId}";
+        $data['tenant_key'] = $tenantKey;
+        $data['edit_url'] = "https://{$tenantKey}.historicka-korespondence.cz/identities/{$identityId}/edit";
+
+        return $data;
     }
 
     public function getPreviewRecords(array $ids): Collection
@@ -753,6 +828,21 @@ class GlobalIdentityStrictMergeService
         }
 
         return (string)$value;
+    }
+
+    private function decodeJsonValue(mixed $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (!is_string($value) || trim($value) === '') {
+            return [];
+        }
+
+        $decoded = json_decode($value, true);
+
+        return is_array($decoded) ? $decoded : [];
     }
 
     private function religionLabels(array $ids): array
