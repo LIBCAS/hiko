@@ -308,10 +308,12 @@ class IdentitiesTable extends Component
                 // Add Local Professions
                 foreach ($identity->professions as $p) {
                     $item->loaded_professions->push([
-                        'name' => $p->name,
-                        'scope' => 'Local',
+                        'name' => $this->localizedName($p),
+                        'scope' => 'L',
                         'link' => route('professions.edit', $p->id),
-                        'category' => $p->profession_category->name ?? __('hiko.no_attached_category'),
+                        'category' => $p->profession_category
+                            ? $this->localizedName($p->profession_category)
+                            : __('hiko.no_attached_category'),
                         'category_link' => $p->profession_category ? route('professions.category.edit', $p->profession_category->id) : null,
                     ]);
                 }
@@ -319,10 +321,12 @@ class IdentitiesTable extends Component
                 // Add Global Professions linked to Local Identity
                 foreach ($identity->globalProfessions as $p) {
                     $item->loaded_professions->push([
-                        'name' => $p->name,
-                        'scope' => 'Global',
+                        'name' => $this->localizedName($p),
+                        'scope' => 'G',
                         'link' => route('global.professions.edit', $p->id),
-                        'category' => $p->profession_category->name ?? __('hiko.no_attached_category'),
+                        'category' => $p->profession_category
+                            ? $this->localizedName($p->profession_category)
+                            : __('hiko.no_attached_category'),
                         'category_link' => $p->profession_category ? route('global.professions.category.edit', $p->profession_category->id) : null,
                     ]);
                 }
@@ -332,15 +336,29 @@ class IdentitiesTable extends Component
 
                 foreach ($identity->professions as $p) {
                     $item->loaded_professions->push([
-                        'name' => $p->name,
-                        'scope' => 'Global',
+                        'name' => $this->localizedName($p),
+                        'scope' => 'G',
                         'link' => route('global.professions.edit', $p->id),
-                        'category' => $p->profession_category->name ?? __('hiko.no_attached_category'),
+                        'category' => $p->profession_category
+                            ? $this->localizedName($p->profession_category)
+                            : __('hiko.no_attached_category'),
                         'category_link' => $p->profession_category ? route('global.professions.category.edit', $p->profession_category->id) : null,
                     ]);
                 }
             }
         }
+    }
+
+    protected function localizedName($model): string
+    {
+        $locale = app()->getLocale() === 'en' ? 'en' : 'cs';
+        $fallbackLocale = $locale === 'en' ? 'cs' : 'en';
+
+        return trim((string) (
+            $model->getTranslation('name', $locale, false)
+            ?: $model->getTranslation('name', $fallbackLocale, false)
+            ?: ''
+        ));
     }
 
     protected function formatTableData($data): array
@@ -365,11 +383,23 @@ class IdentitiesTable extends Component
                 if (isset($identity->loaded_professions)) {
                     foreach ($identity->loaded_professions as $p) {
                         $professionsHtml .= "<li>";
-                        $professionsHtml .= "<a href=\"{$p['link']}\" class=\"text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark\">{$p['name']} ({$p['scope']})</a>";
+                        $professionsHtml .= sprintf(
+                            '<a href="%s" class="text-sm border-b text-primary-dark border-primary-light hover:border-primary-dark">%s (%s)</a>',
+                            e($p['link']),
+                            e($p['name']),
+                            e($p['scope'])
+                        );
                         if ($p['category_link']) {
-                            $professionsHtml .= " | <a href=\"{$p['category_link']}\" class=\"text-xs text-primary-dark border-b border-primary-light hover:border-primary-dark\">{$p['category']}</a>";
+                            $professionsHtml .= sprintf(
+                                ' | <a href="%s" class="text-xs text-primary-dark border-b border-primary-light hover:border-primary-dark">%s</a>',
+                                e($p['category_link']),
+                                e($p['category'])
+                            );
                         } else {
-                            $professionsHtml .= " | <span class=\"text-xs text-gray-500\">{$p['category']}</span>";
+                            $professionsHtml .= sprintf(
+                                ' | <span class="text-xs text-gray-500">%s</span>',
+                                e($p['category'])
+                            );
                         }
                         $professionsHtml .= "</li>";
                     }

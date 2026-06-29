@@ -146,8 +146,7 @@ class LettersTable extends Component
         return [
             'header' => ['', 'ID', __('hiko.date'), __('hiko.signature'), __('hiko.author'), __('hiko.recipient'), __('hiko.origin'), __('hiko.destination'), __('hiko.keywords'), __('hiko.media'), __('hiko.status'), __('hiko.approval')],
             'rows' => $data->map(function ($letter) {
-                $identities = $letter->identities->groupBy('pivot.role')->toArray();
-                $places = $letter->places->groupBy('pivot.role')->toArray();
+                $identities = $letter->identities->groupBy('pivot.role');
                 $showPublicUrl = $letter->status === 'publish' && !empty(config('hiko.public_url'));
 
                 return [
@@ -170,28 +169,24 @@ class LettersTable extends Component
                         'label' => collect($letter->copies)->pluck('signature')->toArray(),
                     ],
                     [
-                        'label' => collect($identities['author'] ?? [])->pluck('name')->toArray(),
+                        'label' => $this->formatLinkedIdentities($identities->get('author', collect())),
+                        'isHtml' => true,
                     ],
                     [
-                        'label' => collect($identities['recipient'] ?? [])->pluck('name')->toArray(),
+                        'label' => $this->formatLinkedIdentities($identities->get('recipient', collect())),
+                        'isHtml' => true,
                     ],
                     [
-                        'label' => collect($letter->all_origins)->map(function ($place) {
-                            $name = $place->name;
-                            return $place->type === 'global' ? "{$name} (G)" : "{$name} (L)";
-                        })->toArray(),
+                        'label' => $this->formatLinkedPlaces($letter->all_origins),
+                        'isHtml' => true,
                     ],
                     [
-                        'label' => collect($letter->all_destinations)->map(function ($place) {
-                            $name = $place->name;
-                            return $place->type === 'global' ? "{$name} (G)" : "{$name} (L)";
-                        })->toArray(),
+                        'label' => $this->formatLinkedPlaces($letter->all_destinations),
+                        'isHtml' => true,
                     ],
                     [
-                        'label' => collect($letter->all_keywords)->map(function ($kw) {
-                            $name = $kw->getTranslation('name', config('hiko.metadata_default_locale'));
-                            return $kw->type === 'global' ? "{$name} (G)" : "{$name} (L)";
-                        })->toArray(),
+                        'label' => $this->formatLinkedKeywords($letter->all_keywords),
+                        'isHtml' => true,
                     ],
                     [
                         'label' => $letter->media->count(),
@@ -211,6 +206,76 @@ class LettersTable extends Component
                 ];
             })->toArray(),
         ];
+    }
+
+    protected function formatLinkedIdentities($identities): string
+    {
+        return $this->formatLinkedList(collect($identities)->map(function ($identity) {
+            return [
+                'label' => $identity->name,
+                'link' => route('identities.edit', $identity->id),
+            ];
+        }));
+    }
+
+    protected function formatLinkedPlaces($places): string
+    {
+        return $this->formatLinkedList(collect($places)->map(function ($place) {
+            $isGlobal = $place->type === 'global';
+
+            return [
+                'label' => $place->name . ($isGlobal ? ' (G)' : ' (L)'),
+                'link' => $isGlobal
+                    ? route('global.places.edit', $place->id)
+                    : route('places.edit', $place->id),
+            ];
+        }));
+    }
+
+    protected function formatLinkedKeywords($keywords): string
+    {
+        return $this->formatLinkedList(collect($keywords)->map(function ($keyword) {
+            $isGlobal = $keyword->type === 'global';
+            $name = $this->localizedName($keyword);
+
+            return [
+                'label' => $name . ($isGlobal ? ' (G)' : ' (L)'),
+                'link' => $isGlobal
+                    ? route('global.keywords.edit', $keyword->id)
+                    : route('keywords.edit', $keyword->id),
+            ];
+        }));
+    }
+
+    protected function formatLinkedList($items): string
+    {
+        $items = collect($items)->filter(fn($item) => !empty($item['label']) && !empty($item['link']));
+
+        if ($items->isEmpty()) {
+            return '';
+        }
+
+        $links = $items->map(function ($item) {
+            return sprintf(
+                '<li><a href="%s" class="text-primary-dark hover:underline">%s</a></li>',
+                e($item['link']),
+                e($item['label'])
+            );
+        })->implode('');
+
+        return '<ul>' . $links . '</ul>';
+    }
+
+    protected function localizedName($model): string
+    {
+        $locale = app()->getLocale() === 'en' ? 'en' : 'cs';
+        $fallbackLocale = $locale === 'en' ? 'cs' : 'en';
+
+        return trim((string) (
+            $model->getTranslation('name', $locale, false)
+            ?: $model->getTranslation('name', $fallbackLocale, false)
+            ?: ''
+        ));
     }
 
     protected function mapLetterToRow(Letter $letter): array
@@ -238,7 +303,7 @@ class LettersTable extends Component
             ['label' => collect($places['destination'] ?? [])->pluck('name')->toArray()],
             [
                 'label' => collect($letter->keywords)
-                    ->map(fn($kw) => $kw->getTranslation('name', config('hiko.metadata_default_locale')))
+                    ->map(fn($kw) => $this->localizedName($kw))
                     ->toArray(),
             ],
             ['label' => $letter->media->count()],

@@ -327,8 +327,8 @@ class ProfessionsTable extends Component
                     : "<span class='inline-block bg-red-100 text-red-600 border border-red-200 text-xs uppercase px-2 py-1 rounded-full font-medium'>" . __('hiko.global') . "</span>";
 
                 $categoryDisplay = $profession->profession_category
-                    ? $profession->profession_category->getTranslation('name', 'cs') ?? ''
-                    : "<span class='text-red-600'>" . __('hiko.no_attached_category') . "</span>";
+                    ? $this->formatCategoryLink($profession->profession_category, $pf->source)
+                    : "<span class='text-red-600'>" . e(__('hiko.no_attached_category')) . "</span>";
 
                 $editLink = [
                     'label' => __('hiko.edit'),
@@ -347,12 +347,38 @@ class ProfessionsTable extends Component
                 $row = array_merge($row, [
                     ['label' => $csName],
                     ['label' => $enName],
-                    ['label' => $categoryDisplay],
+                    ['label' => $categoryDisplay, 'isHtml' => true],
                 ]);
 
                 return $row;
             })->filter()->toArray(),
         ];
+    }
+
+    protected function formatCategoryLink($category, string $source): string
+    {
+        $name = $this->localizedName($category);
+        $link = $source === 'local'
+            ? route('professions.category.edit', $category->id)
+            : route('global.professions.category.edit', $category->id);
+
+        return sprintf(
+            '<a href="%s" class="text-primary-dark hover:underline">%s</a>',
+            e($link),
+            e($name)
+        );
+    }
+
+    protected function localizedName($model): string
+    {
+        $locale = app()->getLocale() === 'en' ? 'en' : 'cs';
+        $fallbackLocale = $locale === 'en' ? 'cs' : 'en';
+
+        return trim((string) (
+            $model->getTranslation('name', $locale, false)
+            ?: $model->getTranslation('name', $fallbackLocale, false)
+            ?: ''
+        ));
     }
 
     // Toggle select all professions

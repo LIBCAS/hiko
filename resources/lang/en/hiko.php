@@ -366,7 +366,7 @@ return [
     'failed_to_save_the_uploaded_file' => 'Failed to save the uploaded file.',
     'approval' => 'Approval',
     'approved' => 'Approved',
-    'not_approved' => 'Not Approved',
+    'not_approved' => 'Not&nbsp;Approved',
     'metadata_default_locale' => 'Metadata',
     'metadata' => 'Metadata',
     'preview_merge' => 'Bulk Merge',
