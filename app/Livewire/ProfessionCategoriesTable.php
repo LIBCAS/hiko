@@ -71,7 +71,7 @@ class ProfessionCategoriesTable extends Component
     protected function findCategories(): LengthAwarePaginator
     {
         $filters = $this->filters;
-        $perPage = 10;
+        $perPage = max(1, (int) config('hiko.metadata_records_per_page', 25));
     
         $tenantQuery = $this->getTenantCategoriesQuery();
         $globalQuery = $this->getGlobalCategoriesQuery();

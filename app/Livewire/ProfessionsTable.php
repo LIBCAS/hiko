@@ -178,7 +178,7 @@ class ProfessionsTable extends Component
     protected function findProfessions(): LengthAwarePaginator
     {
         $filters = $this->filters;
-        $perPage = 10;
+        $perPage = max(1, (int) config('hiko.metadata_records_per_page', 25));
 
         $tenantProfessionsQuery = $this->getTenantProfessionsQuery();
         $globalProfessionsQuery = $this->getGlobalProfessionsQuery();
