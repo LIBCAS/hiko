@@ -75,6 +75,11 @@ class GlobalIdentityStrictMergeService
                 'admin_notes',
             ]);
 
+        $ids = $this->parseIdFilter($filters['ids'] ?? '');
+        if ($ids !== []) {
+            $query->whereIn('id', $ids);
+        }
+
         if (!empty($filters['name'])) {
             $term = trim((string)$filters['name']);
             $query->where(function ($q) use ($term) {
@@ -105,6 +110,20 @@ class GlobalIdentityStrictMergeService
         }
 
         return $query->orderBy('name')->orderBy('id');
+    }
+
+    private function parseIdFilter(mixed $value): array
+    {
+        if (is_array($value)) {
+            $value = implode(',', $value);
+        }
+
+        return collect(preg_split('/[^0-9]+/', (string)$value) ?: [])
+            ->map(fn($id) => (int)$id)
+            ->filter(fn(int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     public function adminNoteReferences(string|null $adminNotes): array

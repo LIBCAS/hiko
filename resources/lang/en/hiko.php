@@ -748,6 +748,7 @@ return [
     'page_lock_not_owned' => 'Your editing lock is no longer active. Please reopen the page.',
     'page_lock_service_unavailable' => 'Lock service is unavailable. The page was switched to read-only mode.',
     'letter_ids_placeholder' => 'e.g. 4050, 4078, 4102',
+    'ids_filter_placeholder_ex' => 'e.g. 13, 16, 19 or 13 16 19',
     'inter_tenant_transfers' => 'Inter-tenant data transfers',
     'copy_to' => 'Copy to',
     'transfer_preview' => 'Letter transfer preview',

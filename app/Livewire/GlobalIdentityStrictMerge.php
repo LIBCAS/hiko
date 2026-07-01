@@ -11,6 +11,7 @@ class GlobalIdentityStrictMerge extends Component
     use WithPagination;
 
     public array $filters = [
+        'ids' => '',
         'name' => '',
         'type' => 'all',
         'admin_notes' => '',
@@ -29,6 +30,7 @@ class GlobalIdentityStrictMerge extends Component
     public function resetFilters(): void
     {
         $this->filters = [
+            'ids' => '',
             'name' => '',
             'type' => 'all',
             'admin_notes' => '',

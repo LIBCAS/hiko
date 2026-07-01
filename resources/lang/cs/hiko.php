@@ -750,6 +750,7 @@ return [
     'page_lock_not_owned' => 'Vaše editační uzamčení již není aktivní. Otevřete stránku znovu.',
     'page_lock_service_unavailable' => 'Služba uzamykání není dostupná. Stránka byla přepnuta do režimu pouze pro čtení.',
     'letter_ids_placeholder' => 'např. 4050, 4078, 4102',
+    'ids_filter_placeholder_ex' => 'např. 13, 16, 19 nebo 13 16 19',
     'inter_tenant_transfers' => 'Mezidatabázové přenosy dat',
     'copy_to' => 'Kopírovat do',
     'transfer_preview' => 'Náhled přenosu dopisů',

@@ -356,6 +356,40 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
     }
 
     #[Test]
+    public function selection_query_can_filter_by_comma_separated_ids(): void
+    {
+        $personId = GlobalIdentity::query()->create([
+            'name' => 'Vrba, Jan',
+            'surname' => 'Vrba',
+            'forename' => 'Jan',
+            'type' => 'person',
+        ])->id;
+
+        $institutionId = GlobalIdentity::query()->create([
+            'name' => 'Institution',
+            'type' => 'institution',
+        ])->id;
+
+        $otherId = GlobalIdentity::query()->create([
+            'name' => 'Other, Person',
+            'surname' => 'Other',
+            'type' => 'person',
+        ])->id;
+
+        $ids = app(GlobalIdentityStrictMergeService::class)
+            ->getSelectionQuery([
+                'ids' => "{$personId}, {$institutionId}, nonsense, {$personId}",
+                'type' => 'person',
+            ])
+            ->pluck('id')
+            ->all();
+
+        $this->assertSame([$personId], $ids);
+        $this->assertNotContains($institutionId, $ids);
+        $this->assertNotContains($otherId, $ids);
+    }
+
+    #[Test]
     public function it_loads_a_validated_local_identity_preview_without_relations(): void
     {
         DB::table('tenants')->insert(['table_prefix' => 'hiko-test']);

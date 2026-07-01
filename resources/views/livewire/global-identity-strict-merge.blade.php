@@ -1,6 +1,11 @@
 <div>
     <div class="mb-6 p-4 bg-gray-100 rounded-md border border-gray-200 flex flex-wrap gap-4 items-end">
         <div class="flex-1 min-w-[220px]">
+            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">ID</label>
+            <input type="text" wire:model.live.debounce.500ms="filters.ids" class="text-sm w-full border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" placeholder="{{ __('hiko.ids_filter_placeholder_ex') }}">
+        </div>
+
+        <div class="flex-1 min-w-[220px]">
             <label class="block text-xs font-bold text-gray-700 uppercase mb-1">{{ __('hiko.name') }}</label>
             <input type="text" wire:model.live.debounce.500ms="filters.name" class="text-sm w-full border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" placeholder="{{ __('hiko.search') }}...">
         </div>
