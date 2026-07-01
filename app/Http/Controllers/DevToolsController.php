@@ -10,6 +10,7 @@ use App\Models\Location;
 use App\Models\Profession;
 use App\Models\KeywordCategory;
 use App\Models\ProfessionCategory;
+use App\Services\GlobalIdentityStrictMergeOdsService;
 use App\Services\LocalIdentityGlobalCopyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -150,6 +151,39 @@ class DevToolsController extends Controller
             'dry_run' => $dryRun,
             'stats' => $stats,
             'warning' => 'Strict cleanup removes every global identity with both dates unknown, including records in mixed name/type groups.',
+        ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    public function strictMergeGlobalIdentitiesFromOds(Request $request, GlobalIdentityStrictMergeOdsService $service)
+    {
+        @set_time_limit(0);
+
+        $dryRun = $request->boolean('dry_run', true);
+        if (!$dryRun && $request->query('confirm') !== GlobalIdentityStrictMergeOdsService::CONFIRM_TOKEN) {
+            abort(400, 'Real execution requires confirm=' . GlobalIdentityStrictMergeOdsService::CONFIRM_TOKEN . '. Dry-run is the default.');
+        }
+
+        $file = trim((string)$request->query('file', 'testik.ods'));
+        if ($file === '') {
+            abort(422, 'The file parameter is required and must point to an ODS file inside public/.');
+        }
+
+        $report = $service->runFromPublicFile($file, [
+            'dry_run' => $dryRun,
+            'start' => (int)$request->query('start', 0),
+            'group_limit' => (int)$request->query('group_limit', 0),
+            'record_limit' => (int)$request->query('record_limit', 50),
+        ]);
+
+        return response()->json([
+            'dry_run' => $dryRun,
+            'file' => $file,
+            'report' => $report,
+            'execution_hint' => [
+                'dry_run_batch' => '/dev/strict-merge-global-identities-from-ods?file=' . rawurlencode($file) . '&start=0&record_limit=50',
+                'real_batch' => '/dev/strict-merge-global-identities-from-ods?file=' . rawurlencode($file) . '&dry_run=0&confirm=' . GlobalIdentityStrictMergeOdsService::CONFIRM_TOKEN . '&start=0&record_limit=50',
+                'next_start' => $report['summary']['next_start'] ?? null,
+            ],
         ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 }

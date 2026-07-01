@@ -795,6 +795,10 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
         // Route::get('remove-all-undated-global-identities', [DevToolsController::class, 'removeAllUndatedGlobalIdentities'])
         //     ->name('dev.remove-all-undated-global-identities')
         //     ->middleware(['auth', 'can:debug']);
+
+        // Route::get('strict-merge-global-identities-from-ods', [DevToolsController::class, 'strictMergeGlobalIdentitiesFromOds'])
+        //     ->name('dev.strict-merge-global-identities-from-ods')
+        //     ->middleware(['auth', 'can:debug']);
     });
 
     Route::get('/tenant-storage/{path}', [TenantStorageController::class, 'show'])
