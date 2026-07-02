@@ -390,6 +390,101 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
     }
 
     #[Test]
+    public function similarity_candidates_match_token_similar_names_and_normalized_dates(): void
+    {
+        $longNameId = GlobalIdentity::query()->create([
+            'name' => 'Žižka z Trocnova, Jan',
+            'surname' => 'Žižka z Trocnova',
+            'forename' => 'Jan',
+            'type' => 'person',
+            'birth_year' => '1360',
+            'death_year' => '1424',
+        ])->id;
+
+        $shortNameId = GlobalIdentity::query()->create([
+            'name' => 'Žižka, Jan',
+            'surname' => 'Žižka',
+            'forename' => 'Jan',
+            'type' => 'person',
+            'birth_year' => 'c. 1360',
+            'death_year' => '1424',
+        ])->id;
+
+        $result = app(GlobalIdentityStrictMergeService::class)
+            ->findSimilarityCandidates(['name_similarity', 'date_similarity'], [
+                'name_similarity_threshold' => 80,
+                'birth_year_tolerance' => 0,
+                'death_year_tolerance' => 0,
+            ]);
+
+        $this->assertSame([[$longNameId, $shortNameId]], collect($result['groups'])->pluck('ids')->all());
+        $this->assertFalse($result['has_next']);
+    }
+
+    #[Test]
+    public function one_hundred_percent_name_similarity_requires_normalized_exact_name_match(): void
+    {
+        GlobalIdentity::query()->create([
+            'name' => 'Žižka z Trocnova, Jan',
+            'surname' => 'Žižka z Trocnova',
+            'forename' => 'Jan',
+            'type' => 'person',
+            'birth_year' => '1360',
+            'death_year' => '1424',
+        ]);
+
+        GlobalIdentity::query()->create([
+            'name' => 'Žižka, Jan',
+            'surname' => 'Žižka',
+            'forename' => 'Jan',
+            'type' => 'person',
+            'birth_year' => 'c. 1360',
+            'death_year' => '1424',
+        ]);
+
+        $result = app(GlobalIdentityStrictMergeService::class)
+            ->findSimilarityCandidates(['name_similarity', 'date_similarity'], [
+                'name_similarity_threshold' => 100,
+                'birth_year_tolerance' => 0,
+                'death_year_tolerance' => 0,
+            ]);
+
+        $this->assertSame([], $result['groups']);
+    }
+
+    #[Test]
+    public function similarity_candidates_do_not_match_different_surnames_by_shared_forename_only(): void
+    {
+        $bilekId = GlobalIdentity::query()->create([
+            'name' => 'Bílek, František',
+            'surname' => 'Bílek',
+            'forename' => 'František',
+            'type' => 'person',
+            'birth_year' => '1872',
+            'death_year' => '1941',
+        ])->id;
+
+        $vahalaId = GlobalIdentity::query()->create([
+            'name' => 'Váhala, František',
+            'surname' => 'Váhala',
+            'forename' => 'František',
+            'type' => 'person',
+            'birth_year' => '1875',
+            'death_year' => '1944',
+        ])->id;
+
+        $result = app(GlobalIdentityStrictMergeService::class)
+            ->findSimilarityCandidates(['name_similarity', 'date_similarity'], [
+                'name_similarity_threshold' => 80,
+                'birth_year_tolerance' => 5,
+                'death_year_tolerance' => 5,
+            ]);
+
+        $this->assertNotContains([$bilekId, $vahalaId], collect($result['groups'])->pluck('ids')->all());
+        $this->assertSame([], $result['groups']);
+    }
+
+    #[Test]
     public function it_loads_a_validated_local_identity_preview_without_relations(): void
     {
         DB::table('tenants')->insert(['table_prefix' => 'hiko-test']);

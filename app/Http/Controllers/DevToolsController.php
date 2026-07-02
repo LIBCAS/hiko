@@ -11,6 +11,7 @@ use App\Models\Profession;
 use App\Models\KeywordCategory;
 use App\Models\ProfessionCategory;
 use App\Services\GlobalIdentityStrictMergeOdsService;
+use App\Services\GlobalIdentityStrictMergeService;
 use App\Services\LocalIdentityGlobalCopyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -185,5 +186,87 @@ class DevToolsController extends Controller
                 'next_start' => $report['summary']['next_start'] ?? null,
             ],
         ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    public function exportGlobalIdentityStrictMergeCandidates(Request $request, GlobalIdentityStrictMergeService $service)
+    {
+        @set_time_limit(0);
+
+        $scanConfig = config('global_identity_strict_merge.similarity_candidate_scan');
+        $page = max(1, (int)$request->query('page', 1));
+        $perPage = max(1, min(1000, (int)$request->query('per_page', $scanConfig['group_limit'] ?? 300)));
+
+        $result = $service->findSimilarityCandidates($scanConfig['default_criteria'] ?? ['name_similarity', 'date_similarity'], [
+            'name_similarity_threshold' => $scanConfig['name_similarity_threshold'] ?? 80,
+            'birth_year_tolerance' => $scanConfig['birth_year_tolerance'] ?? 5,
+            'death_year_tolerance' => $scanConfig['death_year_tolerance'] ?? 5,
+            'limit' => $perPage,
+            'page' => $page,
+        ]);
+
+        $filename = "global-identity-strict-merge-candidates-page-{$page}.csv";
+
+        return response()->streamDownload(function () use ($result, $page, $perPage): void {
+            $output = fopen('php://output', 'w');
+            fwrite($output, "\xEF\xBB\xBF");
+
+            fputcsv($output, [
+                'candidate_page',
+                'groups_per_page',
+                'has_next_page',
+                'group_number_on_page',
+                'group_key',
+                'group_reason',
+                'group_ids',
+                'identity_id',
+                'name',
+                'surname',
+                'forename',
+                'general_name_modifier',
+                'type',
+                'birth_year',
+                'death_year',
+                'nationality',
+                'gender',
+                'admin_notes',
+                'edit_url',
+            ], ';');
+
+            foreach ($result['groups'] ?? [] as $groupIndex => $group) {
+                $groupIds = collect($group['ids'] ?? [])
+                    ->map(fn($id): int => (int)$id)
+                    ->implode('|');
+                $groupKey = "{$page}-" . ($groupIndex + 1);
+
+                foreach ($group['items'] ?? [] as $item) {
+                    $identityId = (int)($item['id'] ?? 0);
+                    fputcsv($output, [
+                        $page,
+                        $perPage,
+                        !empty($result['has_next']) ? 'yes' : 'no',
+                        $groupIndex + 1,
+                        $groupKey,
+                        $group['reason'] ?? '',
+                        $groupIds,
+                        $identityId,
+                        $item['name'] ?? '',
+                        $item['surname'] ?? '',
+                        $item['forename'] ?? '',
+                        $item['general_name_modifier'] ?? '',
+                        $item['type'] ?? '',
+                        $item['birth_year'] ?? '',
+                        $item['death_year'] ?? '',
+                        $item['nationality'] ?? '',
+                        $item['gender'] ?? '',
+                        $item['admin_notes'] ?? '',
+                        $identityId > 0 ? route('global.identities.edit', $identityId) : '',
+                    ], ';');
+                }
+            }
+
+            fclose($output);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 }

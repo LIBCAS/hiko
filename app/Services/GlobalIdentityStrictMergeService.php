@@ -8,6 +8,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class GlobalIdentityStrictMergeService
 {
@@ -112,6 +113,182 @@ class GlobalIdentityStrictMergeService
         return $query->orderBy('name')->orderBy('id');
     }
 
+    public function findSimilarityCandidates(array $criteria = [], array $options = []): array
+    {
+        $useName = in_array('name_similarity', $criteria, true);
+        $useDates = in_array('date_similarity', $criteria, true);
+
+        if (!$useName && !$useDates) {
+            return $this->emptySimilarityCandidateResult();
+        }
+
+        $scanConfig = config('global_identity_strict_merge.similarity_candidate_scan');
+        $nameThreshold = max(0, min(100, (int)($options['name_similarity_threshold'] ?? $scanConfig['name_similarity_threshold'] ?? 80)));
+        $birthTolerance = max(0, (int)($options['birth_year_tolerance'] ?? $scanConfig['birth_year_tolerance'] ?? 5));
+        $deathTolerance = max(0, (int)($options['death_year_tolerance'] ?? $scanConfig['death_year_tolerance'] ?? 5));
+        $limit = max(1, (int)($options['limit'] ?? $scanConfig['group_limit'] ?? 50));
+        $page = max(1, (int)($options['page'] ?? 1));
+        $skip = ($page - 1) * $limit;
+        $matchedGroups = 0;
+
+        $records = GlobalIdentity::query()
+            ->select([
+                'id',
+                'name',
+                'surname',
+                'forename',
+                'type',
+                'nationality',
+                'gender',
+                'birth_year',
+                'death_year',
+                'admin_notes',
+            ])
+            ->orderBy('name')
+            ->orderBy('id')
+            ->get()
+            ->map(function (GlobalIdentity $record): GlobalIdentity {
+                $record->normalized_name = $this->normalizeSimilarityName((string)$record->name);
+                $record->name_tokens = $this->meaningfulNameTokens($record->normalized_name);
+                [$surname, $forename] = $this->identityNameParts($record);
+                $record->normalized_surname = $surname;
+                $record->normalized_forename = $forename;
+                $record->surname_tokens = $this->meaningfulNameTokens($surname);
+                $record->normalized_birth_year = $this->normalizeYear($record->birth_year);
+                $record->normalized_death_year = $this->normalizeYear($record->death_year);
+
+                return $record;
+            })
+            ->filter(fn(GlobalIdentity $record): bool => $record->normalized_name !== '')
+            ->values();
+
+        $byId = $records->keyBy('id');
+        $candidatePairs = $useName
+            ? $this->nameCandidatePairs($records)
+            : $this->dateCandidatePairs($records, $birthTolerance, $deathTolerance);
+
+        $connections = [];
+        $reasons = [];
+
+        foreach ($candidatePairs as [$leftId, $rightId]) {
+            $left = $byId->get($leftId);
+            $right = $byId->get($rightId);
+
+            if (!$left || !$right || $left->type !== $right->type) {
+                continue;
+            }
+
+            $nameScore = $this->nameSimilarityScore($left, $right);
+            $datesMatch = $this->datesMatch($left, $right, $birthTolerance, $deathTolerance);
+
+            if ($useName) {
+                if ($nameThreshold >= 100 && $left->normalized_name !== $right->normalized_name) {
+                    continue;
+                }
+
+                if ($nameThreshold < 100 && $nameScore < $nameThreshold) {
+                    continue;
+                }
+            }
+
+            if ($useDates && !$datesMatch) {
+                continue;
+            }
+
+            $connections[$leftId][] = $rightId;
+            $connections[$rightId][] = $leftId;
+            $reason = [];
+            if ($useName) {
+                $reason[] = __('hiko.name_similarity_score', ['score' => round($nameScore, 1)]);
+            }
+            if ($useDates) {
+                $reason[] = __('hiko.date_similarity_tolerances', [
+                    'birth' => $birthTolerance,
+                    'death' => $deathTolerance,
+                ]);
+            }
+            $reasons[$this->pairKey($leftId, $rightId)] = implode(' + ', $reason);
+        }
+
+        $groups = collect();
+        $visited = [];
+
+        foreach ($records as $record) {
+            if (isset($visited[$record->id]) || !isset($connections[$record->id])) {
+                continue;
+            }
+
+            $clusterIds = [$record->id];
+            $queue = [$record->id];
+            $visited[$record->id] = true;
+
+            while (!empty($queue)) {
+                $current = array_pop($queue);
+                foreach ($connections[$current] ?? [] as $neighbor) {
+                    if (!isset($visited[$neighbor])) {
+                        $visited[$neighbor] = true;
+                        $clusterIds[] = $neighbor;
+                        $queue[] = $neighbor;
+                    }
+                }
+            }
+
+            if (count($clusterIds) < 2) {
+                continue;
+            }
+
+            $groupRecords = $records
+                ->whereIn('id', $clusterIds)
+                ->sortBy('id')
+                ->values();
+
+            if ($matchedGroups++ < $skip) {
+                continue;
+            }
+
+            if ($groups->count() >= $limit) {
+                break;
+            }
+
+            $groups->push([
+                'reason' => $this->groupReason($groupRecords, $reasons),
+                'ids' => $groupRecords->pluck('id')->values()->all(),
+                'items' => $groupRecords->map(fn(GlobalIdentity $identity): array => [
+                    'id' => (int)$identity->id,
+                    'name' => (string)$identity->name,
+                    'surname' => (string)($identity->surname ?? ''),
+                    'forename' => (string)($identity->forename ?? ''),
+                    'general_name_modifier' => (string)($identity->general_name_modifier ?? ''),
+                    'type' => (string)$identity->type,
+                    'birth_year' => (string)($identity->birth_year ?? ''),
+                    'death_year' => (string)($identity->death_year ?? ''),
+                    'nationality' => (string)($identity->nationality ?? ''),
+                    'gender' => (string)($identity->gender ?? ''),
+                    'admin_notes' => (string)($identity->admin_notes ?? ''),
+                ])->values()->all(),
+            ]);
+        }
+
+        return [
+            'groups' => $groups->values()->all(),
+            'page' => $page,
+            'per_page' => $limit,
+            'has_previous' => $page > 1,
+            'has_next' => $matchedGroups > ($skip + $groups->count()),
+        ];
+    }
+
+    private function emptySimilarityCandidateResult(): array
+    {
+        return [
+            'groups' => [],
+            'page' => 1,
+            'per_page' => (int)config('global_identity_strict_merge.similarity_candidate_scan.group_limit', 50),
+            'has_previous' => false,
+            'has_next' => false,
+        ];
+    }
+
     private function parseIdFilter(mixed $value): array
     {
         if (is_array($value)) {
@@ -124,6 +301,201 @@ class GlobalIdentityStrictMergeService
             ->unique()
             ->values()
             ->all();
+    }
+
+    private function nameCandidatePairs(Collection $records): array
+    {
+        $pairs = [];
+        $buckets = [];
+
+        foreach ($records as $record) {
+            $tokens = $record->surname_tokens ?: $record->name_tokens;
+            foreach ($tokens as $token) {
+                $buckets[$record->type . '|' . $token][] = (int)$record->id;
+            }
+        }
+
+        foreach ($buckets as $ids) {
+            $ids = array_values(array_unique($ids));
+            if (count($ids) > 500) {
+                continue;
+            }
+
+            $count = count($ids);
+            for ($i = 0; $i < $count; $i++) {
+                for ($j = $i + 1; $j < $count; $j++) {
+                    $pairs[$this->pairKey($ids[$i], $ids[$j])] = [$ids[$i], $ids[$j]];
+                }
+            }
+        }
+
+        return array_values($pairs);
+    }
+
+    private function dateCandidatePairs(Collection $records, int $birthTolerance, int $deathTolerance): array
+    {
+        $pairs = [];
+        $buckets = [];
+
+        foreach ($records as $record) {
+            if ($record->normalized_birth_year === null && $record->normalized_death_year === null) {
+                continue;
+            }
+
+            $birthYears = $this->yearBucketValues($record->normalized_birth_year, $birthTolerance);
+            $deathYears = $this->yearBucketValues($record->normalized_death_year, $deathTolerance);
+
+            foreach ($birthYears as $birthYear) {
+                foreach ($deathYears as $deathYear) {
+                    $buckets[$record->type . '|' . $birthYear . '|' . $deathYear][] = (int)$record->id;
+                }
+            }
+        }
+
+        foreach ($buckets as $ids) {
+            $ids = array_values(array_unique($ids));
+            $count = count($ids);
+            for ($i = 0; $i < $count; $i++) {
+                for ($j = $i + 1; $j < $count; $j++) {
+                    $pairs[$this->pairKey($ids[$i], $ids[$j])] = [$ids[$i], $ids[$j]];
+                }
+            }
+        }
+
+        return array_values($pairs);
+    }
+
+    private function yearBucketValues(?int $year, int $tolerance): array
+    {
+        if ($year === null) {
+            return [''];
+        }
+
+        return range($year - $tolerance, $year + $tolerance);
+    }
+
+    private function datesMatch(GlobalIdentity $left, GlobalIdentity $right, int $birthTolerance, int $deathTolerance): bool
+    {
+        $hasComparableDate = ($left->normalized_birth_year !== null && $right->normalized_birth_year !== null)
+            || ($left->normalized_death_year !== null && $right->normalized_death_year !== null);
+
+        return $hasComparableDate
+            && $this->yearsMatch($left->normalized_birth_year, $right->normalized_birth_year, $birthTolerance)
+            && $this->yearsMatch($left->normalized_death_year, $right->normalized_death_year, $deathTolerance);
+    }
+
+    private function yearsMatch(?int $left, ?int $right, int $tolerance): bool
+    {
+        if ($left === null || $right === null) {
+            return $left === null && $right === null;
+        }
+
+        return abs($left - $right) <= $tolerance;
+    }
+
+    private function normalizeYear(?string $year): ?int
+    {
+        if (preg_match('/\d{3,4}/', (string)$year, $matches) !== 1) {
+            return null;
+        }
+
+        return (int)$matches[0];
+    }
+
+    private function normalizeSimilarityName(string $name): string
+    {
+        $name = Str::ascii(mb_strtolower($name));
+        $name = preg_replace('/[^a-z0-9]+/', ' ', $name) ?? '';
+
+        return trim(preg_replace('/\s+/', ' ', $name) ?? '');
+    }
+
+    private function identityNameParts(GlobalIdentity $record): array
+    {
+        $surname = trim((string)$record->surname);
+        $forename = trim((string)$record->forename);
+
+        if ($surname === '' && str_contains((string)$record->name, ',')) {
+            [$surnamePart, $forenamePart] = array_pad(explode(',', (string)$record->name, 2), 2, '');
+            $surname = trim($surnamePart);
+            $forename = $forename !== '' ? $forename : trim($forenamePart);
+        }
+
+        return [
+            $this->normalizeSimilarityName($surname),
+            $this->normalizeSimilarityName($forename),
+        ];
+    }
+
+    private function meaningfulNameTokens(string $name): array
+    {
+        $stopWords = ['a', 'an', 'and', 'da', 'de', 'del', 'der', 'di', 'du', 'la', 'le', 'of', 'the', 'von', 'z', 'ze'];
+
+        return collect(explode(' ', $name))
+            ->map(fn(string $token): string => trim($token))
+            ->filter(fn(string $token): bool => mb_strlen($token) > 1 && !in_array($token, $stopWords, true))
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function nameSimilarityScore(GlobalIdentity $left, GlobalIdentity $right): float
+    {
+        similar_text($left->normalized_name, $right->normalized_name, $textScore);
+
+        $leftTokens = $left->name_tokens;
+        $rightTokens = $right->name_tokens;
+        $shared = count(array_intersect($leftTokens, $rightTokens));
+        $minTokens = max(1, min(count($leftTokens), count($rightTokens)));
+        $maxTokens = max(1, max(count($leftTokens), count($rightTokens)));
+        $containmentScore = ($shared / $minTokens) * 100;
+        $overlapScore = ($shared / $maxTokens) * 100;
+        $fullNameScore = max((float)$textScore, ($containmentScore * 0.7) + ($overlapScore * 0.3));
+
+        if ($left->surname_tokens !== [] && $right->surname_tokens !== []) {
+            return min($fullNameScore, $this->surnameSimilarityScore($left, $right));
+        }
+
+        return $fullNameScore;
+    }
+
+    private function surnameSimilarityScore(GlobalIdentity $left, GlobalIdentity $right): float
+    {
+        similar_text($left->normalized_surname, $right->normalized_surname, $surnameTextScore);
+
+        $shared = count(array_intersect($left->surname_tokens, $right->surname_tokens));
+        $minTokens = max(1, min(count($left->surname_tokens), count($right->surname_tokens)));
+        $maxTokens = max(1, max(count($left->surname_tokens), count($right->surname_tokens)));
+        $containmentScore = ($shared / $minTokens) * 100;
+        $overlapScore = ($shared / $maxTokens) * 100;
+
+        return max((float)$surnameTextScore, ($containmentScore * 0.7) + ($overlapScore * 0.3));
+    }
+
+    private function groupReason(Collection $records, array $reasons): string
+    {
+        $groupReasons = [];
+        $items = $records->values()->all();
+        $count = count($items);
+
+        for ($i = 0; $i < $count; $i++) {
+            for ($j = $i + 1; $j < $count; $j++) {
+                $key = $this->pairKey((int)$items[$i]->id, (int)$items[$j]->id);
+                if (isset($reasons[$key])) {
+                    $groupReasons[] = $reasons[$key];
+                }
+            }
+        }
+
+        return collect($groupReasons)->unique()->take(3)->implode('; ');
+    }
+
+    private function pairKey(int $leftId, int $rightId): string
+    {
+        $ids = [$leftId, $rightId];
+        sort($ids);
+
+        return implode(':', $ids);
     }
 
     public function adminNoteReferences(string|null $adminNotes): array

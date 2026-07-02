@@ -15,12 +15,39 @@ class GlobalIdentityStrictMerge extends Component
         'name' => '',
         'type' => 'all',
         'admin_notes' => '',
-        'duplicates_only' => false,
     ];
 
     public array $selectedIds = [];
 
+    public bool $candidateScanComplete = false;
+    public array $candidateGroups = [];
+    public int $candidatePage = 1;
+    public int $candidatePerPage = 50;
+    public bool $candidateHasPreviousPage = false;
+    public bool $candidateHasNextPage = false;
+    public array $candidateCriteria = [];
+    public int $candidateNameSimilarityThreshold = 80;
+    public int $candidateBirthYearTolerance = 5;
+    public int $candidateDeathYearTolerance = 5;
+    public array $candidateYearToleranceOptions = [0, 1, 2, 5];
+
     public ?array $localIdentityPreview = null;
+
+    public function mount(): void
+    {
+        $config = config('global_identity_strict_merge.similarity_candidate_scan');
+
+        $this->candidateCriteria = $config['default_criteria'] ?? ['name_similarity', 'date_similarity'];
+        $this->candidateNameSimilarityThreshold = (int)($config['name_similarity_threshold'] ?? 80);
+        $this->candidateBirthYearTolerance = (int)($config['birth_year_tolerance'] ?? 5);
+        $this->candidateDeathYearTolerance = (int)($config['death_year_tolerance'] ?? 5);
+        $this->candidateYearToleranceOptions = collect($config['year_tolerance_options'] ?? [0, 1, 2, 5])
+            ->map(fn($value) => max(0, (int)$value))
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+    }
 
     public function updatedFilters(): void
     {
@@ -34,15 +61,80 @@ class GlobalIdentityStrictMerge extends Component
             'name' => '',
             'type' => 'all',
             'admin_notes' => '',
-            'duplicates_only' => false,
         ];
         $this->resetPage('globalIdentitiesPage');
     }
 
-    public function toggleDuplicatesOnly(): void
+    public function scanCandidates(): void
     {
-        $this->filters['duplicates_only'] = !($this->filters['duplicates_only'] ?? false);
-        $this->resetPage('globalIdentitiesPage');
+        $this->candidatePage = 1;
+        $this->loadCandidatePage();
+    }
+
+    public function previousCandidatePage(): void
+    {
+        if ($this->candidatePage <= 1) {
+            return;
+        }
+
+        $this->candidatePage--;
+        $this->loadCandidatePage();
+    }
+
+    public function nextCandidatePage(): void
+    {
+        if (!$this->candidateHasNextPage) {
+            return;
+        }
+
+        $this->candidatePage++;
+        $this->loadCandidatePage();
+    }
+
+    public function loadCandidatePage(): void
+    {
+        if (count($this->candidateCriteria) < 1) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => __('hiko.at_least_one_criterion_required')]);
+            return;
+        }
+
+        $result = app(GlobalIdentityStrictMergeService::class)
+            ->findSimilarityCandidates($this->candidateCriteria, [
+                'name_similarity_threshold' => $this->candidateNameSimilarityThreshold,
+                'birth_year_tolerance' => $this->candidateBirthYearTolerance,
+                'death_year_tolerance' => $this->candidateDeathYearTolerance,
+                'limit' => (int)config('global_identity_strict_merge.similarity_candidate_scan.group_limit', 50),
+                'page' => $this->candidatePage,
+            ]);
+
+        $this->candidateGroups = $result['groups'] ?? [];
+        $this->candidatePage = (int)($result['page'] ?? $this->candidatePage);
+        $this->candidatePerPage = (int)($result['per_page'] ?? $this->candidatePerPage);
+        $this->candidateHasPreviousPage = (bool)($result['has_previous'] ?? false);
+        $this->candidateHasNextPage = (bool)($result['has_next'] ?? false);
+
+        $this->candidateScanComplete = true;
+    }
+
+    public function resetCandidateScan(): void
+    {
+        $this->candidateScanComplete = false;
+        $this->candidateGroups = [];
+        $this->candidatePage = 1;
+        $this->candidateHasPreviousPage = false;
+        $this->candidateHasNextPage = false;
+    }
+
+    public function previewCandidateGroup(array $ids)
+    {
+        $this->selectedIds = collect($ids)
+            ->map(fn($id) => (int)$id)
+            ->filter(fn(int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        return $this->preview();
     }
 
     public function showLocalIdentityPreview(string $reference): void
