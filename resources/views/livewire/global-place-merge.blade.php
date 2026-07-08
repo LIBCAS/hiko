@@ -45,7 +45,7 @@
                 <input type="checkbox" wire:model.live="criteria" value="coordinates" class="mt-1 mr-2 rounded border-gray-300 text-primary">
                 <div class="w-full">
                     <div class="font-medium">{{ __('hiko.merge_by_coordinates') }}</div>
-                    <div class="text-sm text-gray-600">{{ __('hiko.merge_by_coordinates_desc') }}</div>
+                    <div class="text-sm text-gray-600">{!! __('hiko.merge_by_coordinates_desc') !!}</div>
                     <div x-show="$wire.criteria.includes('coordinates')" class="mt-2 space-y-2" x-transition>
                         <div class="flex items-center text-sm">
                             <span class="text-sm mr-2 w-24">{{ __('hiko.latitude_abbr') }}:</span>

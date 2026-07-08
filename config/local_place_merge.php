@@ -66,7 +66,7 @@ return [
     | Should be the strongest/most reliable criterion.
     |
     */
-    'default_criteria' => ['geoname_id', 'alternative_names', 'country_and_name', 'name_similarity', 'coordinates'],
+    'default_criteria' => ['geoname_id', 'alternative_names', 'country_and_name', 'name_similarity'],
 
     /*
     |--------------------------------------------------------------------------

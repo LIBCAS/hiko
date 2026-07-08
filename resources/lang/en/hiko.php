@@ -520,7 +520,7 @@ return [
     'merge_by_name_similarity' => 'Match by Name Similarity',
     'merge_by_name_similarity_desc' => 'Uses similarity algorithm to match similar names',
     'merge_by_coordinates' => 'Match by Coordinates',
-    'merge_by_coordinates_desc' => 'Matches if both latitude AND longitude are within tolerances',
+    'merge_by_coordinates_desc' => 'Matches if both latitude AND longitude are within tolerances.<br>Note: a 0.1° tolerance is roughly 11 km of latitude and 7 km of longitude in Czechia.',
     'merge_by_country_and_name' => 'Match by Country and Name Similarity',
     'merge_by_country_and_name_desc' => 'Matches if both country is identical AND names are similar',
     'threshold' => 'Threshold',

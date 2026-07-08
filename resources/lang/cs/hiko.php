@@ -522,7 +522,7 @@ return [
     'merge_by_name_similarity' => 'Shoda podle podobnosti názvu',
     'merge_by_name_similarity_desc' => 'Používá algoritmus podobnosti pro nalezení podobných názvů',
     'merge_by_coordinates' => 'Shoda podle souřadnic',
-    'merge_by_coordinates_desc' => 'Shoda, pokud jsou OBOJE zeměpisná šířka A ZÁROVEŇ zeměpisná délka v rámci tolerancí',
+    'merge_by_coordinates_desc' => 'Shoda, pokud jsou OBOJE zeměpisná šířka A ZÁROVEŇ zeměpisná délka v rámci tolerancí.<br>Pozor: tolerance 0,1° odpovídá v ČR přibližně 11 km zeměpisné šířky a 7 km zeměpisné délky.',
     'merge_by_country_and_name' => 'Shoda podle země a podobnosti názvu',
     'merge_by_country_and_name_desc' => 'Shoda, pokud je země identická A ZÁROVEŇ jsou názvy podobné',
     'threshold' => 'Práh',
