@@ -65,6 +65,24 @@ use OpenApi\Attributes as OA;
     ]
 )]
 #[OA\Schema(
+    schema: "LetterMedia",
+    properties: [
+        new OA\Property(property: "id", type: "integer", readOnly: true),
+        new OA\Property(property: "uuid", type: "string", nullable: true, readOnly: true),
+        new OA\Property(property: "name", type: "string", nullable: true),
+        new OA\Property(property: "file_name", type: "string"),
+        new OA\Property(property: "mime_type", type: "string", nullable: true),
+        new OA\Property(property: "disk", type: "string", nullable: true),
+        new OA\Property(property: "size", type: "integer", nullable: true),
+        new OA\Property(property: "order_column", type: "integer", nullable: true),
+        new OA\Property(property: "status", type: "string", nullable: true, enum: ["publish", "private"]),
+        new OA\Property(property: "description", type: "string", nullable: true),
+        new OA\Property(property: "url", type: "string", format: "uri"),
+        new OA\Property(property: "full_url", type: "string", format: "uri"),
+        new OA\Property(property: "thumb_url", type: "string", format: "uri"),
+    ]
+)]
+#[OA\Schema(
     schema: "Letter",
     required: ["id", "uuid", "created_at", "updated_at"],
     properties: [
@@ -112,6 +130,12 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: "notes_public", type: "string", nullable: true),
         new OA\Property(property: "status", type: "string", enum: ["publish", "draft"]),
         new OA\Property(property: "content", type: "string", nullable: true),
+        new OA\Property(
+            property: "media",
+            type: "array",
+            description: "Media attached to the letter. Letter detail responses include this array by default. Admin and developer users receive published and private media; other users receive only published media.",
+            items: new OA\Items(ref: "#/components/schemas/LetterMedia")
+        ),
         new OA\Property(property: "created_at", type: "string", format: "date-time", readOnly: true),
         new OA\Property(property: "updated_at", type: "string", format: "date-time", readOnly: true)
     ]

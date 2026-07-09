@@ -278,6 +278,45 @@ class LetterApiShapeTest extends TestCase
         ], $data);
     }
 
+    public function test_letter_resource_exposes_only_published_media_for_non_privileged_api_users(): void
+    {
+        $letter = $this->makeLetterResourceRecord(collect([
+            new TestLetterMediaItem(10, 'published.jpg', 'publish'),
+            new TestLetterMediaItem(11, 'private.jpg', 'private'),
+        ]));
+
+        $request = IlluminateRequest::create('/api/v2/letter/4069', 'GET');
+        $request->setUserResolver(fn () => (object) ['role' => 'editor']);
+
+        $data = (new LetterResource($letter))->toArray($request);
+
+        $this->assertCount(1, $data['media']);
+        $this->assertSame(10, $data['media'][0]['id']);
+        $this->assertSame('publish', $data['media'][0]['status']);
+        $this->assertSame('https://example.test/media/10/conversions/published-thumb.jpg', $data['media'][0]['thumb_url']);
+    }
+
+    public function test_letter_resource_exposes_private_media_for_admin_and_developer_api_users(): void
+    {
+        $letter = $this->makeLetterResourceRecord(collect([
+            new TestLetterMediaItem(10, 'published.jpg', 'publish'),
+            new TestLetterMediaItem(11, 'private.jpg', 'private'),
+        ]));
+
+        $adminRequest = IlluminateRequest::create('/api/v2/letter/4069', 'GET');
+        $adminRequest->setUserResolver(fn () => (object) ['role' => 'admin']);
+
+        $developerRequest = IlluminateRequest::create('/api/v2/letter/4069', 'GET');
+        $developerRequest->setUserResolver(fn () => (object) ['role' => 'developer']);
+
+        $adminData = (new LetterResource($letter))->toArray($adminRequest);
+        $developerData = (new LetterResource($letter))->toArray($developerRequest);
+
+        $this->assertSame([10, 11], collect($adminData['media'])->pluck('id')->all());
+        $this->assertSame([10, 11], collect($developerData['media'])->pluck('id')->all());
+        $this->assertSame('private', $adminData['media'][1]['status']);
+    }
+
     private function validateRequest(TestLetterRequest $request): array
     {
         $request->runPrepareForValidation();
@@ -286,6 +325,90 @@ class LetterApiShapeTest extends TestCase
         $request->withValidator($validator);
 
         return $validator->errors()->toArray();
+    }
+
+    private function makeLetterResourceRecord(Collection $media): object
+    {
+        return new class($media) {
+            public int $id = 4069;
+            public string $name = 'Test letter';
+            public string $uuid = '07032d70-f4e1-4c5f-b8bc-124f5d3ea5b5';
+            public string $pretty_date = '13. 9. 1933';
+            public string $pretty_range_date = '';
+            public ?int $date_year = 1933;
+            public ?int $date_month = 9;
+            public ?int $date_day = 13;
+            public string $date_marked = '13.09.1933';
+            public bool $date_uncertain = false;
+            public bool $date_approximate = false;
+            public bool $date_inferred = false;
+            public bool $date_is_range = false;
+            public ?string $date_note = null;
+            public ?int $range_year = null;
+            public ?int $range_month = null;
+            public ?int $range_day = null;
+            public bool $author_inferred = false;
+            public bool $author_uncertain = false;
+            public ?string $author_note = null;
+            public bool $recipient_inferred = false;
+            public bool $recipient_uncertain = false;
+            public ?string $recipient_note = null;
+            public bool $origin_inferred = false;
+            public bool $origin_uncertain = false;
+            public ?string $origin_note = null;
+            public bool $destination_inferred = false;
+            public bool $destination_uncertain = false;
+            public ?string $destination_note = null;
+            public ?string $people_mentioned_note = null;
+            public array $copies = [];
+            public ?string $incipit = null;
+            public ?string $explicit = null;
+            public string $languages = '';
+            public ?string $notes_public = null;
+            public ?string $content = null;
+            public ?string $copyright = null;
+            public Collection $authors;
+            public Collection $recipients;
+            public Collection $mentioned;
+            public Collection $globalAuthors;
+            public Collection $globalRecipients;
+            public Collection $globalMentioned;
+            public Collection $origins;
+            public Collection $destinations;
+            public Collection $globalOrigins;
+            public Collection $globalDestinations;
+            public Collection $localKeywords;
+            public Collection $globalKeywords;
+
+            public function __construct(private Collection $media)
+            {
+                $this->authors = collect();
+                $this->recipients = collect();
+                $this->mentioned = collect();
+                $this->globalAuthors = collect();
+                $this->globalRecipients = collect();
+                $this->globalMentioned = collect();
+                $this->origins = collect();
+                $this->destinations = collect();
+                $this->globalOrigins = collect();
+                $this->globalDestinations = collect();
+                $this->localKeywords = collect();
+                $this->globalKeywords = collect();
+            }
+
+            public function getAttributes(): array
+            {
+                return [
+                    'related_resources' => '[]',
+                    'abstract' => '{}',
+                ];
+            }
+
+            public function getMedia(): Collection
+            {
+                return $this->media;
+            }
+        };
     }
 }
 
@@ -302,5 +425,48 @@ class TestApiV2LetterController extends LetterController
     public function exposePrepareMentionedIdentityAttachmentData(?array $items): array
     {
         return $this->prepareMentionedIdentityAttachmentData($items);
+    }
+}
+
+class TestLetterMediaItem
+{
+    public string $uuid;
+    public string $name;
+    public string $mime_type = 'image/jpeg';
+    public string $disk = 'public';
+    public int $size = 12345;
+    public int $order_column = 1;
+
+    public function __construct(
+        public int $id,
+        public string $file_name,
+        private string $status
+    )
+    {
+        $this->uuid = pathinfo($file_name, PATHINFO_FILENAME);
+        $this->name = $file_name;
+    }
+
+    public function getCustomProperty(string $key): ?string
+    {
+        return match ($key) {
+            'status' => $this->status,
+            'description' => "Description for {$this->file_name}",
+            default => null,
+        };
+    }
+
+    public function getUrl(string $conversionName = ''): string
+    {
+        if ($conversionName === '') {
+            return "https://example.test/media/{$this->id}/{$this->file_name}";
+        }
+
+        return "https://example.test/media/{$this->id}/conversions/{$this->uuid}-{$conversionName}.jpg";
+    }
+
+    public function hasGeneratedConversion(string $conversionName): bool
+    {
+        return $conversionName === 'thumb';
     }
 }

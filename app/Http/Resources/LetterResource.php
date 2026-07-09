@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\TenantMedia;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class LetterResource extends JsonResource
@@ -12,8 +13,8 @@ class LetterResource extends JsonResource
             ? $this->getBasicRecord()
             : $this->getDetailedRecord();
 
-        if ($request->input('media') === '1') {
-            $record['media'] = $this->getPublishedMedia();
+        if ($this->shouldIncludeMedia($request)) {
+            $record['media'] = $this->getMediaRecords($this->canViewPrivateMedia($request));
         }
 
         return $record;
@@ -114,15 +115,52 @@ class LetterResource extends JsonResource
         ];
     }
 
-    protected function getPublishedMedia(): array
+    protected function shouldIncludeMedia($request): bool
+    {
+        if ($request->input('media') === '1') {
+            return true;
+        }
+
+        $includes = collect(explode(',', (string) $request->query('include')))
+            ->map(fn ($include) => trim($include))
+            ->filter();
+
+        if ($includes->contains('media')) {
+            return true;
+        }
+
+        return $request->is('api/v2/letter/*');
+    }
+
+    protected function canViewPrivateMedia($request): bool
+    {
+        return in_array($request->user()?->role, ['admin', 'developer'], true);
+    }
+
+    protected function getMediaRecords(bool $includePrivate = false): array
     {
         return $this->getMedia()
-            ->where('custom_properties->status', 'publish')
-            ->map(fn($media) => [
-                'thumb' => route('image', [$this, $media, 'size' => 'thumb']),
-                'full' => route('image', [$this, $media, 'size' => 'full']),
+            ->filter(fn ($media) => $includePrivate || $media->getCustomProperty('status') === TenantMedia::STATUS_PUBLISHED)
+            ->map(fn ($media) => [
+                'id' => (int) $media->id,
+                'uuid' => $media->uuid,
+                'name' => $media->name,
+                'file_name' => $media->file_name,
+                'mime_type' => $media->mime_type,
+                'disk' => $media->disk,
+                'size' => $media->size,
+                'order_column' => $media->order_column,
+                'status' => $media->getCustomProperty('status'),
                 'description' => $media->getCustomProperty('description'),
+                'url' => $media->getUrl(),
+                'full_url' => $media->hasGeneratedConversion('watermark')
+                    ? $media->getUrl('watermark')
+                    : $media->getUrl(),
+                'thumb_url' => $media->hasGeneratedConversion('thumb')
+                    ? $media->getUrl('thumb')
+                    : ($media->hasGeneratedConversion('watermark') ? $media->getUrl('watermark') : $media->getUrl()),
             ])
+            ->values()
             ->toArray();
     }
 

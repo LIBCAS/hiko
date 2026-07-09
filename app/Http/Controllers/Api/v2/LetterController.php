@@ -181,6 +181,7 @@ class LetterController extends Controller
     #[OA\Get(
         path: "/letter/{id}",
         summary: "Get letter by ID",
+        description: "Returns letter details including attached media. Admin and developer users receive published and private media; other users receive only published media.",
         tags: ["Letters"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -326,6 +327,23 @@ class LetterController extends Controller
                                         "value" => "global-12",
                                         "label" => "Global Archive (Globální)",
                                     ],
+                                ],
+                            ],
+                            "media" => [
+                                [
+                                    "id" => 123,
+                                    "uuid" => "front-page",
+                                    "name" => "Front page",
+                                    "file_name" => "front-page.jpg",
+                                    "mime_type" => "image/jpeg",
+                                    "disk" => "public",
+                                    "size" => 421337,
+                                    "order_column" => 1,
+                                    "status" => "publish",
+                                    "description" => "Front side of the letter",
+                                    "url" => "https://hiko-test10.localhost/storage/hiko-test10/123/front-page.jpg",
+                                    "full_url" => "https://hiko-test10.localhost/storage/hiko-test10/123/front-page.jpg",
+                                    "thumb_url" => "https://hiko-test10.localhost/storage/hiko-test10/123/conversions/front-page-thumb.jpg",
                                 ],
                             ],
                         ],
