@@ -3,11 +3,14 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\LetterController;
+use App\Models\GlobalKeyword;
 use App\Models\GlobalPlace;
+use App\Models\Keyword;
 use App\Models\Letter;
 use App\Models\Location;
 use App\Models\Manifestation;
 use App\Models\OcrSnapshot;
+use App\Models\Place;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\LetterService;
@@ -447,6 +450,45 @@ class LetterDuplicationHistoryTest extends TestCase
         $this->assertCount(1, $duplicatedDestinations);
         $this->assertSame($destination->id, $duplicatedDestinations->first()->id);
         $this->assertSame('Wien', $duplicatedDestinations->first()->pivot->marked);
+    }
+
+    public function test_show_includes_global_places_and_keywords(): void
+    {
+        $letter = $this->createLetter();
+
+        $localOrigin = Place::create(['name' => 'Prague']);
+        $globalDestination = GlobalPlace::create(['name' => 'Vienna']);
+        $localKeyword = Keyword::create(['name' => ['cs' => 'Mistni', 'en' => 'Local']]);
+        $globalKeyword = GlobalKeyword::create(['name' => ['cs' => 'Globalni', 'en' => 'Global']]);
+
+        $letter->localPlaces()->attach($localOrigin->id, [
+            'role' => 'origin',
+            'position' => 0,
+            'marked' => 'Praha',
+        ]);
+        $letter->globalPlaces()->attach($globalDestination->id, [
+            'role' => 'destination',
+            'position' => 1,
+            'marked' => 'Wien',
+        ]);
+        $letter->localKeywords()->attach($localKeyword->id);
+        $letter->globalKeywords()->attach($globalKeyword->id);
+
+        $view = app(LetterController::class)->show($letter);
+
+        $places = $view->getData()['places'];
+        $keywords = $view->getData()['keywords'];
+
+        $this->assertTrue($places->has('origin'));
+        $this->assertTrue($places->has('destination'));
+        $this->assertSame('local', $places['origin']->first()->scope);
+        $this->assertSame('global', $places['destination']->first()->scope);
+        $this->assertSame($localOrigin->id, $places['origin']->first()->id);
+        $this->assertSame($globalDestination->id, $places['destination']->first()->id);
+
+        $this->assertCount(2, $keywords);
+        $this->assertSame(['local', 'global'], $keywords->pluck('scope')->all());
+        $this->assertSame([$localKeyword->id, $globalKeyword->id], $keywords->pluck('id')->all());
     }
 
     public function test_duplicate_copies_ocr_snapshots_to_new_letter_and_resets_apply_audit(): void

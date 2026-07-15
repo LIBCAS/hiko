@@ -172,17 +172,17 @@
     <h2 class="text-lg font-bold">{{ __('hiko.places') }}</h2>
     <table class="w-full mb-10 text-sm">
         <tbody>
-            @if (isset($places['origin']))
+            @if ($places->has('origin'))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="w-1/5 py-2">{{ __('hiko.origin') }}</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
                             @foreach ($places['origin'] as $origin)
                                 <li class="mb-1">
-                                    <a href="{{ route('places.edit', $origin['id']) }}" target="_blank" class="underline">{{ $origin['name'] }}</a>
-                                    @if ($origin['pivot']['marked'])
+                                    <a href="{{ route($origin->scope === 'global' ? 'global.places.edit' : 'places.edit', $origin->id) }}" target="_blank" class="underline">{{ $origin->name }}</a>
+                                    @if ($origin->pivot->marked)
                                         <span class="block pl-3 text-gray-500">
-                                            {{ __('hiko.marked_as_f') }}: {{ $origin['pivot']['marked'] }}
+                                            {{ __('hiko.marked_as_f') }}: {{ $origin->pivot->marked }}
                                         </span>
                                     @endif
                                 </li>
@@ -207,17 +207,17 @@
                     </td>
                 </tr>
             @endif
-            @if (isset($places['destination']))
+            @if ($places->has('destination'))
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="w-1/5 py-2">{{ __('hiko.destination') }}</td>
                     <td class="py-2">
                         <ul class="list-disc list-inside">
                             @foreach ($places['destination'] as $destination)
                                 <li class="mb-1">
-                                    <a href="{{ route('places.edit', $destination['id']) }}" target="_blank" class="underline">{{ $destination['name'] }}</a>
-                                    @if ($destination['pivot']['marked'])
+                                    <a href="{{ route($destination->scope === 'global' ? 'global.places.edit' : 'places.edit', $destination->id) }}" target="_blank" class="underline">{{ $destination->name }}</a>
+                                    @if ($destination->pivot->marked)
                                         <span class="block pl-3 text-gray-500">
-                                            {{ __('hiko.marked_as') }}: {{ $destination['pivot']['marked'] }}
+                                            {{ __('hiko.marked_as') }}: {{ $destination->pivot->marked }}
                                         </span>
                                     @endif
                                 </li>
@@ -293,13 +293,13 @@
                     </td>
                 </tr>
             @endif
-            @if ($letter->keywords)
+            @if ($keywords->isNotEmpty())
                 <tr class="align-baseline border-t border-b border-gray-200">
                     <td class="py-2">{{ __('hiko.keywords') }}</td>
                     <td class="py-2">
-                        @foreach ($letter->keywords as $kw)
+                        @foreach ($keywords as $kw)
                             <li class="mb-1">
-                                <a href="{{ route('keywords.edit', $kw['id']) }}" target="_blank" class="underline">{{ implode(' | ', array_values($kw->getTranslations('name'))) }}</a>
+                                <a href="{{ route($kw->scope === 'global' ? 'global.keywords.edit' : 'keywords.edit', $kw->id) }}" target="_blank" class="underline">{{ implode(' | ', array_values($kw->getTranslations('name'))) }}</a>
                             </li>
                         @endforeach
                     </td>

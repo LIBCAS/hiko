@@ -101,13 +101,24 @@ class LetterController extends Controller
 
     public function show(Letter $letter)
     {
-        $letter->load('identities', 'places', 'keywords');
+        $letter->load('identities', 'places', 'globalPlaces', 'keywords', 'globalKeywords');
+
+        $places = $letter->places
+            ->each(fn ($place) => $place->setAttribute('scope', 'local'))
+            ->merge($letter->globalPlaces->each(fn ($place) => $place->setAttribute('scope', 'global')))
+            ->sortBy(fn ($place) => (int) $place->pivot->position)
+            ->groupBy(fn ($place) => $place->pivot->role);
+
+        $keywords = $letter->keywords
+            ->each(fn ($keyword) => $keyword->setAttribute('scope', 'local'))
+            ->merge($letter->globalKeywords->each(fn ($keyword) => $keyword->setAttribute('scope', 'global')));
 
         return view('pages.letters.show', [
             'title' => $letter->name,
             'letter' => $letter,
             'identities' => $letter->identities->groupBy('pivot.role')->toArray(),
-            'places' => $letter->places->groupBy('pivot.role')->toArray(),
+            'places' => $places,
+            'keywords' => $keywords,
         ]);
     }
 
