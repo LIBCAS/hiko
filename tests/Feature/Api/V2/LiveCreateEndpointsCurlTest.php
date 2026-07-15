@@ -309,11 +309,10 @@ class LiveCreateEndpointsCurlTest extends TestCase
                     ['id' => $localPersonAuthorId, 'scope' => 'local', 'marked' => "Author {$tag}"],
                 ],
                 'recipients' => [
-                    ['id' => $globalPersonIdentityId, 'scope' => 'global', 'marked' => "Global recipient {$tag}", 'salutation' => 'Dear global recipient'],
+                    ['id' => $localInstitutionRecipientId, 'scope' => 'local', 'marked' => "Recipient {$tag}", 'salutation' => 'Dear recipient'],
                 ],
                 'mentioned' => [
                     ['id' => $localPersonMentionedId, 'scope' => 'local'],
-                    ['id' => $globalPersonIdentityId, 'scope' => 'global'],
                     ['id' => $localInstitutionRecipientId, 'scope' => 'local'],
                 ],
 

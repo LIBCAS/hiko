@@ -186,10 +186,10 @@ class LetterApiShapeTest extends TestCase
                 ['id' => 12, 'scope' => 'local', 'reference' => 'global-999', 'marked' => 'Author mark'],
             ],
             'recipients' => [
-                ['id' => 18, 'scope' => 'global', 'reference' => 'local-999', 'marked' => 'Recipient mark', 'salutation' => 'Dear recipient'],
+                ['id' => 18, 'scope' => 'local', 'reference' => 'global-999', 'marked' => 'Recipient mark', 'salutation' => 'Dear recipient'],
             ],
             'mentioned' => [
-                ['id' => 19, 'scope' => 'global', 'reference' => 'local-999'],
+                ['id' => 19, 'scope' => 'local', 'reference' => 'global-999'],
             ],
             'local_origins' => [
                 ['id' => 3, 'marked' => 'Origin mark'],
@@ -212,8 +212,8 @@ class LetterApiShapeTest extends TestCase
         $request->runPrepareForValidation();
 
         $this->assertSame('local-12', $request->input('authors.0.id'));
-        $this->assertSame('global-18', $request->input('recipients.0.id'));
-        $this->assertSame('global-19', $request->input('mentioned.0.id'));
+        $this->assertSame('local-18', $request->input('recipients.0.id'));
+        $this->assertSame('local-19', $request->input('mentioned.0.id'));
         $this->assertSame('local-3', $request->input('origins.0.id'));
         $this->assertSame('global-9', $request->input('destinations.0.id'));
         $this->assertSame('local-74', $request->input('keywords.0.id'));
