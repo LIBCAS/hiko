@@ -9,6 +9,10 @@ return new class extends Migration
 {
     public function up()
     {
+        if (!Schema::hasTable('tenants')) {
+            return;
+        }
+
         $tenants = DB::table('tenants')->get();
 
         foreach ($tenants as $tenant) {
@@ -58,7 +62,7 @@ return new class extends Migration
 
     public function down()
     {
-        $tenants = DB::table('tenants')->get();
+        $tenants = Schema::hasTable('tenants') ? DB::table('tenants')->get() : collect();
         foreach ($tenants as $tenant) {
             Schema::dropIfExists($tenant->table_prefix . '__manifestations');
         }

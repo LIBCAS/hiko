@@ -15,6 +15,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('tenants')) {
+            return;
+        }
+
         // Get all tenant prefixes from the tenants table
         $tenants = DB::table('tenants')->get();
 
@@ -36,6 +40,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('tenants')) {
+            return;
+        }
+
         // Get all tenant prefixes from the tenants table
         $tenants = DB::table('tenants')->get();
 

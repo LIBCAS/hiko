@@ -9,6 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasTable('tenants')) {
+            return;
+        }
+
         $tenants = DB::table('tenants')->get();
 
         foreach ($tenants as $tenant) {
@@ -48,7 +52,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        $tenants = DB::table('tenants')->get();
+        $tenants = Schema::hasTable('tenants') ? DB::table('tenants')->get() : collect();
 
         foreach ($tenants as $tenant) {
             $table = $tenant->table_prefix . '__identities';
@@ -77,4 +81,3 @@ return new class extends Migration
         }
     }
 };
-

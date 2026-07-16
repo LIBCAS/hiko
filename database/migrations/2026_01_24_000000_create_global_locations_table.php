@@ -18,7 +18,7 @@ return new class extends Migration
             $table->index(['name', 'type']);
         });
 
-        $tenants = DB::table('tenants')->get();
+        $tenants = Schema::hasTable('tenants') ? DB::table('tenants')->get() : collect();
         foreach ($tenants as $tenant) {
             $prefix = $tenant->table_prefix . '__';
             $tableName = $prefix . 'manifestations';

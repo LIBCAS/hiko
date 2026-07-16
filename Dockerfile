@@ -1,4 +1,4 @@
-FROM webdevops/php-apache-dev:8.2
+FROM webdevops/php-apache-dev:8.4
 
 # Working directory in Docker
 WORKDIR /var/www/html

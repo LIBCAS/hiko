@@ -306,7 +306,7 @@ return new class extends Migration
     public function down(): void
     {
         // Drop Tenant-Specific Tables
-        $tenants = DB::table('tenants')->get();
+        $tenants = Schema::hasTable('tenants') ? DB::table('tenants')->get() : collect();
         foreach ($tenants as $tenant) {
             $prefix = $tenant->table_prefix;
 
