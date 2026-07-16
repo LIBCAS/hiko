@@ -18,7 +18,7 @@
         "ext-pdo": "*",
         "barryvdh/laravel-debugbar": "^3.7",
         "calebporzio/sushi": "^2.3",
-        "darkaonline/l5-swagger": "^8.6",
+        "darkaonline/l5-swagger": "^11.1",
         "firebase/php-jwt": "^7",
         "google/auth": "^1.52",
         "google/cloud-document-ai": "^2.1",
@@ -26,7 +26,7 @@
         "google/cloud-vision": "^1.10",
         "guzzlehttp/guzzle": "^7.5",
         "intervention/image": "^2.7",
-        "laravel/framework": "^11.0",
+        "laravel/framework": "^12.61",
         "laravel/sanctum": "^4.0",
         "laravel/scout": "^10.0",
         "laravel/tinker": "^2.8",
@@ -41,18 +41,17 @@
         "spatie/temporary-directory": "^2.0",
         "stancl/tenancy": "^3.8",
         "symfony/mailer": "^7.0",
-        "teamtnt/laravel-scout-tntsearch-driver": "^14.0"
+        "teamtnt/laravel-scout-tntsearch-driver": "^16.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
         "fossbarrow/laravel-phpcs": "dev-main",
-        "knuckleswtf/scribe": "^5.2",
-        "larastan/larastan": "^2.0",
+        "knuckleswtf/scribe": "^5.11",
+        "larastan/larastan": "^3.10",
         "laravel/breeze": "^2.0",
         "laravel/sail": "^1.21",
         "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^8.0",
-        "phpunit/phpunit": "^10.0"
+        "phpunit/phpunit": "^11.0"
     },
     "autoload": {
         "files": [
