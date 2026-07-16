@@ -226,7 +226,7 @@ class DocumentService
             throw new Exception('OCR provider returned an empty response body.');
         }
 
-        $json = json_decode($content, true) ?: [];
+        $json = self::decodeProviderJson($content);
         $text = $json['recognized_text'] ?? ($json['text'] ?? ($json['transcription'] ?? ''));
         $meta = $json['metadata'] ?? ($json['meta'] ?? []);
 
@@ -236,6 +236,80 @@ class DocumentService
             'request_prompt' => self::truncate($requestPrompt, self::PROMPT_SNIPPET_MAX),
             'raw_response' => self::truncate($bodyRaw, self::RAW_SNIPPET_MAX),
         ];
+    }
+
+    private static function decodeProviderJson(string $content): array
+    {
+        $decoded = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $decoded;
+        }
+
+        $json = self::extractFirstJsonValue($content);
+        if ($json !== null) {
+            $decoded = json_decode($json, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        throw new Exception('OCR provider returned malformed JSON: ' . json_last_error_msg());
+    }
+
+    private static function extractFirstJsonValue(string $content): ?string
+    {
+        $start = strcspn($content, '{[');
+        if ($start >= strlen($content)) {
+            return null;
+        }
+
+        $open = $content[$start];
+        $close = $open === '{' ? '}' : ']';
+        $depth = 0;
+        $inString = false;
+        $escaped = false;
+        $length = strlen($content);
+
+        for ($i = $start; $i < $length; $i++) {
+            $char = $content[$i];
+
+            if ($inString) {
+                if ($escaped) {
+                    $escaped = false;
+                    continue;
+                }
+
+                if ($char === '\\') {
+                    $escaped = true;
+                    continue;
+                }
+
+                if ($char === '"') {
+                    $inString = false;
+                }
+
+                continue;
+            }
+
+            if ($char === '"') {
+                $inString = true;
+                continue;
+            }
+
+            if ($char === $open) {
+                $depth++;
+                continue;
+            }
+
+            if ($char === $close) {
+                $depth--;
+                if ($depth === 0) {
+                    return substr($content, $start, $i - $start + 1);
+                }
+            }
+        }
+
+        return null;
     }
 
     private static function unifyMetadata(array $allMetas): array
