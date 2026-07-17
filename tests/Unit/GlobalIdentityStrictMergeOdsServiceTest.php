@@ -168,9 +168,9 @@ class GlobalIdentityStrictMergeOdsServiceTest extends TestCase
         ]);
 
         $report = app(GlobalIdentityStrictMergeOdsService::class)->run([
-            ['source_row' => 2, 'id' => 12, 'name' => 'Novak, Jan', 'surname' => 'Novak', 'forename' => 'Jan', 'birth_year' => '1850', 'death_year' => '1910'],
-            ['source_row' => 3, 'id' => 9, 'name' => 'Novak, Jan', 'surname' => 'Novak', 'forename' => 'Jan', 'birth_year' => '1850', 'death_year' => '1910'],
-            ['source_row' => 4, 'id' => 5, 'name' => 'Novak, Jan', 'surname' => 'Novak', 'forename' => 'Jan', 'birth_year' => '1850', 'death_year' => '1910'],
+            ['source_row' => 2, 'id' => 12, 'name' => 'Novak, Jan', 'surname' => 'Novak', 'forename' => 'Jan', 'birth_year' => '1850', 'death_year' => '1910', 'viaf_id' => ''],
+            ['source_row' => 3, 'id' => 9, 'name' => 'Novak, Jan', 'surname' => 'Novak', 'forename' => 'Jan', 'birth_year' => '1850', 'death_year' => '1910', 'viaf_id' => '222'],
+            ['source_row' => 4, 'id' => 5, 'name' => 'Novak, Jan', 'surname' => 'Novak', 'forename' => 'Jan', 'birth_year' => '1850', 'death_year' => '1910', 'viaf_id' => '111'],
         ]);
 
         $this->assertSame(1, $report['summary']['duplicate_groups_detected']);
@@ -179,7 +179,7 @@ class GlobalIdentityStrictMergeOdsServiceTest extends TestCase
         $this->assertSame([9, 12], $report['results'][0]['deleted_ids']);
         $this->assertSame('st.', $report['results'][0]['selected_scalars']['general_name_modifier']);
         $this->assertSame('f', $report['results'][0]['selected_scalars']['gender']);
-        $this->assertSame('111', $report['results'][0]['selected_scalars']['viaf_id']);
+        $this->assertArrayNotHasKey('viaf_id', $report['results'][0]['selected_scalars']);
         $this->assertDatabaseCount('global_identities', 3);
     }
 

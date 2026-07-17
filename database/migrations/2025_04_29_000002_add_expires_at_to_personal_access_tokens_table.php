@@ -10,6 +10,10 @@ return new class extends Migration
 {
     public function up()
     {
+        if (!function_exists('tenancy') || !tenancy()->initialized || !tenancy()->tenant) {
+            return;
+        }
+
         Schema::table(tenant()->table('personal_access_tokens'), function (Blueprint $table) {
             $table->timestamp('expires_at')->nullable()->after('last_used_at');
         });
@@ -17,6 +21,10 @@ return new class extends Migration
 
     public function down()
     {
+        if (!function_exists('tenancy') || !tenancy()->initialized || !tenancy()->tenant) {
+            return;
+        }
+
         Schema::table(tenant()->table('personal_access_tokens'), function (Blueprint $table) {
             $table->dropColumn('expires_at');
         });

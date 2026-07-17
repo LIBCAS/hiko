@@ -30,6 +30,10 @@ return new class extends Migration
             $table->index(['name', 'country', 'latitude', 'longitude'], 'global_places_merge_lookup');
         });
 
+        if (!Schema::hasTable('tenants')) {
+            return;
+        }
+
         // Add global_place_id column and make place_id nullable in all tenant letter_place pivot tables
         $tenants = DB::table('tenants')->get();
 
@@ -93,7 +97,7 @@ return new class extends Migration
     public function down(): void
     {
         // Remove global_place_id from all tenant letter_place pivot tables
-        $tenants = DB::table('tenants')->get();
+        $tenants = Schema::hasTable('tenants') ? DB::table('tenants')->get() : collect();
 
         foreach ($tenants as $tenant) {
             $prefix = $tenant->table_prefix;

@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!in_array(DB::connection()->getDriverName(), ['mysql', 'mariadb'], true)) {
+            return;
+        }
+
         $databaseName = DB::getDatabaseName();
 
         $tables = DB::select(
@@ -25,4 +29,3 @@ return new class extends Migration
         // Legacy table intentionally not recreated.
     }
 };
-

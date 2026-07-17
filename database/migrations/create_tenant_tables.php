@@ -9,8 +9,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-         $tenants = DB::table('tenants')->get();
          $migrationsCount = DB::table('migrations')->count();
+         $tenants = Schema::hasTable('tenants') ? DB::table('tenants')->get() : collect();
 
         // If tenants exists ask for new tenant only if migrations are already done
          if (Schema::hasTable('tenants') && DB::table('tenants')->count() > 0 && $migrationsCount > 0) {

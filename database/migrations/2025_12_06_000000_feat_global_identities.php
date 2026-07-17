@@ -53,6 +53,10 @@ return new class extends Migration
             $table->unique(['global_identity_id', 'global_profession_id'], 'gip_unique');
         });
 
+        if (!Schema::hasTable('tenants')) {
+            return;
+        }
+
         // Update tenant identity_letter tables
         $tenants = DB::table('tenants')->get();
 
@@ -110,7 +114,7 @@ return new class extends Migration
     public function down(): void
     {
         // Revert tenant changes
-        $tenants = DB::table('tenants')->get();
+        $tenants = Schema::hasTable('tenants') ? DB::table('tenants')->get() : collect();
 
         foreach ($tenants as $tenant) {
             $prefix = $tenant->table_prefix;

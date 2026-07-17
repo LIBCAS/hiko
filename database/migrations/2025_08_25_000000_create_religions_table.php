@@ -13,8 +13,8 @@ return new class extends Migration {
             $table->boolean('is_active')->default(true)->index();
             $table->integer('sort_order')->default(0)->index();
             // Denormalized path for search/display (updated by service)
-            $table->string('path_text', 1024)->nullable()->index();
-            $table->string('lower_path_text', 1024)->nullable()->index();
+            $table->string('path_text', 768)->nullable()->index();
+            $table->string('lower_path_text', 768)->nullable()->index();
             $table->timestamps();
         });
     }

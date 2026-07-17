@@ -121,6 +121,59 @@ class OcrModelSelectionTest extends TestCase
         ]);
     }
 
+    public function test_gemini_response_with_trailing_junk_json_is_recovered(): void
+    {
+        $content = json_encode([
+            'recognized_text' => 'Recognized letter text',
+            'metadata' => [
+                'Rok' => '1938',
+                'Jazyk' => ['cs'],
+            ],
+        ], JSON_UNESCAPED_UNICODE) . "\n}";
+
+        $response = new Response(200, [], json_encode([
+            'candidates' => [[
+                'content' => [
+                    'parts' => [[
+                        'text' => $content,
+                    ]],
+                ],
+            ]],
+        ]));
+
+        $result = $this->invokeDocumentServiceMethod('parseResponse', [
+            DocumentService::MODEL_GEMINI_31_PRO,
+            $response,
+            'test prompt',
+        ]);
+
+        $this->assertSame('Recognized letter text', $result['recognized_text']);
+        $this->assertSame('1938', $result['metadata']['Rok']);
+        $this->assertSame(['cs'], $result['metadata']['Jazyk']);
+    }
+
+    public function test_malformed_ocr_json_is_treated_as_failure(): void
+    {
+        $response = new Response(200, [], json_encode([
+            'candidates' => [[
+                'content' => [
+                    'parts' => [[
+                        'text' => '{"recognized_text":',
+                    ]],
+                ],
+            ]],
+        ]));
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('OCR provider returned malformed JSON');
+
+        $this->invokeDocumentServiceMethod('parseResponse', [
+            DocumentService::MODEL_GEMINI_31_PRO,
+            $response,
+            'test prompt',
+        ]);
+    }
+
     private function invokeDocumentServiceMethod(string $method, array $arguments): array|string
     {
         $reflection = new ReflectionClass(DocumentService::class);

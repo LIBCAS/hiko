@@ -286,13 +286,18 @@ class GlobalIdentityStrictMergeOdsService
     {
         $rowValues = collect($rows)
             ->mapWithKeys(fn(array $row): array => [(int)$row['id'] => $this->cleanValue($row[$field] ?? '')])
-            ->filter(fn(string $value): bool => $value !== '');
+            ->filter(fn(string $value): bool => $value !== '')
+            ->all();
 
         $values = $records
             ->map(function (GlobalIdentity $record) use ($rowValues, $field): array {
+                $id = (int)$record->id;
+
                 return [
-                    'id' => (int)$record->id,
-                    'value' => $rowValues[(int)$record->id] ?? $this->cleanValue($record->getAttribute($field)),
+                    'id' => $id,
+                    'value' => array_key_exists($id, $rowValues)
+                        ? $rowValues[$id]
+                        : $this->cleanValue($record->getAttribute($field)),
                 ];
             })
             ->filter(fn(array $item): bool => $item['value'] !== '')
