@@ -1,6 +1,8 @@
 /node_modules
 /public/hot
 /public/storage
+/public/adminer.php
+/public/adminer.css
 /storage/*.key
 /vendor
 /docs/*
