@@ -4,13 +4,18 @@ namespace Tests\Feature;
 
 use App\Exports\LettersExport;
 use App\Http\Controllers\LetterController;
+use App\Livewire\FiltersButton;
 use App\Livewire\FiltersForm;
+use App\Livewire\LettersTable;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Services\LetterFilterService;
 use App\Services\SearchIdentity;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
@@ -181,6 +186,31 @@ class LetterFilterServiceTest extends TestCase
             ->assertSet('filters.status', 'publish');
     }
 
+    public function test_empty_filter_url_ignores_filters_from_a_previous_session(): void
+    {
+        session()->put('lettersTableFilters', [
+            'recipient' => ['local-4'],
+            'origin' => 'Prague',
+        ]);
+
+        Livewire::test(FiltersForm::class)
+            ->assertSet('filters', ['match' => LetterFilterService::MATCH_ALL]);
+
+        Livewire::test(FiltersButton::class)
+            ->assertSet('activeFilters', []);
+
+        Livewire::test(LettersTable::class)
+            ->assertSet('filters', ['match' => LetterFilterService::MATCH_ALL]);
+
+        Auth::login(User::findOrFail(1));
+        $view = app(LetterController::class)->index(Request::create('/letters', 'GET'));
+
+        $this->assertSame(
+            ['match' => LetterFilterService::MATCH_ALL],
+            $view->getData()['letterFilters']
+        );
+    }
+
     public function test_identity_selection_and_badge_removal_update_shared_filter_state(): void
     {
         $component = Livewire::test(FiltersForm::class)
@@ -188,20 +218,10 @@ class LetterFilterServiceTest extends TestCase
             ->assertSet('filters.mentioned', ['local-1', 'local-3'])
             ->assertDispatched('filtersChanged');
 
-        $this->assertSame(
-            ['local-1', 'local-3'],
-            session('lettersTableFilters.mentioned')
-        );
-
         $component
             ->call('removeFilter', ['filterKey' => 'mentioned'])
             ->assertSet('filters', ['match' => LetterFilterService::MATCH_ALL])
             ->assertDispatched('filtersChanged');
-
-        $this->assertSame(
-            ['match' => LetterFilterService::MATCH_ALL],
-            session('lettersTableFilters')
-        );
     }
 
     public function test_letter_export_uses_the_same_nested_filters_as_the_table(): void
@@ -230,6 +250,27 @@ class LetterFilterServiceTest extends TestCase
 
             return $exportedIds === $expectedIds;
         });
+    }
+
+    public function test_loading_export_link_encodes_nested_filters_only_once(): void
+    {
+        $filters = [
+            'match' => LetterFilterService::MATCH_ALL,
+            'recipient' => ['global-1', 'local-4'],
+            'origin' => 'Prague',
+        ];
+        $href = route('letters.export', ['filters' => $filters]);
+        $html = Blade::render(
+            '<x-loading-link :href="$href" id="export-url">Export</x-loading-link>',
+            compact('href')
+        );
+
+        preg_match('/href="([^"]+)"/', $html, $matches);
+        $browserHref = html_entity_decode($matches[1] ?? '');
+        parse_str((string) parse_url($browserHref, PHP_URL_QUERY), $query);
+
+        $this->assertStringNotContainsString('&amp;amp;', $html);
+        $this->assertSame($filters, $query['filters'] ?? null);
     }
 
     public function test_filtered_xlsx_contains_every_selected_letter_after_its_headers(): void
@@ -380,6 +421,7 @@ class LetterFilterServiceTest extends TestCase
             $table->id();
             $table->timestamps();
             $table->string('name');
+            $table->string('role')->nullable();
             $table->string('email')->nullable();
             $table->string('password')->nullable();
         });
@@ -468,7 +510,7 @@ class LetterFilterServiceTest extends TestCase
             ['letter_id' => 3, 'repository_id' => null, 'global_archive_id' => null, 'signature' => 'SIG-THREE'],
         ]);
 
-        DB::connection('tenant')->table('test-tenant__users')->insert(['id' => 1, 'name' => 'Editor One']);
+        DB::connection('tenant')->table('test-tenant__users')->insert(['id' => 1, 'name' => 'Editor One', 'role' => 'guest']);
         DB::connection('tenant')->table('test-tenant__letter_user')->insert(['letter_id' => 1, 'user_id' => 1]);
         DB::connection('tenant')->table('test-tenant__media')->insert([
             'model_type' => 'App\\Models\\Letter',

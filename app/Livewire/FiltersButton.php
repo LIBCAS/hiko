@@ -16,9 +16,7 @@ class FiltersButton extends Component
 
     public function mount()
     {
-        $filters = request()->has('filters')
-            ? (array) request()->query('filters', [])
-            : session()->get('lettersTableFilters', []);
+        $filters = (array) request()->query('filters', []);
         $this->activeFilters = $this->extractActiveFilters(
             app(LetterFilterService::class)->normalize($filters)
         );

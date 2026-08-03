@@ -13,6 +13,11 @@
             @foreach ($payload['letters'] as $letter)
                 <input type="hidden" name="letter_ids[]" value="{{ $letter->id }}">
             @endforeach
+            @foreach ($filters as $key => $value)
+                @foreach ((array) $value as $item)
+                    <input type="hidden" name="filters[{{ $key }}]{{ is_array($value) ? '[]' : '' }}" value="{{ $item }}">
+                @endforeach
+            @endforeach
             <button class="bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-black">
                 {{ __('hiko.submit_transfer_request') }}
             </button>

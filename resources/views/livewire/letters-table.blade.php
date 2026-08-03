@@ -10,11 +10,3 @@
         </div>
     @endif
 </div>
-
-@push('scripts')
-    <script>
-    Livewire.on('filtersChanged', filters => {
-        updateExportUrl(filters, document.getElementById('export-url'));
-    })
-    </script>
-@endpush

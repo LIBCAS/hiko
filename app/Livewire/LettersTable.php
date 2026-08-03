@@ -26,9 +26,7 @@ class LettersTable extends Component
 
     public function mount()
     {
-        $filters = request()->has('filters')
-            ? (array) request()->query('filters', [])
-            : session()->get('lettersTableFilters', []);
+        $filters = (array) request()->query('filters', []);
         $this->filters = app(LetterFilterService::class)->normalize($filters);
         $this->sorting = session()->get('lettersTableSorting', $this->sorting);
     }
@@ -36,7 +34,6 @@ class LettersTable extends Component
     public function filtersChanged(array $filters)
     {
         $this->filters = app(LetterFilterService::class)->normalize($filters);
-        session()->put('lettersTableFilters', $this->filters);
         $this->resetPage();
     }
 
@@ -62,7 +59,6 @@ class LettersTable extends Component
         if (in_array($key, $this->allowedFilters)) {
             unset($this->filters[$key]);
             $this->filters = app(LetterFilterService::class)->normalize($this->filters);
-            session()->put('lettersTableFilters', $this->filters);
         }
 
         $this->resetPage();
@@ -73,7 +69,6 @@ class LettersTable extends Component
     public function resetFilters()
     {
         $this->filters = ['match' => LetterFilterService::MATCH_ALL];
-        session()->forget('lettersTableFilters');
         $this->resetPage();
     }
 

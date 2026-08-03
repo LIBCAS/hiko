@@ -46,13 +46,13 @@ class LetterController extends Controller
      */
     public function index(Request $request)
     {
-        $filters = $request->has('filters') && is_array($request->query('filters'))
+        $filters = is_array($request->query('filters'))
             ? $request->query('filters')
-            : session()->get('lettersTableFilters', []);
+            : [];
 
         return view('pages.letters.index', [
             'title' => __('hiko.letters'),
-            'exportFilters' => app(LetterFilterService::class)->normalize($filters),
+            'letterFilters' => app(LetterFilterService::class)->normalize($filters),
             'mainCharacter' => config('hiko.main_character')
                 ? optional(Identity::find(config('hiko.main_character')))->value('surname')
                 : null,

@@ -16,8 +16,9 @@
                 <x-dropdown label="{{ __('hiko.export') }}" class="font-semibold" :alignRight="false">
                     <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
                         <x-loading-link
-                            href="{{ route('letters.export', ['filters' => $exportFilters]) }}"
+                            :href="route('letters.export', ['filters' => $letterFilters])"
                             id="export-url"
+                            data-letter-filter-url
                             :loading-duration="11000"
                             class="!flex w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
                             {{ __('hiko.export_selected') }}
@@ -39,7 +40,8 @@
                     <x-dropdown label="{{ __('hiko.copy_to') }}" class="font-semibold" :alignRight="false">
                         <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
                             @foreach ($transferTenants as $tenant)
-                                <a href="{{ route('inter-tenant-transfers.preview', $tenant) }}"
+                                <a href="{{ route('inter-tenant-transfers.preview', ['targetTenant' => $tenant, 'filters' => $letterFilters]) }}"
+                                    data-letter-filter-url
                                     class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
                                     {{ $tenant->displayName() }}
                                 </a>
@@ -73,7 +75,9 @@
     @push('scripts')
         <script>
             Livewire.on('filtersChanged', filters => {
-                updateExportUrl(filters, document.getElementById('export-url'));
+                document.querySelectorAll('[data-letter-filter-url]').forEach(element => {
+                    updateExportUrl(filters, element);
+                });
             });
         </script>
     @endpush

@@ -37,20 +37,29 @@ class InterTenantLetterTransferController extends Controller
         ]);
     }
 
-    public function preview(Tenant $targetTenant, LetterFilterService $filters, InterTenantLetterTransferData $data)
+    public function preview(
+        Request $request,
+        Tenant $targetTenant,
+        LetterFilterService $filters,
+        InterTenantLetterTransferData $data
+    )
     {
         abort_if((int) $targetTenant->id === (int) tenancy()->tenant->id, 422);
 
-        $activeFilters = session()->get('lettersTableFilters', []);
+        $activeFilters = $filters->normalize(
+            is_array($request->query('filters')) ? $request->query('filters') : []
+        );
         $limit = config('inter_tenant_transfers.max_letters', 200);
         $letters = $filters->filteredQuery($activeFilters)->orderBy('id')->limit($limit + 1)->get();
 
         if ($letters->isEmpty()) {
-            return redirect()->route('letters')->with('error', __('hiko.transfer_empty_selection'));
+            return redirect()->route('letters', ['filters' => $activeFilters])
+                ->with('error', __('hiko.transfer_empty_selection'));
         }
 
         if ($letters->count() > $limit) {
-            return redirect()->route('letters')->with('error', __('hiko.transfer_selection_too_large', ['limit' => $limit]));
+            return redirect()->route('letters', ['filters' => $activeFilters])
+                ->with('error', __('hiko.transfer_selection_too_large', ['limit' => $limit]));
         }
 
         $payload = $data->load(tenancy()->tenant, $letters->pluck('id')->all());
@@ -68,6 +77,9 @@ class InterTenantLetterTransferController extends Controller
     {
         $validated = $request->validated();
         abort_if((int) $validated['target_tenant_id'] === (int) tenancy()->tenant->id, 422);
+        $filters = app(LetterFilterService::class)->normalize(
+            is_array($request->input('filters')) ? $request->input('filters') : []
+        );
 
         $data->load(tenancy()->tenant, $validated['letter_ids']);
         $user = $request->user();
@@ -81,7 +93,7 @@ class InterTenantLetterTransferController extends Controller
             'requested_by_name' => $user->name,
             'requested_by_email' => $user->email,
             'source_record_ids' => array_values($validated['letter_ids']),
-            'filters' => session()->get('lettersTableFilters', []),
+            'filters' => $filters,
         ]);
 
         return redirect()->route('inter-tenant-transfers.show', $transfer)

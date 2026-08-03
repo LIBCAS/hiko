@@ -17,14 +17,7 @@ class FiltersForm extends Component
 
     public function mount()
     {
-        // A URL is authoritative and shareable; the session remains a convenient
-        // fallback when opening /letters without an explicit filter specification.
-        if (!request()->has('filters') && session()->has('lettersTableFilters')) {
-            $this->filters = session()->get('lettersTableFilters');
-        }
-
         $this->filters = app(LetterFilterService::class)->normalize($this->filters);
-        session()->put('lettersTableFilters', $this->filters);
     }
 
     public function updatedFilters()
@@ -38,7 +31,6 @@ class FiltersForm extends Component
         $this->dispatch('resetLettersTablePage');
         $this->dispatch('filterToggled', filters: $this->filters);
 
-        session()->put('lettersTableFilters', $this->filters);
         $this->dispatch('filtersChanged', filters: $this->filters);
     }
 
