@@ -241,11 +241,11 @@ class LetterFilterServiceTest extends TestCase
         app(LetterController::class)->export($request);
 
         Excel::assertDownloaded('letters.xlsx', function (LettersExport $export) use ($expectedIds) {
-            $exportedIds = $export->query()
-                ->reorder()
-                ->orderBy('test-tenant__letters.id')
-                ->pluck('test-tenant__letters.id')
+            $exportedIds = collect(iterator_to_array($export->sheets()[0]->generator()))
+                ->pluck(0)
                 ->map(fn ($id) => (int) $id)
+                ->sort()
+                ->values()
                 ->all();
 
             return $exportedIds === $expectedIds;
@@ -273,7 +273,7 @@ class LetterFilterServiceTest extends TestCase
         $this->assertSame($filters, $query['filters'] ?? null);
     }
 
-    public function test_filtered_xlsx_contains_every_selected_letter_after_its_headers(): void
+    public function test_filtered_xlsx_has_normalized_sheets_and_preserves_repeated_values(): void
     {
         $filters = [
             'match' => LetterFilterService::MATCH_ALL,
@@ -286,17 +286,66 @@ class LetterFilterServiceTest extends TestCase
         $this->assertIsResource($file);
         fwrite($file, $contents);
         $path = stream_get_meta_data($file)['uri'];
-        $sheet = IOFactory::load($path)->getActiveSheet();
-        $actualIds = collect($sheet->rangeToArray('A3:A' . $sheet->getHighestDataRow()))
+        $workbook = IOFactory::load($path);
+
+        $this->assertSame([
+            'Letters',
+            'Identities',
+            'Places',
+            'Keywords',
+            'Manifestations',
+            'Related resources',
+        ], $workbook->getSheetNames());
+
+        $letters = $workbook->getSheetByName('Letters');
+        $actualIds = collect($letters->rangeToArray('A2:A' . $letters->getHighestDataRow()))
             ->flatten()
             ->filter(fn ($id) => $id !== null && $id !== '')
             ->map(fn ($id) => (int) $id)
             ->values()
             ->all();
 
-        fclose($file);
-
         $this->assertSame($expectedIds, $actualIds);
+
+        $manifestations = collect($workbook->getSheetByName('Manifestations')->rangeToArray(
+            'A2:W' . $workbook->getSheetByName('Manifestations')->getHighestDataRow()
+        ));
+        $this->assertSame(['SIG-ONE-A', 'SIG-ONE-B', 'SIG-TWO'], $manifestations->pluck(2)->all());
+        $this->assertSame([1, 1, 2], $manifestations->pluck(0)->map(fn ($id) => (int) $id)->all());
+        $this->assertSame('local', $manifestations[0][9]);
+        $this->assertSame('Prague Repository', $manifestations[0][12]);
+        $this->assertSame('global', $manifestations[2][13]);
+        $this->assertSame('Global Archive', $manifestations[2][16]);
+
+        $identities = collect($workbook->getSheetByName('Identities')->rangeToArray(
+            'A2:O' . $workbook->getSheetByName('Identities')->getHighestDataRow()
+        ));
+        $this->assertSame([1, 1, 1, 2], $identities->pluck(0)->map(fn ($id) => (int) $id)->all());
+        $this->assertSame(['mentioned', 'author', 'recipient', 'mentioned'], $identities->pluck(1)->all());
+        $this->assertSame(['local', 'local', 'global', 'local'], $identities->pluck(3)->all());
+        $this->assertSame('Global Alice', $identities[0][14]);
+        $this->assertSame('Direct Global Recipient', $identities[2][6]);
+
+        $places = collect($workbook->getSheetByName('Places')->rangeToArray(
+            'A2:H' . $workbook->getSheetByName('Places')->getHighestDataRow()
+        ));
+        $this->assertSame(['local', 'global'], $places->pluck(3)->all());
+        $this->assertSame(['Prague', 'Vienna'], $places->pluck(6)->all());
+
+        $keywords = collect($workbook->getSheetByName('Keywords')->rangeToArray(
+            'A2:J' . $workbook->getSheetByName('Keywords')->getHighestDataRow()
+        ));
+        $this->assertSame(['local', 'global'], $keywords->pluck(1)->all());
+        $this->assertSame(['Philosophy', 'Literature'], $keywords->pluck(5)->all());
+
+        $resources = collect($workbook->getSheetByName('Related resources')->rangeToArray(
+            'A2:E' . $workbook->getSheetByName('Related resources')->getHighestDataRow()
+        ));
+        $this->assertCount(2, $resources);
+        $this->assertSame(['Source One', 'Source Two'], $resources->pluck(2)->all());
+        $this->assertSame([1, 2], $resources->pluck(1)->map(fn ($position) => (int) $position)->all());
+
+        fclose($file);
     }
 
     protected function ids(array $filters): array
@@ -468,12 +517,15 @@ class LetterFilterServiceTest extends TestCase
     protected function seedFixtures(): void
     {
         DB::connection('tenant')->table('test-tenant__letters')->insert([
-            ['id' => 1, 'date_computed' => '1940-01-01', 'content_stripped' => 'Alpha content', 'abstract' => '{"en":"First abstract"}', 'languages' => 'Czech;Latin', 'notes_private' => 'Private alpha', 'status' => 'publish', 'approval' => 1],
-            ['id' => 2, 'date_computed' => '1955-06-15', 'content_stripped' => 'Beta content', 'abstract' => '{"en":"Second abstract"}', 'languages' => 'German', 'notes_private' => 'Private beta', 'status' => 'draft', 'approval' => 0],
-            ['id' => 3, 'date_computed' => '1965-12-31', 'content_stripped' => 'Gamma content', 'abstract' => '{"en":"Third abstract"}', 'languages' => 'French', 'notes_private' => 'Private gamma', 'status' => 'draft', 'approval' => 1],
+            ['id' => 1, 'date_computed' => '1940-01-01', 'content_stripped' => 'Alpha content', 'abstract' => '{"en":"First abstract"}', 'languages' => 'Czech;Latin', 'notes_private' => 'Private alpha', 'related_resources' => '[{"title":"Source One","link":"https://example.test/one"},{"title":"Source Two","link":"https://example.test/two"}]', 'status' => 'publish', 'approval' => 1],
+            ['id' => 2, 'date_computed' => '1955-06-15', 'content_stripped' => 'Beta content', 'abstract' => '{"en":"Second abstract"}', 'languages' => 'German', 'notes_private' => 'Private beta', 'related_resources' => null, 'status' => 'draft', 'approval' => 0],
+            ['id' => 3, 'date_computed' => '1965-12-31', 'content_stripped' => 'Gamma content', 'abstract' => '{"en":"Third abstract"}', 'languages' => 'French', 'notes_private' => 'Private gamma', 'related_resources' => null, 'status' => 'draft', 'approval' => 1],
         ]);
 
-        DB::table('global_identities')->insert(['id' => 1, 'name' => 'Global Alice']);
+        DB::table('global_identities')->insert([
+            ['id' => 1, 'name' => 'Global Alice'],
+            ['id' => 2, 'name' => 'Direct Global Recipient'],
+        ]);
         DB::connection('tenant')->table('test-tenant__identities')->insert([
             ['id' => 1, 'name' => 'Alice Local One', 'alternative_names' => '["Alicia"]', 'global_identity_id' => 1],
             ['id' => 2, 'name' => 'Author Local', 'alternative_names' => null, 'global_identity_id' => null],
@@ -481,10 +533,11 @@ class LetterFilterServiceTest extends TestCase
             ['id' => 4, 'name' => 'Unlinked Alice', 'alternative_names' => null, 'global_identity_id' => null],
         ]);
         DB::connection('tenant')->table('test-tenant__identity_letter')->insert([
-            ['identity_id' => 1, 'letter_id' => 1, 'role' => 'mentioned'],
-            ['identity_id' => 2, 'letter_id' => 1, 'role' => 'author'],
-            ['identity_id' => 3, 'letter_id' => 2, 'role' => 'mentioned'],
-            ['identity_id' => 4, 'letter_id' => 3, 'role' => 'recipient'],
+            ['identity_id' => 1, 'global_identity_id' => null, 'letter_id' => 1, 'role' => 'mentioned'],
+            ['identity_id' => 2, 'global_identity_id' => null, 'letter_id' => 1, 'role' => 'author'],
+            ['identity_id' => null, 'global_identity_id' => 2, 'letter_id' => 1, 'role' => 'recipient'],
+            ['identity_id' => 3, 'global_identity_id' => null, 'letter_id' => 2, 'role' => 'mentioned'],
+            ['identity_id' => 4, 'global_identity_id' => null, 'letter_id' => 3, 'role' => 'recipient'],
         ]);
 
         DB::connection('tenant')->table('test-tenant__places')->insert(['id' => 1, 'name' => 'Prague', 'alternative_names' => '["Praha"]']);
