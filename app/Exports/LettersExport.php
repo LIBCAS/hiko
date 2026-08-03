@@ -10,11 +10,12 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithCustomStartCell;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use App\Services\LetterFilterService;
 
-class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, WithChunkReading, ShouldAutoSize
+class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, WithChunkReading, ShouldAutoSize, WithCustomStartCell
 {
     public function __construct(private array $filters = [])
     {
@@ -47,6 +48,15 @@ class LettersExport implements FromQuery, WithMapping, WithEvents, WithStyles, W
             'status',
             'approval' // Include 'approval' in the select statement
         );
+    }
+
+    /**
+     * Reserve the first two rows for the grouped and column headers that are
+     * populated in the AfterSheet event.
+     */
+    public function startCell(): string
+    {
+        return 'A3';
     }
 
     /**

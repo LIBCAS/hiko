@@ -15,10 +15,13 @@
             <div class="flex gap-4">
                 <x-dropdown label="{{ __('hiko.export') }}" class="font-semibold" :alignRight="false">
                     <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
-                        <a href="{{ route('letters.export') }}" id="export-url"
-                            class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
+                        <x-loading-link
+                            href="{{ route('letters.export', ['filters' => $exportFilters]) }}"
+                            id="export-url"
+                            :loading-duration="11000"
+                            class="!flex w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
                             {{ __('hiko.export_selected') }}
-                        </a>
+                        </x-loading-link>
                         @if ($mainCharacter)
                             <a href="{{ route('letters.export.palladio.character', ['role' => 'author']) }}"
                                 class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">

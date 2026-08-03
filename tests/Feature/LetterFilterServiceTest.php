@@ -2,15 +2,21 @@
 
 namespace Tests\Feature;
 
+use App\Exports\LettersExport;
+use App\Http\Controllers\LetterController;
 use App\Livewire\FiltersForm;
 use App\Models\Tenant;
 use App\Services\LetterFilterService;
 use App\Services\SearchIdentity;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Excel as ExcelWriter;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Tests\TestCase;
 
 class LetterFilterServiceTest extends TestCase
@@ -198,6 +204,60 @@ class LetterFilterServiceTest extends TestCase
         );
     }
 
+    public function test_letter_export_uses_the_same_nested_filters_as_the_table(): void
+    {
+        $filters = [
+            'match' => LetterFilterService::MATCH_ALL,
+            'mentioned' => ['global-1'],
+            'status' => 'publish',
+        ];
+        $expectedIds = $this->ids($filters);
+
+        Excel::fake();
+
+        $request = Request::create('/letters/export', 'GET', [
+            'filters' => $filters,
+        ]);
+        app(LetterController::class)->export($request);
+
+        Excel::assertDownloaded('letters.xlsx', function (LettersExport $export) use ($expectedIds) {
+            $exportedIds = $export->query()
+                ->reorder()
+                ->orderBy('test-tenant__letters.id')
+                ->pluck('test-tenant__letters.id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            return $exportedIds === $expectedIds;
+        });
+    }
+
+    public function test_filtered_xlsx_contains_every_selected_letter_after_its_headers(): void
+    {
+        $filters = [
+            'match' => LetterFilterService::MATCH_ALL,
+            'mentioned' => ['global-1'],
+        ];
+        $expectedIds = $this->ids($filters);
+        $contents = Excel::raw(new LettersExport($filters), ExcelWriter::XLSX);
+        $file = tmpfile();
+
+        $this->assertIsResource($file);
+        fwrite($file, $contents);
+        $path = stream_get_meta_data($file)['uri'];
+        $sheet = IOFactory::load($path)->getActiveSheet();
+        $actualIds = collect($sheet->rangeToArray('A3:A' . $sheet->getHighestDataRow()))
+            ->flatten()
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+
+        fclose($file);
+
+        $this->assertSame($expectedIds, $actualIds);
+    }
+
     protected function ids(array $filters): array
     {
         return app(LetterFilterService::class)
@@ -214,11 +274,27 @@ class LetterFilterServiceTest extends TestCase
             $table->id();
             $table->uuid('uuid')->nullable();
             $table->timestamps();
+            $table->longText('history')->nullable();
+            $table->json('copies')->nullable();
+            $table->integer('date_year')->nullable();
+            $table->integer('date_month')->nullable();
+            $table->integer('date_day')->nullable();
             $table->date('date_computed')->nullable();
+            $table->string('date_marked')->nullable();
+            $table->boolean('date_uncertain')->default(false);
+            $table->boolean('date_approximate')->default(false);
+            $table->boolean('date_inferred')->default(false);
+            $table->boolean('date_is_range')->default(false);
+            $table->text('date_note')->nullable();
             $table->longText('content_stripped')->nullable();
+            $table->longText('content')->nullable();
             $table->longText('abstract')->nullable();
+            $table->string('explicit')->nullable();
+            $table->string('incipit')->nullable();
             $table->text('languages')->nullable();
             $table->longText('notes_private')->nullable();
+            $table->longText('notes_public')->nullable();
+            $table->json('related_resources')->nullable();
             $table->string('status')->nullable();
             $table->boolean('approval')->default(false);
         });
@@ -291,6 +367,12 @@ class LetterFilterServiceTest extends TestCase
             $table->unsignedBigInteger('global_archive_id')->nullable();
             $table->unsignedBigInteger('global_collection_id')->nullable();
             $table->string('signature')->nullable();
+            $table->string('type')->nullable();
+            $table->string('preservation')->nullable();
+            $table->string('copy')->nullable();
+            $table->string('l_number')->nullable();
+            $table->text('manifestation_notes')->nullable();
+            $table->text('location_note')->nullable();
             $table->timestamps();
         });
 

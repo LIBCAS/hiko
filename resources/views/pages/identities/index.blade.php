@@ -11,6 +11,7 @@
             <div class="flex items-center gap-4">
                 <x-loading-link
                     href="{{ route('identities.export') }}"
+                    :loading-duration="11000"
                     onclick="
                         const exportUrl = new URL(this.href);
                         exportUrl.search = '';

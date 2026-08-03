@@ -1,4 +1,7 @@
-@props(['href'])
+@props([
+    'href',
+    'loadingDuration' => 8000,
+])
 
 <a
     href="{{ $href }}"
@@ -10,7 +13,7 @@
         }
         loading = true;
         clearTimeout(resetTimer);
-        resetTimer = setTimeout(() => loading = false, 8000);
+        resetTimer = setTimeout(() => loading = false, {{ max(0, (int) $loadingDuration) }});
     "
     x-bind:aria-disabled="loading.toString()"
     x-bind:class="{ 'opacity-60 pointer-events-none': loading }"

@@ -44,10 +44,15 @@ class LetterController extends Controller
     /**
      * Display a list of letters in an index view.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $filters = $request->has('filters') && is_array($request->query('filters'))
+            ? $request->query('filters')
+            : session()->get('lettersTableFilters', []);
+
         return view('pages.letters.index', [
             'title' => __('hiko.letters'),
+            'exportFilters' => app(LetterFilterService::class)->normalize($filters),
             'mainCharacter' => config('hiko.main_character')
                 ? optional(Identity::find(config('hiko.main_character')))->value('surname')
                 : null,
@@ -214,8 +219,16 @@ class LetterController extends Controller
      */
     public function export(Request $request): BinaryFileResponse
     {
+        $filters = $request->input('filters');
+
+        // Keep old top-level export URLs working while the letters page uses the
+        // same nested filters[...] structure as its authoritative URL state.
+        if (!is_array($filters)) {
+            $filters = $request->only(LetterFilterService::ALLOWED_FILTERS);
+        }
+
         return Excel::download(
-            new LettersExport($request->only(LetterFilterService::ALLOWED_FILTERS)),
+            new LettersExport(app(LetterFilterService::class)->normalize($filters)),
             'letters.xlsx'
         );
     }
