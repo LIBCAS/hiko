@@ -10,45 +10,47 @@
             @endcan
 
             <livewire:filters-button />
-
-            <x-dropdown label="{{ __('hiko.export') }}" class="font-semibold" :alignRight="false">
-                <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
-                    <a href="{{ route('letters.export') }}" id="export-url"
-                        class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
-                        {{ __('hiko.export_selected') }}
-                    </a>
-                    @if ($mainCharacter)
-                        <a href="{{ route('letters.export.palladio.character', ['role' => 'author']) }}"
-                            class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
-                            {{ __('hiko.letters_from', ['name' => $mainCharacter]) }}
-                        </a>
-                        <a href="{{ route('letters.export.palladio.character', ['role' => 'recipient']) }}"
-                            class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
-                            {{ __('hiko.letters_to', ['name' => $mainCharacter]) }}
-                        </a>
-                    @endif
-                </div>
-            </x-dropdown>
-
-            @can('manage-users')
-                <x-dropdown label="{{ __('hiko.copy_to') }}" class="font-semibold" :alignRight="false">
+        </div>
+        <div class="flex w-full justify-between">
+            <div class="flex gap-4">
+                <x-dropdown label="{{ __('hiko.export') }}" class="font-semibold" :alignRight="false">
                     <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
-                        @foreach ($transferTenants as $tenant)
-                            <a href="{{ route('inter-tenant-transfers.preview', $tenant) }}"
+                        <a href="{{ route('letters.export') }}" id="export-url"
+                            class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
+                            {{ __('hiko.export_selected') }}
+                        </a>
+                        @if ($mainCharacter)
+                            <a href="{{ route('letters.export.palladio.character', ['role' => 'author']) }}"
                                 class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
-                                {{ $tenant->displayName() }}
+                                {{ __('hiko.letters_from', ['name' => $mainCharacter]) }}
                             </a>
-                        @endforeach
+                            <a href="{{ route('letters.export.palladio.character', ['role' => 'recipient']) }}"
+                                class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
+                                {{ __('hiko.letters_to', ['name' => $mainCharacter]) }}
+                            </a>
+                        @endif
                     </div>
                 </x-dropdown>
-            @endcan
 
-            <a href="{{ route('letters.validation') }}"
-                class="inline-block text-sm font-semibold">
-                {{ __('hiko.input_control') }}
-            </a>
-        </div>
-        <div>
+                @can('manage-users')
+                    <x-dropdown label="{{ __('hiko.copy_to') }}" class="font-semibold" :alignRight="false">
+                        <div class="py-1 bg-white ring-1 ring-black ring-opacity-5">
+                            @foreach ($transferTenants as $tenant)
+                                <a href="{{ route('inter-tenant-transfers.preview', $tenant) }}"
+                                    class="block w-full px-2 py-1 text-sm text-left text-gray-700 hover:bg-gray-100">
+                                    {{ $tenant->displayName() }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </x-dropdown>
+                @endcan
+
+                <a href="{{ route('letters.validation') }}"
+                    class="inline-block text-sm font-semibold">
+                    {{ __('hiko.input_control') }}
+                </a>
+            </div>
+
             <livewire:sorting-form :sortingOptions="[
                 'id' => __('hiko.id'),
                 'date_computed' => __('hiko.by_letter_date'),

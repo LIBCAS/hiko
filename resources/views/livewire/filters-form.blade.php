@@ -1,5 +1,13 @@
 <form wire:submit="search" class="space-y-4">
     <div class="space-y-2">
+        <h3 class="font-semibold text-black">{{ __('hiko.filter_match_mode') }}</h3>
+        <x-select wire:model.live="filters.match" class="w-full px-2 text-sm">
+            <option value="all">{{ __('hiko.match_all_filters') }}</option>
+            <option value="any">{{ __('hiko.match_any_filter') }}</option>
+        </x-select>
+    </div>
+
+    <div class="space-y-2">
         <h3 class="font-semibold text-black">{{ __('hiko.date_is_range') }}</h3>
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label class="block text-sm">
@@ -31,13 +39,39 @@
     <div class="space-y-2">
         <h3 class="font-semibold text-black">{{ __('hiko.people') }}</h3>
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <label class="block text-sm">
+            <label class="block text-sm" wire:key="identity-filter-author-{{ md5(json_encode($identityOptions['author'])) }}">
                 <span class="block text-black">{{ __('hiko.author') }}</span>
-                <x-input wire:model.live.debounce.1000ms="filters.author" class="w-full px-2 text-sm" type="text" />
+                <div wire:ignore>
+                    <x-select id="filter-author" class="w-full px-2 text-sm"
+                        x-data="ajaxChoices({
+                            url: '{{ route('ajax.identities') }}',
+                            element: $el,
+                            extraParams: { allTypes: true },
+                            change: () => $wire.updateIdentityFilter('author', Array.from($el.selectedOptions).map(option => option.value))
+                        })"
+                        x-init="initSelect()" multiple>
+                        @foreach ($identityOptions['author'] as $option)
+                            <option value="{{ $option['value'] }}" selected>{{ $option['label'] }}</option>
+                        @endforeach
+                    </x-select>
+                </div>
             </label>
-            <label class="block text-sm">
+            <label class="block text-sm" wire:key="identity-filter-recipient-{{ md5(json_encode($identityOptions['recipient'])) }}">
                 <span class="block text-black">{{ __('hiko.recipient') }}</span>
-                <x-input wire:model.live.debounce.1000ms="filters.recipient" class="w-full px-2 text-sm" type="text" />
+                <div wire:ignore>
+                    <x-select id="filter-recipient" class="w-full px-2 text-sm"
+                        x-data="ajaxChoices({
+                            url: '{{ route('ajax.identities') }}',
+                            element: $el,
+                            extraParams: { allTypes: true },
+                            change: () => $wire.updateIdentityFilter('recipient', Array.from($el.selectedOptions).map(option => option.value))
+                        })"
+                        x-init="initSelect()" multiple>
+                        @foreach ($identityOptions['recipient'] as $option)
+                            <option value="{{ $option['value'] }}" selected>{{ $option['label'] }}</option>
+                        @endforeach
+                    </x-select>
+                </div>
             </label>
         </div>
     </div>
@@ -81,9 +115,22 @@
                 <span class="block text-black">{{ __('hiko.keywords') }}</span>
                 <x-input wire:model.live.debounce.1000ms="filters.keyword" class="w-full px-2 text-sm" type="text" />
             </label>
-            <label class="block text-sm">
+            <label class="block text-sm" wire:key="identity-filter-mentioned-{{ md5(json_encode($identityOptions['mentioned'])) }}">
                 <span class="block text-black">{{ __('hiko.mentioned') }}</span>
-                <x-input wire:model.live.debounce.1000ms="filters.mentioned" class="w-full px-2 text-sm" type="text" />
+                <div wire:ignore>
+                    <x-select id="filter-mentioned" class="w-full px-2 text-sm"
+                        x-data="ajaxChoices({
+                            url: '{{ route('ajax.identities') }}',
+                            element: $el,
+                            extraParams: { allTypes: true },
+                            change: () => $wire.updateIdentityFilter('mentioned', Array.from($el.selectedOptions).map(option => option.value))
+                        })"
+                        x-init="initSelect()" multiple>
+                        @foreach ($identityOptions['mentioned'] as $option)
+                            <option value="{{ $option['value'] }}" selected>{{ $option['label'] }}</option>
+                        @endforeach
+                    </x-select>
+                </div>
             </label>
             <label class="block text-sm">
                 <span class="block text-black">{{ __('hiko.full_text') }}</span>

@@ -2,6 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Models\GlobalIdentity;
+use App\Models\Identity;
+use App\Services\LetterFilterService;
 use Livewire\Component;
 
 class FiltersButton extends Component
@@ -13,11 +16,12 @@ class FiltersButton extends Component
 
     public function mount()
     {
-        // Initialize active filters based on session or default values
-        if (session()->has('lettersTableFilters')) {
-            $filters = session()->get('lettersTableFilters');
-            $this->activeFilters = $this->extractActiveFilters($filters);
-        }
+        $filters = request()->has('filters')
+            ? (array) request()->query('filters', [])
+            : session()->get('lettersTableFilters', []);
+        $this->activeFilters = $this->extractActiveFilters(
+            app(LetterFilterService::class)->normalize($filters)
+        );
     }
 
     public function toggleFilters()
@@ -33,6 +37,11 @@ class FiltersButton extends Component
     private function extractActiveFilters(array $filters): array
     {
         $active = [];
+        $identityLabels = $this->identityLabels($filters);
+
+        if (($filters['match'] ?? LetterFilterService::MATCH_ALL) === LetterFilterService::MATCH_ANY) {
+            $active['match'] = ['label' => __('hiko.filter_match_mode'), 'value' => __('hiko.match_any_filter')];
+        }
         if (isset($filters['id']) && !empty($filters['id'])) {
             $active['id'] = ['label' => __('hiko.id'), 'value' => $filters['id']];
         }
@@ -46,10 +55,10 @@ class FiltersButton extends Component
             $active['signature'] = ['label' => __('hiko.signature'), 'value' => $filters['signature']];
         }
         if (isset($filters['author']) && !empty($filters['author'])) {
-            $active['author'] = ['label' => __('hiko.author'), 'value' => $filters['author']];
+            $active['author'] = ['label' => __('hiko.author'), 'value' => $identityLabels['author']];
         }
         if (isset($filters['recipient']) && !empty($filters['recipient'])) {
-            $active['recipient'] = ['label' => __('hiko.recipient'), 'value' => $filters['recipient']];
+            $active['recipient'] = ['label' => __('hiko.recipient'), 'value' => $identityLabels['recipient']];
         }
         if (isset($filters['origin']) && !empty($filters['origin'])) {
             $active['origin'] = ['label' => __('hiko.origin'), 'value' => $filters['origin']];
@@ -70,10 +79,10 @@ class FiltersButton extends Component
             $active['keyword'] = ['label' => __('hiko.keywords'), 'value' => $filters['keyword']];
         }
         if (isset($filters['mentioned']) && !empty($filters['mentioned'])) {
-            $active['mentioned'] = ['label' => __('hiko.mentioned'), 'value' => $filters['mentioned']];
+            $active['mentioned'] = ['label' => __('hiko.mentioned'), 'value' => $identityLabels['mentioned']];
         }
-        if (isset($filters['fulltext']) && !empty($filters['fulltext'])) {
-            $active['fulltext'] = ['label' => __('hiko.full_text'), 'value' => $filters['fulltext']];
+        if (isset($filters['content_stripped']) && $filters['content_stripped'] !== '') {
+            $active['content_stripped'] = ['label' => __('hiko.full_text'), 'value' => $filters['content_stripped']];
         }
         if (isset($filters['abstract']) && !empty($filters['abstract'])) {
             $active['abstract'] = ['label' => __('hiko.abstract'), 'value' => $filters['abstract']];
@@ -81,16 +90,16 @@ class FiltersButton extends Component
         if (isset($filters['languages']) && !empty($filters['languages'])) {
             $active['languages'] = ['label' => __('hiko.language') . ' ' . __('hiko.in_english'), 'value' => $filters['languages']];
         }
-        if (isset($filters['note']) && !empty($filters['note'])) {
-            $active['note'] = ['label' => __('hiko.note'), 'value' => $filters['note']];
+        if (isset($filters['notes_private']) && $filters['notes_private'] !== '') {
+            $active['notes_private'] = ['label' => __('hiko.notes_private'), 'value' => $filters['notes_private']];
         }
-        if (isset($filters['media']) && !empty($filters['media'])) {
+        if (isset($filters['media']) && $filters['media'] !== '') {
             $active['media'] = ['label' => __('hiko.media'), 'value' => $filters['media'] == '1' ? __('hiko.with_media') : __('hiko.without_media')];
         }
         if (isset($filters['status']) && !empty($filters['status'])) {
             $active['status'] = ['label' => __('hiko.status'), 'value' => __("hiko.{$filters['status']}")];
         }
-        if (isset($filters['approval']) && !empty($filters['approval'])) {
+        if (isset($filters['approval']) && $filters['approval'] !== '') {
             $active['approval'] = ['label' => __('hiko.approval'), 'value' => $filters['approval'] == \App\Models\Letter::APPROVED ? __('hiko.approved') : __('hiko.not_approved')];
         }
         if (isset($filters['editor']) && !empty($filters['editor'])) {
@@ -98,6 +107,47 @@ class FiltersButton extends Component
         }
 
         return $active;
+    }
+
+    protected function identityLabels(array $filters): array
+    {
+        $references = collect(LetterFilterService::IDENTITY_FILTERS)
+            ->flatMap(function ($field) use ($filters) {
+                $values = $filters[$field] ?? [];
+                return is_array($values) ? $values : [$values];
+            })
+            ->filter()
+            ->unique()
+            ->values();
+
+        $localIds = $references
+            ->filter(fn ($value) => preg_match('/^local-\d+$/', (string) $value))
+            ->map(fn ($value) => (int) substr($value, 6));
+        $globalIds = $references
+            ->filter(fn ($value) => preg_match('/^global-\d+$/', (string) $value))
+            ->map(fn ($value) => (int) substr($value, 7));
+
+        $local = Identity::query()->whereKey($localIds)->pluck('name', 'id');
+        $global = GlobalIdentity::query()->whereKey($globalIds)->pluck('name', 'id');
+
+        return collect(LetterFilterService::IDENTITY_FILTERS)->mapWithKeys(function ($field) use ($filters, $local, $global) {
+            $values = $filters[$field] ?? [];
+            $values = is_array($values) ? $values : [$values];
+
+            $labels = collect($values)->map(function ($value) use ($local, $global) {
+                if (preg_match('/^local-(\d+)$/', (string) $value, $matches)) {
+                    return $local->get((int) $matches[1], $value) . ' (' . __('hiko.local') . ')';
+                }
+
+                if (preg_match('/^global-(\d+)$/', (string) $value, $matches)) {
+                    return $global->get((int) $matches[1], $value) . ' (' . __('hiko.global') . ')';
+                }
+
+                return $value;
+            })->filter()->implode('; ');
+
+            return [$field => $labels];
+        })->all();
     }
 
     public function removeFilter(string $filterKey)

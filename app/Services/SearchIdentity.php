@@ -11,7 +11,12 @@ class SearchIdentity
         return Identity::query()
             ->select('id', 'name', 'birth_year', 'death_year')
             ->when(isset($filters['name']), function ($query) use ($filters) {
-                $query->where('name', 'like', '%' . $filters['name'] . '%');
+                $search = mb_strtolower($filters['name']);
+                $query->where(function ($names) use ($search) {
+                    $names
+                        ->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(alternative_names) LIKE ?', ["%{$search}%"]);
+                });
             })
             ->when(isset($filters['related_names']), function ($query) use ($filters) {
                 $query->where('related_names', 'like', '%' . $filters['related_names'] . '%');
@@ -32,6 +37,7 @@ class SearchIdentity
             ->when(isset($filters['note']), function ($query) use ($filters) {
                 $query->where('note', 'like', '%' . $filters['note'] . '%');
             })
+            ->limit($limit)
             ->get()
             ->map(function ($identity) {
                 $birthYear = $identity->birth_year ? $identity->birth_year : '?';

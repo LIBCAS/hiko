@@ -708,7 +708,7 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
 
         Route::get('identity', [AjaxIdentityController::class, '__invoke'])
             ->name('ajax.identities')
-            ->middleware(['auth', 'can:manage-metadata']);
+            ->middleware(['auth', 'can:view-metadata']);
 
         Route::get('global-identity', [AjaxGlobalIdentityController::class, '__invoke'])
             ->name('ajax.global.identities')

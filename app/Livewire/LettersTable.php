@@ -26,13 +26,16 @@ class LettersTable extends Component
 
     public function mount()
     {
-        $this->filters = array_intersect_key(session()->get('lettersTableFilters', []), array_flip($this->allowedFilters));
+        $filters = request()->has('filters')
+            ? (array) request()->query('filters', [])
+            : session()->get('lettersTableFilters', []);
+        $this->filters = app(LetterFilterService::class)->normalize($filters);
         $this->sorting = session()->get('lettersTableSorting', $this->sorting);
     }
 
     public function filtersChanged(array $filters)
     {
-        $this->filters = array_intersect_key($filters, array_flip($this->allowedFilters));
+        $this->filters = app(LetterFilterService::class)->normalize($filters);
         session()->put('lettersTableFilters', $this->filters);
         $this->resetPage();
     }
@@ -58,6 +61,7 @@ class LettersTable extends Component
 
         if (in_array($key, $this->allowedFilters)) {
             unset($this->filters[$key]);
+            $this->filters = app(LetterFilterService::class)->normalize($this->filters);
             session()->put('lettersTableFilters', $this->filters);
         }
 
@@ -68,7 +72,7 @@ class LettersTable extends Component
 
     public function resetFilters()
     {
-        $this->filters = [];
+        $this->filters = ['match' => LetterFilterService::MATCH_ALL];
         session()->forget('lettersTableFilters');
         $this->resetPage();
     }
