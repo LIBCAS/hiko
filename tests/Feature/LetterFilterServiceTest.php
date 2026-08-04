@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Exports\AdvancedLettersExport;
 use App\Exports\LettersExport;
 use App\Http\Controllers\LetterController;
 use App\Livewire\FiltersButton;
@@ -11,6 +12,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\LetterFilterService;
 use App\Services\SearchIdentity;
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -22,6 +24,8 @@ use Livewire\Livewire;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Excel as ExcelWriter;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use Tests\TestCase;
 
 class LetterFilterServiceTest extends TestCase
@@ -62,6 +66,8 @@ class LetterFilterServiceTest extends TestCase
 
     protected function tearDown(): void
     {
+        Carbon::setTestNow();
+
         if (isset($this->databasePath)) {
             tenancy()->end();
             DB::disconnect('sqlite');
@@ -226,6 +232,7 @@ class LetterFilterServiceTest extends TestCase
 
     public function test_letter_export_uses_the_same_nested_filters_as_the_table(): void
     {
+        Carbon::setTestNow('2026-08-04 14:25:30');
         $filters = [
             'match' => LetterFilterService::MATCH_ALL,
             'mentioned' => ['global-1'],
@@ -240,8 +247,11 @@ class LetterFilterServiceTest extends TestCase
         ]);
         app(LetterController::class)->export($request);
 
-        Excel::assertDownloaded('letters.xlsx', function (LettersExport $export) use ($expectedIds) {
-            $exportedIds = collect(iterator_to_array($export->sheets()[0]->generator()))
+        Excel::assertDownloaded('letters_20260804142530.xlsx', function (LettersExport $export) use ($expectedIds) {
+            $lettersSheet = collect($export->sheets())->first(
+                fn ($sheet) => $sheet->title() === 'Letters'
+            );
+            $exportedIds = collect(iterator_to_array($lettersSheet->generator()))
                 ->pluck(0)
                 ->map(fn ($id) => (int) $id)
                 ->sort()
@@ -273,6 +283,33 @@ class LetterFilterServiceTest extends TestCase
         $this->assertSame($filters, $query['filters'] ?? null);
     }
 
+    public function test_advanced_letter_export_uses_the_same_nested_filters_as_the_table(): void
+    {
+        Carbon::setTestNow('2026-08-04 14:25:30');
+        $filters = [
+            'match' => LetterFilterService::MATCH_ALL,
+            'mentioned' => ['global-1'],
+        ];
+        $expectedIds = $this->ids($filters);
+
+        Excel::fake();
+        app(LetterController::class)->exportAdvanced(Request::create('/letters/export/advanced', 'GET', [
+            'filters' => $filters,
+        ]));
+
+        Excel::assertDownloaded('letters-advanced_20260804142530.xlsx', function (AdvancedLettersExport $export) use ($expectedIds) {
+            $exportedIds = collect(iterator_to_array($export->sheets()[0]->generator()))
+                ->pluck(0)
+                ->filter(fn ($id) => $id !== null && $id !== '')
+                ->map(fn ($id) => (int) $id)
+                ->sort()
+                ->values()
+                ->all();
+
+            return $exportedIds === $expectedIds;
+        });
+    }
+
     public function test_filtered_xlsx_has_normalized_sheets_and_preserves_repeated_values(): void
     {
         $filters = [
@@ -280,6 +317,45 @@ class LetterFilterServiceTest extends TestCase
             'mentioned' => ['global-1'],
         ];
         $expectedIds = $this->ids($filters);
+        $advancedContents = Excel::raw(new AdvancedLettersExport($filters), ExcelWriter::XLSX);
+        $advancedFile = tmpfile();
+
+        $this->assertIsResource($advancedFile);
+        fwrite($advancedFile, $advancedContents);
+        $advancedPath = stream_get_meta_data($advancedFile)['uri'];
+        $advancedWorkbook = IOFactory::load($advancedPath);
+        $this->assertSame(['Summary'], $advancedWorkbook->getSheetNames());
+
+        $summary = $advancedWorkbook->getSheetByName('Summary');
+        $this->assertSame(1, (int) $summary->getCell('A3')->getValue());
+        $this->assertNull($summary->getCell('A4')->getValue());
+        $this->assertSame(2, (int) $summary->getCell('A5')->getValue());
+        $this->assertArrayHasKey('A3:A4', $summary->getMergeCells());
+        $this->assertArrayHasKey('L3:L4', $summary->getMergeCells());
+        $this->assertSame('Author Local', $summary->getCell('M3')->getValue());
+        $this->assertSame('Direct Global Recipient', $summary->getCell('P3')->getValue());
+        $this->assertSame('Alice Local One', $summary->getCell('S3')->getValue());
+        $this->assertSame('SIG-ONE-A', $summary->getCell('AB3')->getValue());
+        $this->assertSame('SIG-ONE-B', $summary->getCell('AB4')->getValue());
+        $this->assertSame('Source One', $summary->getCell('AL3')->getValue());
+        $this->assertSame('Source Two', $summary->getCell('AL4')->getValue());
+        $this->assertSame(
+            Alignment::VERTICAL_CENTER,
+            $summary->getStyle('A3')->getAlignment()->getVertical()
+        );
+        $this->assertSame('FFFFFFFF', $summary->getStyle('A3')->getFill()->getStartColor()->getARGB());
+        $this->assertSame('FFF3F4F6', $summary->getStyle('A5')->getFill()->getStartColor()->getARGB());
+        $this->assertSame(
+            Border::BORDER_MEDIUM,
+            $summary->getStyle('D1')->getBorders()->getRight()->getBorderStyle()
+        );
+        $this->assertSame(
+            Border::BORDER_MEDIUM,
+            $summary->getStyle('A4')->getBorders()->getBottom()->getBorderStyle()
+        );
+
+        fclose($advancedFile);
+
         $contents = Excel::raw(new LettersExport($filters), ExcelWriter::XLSX);
         $file = tmpfile();
 
@@ -287,7 +363,6 @@ class LetterFilterServiceTest extends TestCase
         fwrite($file, $contents);
         $path = stream_get_meta_data($file)['uri'];
         $workbook = IOFactory::load($path);
-
         $this->assertSame([
             'Letters',
             'Identities',

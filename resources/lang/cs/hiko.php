@@ -279,6 +279,7 @@ return [
     'yes' => 'Ano',
     'no' => 'Ne',
     'export_selected' => 'Export výběru',
+    'export_selected_advanced' => 'Pokročilý export výběru',
     'description' => 'Popisek',
     'date_note' => 'Poznámka k datu',
     'author_inferred' => 'Autor je odvozený',

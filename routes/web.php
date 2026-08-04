@@ -646,6 +646,10 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
             ->name('letters.export')
             ->middleware(['auth', 'can:manage-metadata']);
 
+        Route::get('export/advanced', [LetterController::class, 'exportAdvanced'])
+            ->name('letters.export.advanced')
+            ->middleware(['auth', 'can:manage-metadata']);
+
         Route::get('validation', [LetterController::class, 'validation'])
             ->name('letters.validation')
             ->middleware(['auth', 'can:view-metadata']);

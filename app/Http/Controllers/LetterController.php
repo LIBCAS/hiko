@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AdvancedLettersExport;
 use App\Exports\LettersExport;
 use App\Exports\PalladioCharacterExport;
 use App\Http\Requests\LetterRequest;
@@ -219,6 +220,22 @@ class LetterController extends Controller
      */
     public function export(Request $request): BinaryFileResponse
     {
+        return Excel::download(
+            new LettersExport($this->exportFilters($request)),
+            'letters_' . now()->format('YmdHis') . '.xlsx'
+        );
+    }
+
+    public function exportAdvanced(Request $request): BinaryFileResponse
+    {
+        return Excel::download(
+            new AdvancedLettersExport($this->exportFilters($request)),
+            'letters-advanced_' . now()->format('YmdHis') . '.xlsx'
+        );
+    }
+
+    private function exportFilters(Request $request): array
+    {
         $filters = $request->input('filters');
 
         // Keep old top-level export URLs working while the letters page uses the
@@ -227,10 +244,7 @@ class LetterController extends Controller
             $filters = $request->only(LetterFilterService::ALLOWED_FILTERS);
         }
 
-        return Excel::download(
-            new LettersExport(app(LetterFilterService::class)->normalize($filters)),
-            'letters.xlsx'
-        );
+        return app(LetterFilterService::class)->normalize($filters);
     }
 
     /**

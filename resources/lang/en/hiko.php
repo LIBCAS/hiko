@@ -277,6 +277,7 @@ return [
     'yes' => 'Yes',
     'no' => 'No',
     'export_selected' => 'Export selected records',
+    'export_selected_advanced' => 'Advanced export of selected records',
     'description' => 'Description',
     'date_note' => 'Note on date',
     'author_inferred' => 'Author is inferred',
