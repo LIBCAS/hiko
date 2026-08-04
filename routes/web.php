@@ -59,6 +59,7 @@ use App\Http\Controllers\ReligionTreeController;
 use App\Http\Controllers\ReligionSearchController;
 use App\Http\Controllers\PageLockController;
 use App\Http\Controllers\InterTenantLetterTransferController;
+use App\Http\Controllers\DataController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -832,6 +833,14 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
     Route::post('/app/application-name', [AppInfoController::class, 'updateApplicationName'])
         ->name('app.application-name.update')
         ->middleware(['auth', 'can:manage-users']);
+
+    Route::get('/data', [DataController::class, 'index'])
+        ->name('data.index')
+        ->middleware(['auth', 'can:manage-users']);
+
+    Route::post('/data/metadata-digest', [DataController::class, 'storeDigest'])
+        ->name('data.metadata-digest.store')
+        ->middleware(['auth', 'can:manage-users', 'throttle:3,10']);
 
     Route::post('merge', MergeController::class)
         ->name('merge')

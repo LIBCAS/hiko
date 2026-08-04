@@ -71,10 +71,6 @@
                     </x-button-simple>
                 </form>
             </div>
-
-            @if(!app()->environment('production'))
-                <livewire:db-sync-tool />
-            @endif
         @endcan
     </div>
 </x-app-layout>

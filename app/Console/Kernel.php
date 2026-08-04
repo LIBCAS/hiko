@@ -35,7 +35,17 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // Define your scheduled tasks here
+        $schedule->command('metadata-digests:process')
+            ->everyMinute()
+            ->withoutOverlapping(30);
+
+        $schedule->command('metadata-digests:dispatch-monthly')
+            ->monthlyOn(
+                config('metadata_digest.monthly_day', 1),
+                config('metadata_digest.monthly_time', '00:10')
+            )
+            ->timezone(config('metadata_digest.timezone', config('app.timezone')))
+            ->withoutOverlapping(180);
     }
 
     /**
