@@ -94,9 +94,12 @@
             </ul>
         </div>
         <div class="p-6 bg-white rounded-lg shadow-lg md:w-1/2">
-            @if (session()->has('success') || $errors->any())
+            @if (session()->has('success') || session()->has('error') || $errors->any())
                 <div class="pb-3">
                     <x-success-alert />
+                    @if (session()->has('error'))
+                        <x-error-alert>{{ session('error') }}</x-error-alert>
+                    @endif
                     <x-form-errors />
                 </div>
             @endif

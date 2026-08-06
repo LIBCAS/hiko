@@ -29,8 +29,10 @@
             let heartbeatTimer = null;
             let isReadOnly = false;
             let lostHandled = false;
-            let recoveringMissing = false;
+            let recovering = false;
             let isSubmitting = false;
+            let heartbeatInFlight = false;
+            let initializationComplete = false;
 
             const holderName = (lock) => lock?.locked_by_user_name || lock?.locked_by_user_email || 'Unknown user';
 
@@ -111,12 +113,12 @@
                 }, 3000);
             };
 
-            const attemptRecoverFromMissing = async () => {
-                if (recoveringMissing || isReadOnly) {
+            const attemptRecover = async () => {
+                if (recovering || isReadOnly) {
                     return true;
                 }
 
-                recoveringMissing = true;
+                recovering = true;
 
                 try {
                     const reacquire = await acquire(false);
@@ -133,7 +135,7 @@
                 } catch (e) {
                     return false;
                 } finally {
-                    recoveringMissing = false;
+                    recovering = false;
                 }
             };
 
@@ -142,28 +144,37 @@
                     return;
                 }
 
-                heartbeatTimer = setInterval(async () => {
-                    try {
-                        const res = await postJson(config.heartbeat_url, {
-                            scope: config.scope,
-                            resource_type: config.resource_type,
-                            resource_id: config.resource_id,
-                        });
+                heartbeatTimer = setInterval(sendHeartbeat, config.heartbeat_ms);
+            };
 
-                        if (!res.ok) {
-                            if (res.status === 'missing') {
-                                const recovered = await attemptRecoverFromMissing();
-                                if (!recovered && !lostHandled) {
-                                    handleServiceUnavailable();
-                                }
-                                return;
+            const sendHeartbeat = async () => {
+                if (!initializationComplete || heartbeatInFlight || isReadOnly || lostHandled || isSubmitting) {
+                    return;
+                }
+
+                heartbeatInFlight = true;
+                try {
+                    const res = await postJson(config.heartbeat_url, {
+                        scope: config.scope,
+                        resource_type: config.resource_type,
+                        resource_id: config.resource_id,
+                    });
+
+                    if (!res.ok) {
+                        if (res.status === 'missing' || res.status === 'expired') {
+                            const recovered = await attemptRecover();
+                            if (!recovered && !lostHandled) {
+                                handleServiceUnavailable();
                             }
-                            handleLost(res);
+                            return;
                         }
-                    } catch (e) {
-                        // Keep lock alive locally; next tick may recover.
+                        handleLost(res);
                     }
-                }, config.heartbeat_ms);
+                } catch (e) {
+                    // A later heartbeat or foreground event will retry.
+                } finally {
+                    heartbeatInFlight = false;
+                }
             };
 
             const acquire = async (force = false) => {
@@ -220,6 +231,8 @@
                     }
                 } catch (e) {
                     // If lock service fails, do not block work.
+                } finally {
+                    initializationComplete = true;
                 }
             };
 
@@ -249,6 +262,14 @@
                     isSubmitting = true;
                 }
             }, true);
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    sendHeartbeat();
+                }
+            });
+            window.addEventListener('focus', sendHeartbeat);
+            window.addEventListener('pageshow', sendHeartbeat);
 
             window.addEventListener('pagehide', release);
             window.addEventListener('beforeunload', release);

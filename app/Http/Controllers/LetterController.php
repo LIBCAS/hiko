@@ -147,10 +147,9 @@ class LetterController extends Controller
         ], $request->user());
 
         if (!$lock['ok']) {
-            return redirect()
-                ->route('letters')
-                ->with('success', __('hiko.page_lock_not_owned'))
-                ->with('success_sticky', true);
+            return back()
+                ->withInput()
+                ->with('error', __('hiko.page_lock_not_owned'));
         }
 
         $redirectRoute = $request->action === 'create' ? 'letters.create' : 'letters.edit';

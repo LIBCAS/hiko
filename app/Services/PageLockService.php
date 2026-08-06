@@ -84,22 +84,23 @@ class PageLockService
                 return ['ok' => false, 'status' => 'missing'];
             }
 
-            if ($this->isExpired($lock, $now)) {
-                $this->audit('expired', $context, $user, ['locked_by' => $this->holderData($lock)]);
-                return ['ok' => false, 'status' => 'expired', 'lock' => $this->serializeLock($lock)];
-            }
-
             if (!$this->isOwnedByActor($lock, $user)) {
+                if ($this->isExpired($lock, $now)) {
+                    $this->audit('expired', $context, $user, ['locked_by' => $this->holderData($lock)]);
+                    return ['ok' => false, 'status' => 'expired', 'lock' => $this->serializeLock($lock)];
+                }
+
                 $this->audit('lost', $context, $user, ['locked_by' => $this->holderData($lock)]);
                 return ['ok' => false, 'status' => 'lost', 'lock' => $this->serializeLock($lock)];
             }
 
+            $wasExpired = $this->isExpired($lock, $now);
             $lock->update([
                 'heartbeat_at' => $now,
                 'expires_at' => $expiresAt,
             ]);
 
-            $this->audit('heartbeat', $context, $user, []);
+            $this->audit('heartbeat', $context, $user, $wasExpired ? ['mode' => 'expired_refresh'] : []);
 
             return [
                 'ok' => true,
@@ -144,21 +145,33 @@ class PageLockService
         }
 
         $context = $this->buildContext($key);
-        $lock = PageLock::where('resource_fingerprint', $context['resource_fingerprint'])->first();
+        $now = now();
+        $expiresAt = $now->copy()->addSeconds((int) config('page_locks.ttl_seconds', 60));
 
-        if (!$lock) {
-            return ['ok' => false, 'status' => 'missing'];
-        }
+        return DB::transaction(function () use ($context, $user, $now, $expiresAt) {
+            $lock = PageLock::where('resource_fingerprint', $context['resource_fingerprint'])
+                ->lockForUpdate()
+                ->first();
 
-        if ($this->isExpired($lock, now())) {
-            return ['ok' => false, 'status' => 'expired', 'lock' => $this->serializeLock($lock)];
-        }
+            if (!$lock) {
+                return ['ok' => false, 'status' => 'missing'];
+            }
 
-        if (!$this->isOwnedByActor($lock, $user)) {
-            return ['ok' => false, 'status' => 'lost', 'lock' => $this->serializeLock($lock)];
-        }
+            if (!$this->isOwnedByActor($lock, $user)) {
+                $status = $this->isExpired($lock, $now) ? 'expired' : 'lost';
+                return ['ok' => false, 'status' => $status, 'lock' => $this->serializeLock($lock)];
+            }
 
-        return ['ok' => true, 'status' => 'active'];
+            if ($this->isExpired($lock, $now)) {
+                $lock->update([
+                    'heartbeat_at' => $now,
+                    'expires_at' => $expiresAt,
+                ]);
+                $this->audit('heartbeat', $context, $user, ['mode' => 'assert_expired_refresh']);
+            }
+
+            return ['ok' => true, 'status' => 'active'];
+        });
     }
 
     protected function canAccessResourceType(string $resourceType): bool
