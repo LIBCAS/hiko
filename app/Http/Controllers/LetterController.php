@@ -188,7 +188,7 @@ class LetterController extends Controller
 
         return redirect()
             ->route('letters')
-            ->with('success', 'hiko.removed');
+            ->with('success', __('hiko.removed'));
     }
 
     /**
