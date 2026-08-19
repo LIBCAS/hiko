@@ -75,7 +75,11 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
         $filters = $this->filters;
 
         $query->when($filters['name'], fn($q) => $q->where('name', 'like', "%{$filters['name']}%"));
-        $query->when($filters['related_names'], fn($q) => $q->where('related_names', 'like', "%{$filters['related_names']}%"));
+        $query->when($filters['related_names'], function ($q) use ($filters) {
+            $q->whereRaw('LOWER(related_names) LIKE ?', [
+                '%' . mb_strtolower($filters['related_names']) . '%',
+            ]);
+        });
         $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
 
@@ -110,7 +114,11 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
         $filters = $this->filters;
 
         $query->when($filters['name'], fn($q) => $q->where('name', 'like', "%{$filters['name']}%"));
-        $query->when($filters['related_names'], fn($q) => $q->where('related_names', 'like', "%{$filters['related_names']}%"));
+        $query->when($filters['related_names'], function ($q) use ($filters) {
+            $q->whereRaw('LOWER(related_names) LIKE ?', [
+                '%' . mb_strtolower($filters['related_names']) . '%',
+            ]);
+        });
         $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
 

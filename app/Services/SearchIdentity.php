@@ -19,7 +19,9 @@ class SearchIdentity
                 });
             })
             ->when(isset($filters['related_names']), function ($query) use ($filters) {
-                $query->where('related_names', 'like', '%' . $filters['related_names'] . '%');
+                $query->whereRaw('LOWER(related_names) LIKE ?', [
+                    '%' . mb_strtolower($filters['related_names']) . '%',
+                ]);
             })
             ->when(isset($filters['type']), function ($query) use ($filters) {
                 $query->where('type', $filters['type']);

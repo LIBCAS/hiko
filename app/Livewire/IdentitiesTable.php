@@ -145,7 +145,12 @@ class IdentitiesTable extends Component
         $adminNotes = trim((string)($filters['admin_notes'] ?? ''));
 
         $query->when($filters['name'], fn($q) => $q->where($nameColumn, 'like', "%{$filters['name']}%"));
-        $query->when($filters['related_names'], fn($q) => $q->where($relatedNamesColumn, 'like', "%{$filters['related_names']}%"));
+        $query->when($filters['related_names'], function ($q) use ($filters, $relatedNamesColumn) {
+            $column = $q->getGrammar()->wrap($relatedNamesColumn);
+            $search = mb_strtolower($filters['related_names']);
+
+            $q->whereRaw("LOWER({$column}) LIKE ?", ["%{$search}%"]);
+        });
         $query->when($filters['type'], fn($q) => $q->where($typeColumn, $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where($noteColumn, 'like', "%{$filters['note']}%"));
 

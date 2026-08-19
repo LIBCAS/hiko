@@ -62,7 +62,11 @@ class IdentityController extends Controller
         ])->select('id', 'name', 'type', 'birth_year', 'death_year', 'related_names');
 
         $query->when($filters['name'] ?? null, fn($q) => $q->where('name', 'like', '%' . $filters['name'] . '%'));
-        $query->when($filters['related_names'] ?? null, fn($q) => $q->where('related_names', 'like', '%' . $filters['related_names'] . '%'));
+        $query->when($filters['related_names'] ?? null, function ($q) use ($filters) {
+            $q->whereRaw('LOWER(related_names) LIKE ?', [
+                '%' . mb_strtolower($filters['related_names']) . '%',
+            ]);
+        });
         $query->when($filters['type'] ?? null, fn($q) => $q->where('type', $filters['type']));
         $query->when(
             $filters['profession'] ?? null,
