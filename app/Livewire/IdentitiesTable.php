@@ -22,7 +22,7 @@ class IdentitiesTable extends Component
         'order' => 'name',
         'religion' => null,
         'source' => 'all',
-        'global_identity' => '',
+        'global_identity' => 'all',
         'admin_notes' => '',
     ];
 
@@ -43,7 +43,7 @@ class IdentitiesTable extends Component
             'order' => 'name',
             'religion' => null,
             'source' => 'all',
-            'global_identity' => '',
+            'global_identity' => 'all',
             'admin_notes' => '',
         ];
         $this->search();
@@ -55,6 +55,10 @@ class IdentitiesTable extends Component
             $this->filters,
             array_intersect_key(session()->get('identitiesTableFilters', []), $this->filters)
         );
+
+        if (!in_array($this->filters['global_identity'], ['all', 'yes', 'no'], true)) {
+            $this->filters['global_identity'] = 'all';
+        }
     }
 
     public function updatedFilters()
@@ -76,7 +80,7 @@ class IdentitiesTable extends Component
     {
         $filters = $this->filters;
         $source = $filters['source'] ?? 'all';
-        $hasGlobalIdentityFilter = trim((string)($filters['global_identity'] ?? '')) !== '';
+        $hasGlobalIdentityFilter = in_array($filters['global_identity'] ?? 'all', ['yes', 'no'], true);
 
         // Build Local Query
         $localQuery = null;
@@ -162,18 +166,10 @@ class IdentitiesTable extends Component
             }
         }
 
-        if (!empty($filters['global_identity'])) {
-            $term = trim((string)$filters['global_identity']);
-            if ($scope === 'local') {
-                $prefix = tenancy()->tenant->table_prefix;
-                $query->where(function ($q) use ($term, $prefix) {
-                    $q->where('global_identities.name', 'like', '%' . $term . '%');
-
-                    if (ctype_digit($term)) {
-                        $q->orWhere("{$prefix}__identities.global_identity_id", (int)$term);
-                    }
-                });
-            }
+        if ($scope === 'local' && ($filters['global_identity'] ?? 'all') === 'yes') {
+            $query->whereNotNull("{$prefix}__identities.global_identity_id");
+        } elseif ($scope === 'local' && ($filters['global_identity'] ?? 'all') === 'no') {
+            $query->whereNull("{$prefix}__identities.global_identity_id");
         }
 
         if (!empty($filters['religion'])) {

@@ -92,12 +92,36 @@ class IdentityRelatedNamesFilterTest extends TestCase
         }
     }
 
+    public function test_global_identity_filter_lists_local_identities_by_assignment(): void
+    {
+        $component = new TestableIdentitiesTable();
+
+        foreach (['yes' => [1], 'no' => [2], 'all' => [1, 2]] as $filter => $expectedIds) {
+            $filters = array_replace($component->filters, ['global_identity' => $filter]);
+            $query = DB::table('test-tenant__identities');
+
+            $component->applyTestFilters($query, $filters, 'local');
+
+            $this->assertSame($expectedIds, $query->orderBy('id')->pluck('id')->all());
+        }
+    }
+
+    public function test_export_global_identity_filter_matches_the_listing(): void
+    {
+        foreach (['yes' => [1], 'no' => [2], 'all' => [1, 2]] as $filter => $expectedIds) {
+            $export = new TestableIdentitiesExport(['global_identity' => $filter]);
+
+            $this->assertSame($expectedIds, $export->localIds());
+        }
+    }
+
     protected function createSchema(): void
     {
         Schema::connection('tenant')->create('test-tenant__identities', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->text('related_names')->nullable();
+            $table->unsignedBigInteger('global_identity_id')->nullable();
         });
 
         Schema::create('global_identities', function (Blueprint $table) {
@@ -114,11 +138,13 @@ class IdentityRelatedNamesFilterTest extends TestCase
                 'id' => 1,
                 'name' => 'Example, Alice',
                 'related_names' => '[{"surname":"Ackley","forename":"Alice","general_name_modifier":null}]',
+                'global_identity_id' => 101,
             ],
             [
                 'id' => 2,
                 'name' => 'Example, Helen',
                 'related_names' => '[{"surname":"Hackett","forename":"Helen","general_name_modifier":null}]',
+                'global_identity_id' => null,
             ],
         ]);
 

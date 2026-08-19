@@ -20,7 +20,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
         'order' => 'name',
         'religion' => null,
         'source' => 'all',
-        'global_identity' => '',
+        'global_identity' => 'all',
         'admin_notes' => '',
     ];
 
@@ -30,6 +30,10 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
             $this->filters,
             array_intersect_key($filters, $this->filters)
         );
+
+        if (!in_array($this->filters['global_identity'], ['all', 'yes', 'no'], true)) {
+            $this->filters['global_identity'] = 'all';
+        }
     }
 
     public function collection()
@@ -37,7 +41,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
         $source = in_array($this->filters['source'] ?? 'all', ['all', 'local', 'global'], true)
             ? $this->filters['source']
             : 'all';
-        $hasGlobalIdentityFilter = trim((string)($this->filters['global_identity'] ?? '')) !== '';
+        $hasGlobalIdentityFilter = in_array($this->filters['global_identity'] ?? 'all', ['yes', 'no'], true);
         $hasAdminNotesFilter = trim((string)($this->filters['admin_notes'] ?? '')) !== '';
 
         $localIdentities = collect();
@@ -83,15 +87,10 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
         $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
 
-        if (!empty($filters['global_identity'])) {
-            $term = trim((string)$filters['global_identity']);
-            $query->where(function ($q) use ($term) {
-                $q->whereHas('globalIdentity', fn($sub) => $sub->where('name', 'like', "%{$term}%"));
-
-                if (ctype_digit($term)) {
-                    $q->orWhere('global_identity_id', (int)$term);
-                }
-            });
+        if (($filters['global_identity'] ?? 'all') === 'yes') {
+            $query->whereNotNull('global_identity_id');
+        } elseif (($filters['global_identity'] ?? 'all') === 'no') {
+            $query->whereNull('global_identity_id');
         }
 
         if (!empty($filters['religion'])) {

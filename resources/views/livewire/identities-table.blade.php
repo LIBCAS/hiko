@@ -30,8 +30,12 @@
                 <x-input wire:model.live.debounce.1000ms="filters.note" data-identity-filter="note" class="block w-full px-2 text-sm" type="text" />
             </label>
             <label>
-                <span class="block text-sm">{{ __('hiko.global_identity') }}</span>
-                <x-input wire:model.live.debounce.1000ms="filters.global_identity" data-identity-filter="global_identity" class="block w-full px-2 text-sm" type="text" />
+                <span class="block text-sm">{{ __('hiko.has_global_identity') }}</span>
+                <x-select wire:model.live.debounce.1000ms="filters.global_identity" data-identity-filter="global_identity" class="block w-full px-2 text-sm">
+                    <option value="all">{{ __('hiko.all') }}</option>
+                    <option value="yes">{{ __('hiko.yes') }}</option>
+                    <option value="no">{{ __('hiko.no') }}</option>
+                </x-select>
             </label>
             <label>
                 <span class="block text-sm">{{ __('hiko.admin_notes') }}</span>
