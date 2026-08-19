@@ -1,5 +1,6 @@
 <x-app-layout :title="$title">
     <x-success-alert />
+    <x-form-errors />
     @if (!empty($professionCategory?->id))
         <x-page-lock
             scope="tenant"

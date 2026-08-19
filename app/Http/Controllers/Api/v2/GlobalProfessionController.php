@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api\v2;
 
-use App\Http\Controllers\Api\v2\Concerns\ValidatesApiV2Writes;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GlobalProfessionRequest;
 use App\Http\Resources\ProfessionResource;
 use App\Models\GlobalProfession;
 use Illuminate\Http\Request;
@@ -17,8 +17,6 @@ use OpenApi\Attributes as OA;
 )]
 class GlobalProfessionController extends Controller
 {
-    use ValidatesApiV2Writes;
-
     #[OA\Get(
         path: "/global-professions",
         summary: "List global professions",
@@ -82,10 +80,11 @@ class GlobalProfessionController extends Controller
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
+                required: ["category_id"],
                 properties: [
                     new OA\Property(property: "cs", type: "string", nullable: true, example: "Global Profession"),
                     new OA\Property(property: "en", type: "string", nullable: true, example: "Global Profession"),
-                    new OA\Property(property: "category_id", type: "integer", nullable: true, example: 35),
+                    new OA\Property(property: "category_id", type: "integer", example: 35),
                     new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "global-profession-637"]),
                 ]
             )
@@ -100,20 +99,9 @@ class GlobalProfessionController extends Controller
             new OA\Response(response: 422, description: "Validation error")
         ]
     )]
-    public function store(Request $request)
+    public function store(GlobalProfessionRequest $request)
     {
-        if ($response = $this->rejectUnknownFields($request, ['name', 'cs', 'en', 'category_id', 'profession_category_id', 'client_meta'])) {
-            return $response;
-        }
-
-        $validated = $request->validate([
-            'name' => 'nullable',
-            'cs' => 'nullable|string|max:255|required_without_all:en,name',
-            'en' => 'nullable|string|max:255|required_without_all:cs,name',
-            'category_id' => 'nullable|exists:global_profession_categories,id',
-            'profession_category_id' => 'nullable|exists:global_profession_categories,id',
-            'client_meta' => 'nullable|array',
-        ]);
+        $validated = $request->validated();
         unset($validated['client_meta']);
 
         $name = $this->normalizeTranslatedName($request);
@@ -123,7 +111,7 @@ class GlobalProfessionController extends Controller
 
         $profession = GlobalProfession::create([
             'name' => $name,
-            'profession_category_id' => $validated['category_id'] ?? $validated['profession_category_id'] ?? null,
+            'profession_category_id' => $validated['profession_category_id'],
         ]);
 
         return (new ProfessionResource($profession))
@@ -146,7 +134,7 @@ class GlobalProfessionController extends Controller
                 properties: [
                     new OA\Property(property: "cs", type: "string", nullable: true, example: "Global Profession"),
                     new OA\Property(property: "en", type: "string", nullable: true, example: "Global Profession"),
-                    new OA\Property(property: "category_id", type: "integer", nullable: true, example: 35),
+                    new OA\Property(property: "category_id", type: "integer", example: 35),
                     new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "global-profession-637"]),
                 ]
             )
@@ -161,22 +149,10 @@ class GlobalProfessionController extends Controller
             new OA\Response(response: 422, description: "Validation error")
         ]
     )]
-    public function update(Request $request, $id)
+    public function update(GlobalProfessionRequest $request, $id)
     {
         $profession = GlobalProfession::findOrFail($id);
-
-        if ($response = $this->rejectUnknownFields($request, ['name', 'cs', 'en', 'category_id', 'profession_category_id', 'client_meta'])) {
-            return $response;
-        }
-
-        $validated = $request->validate([
-            'name' => 'nullable',
-            'cs' => 'sometimes|nullable|string|max:255',
-            'en' => 'sometimes|nullable|string|max:255',
-            'category_id' => 'sometimes|nullable|exists:global_profession_categories,id',
-            'profession_category_id' => 'sometimes|nullable|exists:global_profession_categories,id',
-            'client_meta' => 'nullable|array',
-        ]);
+        $validated = $request->validated();
         unset($validated['client_meta']);
 
         $currentName = $profession->getTranslations('name');
@@ -188,7 +164,7 @@ class GlobalProfessionController extends Controller
 
         $profession->update([
             'name' => $name,
-            'profession_category_id' => $validated['category_id'] ?? $validated['profession_category_id'] ?? $profession->profession_category_id,
+            'profession_category_id' => $validated['profession_category_id'] ?? $profession->profession_category_id,
         ]);
         return new ProfessionResource($profession);
     }

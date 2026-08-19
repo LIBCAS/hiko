@@ -114,7 +114,7 @@ class ProfessionController extends Controller
                 'cs' => $validated['cs'],
                 'en' => $validated['en'],
             ],
-            'profession_category_id' => $validated['profession_category_id'] ?? null,
+            'profession_category_id' => $validated['profession_category_id'],
         ]);
 
         return (new ProfessionResource($profession))

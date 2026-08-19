@@ -191,12 +191,20 @@ class ProfessionCategoryController extends Controller
                     properties: [new OA\Property(property: "message", type: "string", example: "Entity deleted successfully.")]
                 )
             ),
-            new OA\Response(response: 404, description: "Profession Category not found")
+            new OA\Response(response: 404, description: "Profession Category not found"),
+            new OA\Response(response: 409, description: "Profession category is used by professions")
         ]
     )]
     public function destroy($id)
     {
         $category = ProfessionCategory::findOrFail($id);
+
+        if ($category->professions()->exists()) {
+            return response()->json([
+                'message' => __('hiko.profession_category_in_use'),
+            ], Response::HTTP_CONFLICT);
+        }
+
         $category->delete();
 
         return response()->json(['message' => __('hiko.removed')]);

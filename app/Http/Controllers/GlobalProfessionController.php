@@ -47,7 +47,7 @@ class GlobalProfessionController extends Controller
                 'cs' => $validated['cs'],
                 'en' => $validated['en'] ?? null,
             ],
-            'profession_category_id' => $validated['profession_category_id'] ?? null,
+            'profession_category_id' => $validated['profession_category_id'],
         ];
 
         $profession = GlobalProfession::create($professionData);
@@ -107,7 +107,7 @@ class GlobalProfessionController extends Controller
                 'cs' => $validated['cs'],
                 'en' => $validated['en'] ?? null,
             ],
-            'profession_category_id' => $validated['profession_category_id'] ?? null,
+            'profession_category_id' => $validated['profession_category_id'],
         ];
 
         $globalProfession->update($updateData);

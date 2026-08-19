@@ -124,6 +124,12 @@ class GlobalProfessionCategoryController extends Controller
      */
     public function destroy(GlobalProfessionCategory $globalProfessionCategory): RedirectResponse
     {
+        if ($globalProfessionCategory->professions()->exists()) {
+            return redirect()->back()->withErrors([
+                'category' => __('hiko.profession_category_in_use'),
+            ]);
+        }
+
         $globalProfessionCategory->delete();
 
         return redirect()

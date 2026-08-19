@@ -103,6 +103,12 @@ class ProfessionCategoryController extends Controller
 
     public function destroy(ProfessionCategory $professionCategory): RedirectResponse
     {
+        if ($professionCategory->professions()->exists()) {
+            return redirect()->back()->withErrors([
+                'category' => __('hiko.profession_category_in_use'),
+            ]);
+        }
+
         $professionCategory->delete();
 
         return redirect()

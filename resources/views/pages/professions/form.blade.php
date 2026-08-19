@@ -37,21 +37,21 @@
                 <!-- Category Dropdown -->
                 <div class="required">
                     <x-label for="category" :value="__('hiko.category')" />
-                    <x-select name="category" id="category" class="block w-full mt-1" x-data="ajaxChoices({ url: '{{ route('ajax.professions.category') }}', element: $el })"
-                        x-init="initSelect()">
+                    <x-select name="profession_category_id" id="category" class="block w-full mt-1" x-data="ajaxChoices({ url: '{{ route('ajax.professions.category') }}', element: $el })"
+                        x-init="initSelect()" required>
                         <option value="">{{ __('hiko.select_category') }}</option>
                         @foreach ($availableCategories as $availableCategory)
                             @if (
                                 (tenancy()->initialized && $availableCategory instanceof \App\Models\ProfessionCategory) ||
                                     (!tenancy()->initialized && $availableCategory instanceof \App\Models\GlobalProfessionCategory))
                                 <option value="{{ $availableCategory->id }}"
-                                    {{ old('category', isset($profession) ? $profession->profession_category_id ?? null : null) == $availableCategory->id ? 'selected' : '' }}>
+                                    {{ old('profession_category_id', isset($profession) ? $profession->profession_category_id ?? null : null) == $availableCategory->id ? 'selected' : '' }}>
                                     {{ $availableCategory->getTranslation('name', app()->getLocale()) }}
                                 </option>
                             @endif
                         @endforeach
                     </x-select>
-                    @error('category')
+                    @error('profession_category_id')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
                 </div>

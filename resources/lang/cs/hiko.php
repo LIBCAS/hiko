@@ -99,6 +99,7 @@ return [
     'attach_profession' => 'Připojit profese',
     'profession_attached' => 'Profese byly úspěšně připojeny.',
     'no_attached_professions' => 'K této kategorii nejsou připojeny žádné profese.',
+    'profession_category_in_use' => 'Tuto kategorii profesí nelze smazat, protože jsou k ní přiřazeny profese.',
     'places' => 'Místa',
     'place' => 'Místo',
     'new_place' => 'Nové místo',

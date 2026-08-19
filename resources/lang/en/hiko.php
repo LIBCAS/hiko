@@ -75,6 +75,7 @@ return [
     'attach_profession' => 'Attach Profession',
     'profession_attached' => 'Profession has been attached successfully.',
     'no_attached_professions' => 'No professions are attached to this category.',
+    'profession_category_in_use' => 'This profession category cannot be deleted because professions are attached to it.',
     'export' => 'Export',
     'attached_category' => 'Parent category',
     'no_attached_category' => 'No parent category is currently attached',

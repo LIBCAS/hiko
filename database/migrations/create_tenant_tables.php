@@ -253,7 +253,7 @@ return new class extends Migration
                     $table->timestamps();
                     $table->longText('name');
                     $table->unsignedBigInteger('profession_category_id')->nullable();
-                    $table->foreign('profession_category_id')->references('id')->on($prefix . 'profession_categories');
+                    $table->foreign('profession_category_id')->references('id')->on($prefix . 'profession_categories')->restrictOnDelete();
                  });
             }
 

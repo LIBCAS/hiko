@@ -19,7 +19,7 @@ class ProfessionRequest extends FormRequest
             ? ['sometimes', 'nullable', 'string', 'max:255']
             : ['nullable', 'string', 'max:255', 'required_without:cs'];
         $categoryRules = $this->isApiV2UpdateRequest()
-            ? ['sometimes', 'nullable', 'exists:' . tenancy()->tenant->table_prefix . '__profession_categories,id']
+            ? ['sometimes', 'required', 'exists:' . tenancy()->tenant->table_prefix . '__profession_categories,id']
             : ['required', 'exists:' . tenancy()->tenant->table_prefix . '__profession_categories,id'];
 
         return [
@@ -64,6 +64,19 @@ class ProfessionRequest extends FormRequest
             'category',
             'client_meta',
         ]);
+
+        $validator->after(function ($validator): void {
+            if (!$this->isApiV2UpdateRequest() || $this->exists('profession_category_id')) {
+                return;
+            }
+
+            $professionId = $this->route('id');
+            if ($professionId !== null && Profession::query()->whereKey($professionId)->whereNull('profession_category_id')->exists()) {
+                $validator->errors()->add('category_id', __('validation.required', [
+                    'attribute' => 'category id',
+                ]));
+            }
+        });
     }
 
     public function failsDuplicateCheck(?int $excludeId = null, ?array $fallback = null): bool

@@ -87,7 +87,7 @@ return new class extends Migration
                 $table->id();
                 $table->longText('name');
                 $table->unsignedBigInteger('profession_category_id')->nullable();
-                $table->foreign('profession_category_id')->references('id')->on('global_profession_categories')->onDelete('set null');
+                $table->foreign('profession_category_id')->references('id')->on('global_profession_categories')->restrictOnDelete();
                 $table->timestamps();
             });
         }

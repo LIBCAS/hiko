@@ -188,7 +188,7 @@ class AddTenant extends Command
                 $table->foreign('profession_category_id')
                       ->references('id')
                       ->on("{$prefix}profession_categories")
-                      ->onDelete('set null');
+                      ->restrictOnDelete();
             });
         }
 
