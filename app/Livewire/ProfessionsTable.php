@@ -240,7 +240,7 @@ class ProfessionsTable extends Component
 
     protected function getTenantProfessionsQuery()
     {
-        $filters = $this->filters;
+        $filters = $this->normalizedFilters();
 
         $tenantProfessions = Profession::with('profession_category')
             ->select(
@@ -250,14 +250,12 @@ class ProfessionsTable extends Component
                 DB::raw("'local' AS source")
             );
 
-        if (!empty($filters['cs'])) {
-            $csFilter = strtolower($filters['cs']);
-            $tenantProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) LIKE ?", ["%{$csFilter}%"]);
+        if ($filters['cs'] !== '') {
+            $tenantProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.cs'))) LIKE ?", ["%{$filters['cs']}%"]);
         }
 
-        if (!empty($filters['en'])) {
-            $enFilter = strtolower($filters['en']);
-            $tenantProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$enFilter}%"]);
+        if ($filters['en'] !== '') {
+            $tenantProfessions->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$filters['en']}%"]);
         }
 
         if (!empty($filters['category'])) {
@@ -272,7 +270,7 @@ class ProfessionsTable extends Component
 
     protected function getGlobalProfessionsQuery()
     {
-        $filters = $this->filters;
+        $filters = $this->normalizedFilters();
 
         $globalProfessions = GlobalProfession::with('profession_category')
             ->select(
@@ -282,14 +280,14 @@ class ProfessionsTable extends Component
                 DB::raw("'global' AS source")
             );
 
-        if (!empty($filters['cs'])) {
+        if ($filters['cs'] !== '') {
             $globalProfessions->whereRaw(
                 "LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"cs\"'))) LIKE ?",
                 ["%{$filters['cs']}%"]
             );
         }
 
-        if (!empty($filters['en'])) {
+        if ($filters['en'] !== '') {
             $globalProfessions->whereRaw(
                 "LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"en\"'))) LIKE ?",
                 ["%{$filters['en']}%"]
@@ -303,6 +301,14 @@ class ProfessionsTable extends Component
         }
 
         return $globalProfessions;
+    }
+
+    private function normalizedFilters(): array
+    {
+        return array_merge($this->filters, [
+            'cs' => strtolower(trim((string) ($this->filters['cs'] ?? ''))),
+            'en' => strtolower(trim((string) ($this->filters['en'] ?? ''))),
+        ]);
     }
 
     protected function formatTableData($data)
