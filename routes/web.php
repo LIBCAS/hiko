@@ -252,6 +252,10 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
     });
 
     Route::prefix('professions/category')->group(function () {
+        Route::get('validation', [ProfessionCategoryController::class, 'validation'])
+            ->name('professions.category.validation')
+            ->middleware(['auth', 'can:view-metadata']);
+
         Route::get('/', [ProfessionCategoryController::class, 'index'])
             ->name('professions.category')
             ->middleware(['auth', 'can:manage-metadata']);
@@ -384,6 +388,10 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
     });
 
     Route::prefix('keywords/category')->group(function () {
+        Route::get('validation', [KeywordCategoryController::class, 'validation'])
+            ->name('keywords.category.validation')
+            ->middleware(['auth', 'can:view-metadata']);
+
         Route::get('/', function () {
             return redirect()->route('keywords');
         });

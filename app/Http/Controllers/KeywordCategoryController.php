@@ -13,6 +13,13 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class KeywordCategoryController extends Controller
 {
+    public function validation()
+    {
+        return view('pages.keywords-categories.validation', [
+            'title' => __('hiko.keywords_category') . ': ' . __('hiko.input_control'),
+        ]);
+    }
+
     public function create()
     {
         return view('pages.keywords-categories.form', [

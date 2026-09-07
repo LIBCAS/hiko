@@ -598,6 +598,8 @@ return [
     'consistency_check' => 'Kontrola konzistence dat',
     'consistency_check_description' => 'Provádí kontrolu konzistence dat v záznamech pro nalezení možných chyb nebo nesrovnalostí, mělo by se provádět pravidelně a před sloučováním záznamů.',
     'run_process' => 'Spustit',
+    'validation_not_started' => 'Kontrola konzistence ještě nebyla spuštěna.',
+    'validation_no_issues' => 'Nebyly nalezeny žádné problémy.',
     'validation_not_run_or_no_issues' => 'Ověření buď nebylo spuštěno, nebo nebyly nalezeny žádné problémy.',
     'how_to_merge' => 'Jak sloučit záznamy',
     'local_place_merge_step_1' => 'Zvolte kritéria pro vyhledání potenciálních duplicit a spusťte vyhledávání.',

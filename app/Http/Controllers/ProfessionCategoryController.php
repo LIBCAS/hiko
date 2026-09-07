@@ -15,6 +15,13 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProfessionCategoryController extends Controller
 {
+    public function validation()
+    {
+        return view('pages.professions-categories.validation', [
+            'title' => __('hiko.professions_category') . ': ' . __('hiko.input_control'),
+        ]);
+    }
+
     public function create()
     {
         return view('pages.professions-categories.form', [

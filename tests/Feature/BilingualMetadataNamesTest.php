@@ -184,6 +184,70 @@ class BilingualMetadataNamesTest extends TestCase
         }
     }
 
+    public function test_category_validation_pages_scan_both_scopes_and_reset_results(): void
+    {
+        \Illuminate\Support\Facades\Gate::define('view-metadata', fn (?\App\Models\User $user) => true);
+        \Illuminate\Support\Facades\Gate::define('manage-metadata', fn (?\App\Models\User $user) => true);
+        \Illuminate\Support\Facades\Gate::define('manage-users', fn (?\App\Models\User $user) => false);
+
+        foreach (['profession' => ['ProfessionCategory', 'GlobalProfessionCategory'], 'keyword' => ['KeywordCategory', 'GlobalKeywordCategory']] as $kind => [$local, $global]) {
+            $this->setName($local, ['cs' => 'Ukázka']);
+            $this->setName($global, ['cs' => 'Ukázka', 'en' => '   ']);
+            $component = \Livewire\Livewire::test(\App\Livewire\CategoryConsistencyCheck::class, ['kind' => $kind])
+                ->assertSet('hasScanned', false)
+                ->call('scan')
+                ->assertSet('hasScanned', true)
+                ->assertSet('issues', fn ($issues) => count($issues) === 2 && array_column($issues, 'type') === ['local', 'global']);
+            $plural = $kind === 'profession' ? 'professions' : 'keywords';
+            $component->assertSee(route("{$plural}.category.edit", 1), false)
+                ->assertDontSee(route("global.{$plural}.category.edit", 1), false);
+            foreach (['local', 'global'] as $scope) {
+                $component->set('scope', $scope)->call('scan')
+                    ->assertSet('issues', fn ($issues) => count($issues) === 1 && $issues[0]['type'] === $scope);
+            }
+            $this->setName($local, ['cs' => 'Ukázka', 'en' => 'Example']);
+            $this->setName($global, ['cs' => 'Ukázka', 'en' => 'Example']);
+            $component->set('scope', 'all')->call('scan')->assertSet('issues', [])
+                ->assertSee(__('hiko.validation_no_issues'));
+            $component->set('scope', 'invalid')->call('scan')->assertHasErrors('scope');
+
+            $route = app('router')->getRoutes()->getByName("{$plural}.category.validation");
+            $this->assertSame("{$plural}/category/validation", $route->uri());
+            $this->assertContains('auth', $route->gatherMiddleware());
+            $this->assertContains('can:view-metadata', $route->gatherMiddleware());
+        }
+    }
+
+    public function test_category_scans_reject_invalid_names_and_do_not_modify_records(): void
+    {
+        \Illuminate\Support\Facades\Gate::define('view-metadata', fn (?\App\Models\User $user) => true);
+        foreach (['profession' => ['ProfessionCategory', 'GlobalProfessionCategory'], 'keyword' => ['KeywordCategory', 'GlobalKeywordCategory']] as $kind => $models) {
+            foreach (['cs', 'en'] as $locale) {
+                foreach ([null, '', '   ', str_repeat('x', 256), 42, []] as $bad) {
+                    foreach ($models as $model) {
+                        $this->setName($model, array_replace(['cs' => 'Ukázka', 'en' => 'Example'], [$locale => $bad]));
+                    }
+                    $scan = new \App\Livewire\CategoryConsistencyCheck();
+                    $scan->mount($kind);
+                    $scan->scan();
+                    $this->assertCount(2, $scan->issues);
+                    foreach ($models as $model) {
+                        $record = $this->model($model)->findOrFail(1);
+                        $stored = json_decode($record->getRawOriginal('name'), true);
+                        $this->assertSame($bad, $stored[$locale]);
+                    }
+                }
+            }
+        }
+    }
+
+    public function test_category_scan_requires_view_permission(): void
+    {
+        \Illuminate\Support\Facades\Gate::define('view-metadata', fn (?\App\Models\User $user) => false);
+        \Livewire\Livewire::test(\App\Livewire\CategoryConsistencyCheck::class, ['kind' => 'profession'])
+            ->assertForbidden();
+    }
+
     private function model(string $entity)
     {
         $class = "App\\Models\\{$entity}";

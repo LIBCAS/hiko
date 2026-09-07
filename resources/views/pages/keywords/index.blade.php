@@ -50,5 +50,13 @@
         </p>
     @endcannot
 
+    @can('view-metadata')
+        <div class="my-3">
+            <x-loading-link href="{{ route('keywords.category.validation') }}">
+                {{ __('hiko.input_control') }}
+            </x-loading-link>
+        </div>
+    @endcan
+
     <livewire:keyword-categories-table />
 </x-app-layout>

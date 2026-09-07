@@ -59,6 +59,14 @@
         </p>
     @endcannot
 
+    @can('view-metadata')
+        <div class="my-3">
+            <x-loading-link href="{{ route('professions.category.validation') }}">
+                {{ __('hiko.input_control') }}
+            </x-loading-link>
+        </div>
+    @endcan
+
     <div id="categories-wrapper">
         <livewire:profession-categories-table />
     </div>

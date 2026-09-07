@@ -596,6 +596,8 @@ return [
     'consistency_check' => 'Consistency Check',
     'consistency_check_description' => 'Performs data consistency checks on records to find possible errors, should be performed regularly and before merging records.',
     'run_process' => 'Run',
+    'validation_not_started' => 'Consistency check has not been run yet.',
+    'validation_no_issues' => 'No issues found.',
     'validation_not_run_or_no_issues' => 'Consistency check has not been run yet or no issues were found.',
     'how_to_merge' => 'How to merge records',
     'local_place_merge_step_1' => 'Choose the criteria to find potential duplicates and run the search.',
