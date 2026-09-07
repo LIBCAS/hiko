@@ -41,31 +41,31 @@
     </div>
 
     <!-- Profession Categories Section -->
-    @can('manage-metadata')
-        <div class="flex items-center space-x-4 mt-8">
-            <x-create-link label="{{ __('hiko.new_professions_category') }}" link="{{ route('professions.category.create') }}" />
-            @can('manage-users')
-                <x-create-link label="{{ __('hiko.new_global_profession_category') }}" link="{{ route('global.professions.category.create') }}" />
+    <div class="flex items-center justify-between gap-4 flex-wrap mt-8 mb-6">
+        @can('manage-metadata')
+            <div class="flex items-center gap-4 flex-wrap">
+                <x-create-link label="{{ __('hiko.new_professions_category') }}" link="{{ route('professions.category.create') }}" />
+                @can('manage-users')
+                    <x-create-link label="{{ __('hiko.new_global_profession_category') }}" link="{{ route('global.professions.category.create') }}" />
+                @endcan
+            </div>
+        @else
+            <p class="font-bold">{{ __('hiko.professions_category') }}</p>
+        @endcan
+
+        <div class="flex items-center gap-4 flex-wrap ml-auto">
+            @can('manage-metadata')
+                <x-loading-link href="{{ route('professions.category.export') }}">
+                    {{ __('hiko.export') }}
+                </x-loading-link>
+            @endcan
+            @can('view-metadata')
+                <x-loading-link href="{{ route('professions.category.validation') }}">
+                    {{ __('hiko.input_control') }}
+                </x-loading-link>
             @endcan
         </div>
-        <a href="{{ route('professions.category.export') }}" class="inline-block mt-3 text-sm font-semibold">
-            {{ __('hiko.export') }}
-        </a>
-    @endcan
-
-    @cannot('manage-metadata')
-        <p class="mt-16 font-bold">
-            {{ __('hiko.professions_category') }}
-        </p>
-    @endcannot
-
-    @can('view-metadata')
-        <div class="my-3">
-            <x-loading-link href="{{ route('professions.category.validation') }}">
-                {{ __('hiko.input_control') }}
-            </x-loading-link>
-        </div>
-    @endcan
+    </div>
 
     <div id="categories-wrapper">
         <livewire:profession-categories-table />
