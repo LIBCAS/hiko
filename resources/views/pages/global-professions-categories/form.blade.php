@@ -26,7 +26,7 @@
                 <!-- CS Field -->
                 <div>
                     <x-label for="cs" value="{{ __('CS') }}" />
-                    <x-input id="cs" class="block w-full mt-1" type="text" name="cs" :value="old('cs', $professionCategory->getTranslation('name', 'cs') ?? null)"
+                    <x-input id="cs" class="block w-full mt-1" type="text" name="cs" :value="old('cs', $professionCategory->getTranslation('name', 'cs', false) ?? null)"
                         x-on:change="search = $el.value" required />
                     @error('cs')
                         <div class="text-red-600">{{ $message }}</div>
@@ -36,8 +36,8 @@
                 <!-- EN Field -->
                 <div>
                     <x-label for="en" value="{{ __('EN') }}" />
-                    <x-input id="en" class="block w-full mt-1" type="text" name="en" :value="old('en', $professionCategory->getTranslation('name', 'en') ?? null)"
-                        x-on:change="search = $el.value" />
+                    <x-input id="en" class="block w-full mt-1" type="text" name="en" :value="old('en', $professionCategory->getTranslation('name', 'en', false) ?? null)"
+                        x-on:change="search = $el.value" required />
                     @error('en')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror

@@ -13,7 +13,7 @@ use OpenApi\Attributes as OA;
     required: ["name"],
     properties: [
         new OA\Property(property: "id", type: "integer", readOnly: true),
-        new OA\Property(property: "name", type: "object", properties: [
+        new OA\Property(property: "name", description: "Stored translations. Writes require both cs and en to be nonblank (max 255 characters); legacy records may still have missing translations.", type: "object", properties: [
             new OA\Property(property: "cs", type: "string"),
             new OA\Property(property: "en", type: "string")
         ]),

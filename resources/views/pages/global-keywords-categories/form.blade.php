@@ -36,7 +36,7 @@
                 <div>
                     <x-label for="en" value="EN" />
                     <x-input id="en" class="block w-full mt-1" type="text" name="en"
-                        x-on:change="search = $el.value" :value="old('en', $keywordCategory->translations['name']['en'] ?? null)" />
+                        x-on:change="search = $el.value" :value="old('en', $keywordCategory->translations['name']['en'] ?? null)" required />
                     @error('en')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror

@@ -25,7 +25,7 @@
                 <!-- CS Field -->
                 <div>
                     <x-label for="cs" value="CS" />
-                    <x-input id="cs" class="block w-full mt-1" type="text" name="cs" :value="old('cs', $keyword->getTranslation('name', 'cs') ?? '')"
+                    <x-input id="cs" class="block w-full mt-1" type="text" name="cs" :value="old('cs', $keyword->getTranslation('name', 'cs', false) ?? '')"
                         x-on:change="search = $el.value" required />
                     @error('cs')
                         <div class="text-red-600">{{ $message }}</div>
@@ -35,8 +35,8 @@
                 <!-- EN Field -->
                 <div>
                     <x-label for="en" value="EN" />
-                    <x-input id="en" class="block w-full mt-1" type="text" name="en" :value="old('en', $keyword->getTranslation('name', 'en') ?? '')"
-                        x-on:change="search = $el.value" />
+                    <x-input id="en" class="block w-full mt-1" type="text" name="en" :value="old('en', $keyword->getTranslation('name', 'en', false) ?? '')"
+                        x-on:change="search = $el.value" required />
                     @error('en')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror

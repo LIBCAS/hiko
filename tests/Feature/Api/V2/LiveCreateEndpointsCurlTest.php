@@ -364,6 +364,44 @@ class LiveCreateEndpointsCurlTest extends TestCase
             ])
         );
 
+        // Verify bilingual name validation and preservation on the records created above.
+        foreach ([
+            ['profession-categories', 'profession-category', $professionCategoryId, null],
+            ['professions', 'profession', $professionId, $professionCategoryId],
+            ['keyword-categories', 'keyword-category', $keywordCategoryId, null],
+            ['keywords', 'keyword', $keywordId, $keywordCategoryId],
+            ['global-profession-categories', 'global-profession-category', $globalProfessionCategoryId, null],
+            ['global-professions', 'global-profession', $globalProfessionId, $globalProfessionCategoryId],
+            ['global-keyword-categories', 'global-keyword-category', $globalKeywordCategoryId, null],
+            ['global-keywords', 'global-keyword', $globalKeywordId, $globalKeywordCategoryId],
+        ] as [$plural, $singular, $id, $categoryId]) {
+            $path = "/{$singular}/{$id}";
+            $before = $this->curlJson('GET', $path);
+            $this->assertSame(200, $before['status']);
+            $original = $before['json']['data'] ?? $before['json'];
+
+            foreach (['cs', 'en'] as $missing) {
+                $payload = [$missing === 'cs' ? 'en' : 'cs' => "Synthetic name {$tag}"];
+                if ($categoryId !== null) {
+                    $payload['category_id'] = $categoryId;
+                }
+                $invalidCreate = $this->curlJson('POST', "/{$plural}", $payload);
+                $this->assertSame(422, $invalidCreate['status'], "{$plural}: missing {$missing}");
+                foreach ([null, '', '   '] as $blank) {
+                    $invalidUpdate = $this->curlJson('PUT', $path, [$missing => $blank]);
+                    $this->assertSame(422, $invalidUpdate['status'], "{$singular}: blank {$missing}");
+                }
+            }
+
+            $updated = $this->curlJson('PUT', $path, ['en' => "Updated example {$tag}"]);
+            $this->assertSame(200, $updated['status']);
+            $data = $updated['json']['data'] ?? $updated['json'];
+            $this->assertSame($original['name']['cs'], $data['name']['cs']);
+            $this->assertSame("Updated example {$tag}", $data['name']['en']);
+            $unchanged = $this->curlJson('PUT', $path, ['client_meta' => ['external_id' => "example-{$tag}"]]);
+            $this->assertSame(200, $unchanged['status']);
+        }
+
         $this->assertGreaterThan(0, $globalProfessionCategoryId);
         $this->assertGreaterThan(0, $globalProfessionId);
         $this->assertGreaterThan(0, $professionCategoryId);
@@ -557,7 +595,7 @@ class LiveCreateEndpointsCurlTest extends TestCase
             'curl',
             '-X ' . strtoupper($method),
             escapeshellarg($url),
-            '-H ' . escapeshellarg('Authorization: Bearer ' . $this->token),
+            '-H ' . escapeshellarg('Authorization: Bearer <API_V2_BEARER_TOKEN>'),
             '-H ' . escapeshellarg('Accept: application/json'),
         ];
 

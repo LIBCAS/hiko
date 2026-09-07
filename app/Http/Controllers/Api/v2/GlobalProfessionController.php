@@ -75,15 +75,27 @@ class GlobalProfessionController extends Controller
     #[OA\Post(
         path: "/global-professions",
         summary: "Create new global profession",
+        description: "Both Czech and English translations are required, nonblank strings of at most 255 characters. Global endpoints also accept a name object or JSON-encoded object with cs/en keys; top-level translations take precedence. Plain name strings are rejected.",
         tags: ["Global Professions"],
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
                 required: ["category_id"],
+                anyOf: [
+                    new OA\Schema(required: ["cs", "en"]),
+                    new OA\Schema(required: ["name"]),
+                ],
                 properties: [
-                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Global Profession"),
-                    new OA\Property(property: "en", type: "string", nullable: true, example: "Global Profession"),
+                    new OA\Property(property: "name", description: "Alternative translated name object or JSON-encoded object. Top-level cs/en take precedence. Omitted translations on update retain stored values; both resulting translations must be valid.", oneOf: [
+                        new OA\Schema(type: "object", properties: [
+                            new OA\Property(property: "cs", type: "string", maxLength: 255, minLength: 1),
+                            new OA\Property(property: "en", type: "string", maxLength: 255, minLength: 1),
+                        ], additionalProperties: false),
+                        new OA\Schema(type: "string", description: "JSON-encoded translation object; not a plain name", example: '{"cs":"Ukázka","en":"Example"}'),
+                    ]),
+                    new OA\Property(property: "cs", type: "string", maxLength: 255, minLength: 1, example: "Global Profession"),
+                    new OA\Property(property: "en", type: "string", maxLength: 255, minLength: 1, example: "Global Profession"),
                     new OA\Property(property: "category_id", type: "integer", example: 35),
                     new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "global-profession-637"]),
                 ]
@@ -104,10 +116,7 @@ class GlobalProfessionController extends Controller
         $validated = $request->validated();
         unset($validated['client_meta']);
 
-        $name = $this->normalizeTranslatedName($request);
-        if (($name['cs'] ?? null) === null && ($name['en'] ?? null) === null) {
-            return response()->json(['message' => 'The name field is required.'], 422);
-        }
+        $name = ['cs' => $validated['cs'], 'en' => $validated['en']];
 
         $profession = GlobalProfession::create([
             'name' => $name,
@@ -122,7 +131,7 @@ class GlobalProfessionController extends Controller
     #[OA\Put(
         path: "/global-profession/{id}",
         summary: "Update global profession",
-        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable translated fields, and client-specific extra data belongs in client_meta.",
+        description: "Partial update: omitted fields remain unchanged. The resulting record must contain nonblank Czech and English names (maximum 255 characters each). Missing existing translations must be supplied; null or blank names return 422. Custom data belongs in client_meta.",
         tags: ["Global Professions"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -132,8 +141,15 @@ class GlobalProfessionController extends Controller
             required: true,
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Global Profession"),
-                    new OA\Property(property: "en", type: "string", nullable: true, example: "Global Profession"),
+                    new OA\Property(property: "name", description: "Alternative translated name object or JSON-encoded object. Top-level cs/en take precedence. Omitted translations on update retain stored values; both resulting translations must be valid.", oneOf: [
+                        new OA\Schema(type: "object", properties: [
+                            new OA\Property(property: "cs", type: "string", maxLength: 255, minLength: 1),
+                            new OA\Property(property: "en", type: "string", maxLength: 255, minLength: 1),
+                        ], additionalProperties: false),
+                        new OA\Schema(type: "string", description: "JSON-encoded translation object; not a plain name", example: '{"cs":"Ukázka","en":"Example"}'),
+                    ]),
+                    new OA\Property(property: "cs", type: "string", maxLength: 255, minLength: 1, example: "Global Profession"),
+                    new OA\Property(property: "en", type: "string", maxLength: 255, minLength: 1, example: "Global Profession"),
                     new OA\Property(property: "category_id", type: "integer", example: 35),
                     new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "global-profession-637"]),
                 ]
@@ -155,45 +171,13 @@ class GlobalProfessionController extends Controller
         $validated = $request->validated();
         unset($validated['client_meta']);
 
-        $currentName = $profession->getTranslations('name');
-        $name = $this->normalizeTranslatedName($request);
-        $name = [
-            'cs' => array_key_exists('cs', $validated) ? ($name['cs'] ?? null) : ($currentName['cs'] ?? null),
-            'en' => array_key_exists('en', $validated) ? ($name['en'] ?? null) : ($currentName['en'] ?? null),
-        ];
+        $name = ['cs' => $validated['cs'], 'en' => $validated['en']];
 
         $profession->update([
             'name' => $name,
             'profession_category_id' => $validated['profession_category_id'] ?? $profession->profession_category_id,
         ]);
         return new ProfessionResource($profession);
-    }
-
-    private function normalizeTranslatedName(Request $request): array
-    {
-        if ($request->filled('cs') || $request->filled('en')) {
-            return [
-                'cs' => $request->filled('cs') ? trim((string) $request->input('cs')) : null,
-                'en' => $request->filled('en') ? trim((string) $request->input('en')) : null,
-            ];
-        }
-
-        $rawName = $request->input('name');
-        $decoded = is_string($rawName) ? json_decode($rawName, true) : (is_array($rawName) ? $rawName : null);
-
-        if (is_array($decoded)) {
-            return [
-                'cs' => isset($decoded['cs']) ? trim((string) $decoded['cs']) : null,
-                'en' => isset($decoded['en']) ? trim((string) $decoded['en']) : null,
-            ];
-        }
-
-        if (is_string($rawName) && trim($rawName) !== '') {
-            $value = trim($rawName);
-            return ['cs' => $value, 'en' => $value];
-        }
-
-        return ['cs' => null, 'en' => null];
     }
 
     #[OA\Delete(

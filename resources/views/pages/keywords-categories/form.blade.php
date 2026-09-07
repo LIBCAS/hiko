@@ -19,7 +19,7 @@
                 <div>
                     <x-label for="cs" value="CS" />
                     <x-input id="cs" class="block w-full mt-1" type="text" name="cs"
-                        x-on:change="search = $el.value" :value="old('cs', $keywordCategory->translations['name']['cs'] ?? null)" />
+                        x-on:change="search = $el.value" :value="old('cs', $keywordCategory->translations['name']['cs'] ?? null)" required />
                     @error('cs')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror
@@ -27,7 +27,7 @@
                 <div>
                     <x-label for="en" value="EN" />
                     <x-input id="en" class="block w-full mt-1" type="text" name="en"
-                        x-on:change="search = $el.value" :value="old('cs', $keywordCategory->translations['name']['en'] ?? null)" />
+                        x-on:change="search = $el.value" :value="old('en', $keywordCategory->translations['name']['en'] ?? null)" required />
                     @error('en')
                         <div class="text-red-600">{{ $message }}</div>
                     @enderror

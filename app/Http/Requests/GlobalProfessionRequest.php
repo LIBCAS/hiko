@@ -3,12 +3,13 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\InteractsWithApiV2;
+use App\Http\Requests\Concerns\RequiresBilingualName;
 use App\Models\GlobalProfession;
 use Illuminate\Foundation\Http\FormRequest;
 
 class GlobalProfessionRequest extends FormRequest
 {
-    use InteractsWithApiV2;
+    use InteractsWithApiV2, RequiresBilingualName;
 
     public function authorize(): bool
     {
@@ -18,31 +19,20 @@ class GlobalProfessionRequest extends FormRequest
     public function rules(): array
     {
         if ($this->isApiV2Request()) {
-            $nameRules = $this->isApiV2UpdateRequest()
-                ? ['sometimes', 'nullable']
-                : ['nullable'];
-            $csRules = $this->isApiV2UpdateRequest()
-                ? ['sometimes', 'nullable', 'string', 'max:255']
-                : ['nullable', 'string', 'max:255', 'required_without_all:en,name'];
-            $enRules = $this->isApiV2UpdateRequest()
-                ? ['sometimes', 'nullable', 'string', 'max:255']
-                : ['nullable', 'string', 'max:255', 'required_without_all:cs,name'];
             $categoryRules = $this->isApiV2UpdateRequest()
                 ? ['sometimes', 'required', 'exists:global_profession_categories,id']
                 : ['required', 'exists:global_profession_categories,id'];
 
             return [
-                'name' => $nameRules,
-                'cs' => $csRules,
-                'en' => $enRules,
+                'name' => ['sometimes', 'array:cs,en'],
+                ...$this->bilingualNameRules(),
                 'profession_category_id' => $categoryRules,
                 'client_meta' => ['nullable', 'array'],
             ];
         }
 
         return [
-            'cs' => ['required', 'string', 'max:255'],
-            'en' => ['nullable', 'string', 'max:255'],
+            ...$this->bilingualNameRules(),
             'profession_category_id' => ['required', 'exists:global_profession_categories,id'],
         ];
     }
@@ -51,13 +41,7 @@ class GlobalProfessionRequest extends FormRequest
     {
         $payload = [];
 
-        if ($this->exists('cs')) {
-            $payload['cs'] = $this->filled('cs') ? trim((string) $this->input('cs')) : null;
-        }
-
-        if ($this->exists('en')) {
-            $payload['en'] = $this->filled('en') ? trim((string) $this->input('en')) : null;
-        }
+        $this->prepareBilingualName(GlobalProfession::class, true);
 
         if ($this->exists('profession_category_id') || $this->exists('category_id') || $this->exists('category')) {
             $payload['profession_category_id'] = $this->input('profession_category_id', $this->input('category_id', $this->input('category')));

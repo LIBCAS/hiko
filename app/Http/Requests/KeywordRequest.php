@@ -3,28 +3,22 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\InteractsWithApiV2;
+use App\Http\Requests\Concerns\RequiresBilingualName;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Keyword;
 
 class KeywordRequest extends FormRequest
 {
-    use InteractsWithApiV2;
+    use InteractsWithApiV2, RequiresBilingualName;
 
     public function rules(): array
     {
-        $nameRules = $this->isApiV2UpdateRequest()
-            ? ['sometimes', 'nullable', 'string', 'max:255']
-            : ['nullable', 'string', 'max:255', 'required_without:en'];
-        $otherNameRules = $this->isApiV2UpdateRequest()
-            ? ['sometimes', 'nullable', 'string', 'max:255']
-            : ['nullable', 'string', 'max:255', 'required_without:cs'];
         $categoryRules = $this->isApiV2UpdateRequest()
             ? ['sometimes', 'nullable', 'exists:' . tenancy()->tenant->table_prefix . '__keyword_categories,id']
             : ['required', 'exists:' . tenancy()->tenant->table_prefix . '__keyword_categories,id'];
 
         return [
-            'cs' => $nameRules,
-            'en' => $otherNameRules,
+            ...$this->bilingualNameRules(),
             'keyword_category_id' => $categoryRules,
             'client_meta' => ['nullable', 'array'],
         ];
@@ -39,13 +33,7 @@ class KeywordRequest extends FormRequest
     {
         $payload = [];
 
-        if ($this->exists('cs')) {
-            $payload['cs'] = $this->filled('cs') ? trim((string) $this->input('cs')) : null;
-        }
-
-        if ($this->exists('en')) {
-            $payload['en'] = $this->filled('en') ? trim((string) $this->input('en')) : null;
-        }
+        $this->prepareBilingualName(Keyword::class);
 
         if ($this->exists('keyword_category_id') || $this->exists('category_id') || $this->exists('category')) {
             $payload['keyword_category_id'] = $this->input('keyword_category_id', $this->input('category_id', $this->input('category')));

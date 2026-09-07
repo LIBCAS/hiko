@@ -26,8 +26,8 @@ class KeywordsConsistencyCheck extends Component
             Keyword::query()->chunk(200, function ($keywords) use ($rules): void {
                 foreach ($keywords as $keyword) {
                     $input = [
-                        'cs' => $this->nullableTrim($keyword->getTranslation('name', 'cs')),
-                        'en' => $this->nullableTrim($keyword->getTranslation('name', 'en')),
+                        'cs' => $this->nullableTrim($keyword->getTranslation('name', 'cs', false)),
+                        'en' => $this->nullableTrim($keyword->getTranslation('name', 'en', false)),
                         'keyword_category_id' => $keyword->keyword_category_id,
                     ];
 
@@ -52,8 +52,8 @@ class KeywordsConsistencyCheck extends Component
             GlobalKeyword::query()->chunk(200, function ($keywords) use ($rules): void {
                 foreach ($keywords as $keyword) {
                     $input = [
-                        'cs' => $this->nullableTrim($keyword->getTranslation('name', 'cs')),
-                        'en' => $this->nullableTrim($keyword->getTranslation('name', 'en')),
+                        'cs' => $this->nullableTrim($keyword->getTranslation('name', 'cs', false)),
+                        'en' => $this->nullableTrim($keyword->getTranslation('name', 'en', false)),
                         'keyword_category_id' => $keyword->keyword_category_id,
                     ];
 

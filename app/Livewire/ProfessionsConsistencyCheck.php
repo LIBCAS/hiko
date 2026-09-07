@@ -26,8 +26,8 @@ class ProfessionsConsistencyCheck extends Component
             Profession::query()->chunk(200, function ($professions) use ($rules): void {
                 foreach ($professions as $profession) {
                     $input = [
-                        'cs' => $this->nullableTrim($profession->getTranslation('name', 'cs')),
-                        'en' => $this->nullableTrim($profession->getTranslation('name', 'en')),
+                        'cs' => $this->nullableTrim($profession->getTranslation('name', 'cs', false)),
+                        'en' => $this->nullableTrim($profession->getTranslation('name', 'en', false)),
                         'profession_category_id' => $profession->profession_category_id,
                     ];
 
@@ -52,8 +52,8 @@ class ProfessionsConsistencyCheck extends Component
             GlobalProfession::query()->chunk(200, function ($professions) use ($rules): void {
                 foreach ($professions as $profession) {
                     $input = [
-                        'cs' => $this->nullableTrim($profession->getTranslation('name', 'cs')),
-                        'en' => $this->nullableTrim($profession->getTranslation('name', 'en')),
+                        'cs' => $this->nullableTrim($profession->getTranslation('name', 'cs', false)),
+                        'en' => $this->nullableTrim($profession->getTranslation('name', 'en', false)),
                         'profession_category_id' => $profession->profession_category_id,
                     ];
 

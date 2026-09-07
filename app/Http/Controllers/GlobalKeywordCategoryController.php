@@ -4,16 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\GlobalKeywordCategory;
 use App\Services\PageLockService;
-use Illuminate\Http\Request;
+use App\Http\Requests\GlobalKeywordCategoryRequest;
 use Illuminate\Http\RedirectResponse;
 
 class GlobalKeywordCategoryController extends Controller
 {
-    protected array $rules = [
-        'cs' => ['required_without:en', 'string', 'max:255'],
-        'en' => ['required_without:cs', 'string', 'max:255'],
-    ];
-
     /**
      * Display a listing of the resource.
      */
@@ -40,9 +35,9 @@ class GlobalKeywordCategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(GlobalKeywordCategoryRequest $request): RedirectResponse
     {
-        $validated = $request->validate($this->rules);
+        $validated = $request->validated();
 
         $categoryData = [
             'name' => [
@@ -84,7 +79,7 @@ class GlobalKeywordCategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, GlobalKeywordCategory $globalKeywordCategory): RedirectResponse
+    public function update(GlobalKeywordCategoryRequest $request, GlobalKeywordCategory $globalKeywordCategory): RedirectResponse
     {
         $lock = app(PageLockService::class)->assertOwned([
             'scope' => 'global',
@@ -99,7 +94,7 @@ class GlobalKeywordCategoryController extends Controller
                 ->with('success_sticky', true);
         }
 
-        $validated = $request->validate($this->rules);
+        $validated = $request->validated();
 
         $updateData = [
             'name' => [

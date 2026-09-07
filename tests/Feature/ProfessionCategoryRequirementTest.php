@@ -71,10 +71,12 @@ class ProfessionCategoryRequirementTest extends TestCase
     {
         $local = TestableProfessionRequest::create('/professions', 'POST', [
             'cs' => 'Synthetic local profession',
+            'en' => 'Synthetic local profession',
             'profession_category_id' => null,
         ]);
         $global = TestableGlobalProfessionRequest::create('/global-professions', 'POST', [
             'cs' => 'Synthetic global profession',
+            'en' => 'Synthetic global profession',
             'profession_category_id' => null,
         ]);
 
@@ -86,9 +88,11 @@ class ProfessionCategoryRequirementTest extends TestCase
     {
         $localMissing = TestableProfessionRequest::create('/api/v2/professions', 'POST', [
             'cs' => 'Synthetic local profession',
+            'en' => 'Synthetic local profession',
         ]);
         $globalMissing = TestableGlobalProfessionRequest::create('/api/v2/global-professions', 'POST', [
             'cs' => 'Synthetic global profession',
+            'en' => 'Synthetic global profession',
         ]);
 
         $this->assertArrayHasKey('profession_category_id', $localMissing->validatorForTest()->errors()->toArray());
@@ -96,10 +100,12 @@ class ProfessionCategoryRequirementTest extends TestCase
 
         $localValid = TestableProfessionRequest::create('/api/v2/professions', 'POST', [
             'cs' => 'Synthetic local profession',
+            'en' => 'Synthetic local profession',
             'category_id' => 10,
         ]);
         $globalValid = TestableGlobalProfessionRequest::create('/api/v2/global-professions', 'POST', [
             'cs' => 'Synthetic global profession',
+            'en' => 'Synthetic global profession',
             'category_id' => 20,
         ]);
 

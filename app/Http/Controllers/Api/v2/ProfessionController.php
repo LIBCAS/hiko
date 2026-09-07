@@ -75,15 +75,16 @@ class ProfessionController extends Controller
     #[OA\Post(
         path: "/professions",
         summary: "Create new profession",
+        description: "Both Czech and English translations are required, nonblank strings of at most 255 characters. Send translations in the top-level cs and en fields.",
         tags: ["Professions"],
         security: [["bearerAuth" => []]],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
-                required: ["category_id"],
+                required: ["cs", "en", "category_id"],
                 properties: [
-                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Mistni profese"),
-                    new OA\Property(property: "en", type: "string", nullable: true, example: "Local profession"),
+                    new OA\Property(property: "cs", type: "string", maxLength: 255, minLength: 1, example: "Mistni profese"),
+                    new OA\Property(property: "en", type: "string", maxLength: 255, minLength: 1, example: "Local profession"),
                     new OA\Property(property: "category_id", type: "integer", example: 82),
                     new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "profession-152"]),
                 ]
@@ -125,7 +126,7 @@ class ProfessionController extends Controller
     #[OA\Put(
         path: "/profession/{id}",
         summary: "Update profession",
-        description: "Partial update semantics. Omitted fields remain unchanged, null clears nullable translated fields, and client-specific extra data belongs in client_meta.",
+        description: "Partial update: omitted fields remain unchanged. The resulting record must contain nonblank Czech and English names (maximum 255 characters each). Missing existing translations must be supplied; null or blank names return 422. Custom data belongs in client_meta.",
         tags: ["Professions"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -135,8 +136,8 @@ class ProfessionController extends Controller
             required: true,
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "cs", type: "string", nullable: true, example: "Mistni profese"),
-                    new OA\Property(property: "en", type: "string", nullable: true, example: "Local profession"),
+                    new OA\Property(property: "cs", type: "string", maxLength: 255, minLength: 1, example: "Mistni profese"),
+                    new OA\Property(property: "en", type: "string", maxLength: 255, minLength: 1, example: "Local profession"),
                     new OA\Property(property: "category_id", type: "integer", example: 82),
                     new OA\Property(property: "client_meta", type: "object", additionalProperties: new OA\AdditionalProperties(type: "string"), example: ["external_id" => "profession-152"]),
                 ]

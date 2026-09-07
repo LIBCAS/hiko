@@ -3,25 +3,18 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\InteractsWithApiV2;
+use App\Http\Requests\Concerns\RequiresBilingualName;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\KeywordCategory;
 
 class KeywordCategoryRequest extends FormRequest
 {
-    use InteractsWithApiV2;
+    use InteractsWithApiV2, RequiresBilingualName;
 
     public function rules(): array
     {
-        $csRules = $this->isApiV2UpdateRequest()
-            ? ['sometimes', 'nullable', 'string', 'max:255']
-            : ['nullable', 'string', 'max:255', 'required_without:en'];
-        $enRules = $this->isApiV2UpdateRequest()
-            ? ['sometimes', 'nullable', 'string', 'max:255']
-            : ['nullable', 'string', 'max:255', 'required_without:cs'];
-
         return [
-            'cs' => $csRules,
-            'en' => $enRules,
+            ...$this->bilingualNameRules(),
             'client_meta' => ['nullable', 'array'],
         ];
     }
@@ -33,17 +26,7 @@ class KeywordCategoryRequest extends FormRequest
 
     public function prepareForValidation(): void
     {
-        $payload = [];
-
-        if ($this->exists('cs')) {
-            $payload['cs'] = $this->filled('cs') ? trim((string) $this->input('cs')) : null;
-        }
-
-        if ($this->exists('en')) {
-            $payload['en'] = $this->filled('en') ? trim((string) $this->input('en')) : null;
-        }
-
-        $this->merge($payload);
+        $this->prepareBilingualName(KeywordCategory::class);
     }
 
     public function withValidator($validator): void

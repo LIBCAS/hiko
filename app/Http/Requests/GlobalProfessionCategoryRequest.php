@@ -4,10 +4,10 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\InteractsWithApiV2;
 use App\Http\Requests\Concerns\RequiresBilingualName;
-use App\Models\GlobalKeyword;
+use App\Models\GlobalProfessionCategory;
 use Illuminate\Foundation\Http\FormRequest;
 
-class GlobalKeywordRequest extends FormRequest
+class GlobalProfessionCategoryRequest extends FormRequest
 {
     use InteractsWithApiV2, RequiresBilingualName;
 
@@ -22,21 +22,16 @@ class GlobalKeywordRequest extends FormRequest
             ...$this->bilingualNameRules(),
             'name' => ['sometimes', 'array:cs,en'],
             'client_meta' => ['nullable', 'array'],
-            'category_id' => ['nullable', 'exists:global_keyword_categories,id'],
-            'keyword_category_id' => ['nullable', 'exists:global_keyword_categories,id'],
         ];
     }
 
     public function prepareForValidation(): void
     {
-        $this->prepareBilingualName(GlobalKeyword::class, true);
-        if (!$this->isApiV2Request()) {
-            $this->merge(['keyword_category_id' => $this->input('keyword_category_id', $this->input('category_id', $this->input('category')))]);
-        }
+        $this->prepareBilingualName(GlobalProfessionCategory::class, true);
     }
 
     public function withValidator($validator): void
     {
-        $this->validateAllowedApiV2Fields($validator, ['cs', 'en', 'name', 'client_meta', 'category_id', 'keyword_category_id']);
+        $this->validateAllowedApiV2Fields($validator, ['cs', 'en', 'name', 'client_meta']);
     }
 }
