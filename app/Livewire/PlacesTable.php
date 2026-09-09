@@ -144,7 +144,11 @@ class PlacesTable extends Component
                   ->orWhere('division', 'like', "%{$searchTerm}%")
                   ->orWhere('country', 'like', "%{$searchTerm}%")
                   ->orWhere('additional_name', 'like', "%{$searchTerm}%")
-                  ->orWhereRaw("JSON_SEARCH(alternative_names, 'one', ?) IS NOT NULL", ["%{$searchTerm}%"]);
+                  // Match aliases with the same case/accent sensitivity as the name column.
+                  ->orWhereRaw(
+                      "JSON_SEARCH(alternative_names COLLATE utf8mb4_unicode_ci, 'one', CONVERT(? USING utf8mb4) COLLATE utf8mb4_unicode_ci) IS NOT NULL",
+                      ["%{$searchTerm}%"]
+                  );
             });
         }
 
