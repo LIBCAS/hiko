@@ -137,14 +137,14 @@ class PlacesTable extends Component
 
     protected function applyFilters($query, $filters): void
     {
-        if (!empty($filters['name'])) {
-            $searchTerm = $filters['name'];
+        $searchTerm = trim(preg_replace('/[\s\p{Z}]+/u', ' ', (string) ($filters['name'] ?? '')) ?? '');
+        if ($searchTerm !== '') {
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', "%{$searchTerm}%")
                   ->orWhere('division', 'like', "%{$searchTerm}%")
                   ->orWhere('country', 'like', "%{$searchTerm}%")
                   ->orWhere('additional_name', 'like', "%{$searchTerm}%")
-                  // Match aliases with the same case/accent sensitivity as the name column.
+                  // Match alternative names with the same case/accent sensitivity as the name column.
                   ->orWhereRaw(
                       "JSON_SEARCH(alternative_names COLLATE utf8mb4_unicode_ci, 'one', CONVERT(? USING utf8mb4) COLLATE utf8mb4_unicode_ci) IS NOT NULL",
                       ["%{$searchTerm}%"]
