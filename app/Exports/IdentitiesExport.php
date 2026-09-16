@@ -14,6 +14,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
     protected array $filters = [
         'name' => '',
         'related_names' => '',
+        'nationality' => '',
         'type' => '',
         'profession' => '',
         'note' => '',
@@ -84,6 +85,10 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
                 '%' . mb_strtolower($filters['related_names']) . '%',
             ]);
         });
+        $nationality = trim((string)($filters['nationality'] ?? ''));
+        if ($nationality !== '') {
+            $query->whereRaw('LOWER(nationality) LIKE ?', ['%' . mb_strtolower($nationality) . '%']);
+        }
         $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
 
@@ -118,6 +123,10 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
                 '%' . mb_strtolower($filters['related_names']) . '%',
             ]);
         });
+        $nationality = trim((string)($filters['nationality'] ?? ''));
+        if ($nationality !== '') {
+            $query->whereRaw('LOWER(nationality) LIKE ?', ['%' . mb_strtolower($nationality) . '%']);
+        }
         $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
 

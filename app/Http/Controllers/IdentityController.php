@@ -320,6 +320,7 @@ class IdentityController extends Controller
         $filterKeys = [
             'name',
             'related_names',
+            'nationality',
             'type',
             'profession',
             'note',

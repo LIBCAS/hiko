@@ -10,6 +10,10 @@
                 <x-input wire:model.live.debounce.1000ms="filters.related_names" data-identity-filter="related_names" class="block w-full px-2 text-sm" type="text" />
             </label>
             <label>
+                <span class="block text-sm">{{ __('hiko.nationality') }}</span>
+                <x-input wire:model.live.debounce.1000ms="filters.nationality" data-identity-filter="nationality" class="block w-full px-2 text-sm" type="text" />
+            </label>
+            <label>
                 <span class="block text-sm">{{ __('hiko.type') }}</span>
                 <x-select wire:model.live.debounce.1000ms="filters.type" data-identity-filter="type" class="w-full px-2 text-sm">
                     <option value="">---</option>

@@ -16,6 +16,7 @@ class IdentitiesTable extends Component
     public array $filters = [
         'name' => '',
         'related_names' => '',
+        'nationality' => '',
         'type' => '',
         'profession' => '',
         'note' => '',
@@ -37,6 +38,7 @@ class IdentitiesTable extends Component
         $this->filters = [
             'name' => '',
             'related_names' => '',
+            'nationality' => '',
             'type' => '',
             'profession' => '',
             'note' => '',
@@ -144,6 +146,7 @@ class IdentitiesTable extends Component
         $prefix = tenancy()->initialized ? tenancy()->tenant->table_prefix : null;
         $nameColumn = $scope === 'local' ? "{$prefix}__identities.name" : 'global_identities.name';
         $relatedNamesColumn = $scope === 'local' ? "{$prefix}__identities.related_names" : 'global_identities.related_names';
+        $nationalityColumn = $scope === 'local' ? "{$prefix}__identities.nationality" : 'global_identities.nationality';
         $typeColumn = $scope === 'local' ? "{$prefix}__identities.type" : 'global_identities.type';
         $noteColumn = $scope === 'local' ? "{$prefix}__identities.note" : 'global_identities.note';
         $adminNotes = trim((string)($filters['admin_notes'] ?? ''));
@@ -155,6 +158,11 @@ class IdentitiesTable extends Component
 
             $q->whereRaw("LOWER({$column}) LIKE ?", ["%{$search}%"]);
         });
+        $nationality = trim((string)($filters['nationality'] ?? ''));
+        if ($nationality !== '') {
+            $column = $query->getGrammar()->wrap($nationalityColumn);
+            $query->whereRaw("LOWER({$column}) LIKE ?", ['%' . mb_strtolower($nationality) . '%']);
+        }
         $query->when($filters['type'], fn($q) => $q->where($typeColumn, $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where($noteColumn, 'like', "%{$filters['note']}%"));
 
