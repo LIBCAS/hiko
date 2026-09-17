@@ -16,17 +16,19 @@ class LocalIdentityGlobalCopyServiceTest extends TestCase
     {
         parent::setUp();
 
-        foreach ([
-            'hiko-test__identity_letter',
-            'hiko-test__identity_religion',
-            'hiko-test__identity_profession',
-            'hiko-test__identities',
-            'global_identity_keyword',
-            'global_identity_religion',
-            'global_identity_profession',
-            'global_identities',
-            'tenants',
-        ] as $table) {
+        foreach (
+            [
+                'hiko-test__identity_letter',
+                'hiko-test__identity_religion',
+                'hiko-test__identity_profession',
+                'hiko-test__identities',
+                'global_identity_keyword',
+                'global_identity_religion',
+                'global_identity_profession',
+                'global_identities',
+                'tenants',
+            ] as $table
+        ) {
             Schema::dropIfExists($table);
         }
 
@@ -113,6 +115,7 @@ class LocalIdentityGlobalCopyServiceTest extends TestCase
             $table->id();
             $table->unsignedBigInteger('global_identity_id')->nullable();
         });
+        \Tests\Support\NationalityFixtures::create(['global_identities', 'hiko-test__identities']);
     }
 
     #[Test]
@@ -168,7 +171,16 @@ class LocalIdentityGlobalCopyServiceTest extends TestCase
             'religion_id' => 9,
         ]);
 
+        \App\Models\GlobalIdentity::findOrFail($globalId)->syncNationalities([1]);
+        DB::table('hiko-test__identity_nationality')->insert([
+            ['identity_id' => 1, 'nationality_id' => 3, 'position' => 0],
+            ['identity_id' => 1, 'nationality_id' => 1, 'position' => 1],
+        ]);
+
         $stats = app(LocalIdentityGlobalCopyService::class)->run();
+        $this->assertSame([1, 3], \App\Models\GlobalIdentity::findOrFail($globalId)->nationalities->pluck('id')->all());
+        $this->assertSame([3, 1], DB::table('hiko-test__identity_nationality')->where('identity_id', 1)->orderBy('position')->pluck('nationality_id')->all());
+
 
         $this->assertSame(1, $stats['global_matched']);
         $this->assertSame(0, $stats['global_created']);
@@ -180,7 +192,7 @@ class LocalIdentityGlobalCopyServiceTest extends TestCase
         $this->assertDatabaseHas('global_identities', [
             'id' => $globalId,
             'general_name_modifier' => 'Dr.; Prof.',
-            'nationality' => 'Czech, Slovak',
+
             'gender' => 'M',
             'related_names' => '[{"surname":"Vrbová","forename":"Jana","general_name_modifier":""},{"surname":"Vrba","forename":"Johann","general_name_modifier":""}]',
             'related_identity_resources' => '[{"title":"VIAF","link":"https://viaf.org/1"},{"title":"Wikidata","link":"https://www.wikidata.org/wiki/Q1"}]',

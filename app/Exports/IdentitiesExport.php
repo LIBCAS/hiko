@@ -48,6 +48,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
         $localIdentities = collect();
         if (($source === 'all' || $source === 'local') && !$hasAdminNotesFilter && tenancy()->initialized) {
             $localIdentities = $this->applyLocalFilters(Identity::with([
+                'nationalities',
                 'professions',
                 'globalProfessions',
                 'profession_categories'
@@ -60,6 +61,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
         $globalIdentities = collect();
         if (($source === 'all' || $source === 'global') && !$hasGlobalIdentityFilter) {
             $globalIdentities = $this->applyGlobalFilters(GlobalIdentity::with([
+                'nationalities',
                 'professions', // Note: GlobalIdentity model uses 'professions' for global_identity_profession
             ]))->get()->map(function ($identity) {
                 $identity->source_type = 'Global';
@@ -87,7 +89,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
         });
         $nationality = trim((string)($filters['nationality'] ?? ''));
         if ($nationality !== '') {
-            $query->whereRaw('LOWER(nationality) LIKE ?', ['%' . mb_strtolower($nationality) . '%']);
+            \App\Support\NationalityFilter::apply($query, $nationality);
         }
         $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
@@ -125,7 +127,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
         });
         $nationality = trim((string)($filters['nationality'] ?? ''));
         if ($nationality !== '') {
-            $query->whereRaw('LOWER(nationality) LIKE ?', ['%' . mb_strtolower($nationality) . '%']);
+            \App\Support\NationalityFilter::apply($query, $nationality);
         }
         $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
@@ -245,7 +247,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
             $identity->surname,
             $identity->forename,
             $this->formatRelatedNames($identity->related_names),
-            $identity->nationality,
+            $identity->nationalityNames(),
             $identity->gender,
             $identity->birth_year,
             $identity->death_year,

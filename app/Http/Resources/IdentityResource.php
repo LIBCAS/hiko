@@ -16,7 +16,7 @@ class IdentityResource extends JsonResource
             'surname' => $this->surname,
             'forename' => $this->forename,
             'type' => $this->type,
-            'nationality' => $this->nationality,
+            'nationalities' => NationalityResource::collection($this->nationalities),
             'gender' => $this->gender,
             'birth_year' => $this->birth_year,
             'death_year' => $this->death_year,

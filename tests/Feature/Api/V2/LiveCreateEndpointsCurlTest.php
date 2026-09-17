@@ -61,6 +61,10 @@ class LiveCreateEndpointsCurlTest extends TestCase
     {
         $tag = 'api-v2-live-' . date('YmdHis') . '-' . substr(bin2hex(random_bytes(4)), 0, 8);
 
+        $nationalityId = $this->assertCreatedAndGetId('nationalities', $this->curlJson('POST', '/nationalities', [
+            'cs' => 'Testovací národnost '.$tag, 'en' => 'Test nationality '.$tag,
+        ]));
+
         $globalProfessionCategoryId = $this->assertCreatedAndGetId(
             'global-profession-categories',
             $this->curlJson('POST', '/global-profession-categories', [
@@ -208,6 +212,7 @@ class LiveCreateEndpointsCurlTest extends TestCase
             'global-identities (person)',
             $this->curlJson('POST', '/global-identities', [
                 'type' => 'person',
+                'nationalities' => [$nationalityId],
                 'surname' => "GlobalPerson{$tag}",
                 'forename' => 'Author',
                 'note' => 'Live API smoke test',
@@ -241,6 +246,7 @@ class LiveCreateEndpointsCurlTest extends TestCase
             'identities (person author)',
             $this->curlJson('POST', '/identities', [
                 'type' => 'person',
+                'nationalities' => [$nationalityId],
                 'surname' => "LocalPerson{$tag}",
                 'forename' => 'Author',
                 'note' => 'Live API smoke test',
@@ -261,6 +267,7 @@ class LiveCreateEndpointsCurlTest extends TestCase
             'identities (person mentioned)',
             $this->curlJson('POST', '/identities', [
                 'type' => 'person',
+                'nationalities' => [$nationalityId],
                 'surname' => "LocalPerson{$tag}",
                 'forename' => 'Mentioned',
                 'note' => 'Live API smoke test',
@@ -275,6 +282,14 @@ class LiveCreateEndpointsCurlTest extends TestCase
 
         $this->assertIdentityReligionCountAtLeastViaApi($localPersonAuthorId, 2);
         $this->assertIdentityReligionCountAtLeastViaApi($localPersonMentionedId, 2);
+
+        foreach (["/identity/{$localPersonAuthorId}", "/global-identity/{$globalPersonIdentityId}"] as $path) {
+            $read = $this->curlJson('GET', $path);
+            $this->assertSame(200, $read['status']);
+            $data = $read['json']['data'] ?? $read['json'];
+            $this->assertSame([$nationalityId], array_column($data['nationalities'], 'id'));
+            $this->assertArrayNotHasKey('nationality', $data);
+        }
 
         $letterId = $this->assertCreatedAndGetId(
             'letters',

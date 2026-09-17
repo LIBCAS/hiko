@@ -16,20 +16,22 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
     {
         parent::setUp();
 
-        foreach ([
-            'hiko-test__identity_letter',
-            'hiko-test__identities',
-            'global_identity_profession',
-            'global_professions',
-            'global_profession_categories',
-            'global_identity_keyword',
-            'global_identity_religion',
-            'religion_translations',
-            'religions',
-            'global_identities',
-            'merge_audit_logs',
-            'tenants',
-        ] as $table) {
+        foreach (
+            [
+                'hiko-test__identity_letter',
+                'hiko-test__identities',
+                'global_identity_profession',
+                'global_professions',
+                'global_profession_categories',
+                'global_identity_keyword',
+                'global_identity_religion',
+                'religion_translations',
+                'religions',
+                'global_identities',
+                'merge_audit_logs',
+                'tenants',
+            ] as $table
+        ) {
             Schema::dropIfExists($table);
         }
 
@@ -143,6 +145,7 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
             $table->text('error_message')->nullable();
             $table->timestamps();
         });
+        \Tests\Support\NationalityFixtures::create(['global_identities', 'hiko-test__identities']);
     }
 
     #[Test]
@@ -156,7 +159,7 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
             'forename' => 'Jan',
             'type' => 'person',
             'birth_year' => '1889',
-            'nationality' => 'hungarian, Czech',
+            'nationalities' => [2, 1],
             'admin_notes' => 'hiko-test#1, hiko-test2#3',
         ]);
         DB::table('global_identities')->where('id', $survivor->id)->update(['alternative_names' => 'Alt one']);
@@ -167,7 +170,7 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
             'forename' => 'Jan',
             'type' => 'person',
             'death_year' => '1961',
-            'nationality' => 'Czech, hungarian',
+            'nationalities' => [1, 2],
             'note' => 'Second note',
             'admin_notes' => 'hiko-test2#3, hiko-test#2',
         ]);
@@ -203,7 +206,7 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
             ->firstWhere('value', '1961')['key'];
         $professionKeys = collect($service->multiOptions($records, 'professions'))->pluck('key')->all();
         $religionKeys = collect($service->multiOptions($records, 'religions'))->pluck('key')->all();
-        $nationalityKeys = collect($service->multiOptions($records, 'nationality'))->pluck('key')->all();
+        $nationalityKeys = collect($service->multiOptions($records, 'nationalities'))->pluck('key')->all();
         $noteKeys = collect($service->multiOptions($records, 'note'))->pluck('key')->all();
 
         app(GlobalIdentityStrictMergeService::class)->execute(
@@ -213,16 +216,16 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
             [
                 'professions' => $professionKeys,
                 'religions' => $religionKeys,
-                'nationality' => $nationalityKeys,
+                'nationalities' => $nationalityKeys,
                 'note' => $noteKeys,
             ]
         );
 
         $this->assertDatabaseMissing('global_identities', ['id' => $loser->id]);
+        $this->assertSame([2, 1], $survivor->fresh()->nationalities->pluck('id')->all());
         $this->assertDatabaseHas('global_identities', [
             'id' => $survivor->id,
             'death_year' => '1961',
-            'nationality' => 'Hungarian, Czech',
             'note' => 'Second note',
             'admin_notes' => 'hiko-test#1, hiko-test2#3, hiko-test#2',
             'alternative_names' => 'Alt one' . "\n\n===\n\n" . 'Alt one',
@@ -243,7 +246,7 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
             'surname' => 'Vrba',
             'forename' => 'Jan',
             'type' => 'person',
-            'nationality' => 'czech',
+            'nationalities' => [1],
         ]);
 
         $loser = GlobalIdentity::query()->create([
@@ -251,7 +254,7 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
             'surname' => 'Vrba',
             'forename' => 'Jan',
             'type' => 'person',
-            'nationality' => 'hungarian',
+            'nationalities' => [2],
             'note' => 'Note',
         ]);
 
@@ -276,7 +279,7 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
             $survivor->id,
             [],
             [
-                'nationality' => [],
+                'nationalities' => [],
                 'note' => [],
                 'professions' => [],
                 'religions' => [],
@@ -285,7 +288,7 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
 
         $this->assertDatabaseHas('global_identities', [
             'id' => $survivor->id,
-            'nationality' => null,
+
             'note' => null,
         ]);
         $this->assertDatabaseMissing('global_identity_profession', ['global_identity_id' => $survivor->id]);
@@ -501,7 +504,6 @@ class GlobalIdentityStrictMergeServiceTest extends TestCase
                 'general_name_modifier' => '',
             ]]),
             'type' => 'person',
-            'nationality' => 'Czech',
             'gender' => 'M',
             'birth_year' => '1889',
             'death_year' => '1961',

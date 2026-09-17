@@ -111,7 +111,7 @@
                                                 <td class="px-3 py-3 align-top text-sm font-medium text-gray-900">{{ $item['name'] }}</td>
                                                 <td class="px-3 py-3 align-top text-sm text-gray-700">{{ __("hiko.{$item['type']}") }}</td>
                                                 <td class="px-3 py-3 align-top text-sm text-gray-700">{{ trim(($item['birth_year'] ?? '') . ' - ' . ($item['death_year'] ?? ''), ' -') ?: '—' }}</td>
-                                                <td class="px-3 py-3 align-top text-sm text-gray-700">{{ $item['nationality'] ?: '—' }}</td>
+                                                <td class="px-3 py-3 align-top text-sm text-gray-700">{{ $item['nationalities'] ?: '—' }}</td>
                                                 <td class="px-3 py-3 align-top text-sm text-gray-700">{{ $item['gender'] ?: '—' }}</td>
                                                 <td class="px-3 py-3 align-top text-sm text-gray-700">
                                                     @php($adminReferences = $this->adminNoteReferences($item['admin_notes'] ?? null))
@@ -218,7 +218,7 @@
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{{ __("hiko.{$identity->type}") }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{{ trim("{$identity->birth_year} - {$identity->death_year}") }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{{ $identity->nationality ?? '—' }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{{ $identity->nationalityNames() ?: '—' }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{{ $identity->gender ?? '—' }}</td>
                             <td class="px-4 py-3 text-sm text-gray-700">{!! $this->formatRelatedNamesList($identity->related_names) !!}</td>
                             <td class="px-4 py-3 text-sm text-gray-700">{!! $this->formatProfessionsList($identity) !!}</td>
@@ -280,7 +280,7 @@
                         __('hiko.forename') => $localIdentityPreview['forename'] ?? null,
                         __('hiko.general_name_modifier') => $localIdentityPreview['general_name_modifier'] ?? null,
                         __('hiko.dates') => trim(($localIdentityPreview['birth_year'] ?? '') . ' – ' . ($localIdentityPreview['death_year'] ?? ''), ' –'),
-                        __('hiko.nationality') => $localIdentityPreview['nationality'] ?? null,
+                        __('hiko.nationality') => $localIdentityPreview['nationalities'] ?? null,
                         __('hiko.gender') => $localIdentityPreview['gender'] ?? null,
                         'VIAF' => $localIdentityPreview['viaf_id'] ?? null,
                     ] as $label => $value)

@@ -42,7 +42,8 @@ class LocalIdentityMergeRequest extends FormRequest
             'attributes.forename' => ['nullable', 'string', 'max:255'],
             'attributes.birth_year' => ['nullable', 'string', 'max:255'],
             'attributes.death_year' => ['nullable', 'string', 'max:255'],
-            'attributes.nationality' => ['nullable', 'string', 'max:255'],
+            'attributes.nationalities' => ['present', 'array', 'list'],
+            'attributes.nationalities.*' => ['integer', 'distinct', 'exists:nationalities,id'],
             'attributes.gender' => ['nullable', 'string', 'max:255'],
             'attributes.viaf_id' => ['nullable', 'string', 'max:255'],
 

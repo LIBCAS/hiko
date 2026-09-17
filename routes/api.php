@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\v2\ProfessionCategoryController as apiV2ProfessionC
 use App\Http\Controllers\Api\v2\ProfessionController as apiV2ProfessionController;
 use App\Http\Controllers\Api\v2\KeywordCategoryController as apiV2KeywordCategoryController;
 use App\Http\Controllers\Api\v2\KeywordController as apiV2KeywordController;
+use App\Http\Controllers\Api\v2\NationalityController as apiV2NationalityController;
 use App\Http\Controllers\Api\v2\ReligionController as apiV2ReligionController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -161,6 +162,10 @@ Route::middleware([InitializeTenancyByDomain::class, 'auth:sanctum'])->group(fun
             Route::get('keywords', [apiV2KeywordController::class, 'index']);
             Route::get('keyword/{id}', [apiV2KeywordController::class, 'show']);
 
+            // Nationalities
+            Route::get('nationalities', [apiV2NationalityController::class, 'index']);
+            Route::get('nationality/{nationality}', [apiV2NationalityController::class, 'show']);
+
             // Religions
             Route::get('religions', [apiV2ReligionController::class, 'index']);
             Route::get('religion/{id}', [apiV2ReligionController::class, 'show']);
@@ -244,6 +249,11 @@ Route::middleware([InitializeTenancyByDomain::class, 'auth:sanctum'])->group(fun
             Route::post('keywords', [apiV2KeywordController::class, 'store']);
             Route::put('keyword/{id}', [apiV2KeywordController::class, 'update']);
             // Route::delete('keyword/{id}', [apiV2KeywordController::class, 'destroy']);
+
+            // Nationalities
+            Route::post('nationalities', [apiV2NationalityController::class, 'store'])->middleware('can:manage-users');
+            Route::put('nationality/{nationality}', [apiV2NationalityController::class, 'update'])->middleware('can:manage-users');
+            // Route::delete('nationality/{nationality}', [apiV2NationalityController::class, 'destroy'])->middleware('can:manage-users');
         });
 
     });

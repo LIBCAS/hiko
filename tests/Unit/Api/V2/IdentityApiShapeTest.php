@@ -20,7 +20,7 @@ class IdentityApiShapeTest extends TestCase
             public string $surname = 'Tester';
             public string $forename = 'Local';
             public string $type = 'person';
-            public ?string $nationality = 'czech';
+            public Collection $nationalities;
             public ?string $gender = 'M';
             public ?string $birth_year = '1900';
             public ?string $death_year = '1980';
@@ -38,6 +38,7 @@ class IdentityApiShapeTest extends TestCase
 
             public function __construct()
             {
+                $this->nationalities = collect();
                 $this->globalIdentity = (object) [
                     'id' => 1,
                     'name' => 'Tester, Global',

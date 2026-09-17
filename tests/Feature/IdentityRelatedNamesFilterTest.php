@@ -50,6 +50,7 @@ class IdentityRelatedNamesFilterTest extends TestCase
 
         $this->createSchema();
         $this->seedIdentities();
+        \Tests\Support\NationalityFixtures::create(['global_identities', 'test-tenant__identities']);
     }
 
     protected function tearDown(): void
@@ -117,21 +118,23 @@ class IdentityRelatedNamesFilterTest extends TestCase
 
     public function test_nationality_filters_listing_and_export_for_both_scopes(): void
     {
-        DB::table('test-tenant__identities')->where('id', 1)->update(['nationality' => 'Czech, German']);
-        DB::table('test-tenant__identities')->where('id', 2)->update(['nationality' => 'French']);
-        DB::table('global_identities')->where('id', 101)->update(['nationality' => 'French']);
-        DB::table('global_identities')->where('id', 102)->update(['nationality' => 'German, Czech']);
+        Identity::findOrFail(1)->syncNationalities([1, 4]);
+        Identity::findOrFail(2)->syncNationalities([5]);
+        GlobalIdentity::findOrFail(101)->syncNationalities([5]);
+        GlobalIdentity::findOrFail(102)->syncNationalities([4, 1]);
 
         $component = new TestableIdentitiesTable();
 
-        foreach ([
-            'zech' => [[1], [102]],
-            'CZECH' => [[1], [102]],
-            '  cZeCh  ' => [[1], [102]],
-            'missing' => [[], []],
-            '' => [[1, 2], [101, 102, 103]],
-            '   ' => [[1, 2], [101, 102, 103]],
-        ] as $search => [$localIds, $globalIds]) {
+        foreach (
+            [
+                'zech' => [[1], [102]],
+                'CZECH' => [[1], [102]],
+                '  cZeCh  ' => [[1], [102]],
+                'missing' => [[], []],
+                '' => [[1, 2], [101, 102, 103]],
+                '   ' => [[1, 2], [101, 102, 103]],
+            ] as $search => [$localIds, $globalIds]
+        ) {
             $filters = array_replace($component->filters, ['nationality' => $search]);
             $localQuery = DB::table('test-tenant__identities')
                 ->leftJoin('global_identities', 'test-tenant__identities.global_identity_id', '=', 'global_identities.id');
@@ -217,7 +220,7 @@ class TestableIdentitiesExport extends IdentitiesExport
     {
         return $this->applyLocalFilters(Identity::query())
             ->pluck('id')
-            ->map(fn ($id) => (int) $id)
+            ->map(fn($id) => (int) $id)
             ->sort()
             ->values()
             ->all();
@@ -227,7 +230,7 @@ class TestableIdentitiesExport extends IdentitiesExport
     {
         return $this->applyGlobalFilters(GlobalIdentity::query())
             ->pluck('id')
-            ->map(fn ($id) => (int) $id)
+            ->map(fn($id) => (int) $id)
             ->sort()
             ->values()
             ->all();

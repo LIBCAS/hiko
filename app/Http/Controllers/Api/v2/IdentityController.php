@@ -82,7 +82,7 @@ class IdentityController extends Controller
                 'localProfessions',
                 'globalProfessions',
                 'globalIdentity',
-                'religions',
+                'nationalities', 'religions',
             ])
             ->paginate($perPage, ['*'], 'page', $page);
 
@@ -109,7 +109,7 @@ class IdentityController extends Controller
                         "surname" => "Tester",
                         "forename" => "Local",
                         "type" => "person",
-                        "nationality" => "czech",
+                        "nationalities" => [],
                         "global_identity" => [
                             "id" => 1,
                             "scope" => "global",
@@ -133,9 +133,9 @@ class IdentityController extends Controller
             'localProfessions',
             'globalProfessions',
             'globalIdentity',
-            'religions',
+            'nationalities', 'religions',
         ])->findOrFail($id);
-        return new IdentityResource($identity->load(['globalIdentity', 'religions']));
+        return new IdentityResource($identity->load(['globalIdentity', 'nationalities', 'religions']));
     }
 
     #[OA\Post(
@@ -157,7 +157,14 @@ class IdentityController extends Controller
                             new OA\Property(property: "general_name_modifier", type: "string", nullable: true, example: null),
                             new OA\Property(property: "alternative_names", type: "array", items: new OA\Items(type: "string"), example: ["Alias"]),
                             new OA\Property(property: "related_names", type: "array", items: new OA\Items(type: "object"), example: [["surname" => "Tester", "forename" => "Variant"]]),
-                            new OA\Property(property: "nationality", type: "string", nullable: true, example: "czech"),
+                            new OA\Property(
+                                property: "nationalities",
+                                type: "array",
+                                items: new OA\Items(type: "integer", minimum: 1),
+                                uniqueItems: true,
+                                example: [1, 2],
+                                description: "Ordered, distinct IDs from GET /nationalities. Example IDs are illustrative; use IDs that exist in your database. Omit or send [] to create without nationalities."
+                            ),
                             new OA\Property(property: "gender", type: "string", nullable: true, example: "M"),
                             new OA\Property(property: "birth_year", type: "string", nullable: true, example: "1900"),
                             new OA\Property(property: "death_year", type: "string", nullable: true, example: "1980"),
@@ -258,11 +265,11 @@ class IdentityController extends Controller
 
         Log::info('API V2: Creating Identity', ['data' => $validated]);
 
-        $identity = Identity::create($validated);
+        $identity = Identity::create(collect($validated)->except(['religions', 'professions', 'local_professions', 'global_professions', 'profession', 'category', 'global_identity'])->all());
 
         $this->syncRelations($identity, $request->validated());
 
-        return (new IdentityResource($identity->load(['globalIdentity', 'religions'])))
+        return (new IdentityResource($identity->load(['globalIdentity', 'nationalities', 'religions'])))
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
     }
@@ -287,7 +294,14 @@ class IdentityController extends Controller
                             new OA\Property(property: "surname", type: "string", example: "Tester"),
                             new OA\Property(property: "forename", type: "string", example: "Updated"),
                             new OA\Property(property: "general_name_modifier", type: "string", nullable: true, example: null),
-                            new OA\Property(property: "nationality", type: "string", nullable: true, example: "czech"),
+                            new OA\Property(
+                                property: "nationalities",
+                                type: "array",
+                                items: new OA\Items(type: "integer", minimum: 1),
+                                uniqueItems: true,
+                                example: [1, 2],
+                                description: "Ordered, distinct IDs from GET /nationalities. Example IDs are illustrative; use IDs that exist in your database. Omit to retain existing assignments; [] clears them."
+                            ),
                             new OA\Property(property: "gender", type: "string", nullable: true, example: "M"),
                             new OA\Property(property: "birth_year", type: "string", nullable: true, example: "1900"),
                             new OA\Property(property: "death_year", type: "string", nullable: true, example: "1981"),
@@ -382,11 +396,11 @@ class IdentityController extends Controller
 
         Log::info('API V2: Updating Identity', ['id' => $identity->id, 'data' => $validated]);
 
-        $identity->update($validated);
+        $identity->update(collect($validated)->except(['religions', 'professions', 'local_professions', 'global_professions', 'profession', 'category', 'global_identity'])->all());
 
         $this->syncRelations($identity, $request->validated());
 
-        return new IdentityResource($identity->load(['globalIdentity', 'religions']));
+        return new IdentityResource($identity->load(['globalIdentity', 'nationalities', 'religions']));
     }
 
     #[OA\Delete(

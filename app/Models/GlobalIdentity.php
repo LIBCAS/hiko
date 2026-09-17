@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\IdentityType;
+use App\Models\Concerns\HasNationalities;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -19,7 +20,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: "forename", type: "string", nullable: true),
         new OA\Property(property: "general_name_modifier", type: "string", nullable: true),
         new OA\Property(property: "type", type: "string", enum: ["person", "institution"]),
-        new OA\Property(property: "nationality", type: "string", nullable: true),
+        new OA\Property(property: "nationalities", type: "array", items: new OA\Items(ref: "#/components/schemas/Nationality")),
         new OA\Property(property: "gender", type: "string", nullable: true),
         new OA\Property(property: "birth_year", type: "string", nullable: true),
         new OA\Property(property: "death_year", type: "string", nullable: true),
@@ -58,11 +59,14 @@ class GlobalIdentity extends Model
 {
     use Searchable;
 
+    use HasNationalities;
+
     protected $table = 'global_identities';
 
     protected $guarded = ['id'];
 
     protected $hidden = [
+        'nationality',
         'admin_notes',
     ];
 

@@ -19,8 +19,8 @@ class LocalIdentityMergeService
 
         // 1. Fetch Identities with Relations needed for the UI
         $identities = Identity::query()
-            ->with(['professions', 'globalProfessions', 'religions'])
-            ->select(['id', 'name', 'surname', 'forename', 'birth_year', 'death_year', 'viaf_id', 'global_identity_id', 'created_at', 'type', 'nationality', 'gender'])
+            ->with(['professions', 'globalProfessions', 'nationalities', 'religions'])
+            ->select(['id', 'name', 'surname', 'forename', 'birth_year', 'death_year', 'viaf_id', 'global_identity_id', 'created_at', 'type', 'gender'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -192,7 +192,7 @@ class LocalIdentityMergeService
                         'surname' => $data['attributes']['surname'],
                         'forename' => $data['attributes']['forename'],
                         'type' => $data['attributes']['type'],
-                        'nationality' => $data['attributes']['nationality'],
+                        'nationalities' => $data['attributes']['nationalities'] ?? [],
                         'gender' => $data['attributes']['gender'],
                         'birth_year' => $data['attributes']['birth_year'],
                         'death_year' => $data['attributes']['death_year'],
@@ -205,7 +205,7 @@ class LocalIdentityMergeService
                         'surname' => null,
                         'forename' => null,
                         'type' => $data['attributes']['type'],
-                        'nationality' => null,
+                        'nationalities' => [],
                         'gender' => null,
                         'birth_year' => null,
                         'death_year' => null,

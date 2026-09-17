@@ -248,7 +248,7 @@ class IdentityController extends Controller
         // Ensure it defaults to empty array if null, so Model casts handle it correctly
         $validated['related_names'] = $validated['related_names'] ?? [];
 
-        $identity->update($validated);
+        $identity->update(collect($validated)->except(['religions', 'professions', 'local_professions', 'global_professions', 'profession', 'category', 'global_identity'])->all());
         $this->logGlobalIdentityLinkAudit($identity, $previousGlobalIdentityId, $identity->global_identity_id, 'update');
         $this->syncRelations($identity, $validated);
         if ($validated['type'] == 'person') {
@@ -285,7 +285,7 @@ class IdentityController extends Controller
         Log::info('Validated data before create:', $validated);
 
         // Create the new Identity record
-        $identity = Identity::create($validated);
+        $identity = Identity::create(collect($validated)->except(['religions', 'professions', 'local_professions', 'global_professions', 'profession', 'category', 'global_identity'])->all());
         $this->logGlobalIdentityLinkAudit($identity, null, $identity->global_identity_id, 'store');
 
         // Sync professions and categories if provided

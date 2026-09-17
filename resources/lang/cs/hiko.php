@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'nationalities' => 'Národnosti',
+    'select_nationality' => 'Přidat národnost',
+    'nationality_cs' => 'Český název',
+    'nationality_en' => 'Anglický název',
+    'nationality_in_use' => 'Používanou národnost nelze odstranit.',
+    'confirm_delete_nationality' => 'Odstranit tuto národnost?',
+    'move_up' => 'Posunout nahoru',
+    'move_down' => 'Posunout dolů',
+
     'id' => 'ID',
     'admin' => 'Administrátor',
     'editor' => 'Editor',

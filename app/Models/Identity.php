@@ -21,7 +21,7 @@ use Stancl\Tenancy\Facades\Tenancy;
         new OA\Property(property: "surname", type: "string", nullable: true),
         new OA\Property(property: "forename", type: "string", nullable: true),
         new OA\Property(property: "type", type: "string", enum: ["person", "institution"]),
-        new OA\Property(property: "nationality", type: "string", nullable: true),
+        new OA\Property(property: "nationalities", type: "array", items: new OA\Items(ref: "#/components/schemas/Nationality")),
         new OA\Property(property: "gender", type: "string", nullable: true),
         new OA\Property(property: "birth_year", type: "string", nullable: true),
         new OA\Property(property: "death_year", type: "string", nullable: true),
@@ -83,9 +83,12 @@ use Stancl\Tenancy\Facades\Tenancy;
 )]
 class Identity extends Model
 {
+    use \App\Models\Concerns\HasNationalities;
+
     protected $table;
 
     protected $guarded = ['id'];
+    protected $hidden = ['nationality'];
 
     protected $casts = [
         'alternative_names' => 'array',

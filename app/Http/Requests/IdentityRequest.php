@@ -38,7 +38,9 @@ class IdentityRequest extends FormRequest
             'general_name_modifier' => ['nullable', 'string', 'max:255'],
             'birth_year' => ['nullable', 'string', 'max:255'],
             'death_year' => ['nullable', 'string', 'max:255'],
-            'nationality' => ['nullable', 'string', 'max:255'],
+            'nationality' => ['prohibited'],
+            'nationalities' => ['sometimes', 'array', 'list'],
+            'nationalities.*' => ['required', 'integer', 'distinct', Rule::exists('nationalities', 'id')],
             'gender' => ['nullable', 'string', 'max:255'],
             'note' => ['nullable', 'string'],
             'related_identity_resources' => ['nullable', 'array'],
@@ -106,6 +108,10 @@ class IdentityRequest extends FormRequest
 
     protected function prepareForValidation()
     {
+        if (!$this->is('api/*') && $this->has('nationalities_present')) {
+            $this->merge(['nationalities' => $this->input('nationalities', [])]);
+        }
+
         // If the type is person, adjust the name field
         if ($this->input('type') === IdentityType::Person->value && ($this->isMethod('POST') || $this->exists('surname') || $this->exists('forename'))) {
             $name = $this->input('surname');
@@ -178,7 +184,7 @@ class IdentityRequest extends FormRequest
             'general_name_modifier',
             'birth_year',
             'death_year',
-            'nationality',
+            'nationalities',
             'gender',
             'note',
             'related_identity_resources',

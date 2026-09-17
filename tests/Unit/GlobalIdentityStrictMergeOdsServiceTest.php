@@ -128,6 +128,7 @@ class GlobalIdentityStrictMergeOdsServiceTest extends TestCase
             $table->text('error_message')->nullable();
             $table->timestamps();
         });
+        \Tests\Support\NationalityFixtures::create(['global_identities', 'hiko-test__identities']);
     }
 
     #[Test]

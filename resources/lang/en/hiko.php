@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'nationalities' => 'Nationalities',
+    'select_nationality' => 'Add nationality',
+    'nationality_cs' => 'Czech name',
+    'nationality_en' => 'English name',
+    'nationality_in_use' => 'A nationality assigned to identities cannot be deleted.',
+    'confirm_delete_nationality' => 'Delete this nationality?',
+    'move_up' => 'Move up',
+    'move_down' => 'Move down',
+
     'id' => 'ID',
     'admin' => 'Admin',
     'editor' => 'Editor',

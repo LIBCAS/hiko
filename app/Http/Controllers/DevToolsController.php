@@ -256,7 +256,7 @@ class DevToolsController extends Controller
                         $item['type'] ?? '',
                         $item['birth_year'] ?? '',
                         $item['death_year'] ?? '',
-                        $item['nationality'] ?? '',
+                        $item['nationalities'] ?? '',
                         $item['gender'] ?? '',
                         $item['admin_notes'] ?? '',
                         $identityId > 0 ? route('global.identities.edit', $identityId) : '',

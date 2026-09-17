@@ -64,12 +64,7 @@
                 </div>
             </div>
             <div>
-                <x-label for="nationality" :value="__('hiko.nationality')" />
-                <x-input id="nationality" class="block w-full mt-1" type="text" name="nationality"
-                    :value="old('nationality', $identity->nationality)" />
-                @error('nationality')
-                <div class="text-red-600">{{ $message }}</div>
-                @enderror
+                <x-nationality-picker :identity="$identity" />
             </div>
             <div>
                 <x-label for="gender" :value="__('hiko.gender')" />

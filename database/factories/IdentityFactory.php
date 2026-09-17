@@ -33,7 +33,7 @@ class IdentityFactory extends Factory
             'surname' => $surname,
             'forename' => $firstname,
             'gender' => $type === 'person' ? $this->faker->randomElement(['M', 'F',]) : null,
-            'nationality' => $type === 'person' ? $this->faker->word() : null,
+            'nationalities' => [],
         ];
     }
 }

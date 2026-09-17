@@ -40,5 +40,6 @@ return [
         'global_location_edit' => 'manage-users',
 
         'religions_admin' => 'manage-users',
+        'nationalities_admin' => 'manage-users',
     ],
 ];

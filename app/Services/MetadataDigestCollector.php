@@ -134,7 +134,7 @@ class MetadataDigestCollector
             ]),
             'locations' => $this->section(__('hiko.locations'), ['id', 'name', 'type']),
             'identities' => $this->section(__('hiko.identities'), [
-                'id', 'name', 'type', 'surname', 'forename', 'related_names', 'nationality', 'gender',
+                'id', 'name', 'type', 'surname', 'forename', 'related_names', 'nationalities', 'gender',
                 'birth_year', 'death_year', 'viaf_id', 'note', 'admin_notes',
             ]),
         ];
@@ -194,11 +194,21 @@ class MetadataDigestCollector
             )->addSelect('categories.name as digest_category_name');
         }
 
-        return $query
+        $records = $query
             ->where('records.created_at', '>=', $start)
             ->where('records.created_at', '<', $end)
             ->orderBy('records.id')
             ->get();
+        if ($key === 'identities' && $records->isNotEmpty()) {
+            $pivot = \App\Support\NationalitySchema::pivotName($table);
+            $fk = $scope === 'global' ? 'global_identity_id' : 'identity_id';
+            $names = DB::connection('mysql')->table($pivot.' as p')->join('nationalities as n', 'n.id', '=', 'p.nationality_id')
+                ->whereIn('p.'.$fk, $records->pluck('id'))->orderBy('p.position')->get(['p.'.$fk.' as identity_id','n.name'])->groupBy('identity_id');
+            foreach ($records as $record) $record->nationalities_display = ($names->get($record->id) ?? collect())
+                ->map(fn($row) => $this->translations($row->name)[app()->getLocale()] ?? '')->implode(', ');
+        }
+        return $records;
+
     }
 
     private function table(string $suffix, string $scope, ?string $prefix): string
@@ -255,7 +265,7 @@ class MetadataDigestCollector
             $record->surname ?? null,
             $record->forename ?? null,
             $this->formatRelatedNames($record->related_names ?? null),
-            $record->nationality ?? null,
+            $record->nationalities_display ?? null,
             $record->gender ?? null,
             $record->birth_year ?? null,
             $record->death_year ?? null,

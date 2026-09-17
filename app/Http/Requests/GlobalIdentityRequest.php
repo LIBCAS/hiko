@@ -32,7 +32,9 @@ class GlobalIdentityRequest extends FormRequest
             'general_name_modifier' => ['nullable', 'string', 'max:255'],
             'birth_year' => ['nullable', 'string', 'max:255'],
             'death_year' => ['nullable', 'string', 'max:255'],
-            'nationality' => ['nullable', 'string', 'max:255'],
+            'nationality' => ['prohibited'],
+            'nationalities' => ['sometimes', 'array', 'list'],
+            'nationalities.*' => ['required', 'integer', 'distinct', Rule::exists('nationalities', 'id')],
             'gender' => ['nullable', 'string', 'max:255'],
             'note' => ['nullable', 'string'],
             'viaf_id' => ['nullable', 'string', 'max:255'],
@@ -52,6 +54,10 @@ class GlobalIdentityRequest extends FormRequest
 
     protected function prepareForValidation()
     {
+        if (!$this->is('api/*') && $this->has('nationalities_present')) {
+            $this->merge(['nationalities' => $this->input('nationalities', [])]);
+        }
+
         // If the type is person, construct the display name
         if ($this->input('type') === IdentityType::Person->value && ($this->isMethod('POST') || $this->exists('surname') || $this->exists('forename'))) {
             $name = $this->input('surname');
@@ -163,7 +169,7 @@ class GlobalIdentityRequest extends FormRequest
             'general_name_modifier',
             'birth_year',
             'death_year',
-            'nationality',
+            'nationalities',
             'gender',
             'note',
             'viaf_id',

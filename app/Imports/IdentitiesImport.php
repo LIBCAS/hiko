@@ -21,6 +21,11 @@ class IdentitiesImport
             return 'Chyba při dekódování JSON';
         }
 
+        foreach ($identities as $identity) {
+            if (!empty($identity->nationality)) {
+                throw new \InvalidArgumentException('Legacy text nationality imports require an approved mapping. Use V2 nationalities IDs instead.');
+            }
+        }
         $importCount = 0;
         $lastId = DB::table('identities')->max('id');
 
@@ -39,7 +44,6 @@ class IdentitiesImport
                     'death_year' => $identity->death_year,
                     'note' => $identity->note,
                     'related_identity_resources' => $identity->related_identity_resources ? json_encode($identity->related_identity_resources) : null,
-                    'nationality' => $identity->nationality,
                     'alternative_names' => is_array($identity->alternative_names) ? json_encode($identity->alternative_names) : $identity->alternative_names,
                     'gender' => $identity->gender,
                     'type' => $identity->type === 'institution' ? 'institution' : 'person',

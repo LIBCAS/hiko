@@ -68,7 +68,7 @@ class GlobalIdentityController extends Controller
     {
         $includes = $this->parseIncludes($request);
         $perPage = min(max((int)$request->query('per_page', self::$defaultPerPage), 1), self::$maxPerPage);
-        $query = GlobalIdentity::with(['professions', 'religions'])
+        $query = GlobalIdentity::with(['professions', 'nationalities', 'religions'])
             ->withCount(['localIdentities as linked_local_identities_count']);
 
         if (in_array('linked_local_identities', $includes, true)) {
@@ -106,7 +106,7 @@ class GlobalIdentityController extends Controller
                         "surname" => "Tester",
                         "forename" => "Global",
                         "type" => "person",
-                        "nationality" => "czech",
+                        "nationalities" => [],
                         "linked_local_identities_count" => 3,
                         "linked_local_identities" => [
                             [
@@ -129,7 +129,7 @@ class GlobalIdentityController extends Controller
     {
         $includes = $this->parseIncludes($request);
 
-        $query = GlobalIdentity::with(['professions', 'religions'])
+        $query = GlobalIdentity::with(['professions', 'nationalities', 'religions'])
             ->withCount(['localIdentities as linked_local_identities_count']);
 
         if (in_array('linked_local_identities', $includes, true)) {
@@ -221,7 +221,14 @@ class GlobalIdentityController extends Controller
                             new OA\Property(property: "general_name_modifier", type: "string", nullable: true, example: null),
                             new OA\Property(property: "alternative_names", type: "array", items: new OA\Items(type: "string"), example: ["Test Name"]),
                             new OA\Property(property: "related_names", type: "array", items: new OA\Items(type: "object"), example: [["surname" => "Tester", "forename" => "Alias"]]),
-                            new OA\Property(property: "nationality", type: "string", nullable: true, example: "czech"),
+                            new OA\Property(
+                                property: "nationalities",
+                                type: "array",
+                                items: new OA\Items(type: "integer", minimum: 1),
+                                uniqueItems: true,
+                                example: [1, 2],
+                                description: "Ordered, distinct IDs from GET /nationalities. Example IDs are illustrative; use IDs that exist in your database. Omit or send [] to create without nationalities."
+                            ),
                             new OA\Property(property: "gender", type: "string", nullable: true, example: "F"),
                             new OA\Property(property: "birth_year", type: "string", nullable: true, example: "1900"),
                             new OA\Property(property: "death_year", type: "string", nullable: true, example: "1980"),
@@ -304,7 +311,7 @@ class GlobalIdentityController extends Controller
             $identity->syncReligions($request->input('religions', null));
         }
 
-        return (new IdentityResource($identity->load(['professions', 'religions'])))
+        return (new IdentityResource($identity->load(['professions', 'nationalities', 'religions'])))
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
     }
@@ -331,7 +338,14 @@ class GlobalIdentityController extends Controller
                             new OA\Property(property: "general_name_modifier", type: "string", nullable: true, example: null),
                             new OA\Property(property: "alternative_names", type: "array", items: new OA\Items(type: "string"), example: ["Updated alias"]),
                             new OA\Property(property: "related_names", type: "array", items: new OA\Items(type: "object"), example: [["surname" => "Tester", "forename" => "Variant"]]),
-                            new OA\Property(property: "nationality", type: "string", nullable: true, example: "czech"),
+                            new OA\Property(
+                                property: "nationalities",
+                                type: "array",
+                                items: new OA\Items(type: "integer", minimum: 1),
+                                uniqueItems: true,
+                                example: [1, 2],
+                                description: "Ordered, distinct IDs from GET /nationalities. Example IDs are illustrative; use IDs that exist in your database. Omit to retain existing assignments; [] clears them."
+                            ),
                             new OA\Property(property: "gender", type: "string", nullable: true, example: "F"),
                             new OA\Property(property: "birth_year", type: "string", nullable: true, example: "1900"),
                             new OA\Property(property: "death_year", type: "string", nullable: true, example: "1981"),
@@ -417,7 +431,7 @@ class GlobalIdentityController extends Controller
             $identity->syncReligions($request->input('religions', null));
         }
 
-        return new IdentityResource($identity->load(['professions', 'religions']));
+        return new IdentityResource($identity->load(['professions', 'nationalities', 'religions']));
     }
 
     #[OA\Delete(

@@ -23,7 +23,6 @@ class LocalIdentityGlobalCopyService
         'alternative_names',
         'related_names',
         'type',
-        'nationality',
         'gender',
         'birth_year',
         'death_year',
@@ -400,6 +399,12 @@ class LocalIdentityGlobalCopyService
                 } else {
                     $this->copyProfessions($globalIdentityId, (int)$localIdentity->id, $professionTable, $dryRun, $stats);
                     $this->copyReligions($globalIdentityId, (int)$localIdentity->id, $religionTable, $dryRun, $stats);
+                    if (!$dryRun) {
+                        $localIds = DB::table($tenantPrefix.'__identity_nationality')->where('identity_id', $localIdentity->id)->orderBy('position')->pluck('nationality_id')->all();
+                        $global = \App\Models\GlobalIdentity::findOrFail($globalIdentityId);
+                        $global->syncNationalities(array_values(array_unique(array_merge($global->nationalities->pluck('id')->all(), $localIds))));
+                    }
+
                 }
 
                 $this->linkLocalIdentity($identitiesTable, (int)$localIdentity->id, $globalIdentityId, $dryRun, $stats);
@@ -513,12 +518,6 @@ class LocalIdentityGlobalCopyService
             $globalIdentity->general_name_modifier ?? null,
             $localIdentity->general_name_modifier ?? null,
             '; '
-        );
-        $updates['nationality'] = $this->mergeDelimitedValues(
-            $globalIdentity->nationality ?? null,
-            $localIdentity->nationality ?? null,
-            ', ',
-            '/[,|;]+/'
         );
         $updates['related_names'] = $this->mergeJsonArrays(
             $globalIdentity->related_names ?? null,

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\NationalitySchema;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
@@ -301,7 +302,6 @@ class AddTenant extends Command
                 $table->string('general_name_modifier')->nullable();
                 $table->longText('alternative_names')->collation('utf8mb4_bin')->nullable();
                 $table->string('type');
-                $table->string('nationality')->nullable();
                 $table->string('gender')->nullable();
                 $table->string('birth_year')->nullable();
                 $table->string('death_year')->nullable();
@@ -486,6 +486,9 @@ class AddTenant extends Command
                       ->on("{$prefix}letters")
                       ->onDelete('cascade');
             });
+        }
+        if (Schema::hasTable('nationalities') && !Schema::hasTable("{$prefix}identity_nationality")) {
+            DB::statement(NationalitySchema::pivot("{$prefix}identities"));
         }
     }
 }

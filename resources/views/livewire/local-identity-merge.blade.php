@@ -190,11 +190,11 @@
                                         </td>
                                     @else
                                         {{-- Person Rows --}}
-                                        <template x-for="field in ['surname', 'forename', 'type', 'nationality', 'gender', 'birth_year', 'death_year', 'viaf_id']">
+                                        <template x-for="field in ['surname', 'forename', 'type', 'nationalities', 'gender', 'birth_year', 'death_year', 'viaf_id']">
                                             <td class="px-2 py-2 cursor-pointer align-top"
-                                                @click="final[field] = item[field]"
+                                                @click="final[field] = field === 'nationalities' ? (item[field] || []).map(n => n.id) : item[field]"
                                                 :class="final[field] === item[field] ? 'bg-yellow-100 font-bold' : ''">
-                                                <span x-text="item[field] || '—'"></span>
+                                                <span x-text="field === 'nationalities' ? nationalityLabels((item[field] || []).map(n => n.id)) : (item[field] || '—')"></span>
                                             </td>
                                         </template>
 
@@ -259,7 +259,7 @@
                                     <td class="px-2 py-2 bg-yellow-50" x-text="final.surname"></td>
                                     <td class="px-2 py-2 bg-yellow-50" x-text="final.forename"></td>
                                     <td class="px-2 py-2 bg-yellow-50" x-text="final.type"></td>
-                                    <td class="px-2 py-2 bg-yellow-50" x-text="final.nationality"></td>
+                                    <td class="px-2 py-2 bg-yellow-50" x-text="nationalityLabels(final.nationalities)"></td>
                                     <td class="px-2 py-2 bg-yellow-50" x-text="final.gender"></td>
                                     <td class="px-2 py-2 bg-yellow-50" x-text="final.birth_year"></td>
                                     <td class="px-2 py-2 bg-yellow-50" x-text="final.death_year"></td>
@@ -343,6 +343,14 @@
             });
         },
 
+        nationalityLabels(ids) {
+            const catalogue = this.items.flatMap(item => item.nationalities || []);
+            return (ids || []).map(id => {
+                const item = catalogue.find(n => Number(n.id) === Number(id));
+                return item?.name?.[document.documentElement.lang] || item?.name?.cs || item?.name || id;
+            }).join(', ');
+        },
+
         get selectedItems() {
             const selectedIdsString = this.selectedIds.map(String);
             return this.items.filter(item => selectedIdsString.includes(String(item.id)));
@@ -389,7 +397,7 @@
                 { label: "{{ __('hiko.surname_abbr') }}", value: this.previewValue(this.final.surname) },
                 { label: "{{ __('hiko.forename_abbr') }}", value: this.previewValue(this.final.forename) },
                 { label: "{{ __('hiko.type') }}", value: this.previewValue(this.final.type) },
-                { label: "{{ __('hiko.nationality') }}", value: this.previewValue(this.final.nationality) },
+                { label: "{{ __('hiko.nationality') }}", value: this.nationalityLabels(this.final.nationalities) },
                 { label: "{{ __('hiko.gender') }}", value: this.previewValue(this.final.gender) },
                 { label: "{{ __('hiko.birth_year') }}", value: this.previewValue(this.final.birth_year) },
                 { label: "{{ __('hiko.death_year') }}", value: this.previewValue(this.final.death_year) },
@@ -407,6 +415,7 @@
 
                 if (this.isInstitution) {
                     this.final = {
+                        nationalities: [],
                         name: t.name,
                         type: t.type,
                         viaf_id: t.viaf_id,
@@ -417,7 +426,7 @@
                         surname: t.surname,
                         forename: t.forename,
                         type: t.type,
-                        nationality: t.nationality,
+                        nationalities: (t.nationalities || []).map(n => n.id),
                         gender: t.gender,
                         birth_year: t.birth_year,
                         death_year: t.death_year,

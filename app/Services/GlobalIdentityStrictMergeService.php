@@ -18,7 +18,7 @@ class GlobalIdentityStrictMergeService
         'general_name_modifier',
         'related_names',
         'type',
-        'nationality',
+        'nationalities',
         'gender',
         'birth_year',
         'death_year',
@@ -50,7 +50,7 @@ class GlobalIdentityStrictMergeService
 
     public const MULTI_FIELDS = [
         'related_names',
-        'nationality',
+        'nationalities',
         'related_identity_resources',
         'religions',
         'professions',
@@ -60,14 +60,13 @@ class GlobalIdentityStrictMergeService
     public function getSelectionQuery(array $filters = [])
     {
         $query = GlobalIdentity::query()
-            ->with(['professions.profession_category'])
+            ->with(['nationalities', 'professions.profession_category'])
             ->select([
                 'id',
                 'name',
                 'surname',
                 'forename',
                 'type',
-                'nationality',
                 'gender',
                 'birth_year',
                 'death_year',
@@ -132,13 +131,13 @@ class GlobalIdentityStrictMergeService
         $matchedGroups = 0;
 
         $records = GlobalIdentity::query()
+            ->with('nationalities')
             ->select([
                 'id',
                 'name',
                 'surname',
                 'forename',
                 'type',
-                'nationality',
                 'gender',
                 'birth_year',
                 'death_year',
@@ -262,7 +261,7 @@ class GlobalIdentityStrictMergeService
                     'type' => (string)$identity->type,
                     'birth_year' => (string)($identity->birth_year ?? ''),
                     'death_year' => (string)($identity->death_year ?? ''),
-                    'nationality' => (string)($identity->nationality ?? ''),
+                    'nationalities' => $identity->nationalityNames(),
                     'gender' => (string)($identity->gender ?? ''),
                     'admin_notes' => (string)($identity->admin_notes ?? ''),
                 ])->values()->all(),
@@ -561,7 +560,6 @@ class GlobalIdentityStrictMergeService
             'alternative_names',
             'related_names',
             'type',
-            'nationality',
             'gender',
             'birth_year',
             'death_year',
@@ -576,6 +574,11 @@ class GlobalIdentityStrictMergeService
         }
 
         $data = (array)$identity;
+        $pivot = \App\Support\NationalitySchema::pivotName($table);
+        $data['nationalities'] = DB::table($pivot.' as p')->join('nationalities as n', 'n.id', '=', 'p.nationality_id')
+            ->where('p.identity_id', $identityId)->orderBy('p.position')->pluck('n.name')
+            ->map(fn($name) => json_decode($name, true)[app()->getLocale()] ?? '')->implode(', ');
+
         foreach (['alternative_names', 'related_names', 'related_identity_resources'] as $field) {
             $data[$field] = $this->decodeJsonValue($data[$field] ?? null);
         }
@@ -596,7 +599,7 @@ class GlobalIdentityStrictMergeService
         }
 
         return GlobalIdentity::query()
-            ->with(['professions.profession_category', 'religions'])
+            ->with(['nationalities', 'professions.profession_category', 'religions'])
             ->whereIn('id', $ids)
             ->orderBy('id')
             ->get();
@@ -699,6 +702,11 @@ class GlobalIdentityStrictMergeService
     {
         $value = $this->resolveFieldValue($records, $field, $scalarSelections, $multiSelections);
 
+        if ($field === 'nationalities') {
+            $labels = $records->flatMap(fn($record) => $record->nationalities)->keyBy('id');
+            return e(collect($value)->map(fn($id) => $labels->get($id)?->name ?? '')->implode(', '));
+        }
+
         if ($field === 'professions') {
             return $this->formatProfessionsHtml(collect($value));
         }
@@ -741,7 +749,7 @@ class GlobalIdentityStrictMergeService
         try {
             DB::transaction(function () use ($ids, $survivorId, $scalarSelections, $multiSelections, &$auditResult) {
                 $records = GlobalIdentity::query()
-                    ->with(['professions.profession_category', 'religions'])
+                    ->with(['nationalities', 'professions.profession_category', 'religions'])
                     ->whereIn('id', $ids)
                     ->orderBy('id')
                     ->get();
@@ -856,13 +864,6 @@ class GlobalIdentityStrictMergeService
         $options = collect($this->multiOptions($records, $field))->keyBy('key');
         $selectedKeys = $multiSelections[$field] ?? [];
 
-        if ($field === 'nationality') {
-            return $this->formatNationalities(collect($selectedKeys)
-                ->map(fn($key) => $options->get($key)['value'] ?? null)
-                ->filter()
-                ->all());
-        }
-
         if ($field === 'note') {
             return $this->concatenateUnique(
                 collect($selectedKeys)->map(fn($key) => $options->get($key)['value'] ?? null)->filter()->all(),
@@ -887,14 +888,8 @@ class GlobalIdentityStrictMergeService
             ]];
         }
 
-        if ($field === 'nationality') {
-            return collect($this->splitNationalities($record->nationality))
-                ->map(fn(string $nationality): array => [
-                    'value' => $nationality,
-                    'label' => $nationality,
-                ])
-                ->values()
-                ->all();
+        if ($field === 'nationalities') {
+            return $record->nationalities->map(fn($item) => ['value' => (int)$item->id, 'label' => $item->name])->all();
         }
 
         if ($field === 'related_names' || $field === 'related_identity_resources') {

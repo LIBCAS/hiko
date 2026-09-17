@@ -34,6 +34,7 @@ use App\Http\Controllers\GlobalKeywordController;
 use App\Http\Controllers\GlobalKeywordCategoryController;
 use App\Http\Controllers\GlobalKeywordMergeController;
 use App\Http\Controllers\LetterComparisonController;
+use App\Http\Controllers\NationalityController;
 use App\Http\Controllers\TenantStorageController;
 use App\Http\Controllers\ReligionTranslationsController;
 use App\Http\Controllers\OAIPMHController;
@@ -755,6 +756,9 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
             ->name('ajax.items.similar')
             ->middleware(['auth', 'can:manage-metadata']);
     });
+
+    Route::resource('nationalities', NationalityController::class)
+        ->only(['index', 'store', 'update', 'destroy'])->middleware(['auth', 'can:manage-metadata', 'can:manage-users']);
 
     Route::prefix('religions')->middleware(['auth', 'can:manage-metadata'])->group(function () {
         Route::get('/', [ReligionAdminController::class, 'index'])
