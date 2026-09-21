@@ -6,6 +6,22 @@ use Illuminate\Database\Eloquent\Builder;
 
 final class NationalityFilter
 {
+    public static function applyPresence($query, string $presence): void
+    {
+        if (!in_array($presence, ['yes', 'no'], true)) {
+            return;
+        }
+
+        $source = ($query instanceof Builder ? $query->getQuery() : $query)->from;
+        $pivot = NationalitySchema::pivotName($source);
+        $key = $source === 'global_identities' ? 'global_identity_id' : 'identity_id';
+        $method = $presence === 'yes' ? 'whereExists' : 'whereNotExists';
+        $query->$method(function ($sub) use ($source, $pivot, $key) {
+            $sub->selectRaw('1')->from($pivot . ' as nationality_presence')
+                ->whereColumn('nationality_presence.' . $key, $source . '.id');
+        });
+    }
+
     public static function apply($query, string $term): void
     {
         $source = ($query instanceof Builder ? $query->getQuery() : $query)->from;

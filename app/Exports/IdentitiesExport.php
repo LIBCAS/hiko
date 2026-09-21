@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\GlobalIdentity;
 use App\Models\Identity;
+use App\Support\NationalityFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -15,6 +16,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
         'name' => '',
         'related_names' => '',
         'nationality' => '',
+        'has_nationality' => 'all',
         'type' => '',
         'profession' => '',
         'note' => '',
@@ -31,6 +33,10 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
             $this->filters,
             array_intersect_key($filters, $this->filters)
         );
+
+        if (!in_array($this->filters['has_nationality'], ['all', 'yes', 'no'], true)) {
+            $this->filters['has_nationality'] = 'all';
+        }
 
         if (!in_array($this->filters['global_identity'], ['all', 'yes', 'no'], true)) {
             $this->filters['global_identity'] = 'all';
@@ -87,9 +93,11 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
                 '%' . mb_strtolower($filters['related_names']) . '%',
             ]);
         });
+        NationalityFilter::applyPresence($query, $filters['has_nationality'] ?? 'all');
+
         $nationality = trim((string)($filters['nationality'] ?? ''));
         if ($nationality !== '') {
-            \App\Support\NationalityFilter::apply($query, $nationality);
+            NationalityFilter::apply($query, $nationality);
         }
         $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
@@ -125,9 +133,11 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
                 '%' . mb_strtolower($filters['related_names']) . '%',
             ]);
         });
+        NationalityFilter::applyPresence($query, $filters['has_nationality'] ?? 'all');
+
         $nationality = trim((string)($filters['nationality'] ?? ''));
         if ($nationality !== '') {
-            \App\Support\NationalityFilter::apply($query, $nationality);
+            NationalityFilter::apply($query, $nationality);
         }
         $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));

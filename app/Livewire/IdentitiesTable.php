@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Identity;
 use App\Models\GlobalIdentity;
+use App\Support\NationalityFilter;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -17,6 +18,7 @@ class IdentitiesTable extends Component
         'name' => '',
         'related_names' => '',
         'nationality' => '',
+        'has_nationality' => 'all',
         'type' => '',
         'profession' => '',
         'note' => '',
@@ -39,6 +41,7 @@ class IdentitiesTable extends Component
             'name' => '',
             'related_names' => '',
             'nationality' => '',
+            'has_nationality' => 'all',
             'type' => '',
             'profession' => '',
             'note' => '',
@@ -57,6 +60,10 @@ class IdentitiesTable extends Component
             $this->filters,
             array_intersect_key(session()->get('identitiesTableFilters', []), $this->filters)
         );
+
+        if (!in_array($this->filters['has_nationality'], ['all', 'yes', 'no'], true)) {
+            $this->filters['has_nationality'] = 'all';
+        }
 
         if (!in_array($this->filters['global_identity'], ['all', 'yes', 'no'], true)) {
             $this->filters['global_identity'] = 'all';
@@ -157,9 +164,11 @@ class IdentitiesTable extends Component
 
             $q->whereRaw("LOWER({$column}) LIKE ?", ["%{$search}%"]);
         });
+        NationalityFilter::applyPresence($query, $filters['has_nationality'] ?? 'all');
+
         $nationality = trim((string)($filters['nationality'] ?? ''));
         if ($nationality !== '') {
-            \App\Support\NationalityFilter::apply($query, $nationality);
+            NationalityFilter::apply($query, $nationality);
         }
         $query->when($filters['type'], fn($q) => $q->where($typeColumn, $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where($noteColumn, 'like', "%{$filters['note']}%"));

@@ -629,6 +629,7 @@ return [
     'back_to_identities' => 'Back to Identities',
     'local_identity' => 'Local Identity',
     'global_identity' => 'Global Identity',
+    'has_nationality' => 'Has nationality',
     'has_global_identity' => 'Has Global Identity',
     'global_identity_id' => 'Global Identity ID',
     'global_identity_id_abbr' => 'Glob. ID',

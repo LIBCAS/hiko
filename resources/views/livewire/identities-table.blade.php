@@ -14,6 +14,14 @@
                 <x-input wire:model.live.debounce.1000ms="filters.nationality" data-identity-filter="nationality" class="block w-full px-2 text-sm" type="text" />
             </label>
             <label>
+                <span class="block text-sm">{{ __('hiko.has_nationality') }}</span>
+                <x-select wire:model.live="filters.has_nationality" data-identity-filter="has_nationality" class="block w-full px-2 text-sm">
+                    <option value="all">{{ __('hiko.all') }}</option>
+                    <option value="yes">{{ __('hiko.yes') }}</option>
+                    <option value="no">{{ __('hiko.no') }}</option>
+                </x-select>
+            </label>
+            <label>
                 <span class="block text-sm">{{ __('hiko.type') }}</span>
                 <x-select wire:model.live.debounce.1000ms="filters.type" data-identity-filter="type" class="w-full px-2 text-sm">
                     <option value="">---</option>

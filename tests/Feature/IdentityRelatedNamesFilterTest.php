@@ -151,6 +151,34 @@ class IdentityRelatedNamesFilterTest extends TestCase
         }
     }
 
+    public function test_nationality_presence_matches_listing_and_export_independently_for_each_scope(): void
+    {
+        // Local 1 links to global 101 but has no assignments of its own.
+        Identity::findOrFail(2)->syncNationalities([1, 4]);
+        GlobalIdentity::findOrFail(101)->syncNationalities([1, 4]);
+        $component = new TestableIdentitiesTable();
+
+        foreach ([
+            ['all', '', [1, 2], [101, 102, 103]],
+            ['yes', '', [2], [101]],
+            ['no', '', [1], [102, 103]],
+            ['yes', 'Czech', [2], [101]],
+            ['no', 'Czech', [], []],
+        ] as [$presence, $name, $localIds, $globalIds]) {
+            $filters = array_replace($component->filters, ['has_nationality' => $presence, 'nationality' => $name]);
+            $local = DB::table('test-tenant__identities')
+                ->leftJoin('global_identities', 'test-tenant__identities.global_identity_id', '=', 'global_identities.id');
+            $component->applyTestFilters($local, $filters, 'local');
+            $this->assertSame($localIds, $local->orderBy('test-tenant__identities.id')->pluck('test-tenant__identities.id')->all());
+            $global = DB::table('global_identities');
+            $component->applyTestFilters($global, $filters, 'global');
+            $this->assertSame($globalIds, $global->orderBy('id')->pluck('id')->all());
+            $export = new TestableIdentitiesExport($filters);
+            $this->assertSame($localIds, $export->localIds());
+            $this->assertSame($globalIds, $export->globalIds());
+        }
+    }
+
     protected function createSchema(): void
     {
         Schema::connection('tenant')->create('test-tenant__identities', function (Blueprint $table) {

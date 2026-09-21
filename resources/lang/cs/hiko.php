@@ -631,6 +631,7 @@ return [
     'back_to_identities' => 'Zpět na identity',
     'local_identity' => 'Lokální identita',
     'global_identity' => 'Globální identita',
+    'has_nationality' => 'Má národnost',
     'has_global_identity' => 'Má globální identitu',
     'global_identity_id' => 'ID globální identity',
     'global_identity_id_abbr' => 'Glob. ID',
