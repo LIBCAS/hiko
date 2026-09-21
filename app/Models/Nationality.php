@@ -18,4 +18,16 @@ class Nationality extends Model
     use HasTranslations;
     protected $fillable = ['name'];
     public $translatable = ['name'];
+
+    public static function orderedForLocale(): \Illuminate\Database\Eloquent\Collection
+    {
+        $locale = app()->getLocale();
+        $collator = new \Collator($locale);
+
+        return static::all()->sort(function (self $left, self $right) use ($collator, $locale) {
+            $order = $collator->compare($left->getTranslation('name', $locale), $right->getTranslation('name', $locale));
+
+            return $order ?: ($left->getKey() <=> $right->getKey());
+        })->values();
+    }
 }

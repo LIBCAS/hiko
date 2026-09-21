@@ -48,7 +48,7 @@ trait MenuTrait
             [
                 'route' => 'nationalities.index',
                 'name' => __('hiko.nationalities'),
-                'icon' => 'icons.religions',
+                'icon' => 'icons.flag',
                 'ability' => 'manage-users',
             ],
             [

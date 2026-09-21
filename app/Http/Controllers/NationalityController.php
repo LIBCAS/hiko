@@ -10,7 +10,7 @@ class NationalityController extends Controller
 {
     public function index()
     {
-        return view('pages.nationalities.index', ['nationalities' => Nationality::orderBy('name->' . app()->getLocale())->get(), 'title' => __('hiko.nationalities')]);
+        return view('pages.nationalities.index', ['nationalities' => Nationality::orderedForLocale(), 'title' => __('hiko.nationalities')]);
     }
 
     public function store(NationalityRequest $request)

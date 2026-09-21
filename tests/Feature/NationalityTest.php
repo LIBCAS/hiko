@@ -33,6 +33,31 @@ class NationalityTest extends TestCase
         NationalityFixtures::create(['global_identities', 'team-a__identities', 'team-b__identities']);
     }
 
+    public function test_catalogue_uses_locale_aware_alphabetical_order(): void
+    {
+        Nationality::query()->delete();
+        foreach ([
+            ['cs' => 'xhosská', 'en' => 'Xhosa'],
+            ['cs' => 'íránská', 'en' => 'Iranian'],
+            ['cs' => 'černohorská', 'en' => 'Montenegrin'],
+            ['cs' => 'chorvatská', 'en' => 'Croatian'],
+            ['cs' => 'haitská', 'en' => 'Haitian'],
+            ['cs' => 'česká', 'en' => 'Czech'],
+        ] as $name) {
+            Nationality::create(['name' => $name]);
+        }
+
+        $originalLocale = app()->getLocale();
+        try {
+            app()->setLocale('cs');
+            $this->assertSame(['černohorská', 'česká', 'haitská', 'chorvatská', 'íránská', 'xhosská'], Nationality::orderedForLocale()->pluck('name')->all());
+            app()->setLocale('en');
+            $this->assertSame(['Croatian', 'Czech', 'Haitian', 'Iranian', 'Montenegrin', 'Xhosa'], Nationality::orderedForLocale()->pluck('name')->all());
+        } finally {
+            app()->setLocale($originalLocale);
+        }
+    }
+
     private function local(string $prefix = 'team-a'): Identity
     {
         $model = new Identity();

@@ -1,6 +1,6 @@
 @props(['identity'])
 @php
-    $options = \App\Models\Nationality::orderBy('name->'.app()->getLocale())->get()->map(fn($n) => ['id' => (string)$n->id, 'label' => $n->name]);
+    $options = \App\Models\Nationality::orderedForLocale()->map(fn($n) => ['id' => (string)$n->id, 'label' => $n->name]);
     $rawSelected = old('nationalities', $identity->exists ? $identity->nationalities->pluck('id')->all() : []);
     $selected = collect(is_array($rawSelected) ? $rawSelected : [])->filter(fn($id) => is_int($id) || (is_string($id) && ctype_digit($id)))->map(fn($id) => (string)$id)->unique()->values()->all();
 @endphp
