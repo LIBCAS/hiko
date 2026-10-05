@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class RepeatedSelect extends Component
 {
@@ -15,7 +16,10 @@ class RepeatedSelect extends Component
 
     public function mount($items = [], $fieldLabel, $fieldKey, $route, $routeParams = [])
     {
-        $this->items = $items;
+        $this->items = [];
+        foreach ($items as $item) {
+            $this->items[(string) Str::uuid()] = $item;
+        }
         $this->fieldLabel = $fieldLabel;
         $this->fieldKey = $fieldKey;
         $this->route = $route;
@@ -28,7 +32,7 @@ class RepeatedSelect extends Component
 
     public function addItem()
     {
-        $this->items[] = [
+        $this->items[(string) Str::uuid()] = [
             'value' => '',
             'label' => '',
         ];
@@ -37,7 +41,6 @@ class RepeatedSelect extends Component
     public function removeItem($index)
     {
         unset($this->items[$index]);
-        $this->items = array_values($this->items);
     }
 
     public function updatedItems($searchValue, $index)
@@ -62,6 +65,10 @@ class RepeatedSelect extends Component
 
     public function changeItemValue($index, $data)
     {
+        if (!array_key_exists($index, $this->items)) {
+            return;
+        }
+
         $this->items[$index]['label'] = $data['label'] ?: '';
         $this->items[$index]['value'] = $data['label'] ? $data['value'] : '';
     }

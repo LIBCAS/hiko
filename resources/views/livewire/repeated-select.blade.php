@@ -9,13 +9,13 @@
         @if (!empty($items))
         <div class="space-y-2">
             @foreach ($items as $index => $item)
-                <div wire:key="item-{{ $index }}" class="relative">
+                <div wire:key="{{ $fieldKey }}-item-{{ $index }}" class="relative">
                     <div
                         x-data="enhancedSelect({
                             url: '{{ route($route, $routeParams ?? []) }}',
                             initialValue: '{{ $item['value'] ?? '' }}',
                             initialLabel: '{{ $item['label'] ?? '' }}',
-                            index: {{ $index }},
+                            index: '{{ $index }}',
                             fieldKey: '{{ $fieldKey }}'
                         })"
                         class="relative"
@@ -113,7 +113,7 @@
 
                             <!-- Remove button -->
                             <button
-                                wire:click="removeItem({{ $index }})"
+                                wire:click="removeItem('{{ $index }}')"
                                 type="button"
                                 class="flex-shrink-0 text-red-500 hover:text-red-700 transition-colors duration-150 flex items-center"
                                 aria-label="{{ __('hiko.remove_item') }}"
