@@ -141,3 +141,11 @@ html {
 .jstree-node.is-inactive > [role="treeitem"] {
     text-decoration: line-through;
 }
+
+.profession-identity-group > summary:focus:not(:focus-visible) {
+    @apply ring-0 !important;
+}
+
+.profession-identity-group > summary:focus-visible {
+    @apply ring-2 ring-inset ring-primary !important;
+}

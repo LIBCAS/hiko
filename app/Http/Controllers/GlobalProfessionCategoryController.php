@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GlobalProfessionCategory;
 use App\Services\PageLockService;
+use App\Services\GlobalProfessionCategoryIdentityListing;
 use App\Http\Requests\GlobalProfessionCategoryRequest;
 use Illuminate\Http\RedirectResponse;
 
@@ -71,7 +72,9 @@ class GlobalProfessionCategoryController extends Controller
             'action' => route('global.professions.category.update', $globalProfessionCategory->id),
             'method' => 'PUT',
             'label' => __('hiko.save'),
-            'professions' => $globalProfessionCategory->professions, // Assuming you pass related professions
+            'professions' => $globalProfessionCategory->professions,
+            'identityGroups' => app(GlobalProfessionCategoryIdentityListing::class)
+                ->forProfessions($globalProfessionCategory->professions->pluck('id')->all()),
         ]);
     }
 
