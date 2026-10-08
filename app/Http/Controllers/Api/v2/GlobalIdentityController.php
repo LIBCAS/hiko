@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\v2;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\v2\IdentityIndexRequest;
+use App\Support\NationalityFilter;
 use App\Http\Requests\GlobalIdentityRequest;
 use App\Http\Resources\IdentityResource;
 use App\Models\GlobalIdentity;
@@ -25,6 +27,8 @@ class GlobalIdentityController extends Controller
         tags: ["Global Identities"],
         security: [["bearerAuth" => []]],
         parameters: [
+            new OA\Parameter(name: 'filter[nationality]', in: 'query', description: 'Substring matched against Czech and English nationality names.', schema: new OA\Schema(type: 'string', maxLength: 255)),
+            new OA\Parameter(name: 'filter[nationality_match]', in: 'query', description: 'Expanded includes global directed targets of directly matched nationalities, one step only.', schema: new OA\Schema(type: 'string', enum: ['direct', 'expanded'], default: 'direct')),
             new OA\Parameter(name: "page", in: "query", description: "Page number", schema: new OA\Schema(type: "integer")),
             new OA\Parameter(name: "per_page", in: "query", description: "Items per page", schema: new OA\Schema(type: "integer")),
             new OA\Parameter(
@@ -64,7 +68,7 @@ class GlobalIdentityController extends Controller
             )
         ]
     )]
-    public function index(Request $request)
+    public function index(IdentityIndexRequest $request)
     {
         $includes = $this->parseIncludes($request);
         $perPage = min(max((int)$request->query('per_page', self::$defaultPerPage), 1), self::$maxPerPage);
@@ -75,7 +79,8 @@ class GlobalIdentityController extends Controller
             $query->with(['localIdentities' => fn($q) => $q->orderBy('id')]);
         }
 
-        $identities = $query->paginate($perPage);
+        NationalityFilter::applyFilters($query, $request->filters());
+        $identities = $query->paginate($perPage)->appends($request->query());
 
         return IdentityResource::collection($identities);
     }

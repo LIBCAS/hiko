@@ -16,6 +16,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
         'name' => '',
         'related_names' => '',
         'nationality' => '',
+        'nationality_match' => 'direct',
         'has_nationality' => 'all',
         'type' => '',
         'profession' => '',
@@ -97,7 +98,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
 
         $nationality = trim((string)($filters['nationality'] ?? ''));
         if ($nationality !== '') {
-            NationalityFilter::apply($query, $nationality);
+            NationalityFilter::apply($query, $nationality, $filters['nationality_match'] ?? 'direct');
         }
         $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));
@@ -137,7 +138,7 @@ class IdentitiesExport implements FromCollection, WithMapping, WithHeadings
 
         $nationality = trim((string)($filters['nationality'] ?? ''));
         if ($nationality !== '') {
-            NationalityFilter::apply($query, $nationality);
+            NationalityFilter::apply($query, $nationality, $filters['nationality_match'] ?? 'direct');
         }
         $query->when($filters['type'], fn($q) => $q->where('type', $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where('note', 'like', "%{$filters['note']}%"));

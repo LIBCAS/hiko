@@ -1,6 +1,14 @@
 <?php
 
 return [
+    'nationality_match' => 'Režim hledání národností',
+    'nationality_direct' => 'Přímé shody',
+    'nationality_expanded' => 'Zahrnout související národnosti',
+    'nationality_expansions' => 'Rozšíření hledání národností',
+    'nationality_expansions_help' => 'Rozšířené hledání zahrne cíle přímo nalezených národností pouze v jednom kroku, bez zpětného či rekurzivního rozšíření.',
+    'nationality_expansion_source' => 'Hledaná národnost',
+    'nationality_expansion_target' => 'Zahrnout také',
+
     'nationalities' => 'Národnosti',
     'select_nationality' => 'Přidat národnost',
     'nationality_cs' => 'Český název',

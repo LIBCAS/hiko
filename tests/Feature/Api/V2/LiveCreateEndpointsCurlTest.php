@@ -291,6 +291,25 @@ class LiveCreateEndpointsCurlTest extends TestCase
             $this->assertArrayNotHasKey('nationality', $data);
         }
 
+        foreach (['/identities' => $localPersonAuthorId, '/global-identities' => $globalPersonIdentityId] as $path => $expectedId) {
+            foreach (['direct', 'expanded'] as $mode) {
+                $read = $this->curlJson('GET', $path . '?' . http_build_query(['filter' => ['nationality' => $tag, 'nationality_match' => $mode], 'per_page' => 100]));
+                $this->assertSame(200, $read['status']);
+                $this->assertContains($expectedId, array_column($read['json']['data'], 'id'));
+            }
+            $paginated = $this->curlJson('GET', $path . '?' . http_build_query(['filter' => ['nationality' => $tag, 'nationality_match' => 'expanded'], 'per_page' => 1]));
+            $this->assertSame(200, $paginated['status']);
+            foreach (['first', 'last'] as $link) {
+                parse_str((string) parse_url($paginated['json']['links'][$link], PHP_URL_QUERY), $parameters);
+                $this->assertSame(['nationality' => $tag, 'nationality_match' => 'expanded'], $parameters['filter']);
+            }
+            $empty = $this->curlJson('GET', $path . '?' . http_build_query(['filter' => ['nationality' => 'no-match-' . $tag, 'nationality_match' => 'expanded']]));
+            $this->assertSame(200, $empty['status']);
+            $this->assertSame([], $empty['json']['data']);
+            $invalid = $this->curlJson('GET', $path . '?filter[nationality_match]=recursive');
+            $this->assertSame(422, $invalid['status']);
+        }
+
         $letterId = $this->assertCreatedAndGetId(
             'letters',
             $this->curlJson('POST', '/letters', [

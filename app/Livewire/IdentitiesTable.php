@@ -18,6 +18,7 @@ class IdentitiesTable extends Component
         'name' => '',
         'related_names' => '',
         'nationality' => '',
+        'nationality_match' => 'direct',
         'has_nationality' => 'all',
         'type' => '',
         'profession' => '',
@@ -41,6 +42,7 @@ class IdentitiesTable extends Component
             'name' => '',
             'related_names' => '',
             'nationality' => '',
+            'nationality_match' => 'direct',
             'has_nationality' => 'all',
             'type' => '',
             'profession' => '',
@@ -168,7 +170,7 @@ class IdentitiesTable extends Component
 
         $nationality = trim((string)($filters['nationality'] ?? ''));
         if ($nationality !== '') {
-            NationalityFilter::apply($query, $nationality);
+            NationalityFilter::apply($query, $nationality, $filters['nationality_match'] ?? 'direct');
         }
         $query->when($filters['type'], fn($q) => $q->where($typeColumn, $filters['type']));
         $query->when($filters['note'], fn($q) => $q->where($noteColumn, 'like', "%{$filters['note']}%"));

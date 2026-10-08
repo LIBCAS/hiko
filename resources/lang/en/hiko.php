@@ -1,6 +1,14 @@
 <?php
 
 return [
+    'nationality_match' => 'Nationality search mode',
+    'nationality_direct' => 'Direct matches',
+    'nationality_expanded' => 'Include related nationalities',
+    'nationality_expansions' => 'Nationality search expansions',
+    'nationality_expansions_help' => 'Broader search includes targets of directly matched nationalities once, without reverse or recursive expansion.',
+    'nationality_expansion_source' => 'Search nationality',
+    'nationality_expansion_target' => 'Also include',
+
     'nationalities' => 'Nationalities',
     'select_nationality' => 'Add nationality',
     'nationality_cs' => 'Czech name',

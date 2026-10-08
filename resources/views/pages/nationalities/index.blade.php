@@ -2,8 +2,14 @@
     <x-page-lock scope="global" resource-type="nationalities_admin" :redirect-url="route('letters')" :read-only-on-deny="true" />
     <x-success-alert />
     @if($errors->any()) <div class="mb-4 text-red-600">{{ $errors->first() }}</div> @endif
-    <h1 class="mb-4 text-xl font-bold">{{ $title }}</h1>
-
+    <div class="mb-4 flex flex-wrap align-middle justify-between">
+        <h1 class="mb-4 text-xl font-bold">{{ $title }}</h1>
+        <div class="flex justify-end">
+            <x-loading-link href="{{ route('nationalities.expansions.index') }}">
+                {{ __('hiko.nationality_expansions') }}
+            </x-loading-link>
+        </div>
+    </div>
     <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
         <table class="w-full text-sm text-left">
             <thead class="border-b border-gray-200 bg-gray-50 text-gray-700">

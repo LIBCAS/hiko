@@ -12,6 +12,10 @@
             <label>
                 <span class="block text-sm">{{ __('hiko.nationality') }}</span>
                 <x-input wire:model.live.debounce.1000ms="filters.nationality" data-identity-filter="nationality" class="block w-full px-2 text-sm" type="text" />
+                <x-select wire:model.live="filters.nationality_match" data-identity-filter="nationality_match" :aria-label="__('hiko.nationality_match')" class="mt-1 block w-full px-2 text-sm">
+                    <option value="direct">{{ __('hiko.nationality_direct') }}</option>
+                    <option value="expanded">{{ __('hiko.nationality_expanded') }}</option>
+                </x-select>
             </label>
             <label>
                 <span class="block text-sm">{{ __('hiko.has_nationality') }}</span>

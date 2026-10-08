@@ -57,8 +57,7 @@ trait HasNationalities
 
     public function scopeWithNationalityName($query, string $name)
     {
-        return $query->whereHas('nationalities', function ($q) use ($name) {
-            $q->where('name->cs', 'like', '%' . $name . '%')->orWhere('name->en', 'like', '%' . $name . '%');
-        });
+        \App\Support\NationalityFilter::apply($query, $name);
+        return $query;
     }
 }

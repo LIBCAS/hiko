@@ -31,6 +31,76 @@ class NationalityTest extends TestCase
             });
         }
         NationalityFixtures::create(['global_identities', 'team-a__identities', 'team-b__identities']);
+        (require database_path('migrations/2026_10_08_000000_create_nationality_search_expansions.php'))->up();
+    }
+
+    public function test_expansion_is_global_directed_optional_and_one_step(): void
+    {
+        foreach ([1 => ['Starý termín', 'Oldterm'], 2 => ['Druhý termín', 'Secondterm'], 3 => ['Třetí termín', 'Thirdterm'], 4 => ['Čtvrtý termín', 'Fourthterm']] as $id => [$cs, $en]) {
+            Nationality::findOrFail($id)->update(['name' => compact('cs', 'en')]);
+        }
+        DB::table('nationality_search_expansions')->insert([
+            ['source_nationality_id' => 1, 'target_nationality_id' => 2],
+            ['source_nationality_id' => 1, 'target_nationality_id' => 3],
+            ['source_nationality_id' => 3, 'target_nationality_id' => 1],
+            ['source_nationality_id' => 2, 'target_nationality_id' => 4],
+        ]);
+        foreach (['global_identities', 'team-a__identities', 'team-b__identities'] as $source) {
+            foreach ([1, 2, 3, 4] as $id) {
+                $model = $source === 'global_identities' ? new GlobalIdentity() : $this->local();
+                $model->setTable($source);
+                $model->fill(['name' => 'Example ' . $id, 'nationalities' => $id === 2 ? [2, 3] : [$id]])->save();
+            }
+            $find = function ($term, $mode = 'direct') use ($source) {
+                $query = DB::table($source);
+                \App\Support\NationalityFilter::applyFilters($query, ['nationality' => $term, 'nationality_match' => $mode]);
+                return $query->orderBy('id')->pluck('name')->all();
+            };
+            $this->assertSame(['Example 1'], $find('OLD'));
+            $this->assertSame(['Example 1', 'Example 2', 'Example 3'], $find('old', 'expanded'));
+            $this->assertSame(['Example 1', 'Example 2', 'Example 3'], $find('Starý', 'expanded'));
+            $this->assertSame(['Example 1', 'Example 2', 'Example 3'], $find('third', 'expanded'));
+            $this->assertSame(['Example 2', 'Example 4'], $find('second', 'expanded'));
+            $this->assertSame([], $find('unmatched', 'expanded'));
+        }
+        // Expansion source need not be assigned in the searched tenant.
+        DB::table('team-b__identity_nationality')->where('nationality_id', 1)->delete();
+        $query = DB::table('team-b__identities');
+        \App\Support\NationalityFilter::apply($query, 'old', 'expanded');
+        $this->assertSame(['Example 2', 'Example 3'], $query->orderBy('id')->pluck('name')->all());
+    }
+
+    public function test_expansion_validation_and_permissions(): void
+    {
+        $request = new \App\Http\Requests\NationalityExpansionRequest();
+        $request->merge(['source_nationality_id' => 1]);
+        foreach ([['source_nationality_id' => 1, 'target_nationality_id' => 1], ['source_nationality_id' => 1, 'target_nationality_id' => 999], []] as $data) {
+            $this->assertTrue(Validator::make($data, $request->rules())->fails());
+        }
+        $pair = ['source_nationality_id' => 1, 'target_nationality_id' => 2];
+        $this->assertFalse(Validator::make($pair, $request->rules())->fails());
+        DB::table('nationality_search_expansions')->insert($pair);
+        $this->assertTrue(Validator::make($pair, $request->rules())->fails());
+        $this->assertFalse($request->authorize());
+        $request->setUserResolver(fn() => new class {
+            public function can($ability) { return $ability === 'manage-users'; }
+        });
+        $this->assertTrue($request->authorize());
+    }
+
+    public function test_invalid_api_matching_mode_is_rejected(): void
+    {
+        $rules = (new \App\Http\Requests\Api\v2\IdentityIndexRequest())->rules();
+        foreach (['invalid', ['nationality' => ['invalid']], ['nationality_match' => 'recursive'], ['nationality_match' => null], ['nationality' => str_repeat('a', 256)]] as $filter) {
+            $this->assertTrue(Validator::make(['filter' => $filter], $rules)->fails());
+        }
+        foreach ([[], ['nationality' => null], ['nationality' => ''], ['nationality' => 'Example', 'nationality_match' => 'expanded']] as $filter) {
+            $this->assertFalse(Validator::make(['filter' => $filter], $rules)->fails());
+        }
+        $validator = Validator::make(['filter' => ['nationality' => 'Example', 'nationality_match' => 'expanded', 'unknown' => 'ignored']], $rules);
+        $request = new \App\Http\Requests\Api\v2\IdentityIndexRequest();
+        $request->setValidator($validator);
+        $this->assertSame(['nationality' => 'Example', 'nationality_match' => 'expanded'], $request->filters());
     }
 
     public function test_catalogue_uses_locale_aware_alphabetical_order(): void

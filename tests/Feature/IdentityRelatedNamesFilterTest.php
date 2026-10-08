@@ -65,6 +65,31 @@ class IdentityRelatedNamesFilterTest extends TestCase
         parent::tearDown();
     }
 
+    public function test_expanded_nationality_listing_and_export_match(): void
+    {
+        (require database_path('migrations/2026_10_08_000000_create_nationality_search_expansions.php'))->up();
+        DB::table('nationality_search_expansions')->insert(['source_nationality_id' => 1, 'target_nationality_id' => 2]);
+        foreach (['test-tenant__identity_nationality' => 'identity_id', 'global_identity_nationality' => 'global_identity_id'] as $pivot => $key) {
+            $ids = $key === 'identity_id' ? [1, 2] : [101, 102];
+            DB::table($pivot)->insert([
+                [$key => $ids[0], 'nationality_id' => 1, 'position' => 0],
+                [$key => $ids[1], 'nationality_id' => 2, 'position' => 0],
+            ]);
+        }
+        $component = new TestableIdentitiesTable();
+        foreach (['direct' => [[1], [101]], 'expanded' => [[1, 2], [101, 102]]] as $mode => [$localIds, $globalIds]) {
+            $filters = array_replace($component->filters, ['nationality' => 'Czech', 'nationality_match' => $mode]);
+            foreach (['local' => ['test-tenant__identities', $localIds], 'global' => ['global_identities', $globalIds]] as $scope => [$table, $expected]) {
+                $query = DB::table($table);
+                $component->applyTestFilters($query, $filters, $scope);
+                $this->assertSame($expected, $query->orderBy('id')->pluck('id')->all());
+            }
+            $export = new TestableIdentitiesExport($filters);
+            $this->assertSame($localIds, $export->localIds());
+            $this->assertSame($globalIds, $export->globalIds());
+        }
+    }
+
     public function test_listing_filter_is_case_insensitive_for_local_and_global_related_names(): void
     {
         $component = new TestableIdentitiesTable();

@@ -757,6 +757,13 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
             ->middleware(['auth', 'can:manage-metadata']);
     });
 
+    Route::get('nationalities/expansions', [NationalityController::class, 'expansions'])
+        ->name('nationalities.expansions.index')->middleware(['auth', 'can:manage-metadata', 'can:manage-users']);
+    Route::post('nationalities/expansions', [NationalityController::class, 'storeExpansion'])
+        ->name('nationalities.expansions.store')->middleware(['auth', 'can:manage-metadata', 'can:manage-users']);
+    Route::delete('nationalities/expansions/{source}/{target}', [NationalityController::class, 'destroyExpansion'])
+        ->name('nationalities.expansions.destroy')->middleware(['auth', 'can:manage-metadata', 'can:manage-users']);
+
     Route::resource('nationalities', NationalityController::class)
         ->only(['index', 'store', 'update', 'destroy'])->middleware(['auth', 'can:manage-metadata', 'can:manage-users']);
 

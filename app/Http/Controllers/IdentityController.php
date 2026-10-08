@@ -321,6 +321,7 @@ class IdentityController extends Controller
             'name',
             'related_names',
             'nationality',
+            'nationality_match',
             'type',
             'profession',
             'note',
