@@ -8,6 +8,10 @@ return [
     'nationality_expansions_help' => 'Broader search includes targets of directly matched nationalities once, without reverse or recursive expansion.',
     'nationality_expansion_source' => 'Search nationality',
     'nationality_expansion_target' => 'Also include',
+    'nationality_expansion_duplicate' => 'This nationality pair already exists.',
+    'nationality_expansion_different' => 'Choose two different nationalities.',
+    'nationality_expansion_required' => 'Choose a nationality in the “:attribute” field.',
+    'nationality_expansion_invalid' => 'Choose a valid nationality from the list in the “:attribute” field.',
 
     'nationalities' => 'Nationalities',
     'select_nationality' => 'Add nationality',

@@ -1,20 +1,31 @@
 <x-app-layout :title="$title">
     <x-page-lock scope="global" resource-type="nationalities_admin" :redirect-url="route('nationalities.index')" :read-only-on-deny="true" />
     <x-success-alert />
-    @if($errors->any()) <div class="mb-4 text-red-600">{{ $errors->first() }}</div> @endif
     <section>
-        <h1 class="mb-2 text-xl font-bold">{{ __('hiko.nationality_expansions') }}</h1>
+        <div class="mb-4 flex flex-wrap align-middle justify-between">
+            <h1 class="mb-4 text-xl font-bold">{{ __('hiko.nationality_expansions') }}</h1>
+            <div class="flex justify-end">
+                <x-loading-link href="{{ route('nationalities.index') }}">
+                    {{ __('hiko.nationalities') }}
+                </x-loading-link>
+            </div>
+        </div>
         <p class="mb-4 text-sm">{{ __('hiko.nationality_expansions_help') }}</p>
         <form method="POST" action="{{ route('nationalities.expansions.store') }}" class="mb-4 flex flex-wrap items-end gap-3">
             @csrf
             @foreach(['source' => 'nationality_expansion_source', 'target' => 'nationality_expansion_target'] as $side => $label)
                 <label class="block text-sm">{{ __('hiko.' . $label) }}
-                    <x-select name="{{ $side }}_nationality_id" required class="block w-full">
+                    <x-select name="{{ $side }}_nationality_id" required class="block w-full"
+                        aria-invalid="{{ $errors->has($side . '_nationality_id') ? 'true' : 'false' }}"
+                        aria-describedby="{{ $side }}_nationality_error">
                         <option value="">—</option>
                         @foreach($nationalities as $item)
                             <option value="{{ $item->id }}" @selected(old($side . '_nationality_id') == $item->id)>{{ $item->name }}</option>
                         @endforeach
                     </x-select>
+                    <span id="{{ $side }}_nationality_error" class="block text-sm text-red-600" role="alert">
+                        @error($side . '_nationality_id') {{ $message }} @enderror
+                    </span>
                 </label>
             @endforeach
             <button class="rounded bg-gray-800 px-4 py-2 text-white" type="submit">{{ __('hiko.create') }}</button>
@@ -35,9 +46,4 @@
             @endforeach
         </ul>
     </section>
-    <div class="mt-6 flex justify-end">
-        <x-loading-link href="{{ route('nationalities.index') }}">
-            {{ __('hiko.nationalities') }}
-        </x-loading-link>
-    </div>
 </x-app-layout>

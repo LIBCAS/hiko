@@ -8,6 +8,10 @@ return [
     'nationality_expansions_help' => 'Rozšířené hledání zahrne cíle přímo nalezených národností pouze v jednom kroku, bez zpětného či rekurzivního rozšíření.',
     'nationality_expansion_source' => 'Hledaná národnost',
     'nationality_expansion_target' => 'Zahrnout také',
+    'nationality_expansion_duplicate' => 'Tato dvojice národností již existuje.',
+    'nationality_expansion_different' => 'Vyberte dvě různé národnosti.',
+    'nationality_expansion_required' => 'Vyberte národnost v poli „:attribute“.',
+    'nationality_expansion_invalid' => 'Vyberte platnou národnost ze seznamu v poli „:attribute“.',
 
     'nationalities' => 'Národnosti',
     'select_nationality' => 'Přidat národnost',
