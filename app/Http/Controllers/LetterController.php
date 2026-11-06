@@ -240,7 +240,7 @@ class LetterController extends Controller
         // Keep old top-level export URLs working while the letters page uses the
         // same nested filters[...] structure as its authoritative URL state.
         if (!is_array($filters)) {
-            $filters = $request->only(LetterFilterService::ALLOWED_FILTERS);
+            $filters = $request->only(LetterFilterService::allowedFilters());
         }
 
         return app(LetterFilterService::class)->normalize($filters);

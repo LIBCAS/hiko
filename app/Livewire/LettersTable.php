@@ -18,8 +18,6 @@ class LettersTable extends Component
 
     protected $listeners = ['filtersChanged', 'sortingChanged', 'removeFilter', 'resetLettersTablePage'];
 
-    protected array $allowedFilters = LetterFilterService::ALLOWED_FILTERS;
-
     protected array $allowedSorting = [
         'id', 'updated_at', 'author', 'recipient', 'origin', 'destination', 'media', 'date_computed', 'abstract'
     ];
@@ -56,7 +54,7 @@ class LettersTable extends Component
             $key = $key['filterKey'];
         }
 
-        if (in_array($key, $this->allowedFilters)) {
+        if (in_array($key, LetterFilterService::allowedFilters(), true)) {
             unset($this->filters[$key]);
             $this->filters = app(LetterFilterService::class)->normalize($this->filters);
         }
@@ -64,7 +62,9 @@ class LettersTable extends Component
         $this->resetPage();
     }
 
-    public function resetLettersTablePage() { $this->resetPage(); }
+    public function resetLettersTablePage() {
+        $this->resetPage();
+    }
 
     public function resetFilters()
     {

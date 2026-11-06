@@ -3,8 +3,7 @@ window.updateExportUrl = (filters, el) => {
         return
     }
 
-    // Livewire event parameters may arrive wrapped as either [{ filters: ... }]
-    // or { filters: ... }, depending on the caller/version.
+    // Livewire event parameters may arrive wrapped as either [{ filters: ... }] or { filters: ... }, depending on the caller/version
     if (Array.isArray(filters) && filters.length === 1) {
         filters = filters[0]
     }
@@ -18,16 +17,14 @@ window.updateExportUrl = (filters, el) => {
     const url = new URL(el.href, window.location.origin)
     url.search = ''
 
-    Object.entries(filters).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-            value.forEach((item) => url.searchParams.append(`filters[${key}][]`, item))
-            return
+    const append = (key, value) => {
+        if (value !== null && typeof value === 'object') {
+            Object.entries(value).forEach(([child, item]) => append(`${key}[${child}]`, item))
+        } else if (value !== null && value !== '') {
+            url.searchParams.set(key, value)
         }
-
-        if (value !== null && value !== '') {
-            url.searchParams.set(`filters[${key}]`, value)
-        }
-    })
+    }
+    Object.entries(filters).forEach(([key, value]) => append(`filters[${key}]`, value))
 
     el.href = url.toString()
 }

@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -41,6 +40,7 @@ use App\Http\Controllers\OAIPMHController;
 use App\Http\Controllers\MergeLetterController;
 use App\Http\Controllers\Ajax\AjaxPlaceController;
 use App\Http\Controllers\Ajax\AjaxKeywordController;
+use App\Http\Controllers\Ajax\AjaxLetterFilterOptionsController;
 use App\Http\Controllers\Ajax\AjaxIdentityController;
 use App\Http\Controllers\Ajax\AjaxGlobalIdentityController;
 use App\Http\Controllers\Ajax\SimilarItemsController;
@@ -720,6 +720,10 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
             ->name('ajax.global.professions.category')
             ->middleware(['auth', 'can:manage-metadata']);
 
+        Route::get('letter-filter-options', AjaxLetterFilterOptionsController::class)
+            ->name('ajax.letter-filter-options')
+            ->middleware(['auth', 'can:view-metadata']);
+
         Route::get('identity', [AjaxIdentityController::class, '__invoke'])
             ->name('ajax.identities')
             ->middleware(['auth', 'can:view-metadata']);
@@ -867,7 +871,8 @@ Route::middleware([InitializeTenancyByDomain::class],'web')->group(function () {
 
     Route::get('lang/{lang}', LanguageController::class)
         ->name('lang');
-        Route::get('/serve-local-file/{path}', function ($path) {
+
+    Route::get('/serve-local-file/{path}', function ($path) {
             $path = urldecode($path);
 
             // Prevent directory traversal attacks
