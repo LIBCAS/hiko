@@ -82,6 +82,9 @@
         <x-input id="letter-filter-input-{{ $field }}" wire:model="draft.{{ $field }}" type="{{ $type === 'date' ? 'date' : 'text' }}" class="w-full text-sm"
             placeholder="{{ $type === 'id' ? __('hiko.letter_ids_placeholder') : '' }}" />
     @endif
+    @if(\Illuminate\Support\Facades\Lang::has('hiko.filter_' . $field . '_help'))
+        <p class="text-xs text-gray-600">{{ __('hiko.filter_' . $field . '_help') }}</p>
+    @endif
     @error('draft.' . $field . '.value') <p class="text-red-700">{{ $message }}</p> @enderror
     @error('draft.' . $field) <p class="text-red-700">{{ $message }}</p> @enderror
 </div>

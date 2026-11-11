@@ -24,7 +24,7 @@ class LetterFilterDefinitions
 
         foreach (['author', 'recipient', 'origin', 'destination'] as $role) {
             $fields = [
-                "{$role}_count" => ['count', 'filter_count'],
+                "{$role}_count" => ['count', "filter_{$role}_count"],
                 $role => ['entity', $role], "{$role}_marked" => ['text', 'name_marked'],
             ];
 
@@ -50,11 +50,11 @@ class LetterFilterDefinitions
                 'notes_private' => ['text', 'notes_private'], 'notes_public' => ['text', 'notes_public'],
             ]],
             'resources' => ['label' => 'related_resources', 'fields' => [
-                'related_resources_count' => ['count', 'filter_count'],
+                'related_resources_count' => ['count', 'filter_related_resources_count'],
                 'resource_title' => ['text', 'name_2'], 'resource_link' => ['text', 'filter_url'],
             ]],
             'manifestations' => ['label' => 'manifestation_location', 'fields' => [
-                'manifestations_count' => ['count', 'filter_count'],
+                'manifestations_count' => ['count', 'filter_manifestations_count'],
                 'preservation' => ['checks', 'preservation'], 'type' => ['checks', 'doc_type'],
                 'copy' => ['checks', 'doc_mode'], 'manifestation_notes' => ['text', 'manifestation_notes'],
                 'l_number' => ['text', 'l_number'],

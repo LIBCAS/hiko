@@ -38,7 +38,7 @@
                     @if($sectionKey === 'date')
                         <p class="mb-4 text-sm text-gray-600">{{ __('hiko.filter_date_help') }}</p>
                     @elseif(in_array($sectionKey, ['author', 'recipient', 'origin', 'destination', 'manifestations', 'resources']))
-                        <p class="mb-4 text-sm text-gray-600">{{ __('hiko.filter_related_help') }}</p>
+                        <p class="mb-4 text-sm text-gray-600">{{ __('hiko.filter_' . $sectionKey . '_help') }}</p>
                     @endif
                     <div class="grid items-start grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
                         @foreach($section['fields'] as $field => [$type, $label])
